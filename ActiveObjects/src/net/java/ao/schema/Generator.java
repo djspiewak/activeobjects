@@ -167,7 +167,7 @@ public class Generator {
 		}
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
-			if (interfaceIneritsFrom(superInterface, Entity.class) && !superInterface.equals(Entity.class)) {
+			if (!superInterface.equals(Entity.class)) {
 				sql.append(parseFields((Class<? extends Entity>) superInterface, classes));
 			}
 		}
