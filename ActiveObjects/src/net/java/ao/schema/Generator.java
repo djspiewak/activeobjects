@@ -34,6 +34,11 @@ public class Generator {
 	private static List<Class<? extends Entity>> parsed = new LinkedList<Class<? extends Entity>>(); 
 	
 	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException {
+		
+		System.out.println(generate(args));
+	}
+	
+	public static String generate(String... args) throws ClassNotFoundException, MalformedURLException, IOException, ParseException {
 		Options options = new Options();
 		
 		Option classpathOption = new Option("C", "classpath", true, "");
@@ -57,7 +62,7 @@ public class Generator {
 			sql += parseInterface((Class<? extends Entity>) Class.forName(cls, true, classloader));
 		}
 		
-		System.out.println(sql);
+		return sql;
 	}
 	
 	private static void usage() {
