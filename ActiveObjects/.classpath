@@ -3,11 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Daniel Spiewak/Libraries/mysql-connector-java-5.0.4/mysql-connector-java-5.0.4-bin.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Daniel Spiewak/Libraries/commons-cli-1.0/commons-cli-1.0.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/Users/Daniel Spiewak/Libraries/commons-cli-1.0/docs/apidocs/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="var" path="commons-cli"/>
+	<classpathentry kind="var" path="mysql-connector-java"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
