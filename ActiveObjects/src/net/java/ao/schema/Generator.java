@@ -86,6 +86,8 @@ public class Generator {
 		sql.append(sqlName);
 		sql.append(" (\n");
 		
+		sql.append("id AS INTEGER AUTO_INCREMENT PRIMARY_KEY,\n");
+		
 		for (Method method : methods) {
 			Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 			Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
@@ -146,6 +148,12 @@ public class Generator {
 				}
 				
 				sql.append(",\n");
+			}
+		}
+		
+		for (Class<?> superInterface : clazz.getInterfaces()) {
+			if (interfaceIneritsFrom(superInterface, Entity.class) && !superInterface.equals(Entity.class)) {
+				sql.append(parseInterface((Class<? extends Entity>) superInterface));
 			}
 		}
 		
