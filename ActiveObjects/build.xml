@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ActiveObjects" default="build">
+	<property file="build.properties"/>
+	
+	<target name="init">
+		<mkdir dir="bin"/>
+	</target>
+	
+	<target name="build" depends="init">
+		<javac srcdir="src" destdir="bin" classpath="${build.classpath}" source="1.5" target="1.5" debug="${build.debug}"/>
+	</target>
+	
+	<target name="jar" depends="build">
+		<jar basedir="bin" compress="${jar.compress}" destfile="dist/activeobjects-${activeobjects.version}.jar"/>
+	</target>
+		
+	<target name="clean">
+		<delete dir="bin"/>
+	</target>
+</project>

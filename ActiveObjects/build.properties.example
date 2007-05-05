@@ -1,0 +1,7 @@
+commons-cli.path=C:/Users/Daniel Spiewak/Libraries/commons-cli-1.0/commons-cli-1.0.jar
+mysql-connector-java.path=C:/Users/Daniel Spiewak/Libraries/mysql-connector-java-5.0.4/mysql-connector-java-5.0.4-bin.jar
+
+build.classpath=${commons-cli.path}${path.separator}${mysql-connector-java.path}
+build.debug=yes
+
+activeobjects.version=0.1
