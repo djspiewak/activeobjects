@@ -71,15 +71,12 @@ public class Generator {
 		parsed.add(clazz);
 		
 		StringBuffer sql = new StringBuffer();
-		
 		String sqlName = convertDowncaseName(convertSimpleClassName(clazz.getName()));
 		
 		if (clazz.getAnnotation(Table.class) != null) {
 			sqlName = clazz.getAnnotation(Table.class).value();
 		}
 		
-		Method[] methods = clazz.getDeclaredMethods();
-		List<String> attributes = new LinkedList<String>();
 		List<Class<? extends Entity>> classes = new ArrayList<Class<? extends Entity>>();
 		
 		sql.append("CREATE TABLE IF NOT EXISTS ");
@@ -87,6 +84,24 @@ public class Generator {
 		sql.append(" (\n");
 		
 		sql.append("id AS INTEGER AUTO_INCREMENT PRIMARY_KEY,\n");
+		
+		sql.append(parseFields(clazz, classes));
+		
+		sql.setLength(sql.length() - 2);
+		sql.append("\n);\n");
+		
+		for (Class<? extends Entity> refClass : classes) {
+			sql.append(parseInterface(refClass));
+		}
+		
+		return sql.toString();
+	}
+	
+	private static String parseFields(Class<? extends Entity> clazz, List<Class<? extends Entity>> classes) {
+		StringBuffer sql = new StringBuffer();
+		
+		Method[] methods = clazz.getDeclaredMethods();
+		List<String> attributes = new LinkedList<String>();
 		
 		for (Method method : methods) {
 			Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
@@ -153,15 +168,8 @@ public class Generator {
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
 			if (interfaceIneritsFrom(superInterface, Entity.class) && !superInterface.equals(Entity.class)) {
-				sql.append(parseInterface((Class<? extends Entity>) superInterface));
+				sql.append(parseFields((Class<? extends Entity>) superInterface, classes));
 			}
-		}
-		
-		sql.setLength(sql.length() - 2);
-		sql.append("\n);\n");
-		
-		for (Class<? extends Entity> refClass : classes) {
-			sql.append(parseInterface(refClass));
 		}
 		
 		return sql.toString();
