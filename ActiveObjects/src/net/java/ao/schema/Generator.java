@@ -109,7 +109,13 @@ public class Generator {
 			String attributeName = null;
 			Class<?> type = null;
 			
-			if (method.getName().startsWith("get")) {
+			if (mutatorAnnotation != null) {
+				attributeName = mutatorAnnotation.value();
+				type = method.getParameterTypes()[0];
+			} else if (accessorAnnotation != null) {
+				attributeName = accessorAnnotation.value();
+				type = method.getReturnType();
+			} else if (method.getName().startsWith("get")) {
 				attributeName = convertDowncaseName(method.getName().substring(3));
 				type = method.getReturnType();
 			} else if (method.getName().startsWith("is")) {
@@ -118,12 +124,6 @@ public class Generator {
 			} else if (method.getName().startsWith("set")) {
 				attributeName = convertDowncaseName(method.getName().substring(3));
 				type = method.getParameterTypes()[0];
-			} else if (mutatorAnnotation != null) {
-				attributeName = mutatorAnnotation.value();
-				type = method.getParameterTypes()[0];
-			} else if (accessorAnnotation != null) {
-				attributeName = accessorAnnotation.value();
-				type = method.getReturnType();
 			}
 			
 			if (attributeName != null && type != null) {
@@ -139,7 +139,10 @@ public class Generator {
 				} else if (interfaceIneritsFrom(type, Entity.class)) {
 					classes.add((Class<? extends Entity>) type);
 					
-					attributeName += "ID";
+					if (mutatorAnnotation == null && accessorAnnotation == null) {
+						attributeName += "ID";
+					}
+					
 					sqlType = "INTEGER";
 				} else if (type.isArray()) {
 					continue;
