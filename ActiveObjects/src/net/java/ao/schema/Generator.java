@@ -88,12 +88,11 @@ public class Generator {
 		sql.append(sqlName);
 		sql.append(" (\n");
 		
-		sql.append("id AS INTEGER AUTO_INCREMENT PRIMARY_KEY,\n");
+		sql.append("id AS INTEGER AUTO_INCREMENT,\n");
 		
 		sql.append(parseFields(clazz, classes));
 		
-		sql.setLength(sql.length() - 2);
-		sql.append("\n);\n");
+		sql.append("PRIMARY KEY (id)\n);\n");
 		
 		for (Class<? extends Entity> refClass : classes) {
 			sql.append(parseInterface(refClass));
