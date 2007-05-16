@@ -17,20 +17,7 @@ import net.java.ao.EntityManager;
 public class Driver {
 	public static void main(String... args) throws SQLException {
 		long millis = System.currentTimeMillis();
-		EntityManager manager = EntityManager.getInstance(new DatabaseProvider() {
-			{
-				try {
-					Class.forName("com.mysql.jdbc.Driver");
-				} catch (Throwable t) {
-				}
-			}
-			
-			public Connection getConnection() throws SQLException {
-				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/homestuff", "root", "mysqlroot");
-				
-				return conn;
-			}
-		});
+		EntityManager manager = EntityManager.getInstance(DatabaseProvider.getInstance("jdbc:mysql://localhost/homestuff", "root", "mysqlroot"));
 		
 		runTestTest(manager);
 		runRoomsTest(manager);
