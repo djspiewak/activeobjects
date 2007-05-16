@@ -16,8 +16,13 @@ import net.java.ao.EntityManager;
  */
 public class Driver {
 	public static void main(String... args) throws SQLException {
+		if (args.length < 3) {
+			System.err.println("You must specify a URI, username and password (in that order)");
+			System.exit(-1);
+		}
+		
 		long millis = System.currentTimeMillis();
-		EntityManager manager = EntityManager.getInstance(DatabaseProvider.getInstance("jdbc:mysql://localhost/homestuff", "root", "mysqlroot"));
+		EntityManager manager = EntityManager.getInstance(DatabaseProvider.getInstance(args[0], args[1], args[2]));
 		
 		runTestTest(manager);
 		runRoomsTest(manager);
