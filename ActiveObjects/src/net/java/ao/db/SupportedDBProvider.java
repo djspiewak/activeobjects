@@ -11,13 +11,13 @@ import net.java.ao.DatabaseProvider;
 /**
  * @author Daniel Spiewak
  */
-public enum SupportedProvider {
+public enum SupportedDBProvider {
 	MYSQL("jdbc:mysql", MySQLDatabaseProvider.class);
 	
 	private String prefix;
 	private Class<? extends DatabaseProvider> type;
 	
-	private SupportedProvider(String prefix, Class<? extends DatabaseProvider> type) {
+	private SupportedDBProvider(String prefix, Class<? extends DatabaseProvider> type) {
 		this.prefix = prefix;
 		this.type = type;
 	}
@@ -49,8 +49,8 @@ public enum SupportedProvider {
 		return back;
 	}
 	
-	public static SupportedProvider getProviderForURI(String uri) {
-		for (SupportedProvider provider : values()) {
+	public static SupportedDBProvider getProviderForURI(String uri) {
+		for (SupportedDBProvider provider : values()) {
 			if (uri.trim().startsWith(provider.prefix.trim())) {
 				return provider;
 			}

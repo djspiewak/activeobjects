@@ -8,7 +8,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import net.java.ao.db.SupportedProvider;
+import net.java.ao.db.SupportedDBProvider;
 
 /**
  * @author Daniel Spiewak
@@ -50,7 +50,7 @@ public abstract class DatabaseProvider {
 	protected abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
 	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
-		SupportedProvider provider = SupportedProvider.getProviderForURI(uri);
+		SupportedDBProvider provider = SupportedDBProvider.getProviderForURI(uri);
 		if (provider == null) {
 			throw new RuntimeException("Unable to locate a valid database provider for URI: " + uri);
 		}
