@@ -6,5 +6,7 @@
 	<classpathentry kind="var" path="commons-cli"/>
 	<classpathentry kind="var" path="mysql-connector-java"/>
 	<classpathentry kind="var" path="ant"/>
+	<classpathentry kind="var" path="commons-dbcp"/>
+	<classpathentry kind="var" path="commons-pool"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

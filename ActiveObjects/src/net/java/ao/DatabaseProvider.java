@@ -8,12 +8,13 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import net.java.ao.db.IDatabaseProvider;
 import net.java.ao.db.SupportedDBProvider;
 
 /**
  * @author Daniel Spiewak
  */
-public abstract class DatabaseProvider {
+public abstract class DatabaseProvider implements IDatabaseProvider {
 	private String uri, username, password;
 	
 	protected DatabaseProvider(String uri, String username, String password) {
@@ -35,7 +36,7 @@ public abstract class DatabaseProvider {
 		return password;
 	}
 	
-	protected Connection getConnection() throws SQLException {
+	public Connection getConnection() throws SQLException {
 		try {
 			getDriverClass();
 		} catch (ClassNotFoundException e) {
@@ -47,8 +48,6 @@ public abstract class DatabaseProvider {
 		return back;
 	}
 
-	protected abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
-	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
 		SupportedDBProvider provider = SupportedDBProvider.getProviderForURI(uri);
 		if (provider == null) {

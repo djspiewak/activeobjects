@@ -6,6 +6,8 @@ import java.util.Calendar;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
+import net.java.ao.db.DBCPPoolProvider;
+import net.java.ao.db.IPoolProvider;
 
 /*
  * Created on May 2, 2007
@@ -21,14 +23,18 @@ public class Driver {
 			System.exit(-1);
 		}
 		
+		IPoolProvider provider = new DBCPPoolProvider(DatabaseProvider.getInstance(args[0], args[1], args[2]));
+
 		long millis = System.currentTimeMillis();
-		EntityManager manager = EntityManager.getInstance(DatabaseProvider.getInstance(args[0], args[1], args[2]));
+		EntityManager manager = EntityManager.getInstance(provider);
 		
 		runTestTest(manager);
 		runRoomsTest(manager);
 		runManyTest(manager);
 		
 		System.out.println("Total time: " + (System.currentTimeMillis() - millis));
+		
+		provider.close();
 	}
 	
 	private static void runTestTest(EntityManager manager) throws SQLException {

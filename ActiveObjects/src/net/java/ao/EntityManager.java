@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.java.ao.db.IDatabaseProvider;
+
 import static net.java.ao.Utilities.convertDowncaseName;
 import static net.java.ao.Utilities.convertSimpleClassName;
 
@@ -24,11 +26,11 @@ import static net.java.ao.Utilities.convertSimpleClassName;
 public final class EntityManager {
 	private static EntityManager instance;
 	
-	private DatabaseProvider provider;
+	private IDatabaseProvider provider;
 	
 	private Map<CacheKey, Entity> cache;
 	
-	private EntityManager(DatabaseProvider provider) {
+	private EntityManager(IDatabaseProvider provider) {
 		this.provider = provider;
 		
 		cache = new HashMap<CacheKey, Entity>();
@@ -69,15 +71,15 @@ public final class EntityManager {
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
 	}
 
-	public DatabaseProvider getProvider() {
+	public IDatabaseProvider getProvider() {
 		return provider;
 	}
 
-	public void setProvider(DatabaseProvider provider) {
+	public void setProvider(IDatabaseProvider provider) {
 		this.provider = provider;
 	}
 
-	public static synchronized EntityManager getInstance(DatabaseProvider provider) {
+	public static synchronized EntityManager getInstance(IDatabaseProvider provider) {
 		if (instance == null) {
 			instance = new EntityManager(provider);
 		}
