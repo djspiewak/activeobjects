@@ -67,13 +67,15 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
+		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 
 		if (mutatorAnnotation != null) {
 			invokeSetter(getID(), tableName, mutatorAnnotation.value(), args[0]);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType());
-		} else if (oneToManyAnnotation != null && method.getReturnType().isArray()) {
+		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
+				&& interfaceIneritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<?> type = method.getReturnType().getComponentType();
 			String otherTableName = convertDowncaseName(convertSimpleClassName(type.getCanonicalName()));
 			
@@ -83,6 +85,48 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 			}
 			
 			return retrieveRelations(otherTableName, mapField, getID(), (Class<? extends Entity>) type);
+		} else if (manyToManyAnnotation != null) {
+			if (method.getReturnType().isArray() && interfaceIneritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
+				String manyTable = manyToManyAnnotation.table();
+				if (manyTable.equals("")) {
+					manyTable = getManyRelationTable((Class<? extends Entity>) method.getReturnType().getComponentType());
+				}
+				
+				String relateSelf = manyToManyAnnotation.relateSelf();
+				if (relateSelf.equals("")) {
+					relateSelf = getManyRelationField(type);
+				}
+				
+				String relateOther = manyToManyAnnotation.relateOther();
+				if (relateOther.equals("")) {
+					relateOther = getManyRelationField((Class<? extends Entity>) method.getReturnType().getComponentType());
+				}
+				
+				return retrieveManyRelations(manyTable, relateSelf, relateOther, 
+						(Class<? extends Entity>) method.getReturnType().getComponentType());
+			} else if (method.getParameterTypes()[0].isArray() && interfaceIneritsFrom(method.getParameterTypes()[0].getComponentType(), Entity.class)
+					&& method.getReturnType().equals(Void.TYPE)) {
+				String manyTable = manyToManyAnnotation.table();
+				if (manyTable.equals("")) {
+					manyTable = getManyRelationTable((Class<? extends Entity>) method.getParameterTypes()[0].getComponentType());
+				}
+				
+				String relateSelf = manyToManyAnnotation.relateSelf();
+				if (relateSelf.equals("")) {
+					relateSelf = getManyRelationField(type);
+				}
+				
+				String relateOther = manyToManyAnnotation.relateOther();
+				if (relateOther.equals("")) {
+					relateOther = getManyRelationField((Class<? extends Entity>) method.getParameterTypes()[0].getComponentType());
+				}
+				
+				setManyRelations(manyTable, relateSelf, relateOther, (Entity[]) args[0]);
+				
+				return Void.TYPE;
+			} else {
+				throw new RuntimeException("Unrecognized many to many relationship: " + method.getName());
+			}
 		} else if (method.getName().startsWith("get")) {
 			String name = convertDowncaseName(method.getName().substring(3));
 			if (interfaceIneritsFrom(method.getReturnType(), Entity.class)) {
@@ -186,7 +230,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 	}
 	
-	private <V extends Entity> V[] retrieveRelations(String table, String relate, int id, Class<V> type) throws Throwable {
+	private <V extends Entity> V[] retrieveRelations(String table, String relate, int id, Class<V> type) throws SQLException {
 		List<V> back = new ArrayList<V>(); 
 		Connection conn = manager.getProvider().getConnection();
 		
@@ -205,6 +249,63 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 		
 		return back.toArray((V[]) Array.newInstance(type, back.size()));
+	}
+	
+	private <V extends Entity> V[] retrieveManyRelations(String tableRelate, String relateSelf, String relateOther, Class<V> type) throws SQLException {
+		List<V> back = new ArrayList<V>();
+		Connection conn = manager.getProvider().getConnection();
+		
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + relateOther + " FROM " + tableRelate + " WHERE " + relateSelf + " = ?");
+			stmt.setInt(1, getID());
+			
+			ResultSet res = stmt.executeQuery();
+			while (res.next()) {
+				back.add(manager.getEntity(res.getInt(relateOther), type));
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		return back.toArray((V[]) Array.newInstance(type, back.size()));
+	}
+	
+	private void setManyRelations(String tableRelate, String relateSelf, String relateOther, Entity[] values) throws SQLException {
+		Connection conn = manager.getProvider().getConnection();
+		
+		try {
+			PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + tableRelate + " WHERE " + relateSelf + " = ?");
+			stmt.setInt(1, getID());
+			
+			stmt.executeUpdate();
+			stmt.close();
+			
+			stmt = conn.prepareStatement("INSERT INTO " + tableRelate + " (" + relateSelf + "," + relateOther + ") VALUES (?,?)");
+			
+			for (Entity entity : values) {
+				stmt.setInt(1, getID());
+				stmt.setInt(2, entity.getID());
+				stmt.addBatch();
+			}
+			stmt.executeBatch();
+			
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+	}
+	
+	private String getManyRelationTable(Class<? extends Entity> typeOther) {
+		String back = convertDowncaseName(convertSimpleClassName(type.getCanonicalName())) + "To" 
+				+ convertSimpleClassName(typeOther.getCanonicalName());
+
+		return back;
+	}
+	
+	private String getManyRelationField(Class<? extends Entity> type) {
+		return convertDowncaseName(convertSimpleClassName(type.getCanonicalName())) + "ID";
 	}
 
 	private <V> V convertValue(ResultSet res, String field, Class<V> type) throws SQLException {

@@ -16,6 +16,6 @@ import java.lang.annotation.Target;
 public @interface ManyToMany {
 	String table() default "";
 	
-	String mapSelfField() default "";
-	String mapForeignField() default "";
+	String relateSelf() default "";
+	String relateOther() default "";
 }

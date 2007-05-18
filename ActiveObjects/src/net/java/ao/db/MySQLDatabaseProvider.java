@@ -18,6 +18,6 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 
 	@Override
 	protected Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-		return com.mysql.jdbc.Driver.class;
+		return (Class<? extends Driver>) Class.forName("com.mysql.jdbc.Driver");
 	}
 }

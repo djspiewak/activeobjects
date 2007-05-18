@@ -2,6 +2,7 @@ import java.util.Calendar;
 
 import net.java.ao.Accessor;
 import net.java.ao.Entity;
+import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 
 /*
@@ -26,4 +27,10 @@ public interface Test extends Entity {
 	
 	@Mutator("room")
 	public void setRoom(Room room);
+	
+	@ManyToMany(table="roomToTest")
+	public Room[] getRooms();
+
+	@ManyToMany(table="roomToTest")
+	public void setRooms(Room[] rooms);
 }
