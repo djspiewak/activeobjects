@@ -28,11 +28,12 @@ import static net.java.ao.Utilities.*;
 /**
  * @author Daniel Spiewak
  */
-public class EntityProxy<T extends Entity> implements InvocationHandler {
+class EntityProxy<T extends Entity> implements InvocationHandler {
 	private EntityManager manager;	
 	private Class<T> type;
 	
 	private Map<String, Object> cache;
+	private Connection connection = null;
 	
 	private int id;
 
@@ -43,6 +44,14 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 		cache = new HashMap<String, Object>();
 	}
 
+	Connection getConnection() {
+		return connection;
+	}
+
+	void setConnection(Connection connection) {
+		this.connection = connection;
+	}
+
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		if (method.getName().equals("setID")) {
 			setID((Integer) args[0]);
@@ -50,19 +59,17 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 			return Void.TYPE;
 		} else if (method.getName().equals("getID")) {
 			return getID();
+		} else if (method.getName().equals("getTableName")) {
+			return getTableName(type);
 		} else if (method.getName().equals("hashCode")) {
 			return hashCodeImpl();
 		} else if (method.getName().equals("equals")) {
-			return equalsImpl(proxy, args[0]);
+			return equalsImpl((Entity) proxy, args[0]);
 		} else if (method.getName().equals("toString")) {
 			return toStringImpl();
 		}
 
-		String tableName = convertDowncaseName(convertSimpleClassName(type.getCanonicalName()));
-		
-		if (type.getAnnotation(Table.class) != null) {
-			tableName = type.getAnnotation(Table.class).value();
-		}
+		String tableName = getTableName(type);
 		
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
@@ -76,8 +83,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType());
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
 				&& interfaceIneritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
-			Class<?> type = method.getReturnType().getComponentType();
-			String otherTableName = convertDowncaseName(convertSimpleClassName(type.getCanonicalName()));
+			String otherTableName = getTableName((Class<? extends Entity>) method.getReturnType().getComponentType());
 			
 			String mapField = oneToManyAnnotation.value();
 			if (mapField.equals("")) {
@@ -161,17 +167,51 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 	public void setID(int id) {
 		this.id = id;
 	}
-
-	public int hashCodeImpl() {
-		return hashCode();
+	
+	public String getTableName(Class<? extends Entity> type) {
+		String tableName = convertDowncaseName(convertSimpleClassName(type.getCanonicalName()));
+		
+		if (type.getAnnotation(Table.class) != null) {
+			tableName = type.getAnnotation(Table.class).value();
+		}
+		
+		return tableName;
 	}
 
-	public boolean equalsImpl(Object proxy, Object obj) {
-		return proxy == obj;
+	public int hashCodeImpl() {
+		return (int) (new Random(getID()).nextFloat() * getID()) + getID() % (2 << 15);
+	}
+
+	public boolean equalsImpl(Entity proxy, Object obj) {
+		if (proxy == obj) {
+			return true;
+		}
+		
+		if (obj instanceof Entity) {
+			Entity entity = (Entity) obj;
+			
+			return entity.getID() == proxy.getID() && entity.getTableName().equals(proxy.getTableName());
+		}
+		
+		return false;
 	}
 
 	public String toStringImpl() {
-		return "";
+		return getTableName(type) + " {id = " + getID() + "}";
+	}
+	
+	private Connection getConnectionImpl() throws SQLException {
+		if (connection == null) {
+			return manager.getProvider().getConnection();
+		} else {
+			return connection;
+		}
+	}
+	
+	private void closeConnectionImpl(Connection conn) throws SQLException {
+		if (this.connection == null) {
+			conn.close();
+		}
 	}
 
 	private <V> V invokeGetter(int id, String table, String name, Class<V> type) throws Throwable {
@@ -180,7 +220,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 		
 		V back = null;
-		Connection conn = manager.getProvider().getConnection();
+		Connection conn = getConnectionImpl();
 		
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT " + name + " FROM " + table + " WHERE id = ?");
@@ -193,7 +233,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 			res.close();
 			stmt.close();
 		} finally {
-			conn.close();
+			closeConnectionImpl(conn);
 		}
 
 		if (back != null) {
@@ -206,7 +246,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
 		cache.put(name, value);
 		
-		Connection conn = manager.getProvider().getConnection();
+		Connection conn = getConnectionImpl();
 		try {
 			String sql = "UPDATE " + table + " SET " + name + " = ? WHERE id = ?";
 
@@ -226,13 +266,13 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 
 			stmt.close();
 		} finally {
-			conn.close();
+			closeConnectionImpl(conn);
 		}
 	}
 	
 	private <V extends Entity> V[] retrieveRelations(String table, String relate, int id, Class<V> type) throws SQLException {
 		List<V> back = new ArrayList<V>(); 
-		Connection conn = manager.getProvider().getConnection();
+		Connection conn = getConnectionImpl();
 		
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + table + " WHERE " + relate + " = ?");
@@ -245,7 +285,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 			res.close();
 			stmt.close();
 		} finally {
-			conn.close();
+			closeConnectionImpl(conn);
 		}
 		
 		return back.toArray((V[]) Array.newInstance(type, back.size()));
@@ -253,7 +293,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 	
 	private <V extends Entity> V[] retrieveManyRelations(String tableRelate, String relateSelf, String relateOther, Class<V> type) throws SQLException {
 		List<V> back = new ArrayList<V>();
-		Connection conn = manager.getProvider().getConnection();
+		Connection conn = getConnectionImpl();
 		
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT " + relateOther + " FROM " + tableRelate + " WHERE " + relateSelf + " = ?");
@@ -266,14 +306,14 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 			res.close();
 			stmt.close();
 		} finally {
-			conn.close();
+			closeConnectionImpl(conn);
 		}
 		
 		return back.toArray((V[]) Array.newInstance(type, back.size()));
 	}
 	
 	private void setManyRelations(String tableRelate, String relateSelf, String relateOther, Entity[] values) throws SQLException {
-		Connection conn = manager.getProvider().getConnection();
+		Connection conn = getConnectionImpl();
 		
 		try {
 			PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + tableRelate + " WHERE " + relateSelf + " = ?");
@@ -293,7 +333,7 @@ public class EntityProxy<T extends Entity> implements InvocationHandler {
 			
 			stmt.close();
 		} finally {
-			conn.close();
+			closeConnectionImpl(conn);
 		}
 	}
 	

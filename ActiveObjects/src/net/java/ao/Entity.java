@@ -9,4 +9,6 @@ package net.java.ao;
 public interface Entity {
 	public int getID();
 	public void setID(int id);
+	
+	public String getTableName();
 }

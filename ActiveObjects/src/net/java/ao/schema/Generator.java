@@ -3,6 +3,10 @@
  */
 package net.java.ao.schema;
 
+import static net.java.ao.Utilities.convertDowncaseName;
+import static net.java.ao.Utilities.convertSimpleClassName;
+import static net.java.ao.Utilities.interfaceIneritsFrom;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -15,7 +19,6 @@ import java.util.List;
 
 import net.java.ao.Accessor;
 import net.java.ao.Entity;
-import net.java.ao.EntityProxy;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 
@@ -25,8 +28,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-
-import static net.java.ao.Utilities.*;
 
 /**
  * @author Daniel Spiewak
