@@ -6,7 +6,7 @@ package net.java.ao.schema.task;
 /**
  * @author Daniel Spiewak
  */
-public class Entity {
+class Entity {
 	private String text = "";
 	
 	public void addText(String text) {
