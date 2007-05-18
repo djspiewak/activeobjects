@@ -3,6 +3,8 @@
  */
 package net.java.ao;
 
+import net.java.ao.schema.Table;
+
 /**
  * @author Daniel Spiewak
  */
@@ -39,5 +41,15 @@ public final class Utilities {
 		}
 
 		return false;
+	}
+	
+	public static String getTableName(Class<? extends Entity> type) {
+		String tableName = convertDowncaseName(convertSimpleClassName(type.getCanonicalName()));
+		
+		if (type.getAnnotation(Table.class) != null) {
+			tableName = type.getAnnotation(Table.class).value();
+		}
+		
+		return tableName;
 	}
 }

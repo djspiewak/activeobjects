@@ -5,6 +5,7 @@ package net.java.ao;
 
 import static net.java.ao.Utilities.convertDowncaseName;
 import static net.java.ao.Utilities.convertSimpleClassName;
+import static net.java.ao.Utilities.getTableName;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Proxy;
@@ -48,6 +49,28 @@ public final class EntityManager {
 		
 		proxies.put(back, proxy);
 		cache.put(new CacheKey(id, type), back);
+		
+		return back;
+	}
+	
+	public <T extends Entity> T createEntity(Class<T> type) throws SQLException {
+		T back = null;
+		String table = getTableName(type);
+		
+		Connection conn = provider.getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + table + " () VALUES ()");
+			stmt.executeUpdate();
+			
+			ResultSet res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				 back = getEntity(res.getInt(1), type);
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
 		
 		return back;
 	}

@@ -6,6 +6,7 @@ package net.java.ao;
 import static net.java.ao.Utilities.convertDowncaseName;
 import static net.java.ao.Utilities.convertSimpleClassName;
 import static net.java.ao.Utilities.interfaceIneritsFrom;
+import static net.java.ao.Utilities.getTableName;
 
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -24,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import net.java.ao.schema.Table;
 
 /**
  * @author Daniel Spiewak
@@ -160,16 +159,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		this.id = id;
 	}
 	
-	public String getTableName(Class<? extends Entity> type) {
-		String tableName = convertDowncaseName(convertSimpleClassName(type.getCanonicalName()));
-		
-		if (type.getAnnotation(Table.class) != null) {
-			tableName = type.getAnnotation(Table.class).value();
-		}
-		
-		return tableName;
-	}
-
 	public int hashCodeImpl() {
 		return (int) (new Random(getID()).nextFloat() * getID()) + getID() % (2 << 15);
 	}
