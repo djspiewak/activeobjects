@@ -4,7 +4,6 @@
 package net.java.ao;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -47,7 +46,7 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 		
 		return back;
 	}
-
+	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
 		SupportedDBProvider provider = SupportedDBProvider.getProviderForURI(uri);
 		if (provider == null) {

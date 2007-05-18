@@ -3,22 +3,21 @@
  */
 package net.java.ao;
 
+import static net.java.ao.Utilities.convertDowncaseName;
+import static net.java.ao.Utilities.convertSimpleClassName;
+
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import net.java.ao.db.IDatabaseProvider;
-
-import static net.java.ao.Utilities.convertDowncaseName;
-import static net.java.ao.Utilities.convertSimpleClassName;
 
 /**
  * @author Daniel Spiewak
@@ -28,12 +27,14 @@ public final class EntityManager {
 	
 	private IDatabaseProvider provider;
 	
+	private Map<Entity, EntityProxy<? extends Entity>> proxies;
 	private Map<CacheKey, Entity> cache;
 	
 	private EntityManager(IDatabaseProvider provider) {
 		this.provider = provider;
 		
-		cache = new HashMap<CacheKey, Entity>();
+		proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
+		cache = new WeakHashMap<CacheKey, Entity>();
 	}
 	
 	public <T extends Entity> T getEntity(int id, Class<T> type) {
@@ -41,9 +42,11 @@ public final class EntityManager {
 			return (T) cache.get(new CacheKey(id, type));
 		}
 		
-		T back = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, new EntityProxy<T>(this, type));
+		EntityProxy<T> proxy = new EntityProxy<T>(this, type);
+		T back = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
 		back.setID(id);
 		
+		proxies.put(back, proxy);
 		cache.put(new CacheKey(id, type), back);
 		
 		return back;
@@ -77,6 +80,10 @@ public final class EntityManager {
 
 	public void setProvider(IDatabaseProvider provider) {
 		this.provider = provider;
+	}
+	
+	<T extends Entity> EntityProxy<T> getProxyForEntity(T entity) {
+		return (EntityProxy<T>) proxies.get(entity);
 	}
 
 	public static synchronized EntityManager getInstance(IDatabaseProvider provider) {

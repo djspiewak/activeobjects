@@ -3,6 +3,10 @@
  */
 package net.java.ao;
 
+import static net.java.ao.Utilities.convertDowncaseName;
+import static net.java.ao.Utilities.convertSimpleClassName;
+import static net.java.ao.Utilities.interfaceIneritsFrom;
+
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
@@ -23,8 +27,6 @@ import java.util.Random;
 
 import net.java.ao.schema.Table;
 
-import static net.java.ao.Utilities.*;
-
 /**
  * @author Daniel Spiewak
  */
@@ -33,8 +35,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private Class<T> type;
 	
 	private Map<String, Object> cache;
-	private Connection connection = null;
-	
 	private int id;
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
@@ -42,14 +42,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		this.type = type;
 		
 		cache = new HashMap<String, Object>();
-	}
-
-	Connection getConnection() {
-		return connection;
-	}
-
-	void setConnection(Connection connection) {
-		this.connection = connection;
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -201,17 +193,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 	
 	private Connection getConnectionImpl() throws SQLException {
-		if (connection == null) {
-			return manager.getProvider().getConnection();
-		} else {
-			return connection;
-		}
+		return manager.getProvider().getConnection();
 	}
 	
 	private void closeConnectionImpl(Connection conn) throws SQLException {
-		if (this.connection == null) {
-			conn.close();
-		}
+		conn.close();
 	}
 
 	private <V> V invokeGetter(int id, String table, String name, Class<V> type) throws Throwable {

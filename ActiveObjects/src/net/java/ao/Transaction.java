@@ -3,6 +3,7 @@
  */
 package net.java.ao;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
@@ -22,16 +23,20 @@ import java.sql.SQLException;
  * @author Daniel Spiewak
  */
 public abstract class Transaction {
+	private EntityManager manager;
 	
-	protected Transaction() {
+	protected Transaction(EntityManager manager) {
+		this.manager = manager;
 	}
 	
 	public void execute() throws SQLException {
+		Connection conn = manager.getProvider().getConnection();
+		conn.setAutoCommit(false);
 		
-	}
-	
-	public void rollback() throws SQLException {
+		// TODO	come up with something clever here
 		
+		conn.commit();
+		conn.close();
 	}
 	
 	public abstract void run();

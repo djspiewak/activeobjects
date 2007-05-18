@@ -11,7 +11,6 @@ import java.sql.SQLException;
  * @author Daniel Spiewak
  */
 public interface IDatabaseProvider {
-	
 	public Connection getConnection() throws SQLException;
 	
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
