@@ -16,6 +16,7 @@ import java.util.List;
 import net.java.ao.Accessor;
 import net.java.ao.Entity;
 import net.java.ao.EntityProxy;
+import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 
 import org.apache.commons.cli.CommandLine;
@@ -119,6 +120,8 @@ public class Generator {
 			} else if (accessorAnnotation != null) {
 				attributeName = accessorAnnotation.value();
 				type = method.getReturnType();
+			} else if (method.getAnnotation(ManyToMany.class) != null) {
+				continue;		// TODO	implement many-to-many relationship creation
 			} else if (method.getName().startsWith("get")) {
 				attributeName = convertDowncaseName(method.getName().substring(3));
 				type = method.getReturnType();
