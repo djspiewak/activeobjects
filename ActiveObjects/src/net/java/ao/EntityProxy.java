@@ -199,6 +199,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		cacheLock.writeLock().lock();
 		try {
+			if (DBEncapsulator.getInstance(manager.getProvider()).hasManualConnection()) {
+				cache.remove(name);
+			}
+			
 			if (cache.containsKey(name)) {
 				return (V) cache.get(name);
 			}
@@ -219,7 +223,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				closeConnectionImpl(conn);
 			}
 	
-			if (back != null) {
+			if (back != null && !DBEncapsulator.getInstance(manager.getProvider()).hasManualConnection()) {
 				cache.put(name, back);
 			}
 		} finally {
@@ -232,7 +236,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
 		cacheLock.writeLock().lock();
 		try {
-			cache.put(name, value);
+			if (DBEncapsulator.getInstance(manager.getProvider()).hasManualConnection()) {
+				cache.remove(name);
+			} else {
+				cache.put(name, value);
+			}
 		} finally {
 			cacheLock.writeLock().unlock();
 		}

@@ -46,6 +46,7 @@ public abstract class Transaction {
 				try {
 					conn = DBEncapsulator.getInstance(manager.getProvider()).getConnection();
 					conn.setAutoCommit(false);
+					
 					DBEncapsulator.getInstance().setConnection(conn);
 					
 					Transaction.this.run();
@@ -61,6 +62,7 @@ public abstract class Transaction {
 					try {
 						if (!committed) {
 							conn.rollback();
+							run();
 						}
 						
 						conn.close();

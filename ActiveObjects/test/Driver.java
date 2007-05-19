@@ -100,13 +100,14 @@ public class Driver {
 			public void run() {
 				final int DRAW = 22222;
 				
-				int balance = accounts[1].getBalance();
-				accounts[1].setBalance(balance - DRAW);
+				int balance = accounts[1].getBalance();		// should grab read lock
 				
 				try {
-					Thread.sleep(500);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 				}
+				
+				accounts[1].setBalance(balance - DRAW);		// should grab write lock (and fail)
 				
 				balance = accounts[0].getBalance();
 				accounts[0].setBalance(balance + DRAW);
@@ -120,8 +121,8 @@ public class Driver {
 				int balance = accounts[2].getBalance();
 				accounts[2].setBalance(balance - DRAW);
 				
-				balance = accounts[1].getBalance();
-				accounts[1].setBalance(balance + DRAW);
+				balance = accounts[1].getBalance();		// should grab read lock
+				accounts[1].setBalance(balance + DRAW);		// should grab write lock
 			}
 		}.executeConcurrently();
 		
