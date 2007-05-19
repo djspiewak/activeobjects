@@ -1,11 +1,9 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.util.Calendar;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
+import net.java.ao.Transaction;
 import net.java.ao.db.DBCPPoolProvider;
 import net.java.ao.db.IPoolProvider;
 
@@ -31,6 +29,7 @@ public class Driver {
 		runTestTest(manager);
 		runRoomsTest(manager);
 		runManyTest(manager);
+		runTransactionTest(manager);
 		
 		System.out.println("Total time: " + (System.currentTimeMillis() - millis));
 		
@@ -88,5 +87,50 @@ public class Driver {
 			}
 		}
 		System.out.println();
+	}
+	
+	private static void runTransactionTest(final EntityManager manager) {
+		Thread threadA = new Transaction(manager) {
+			public void run() {
+				Room room = manager.getEntity(1, Room.class);
+				
+				String name = room.getName();
+				room.setName(name + " (test1)");
+				
+				name = room.getName();
+				room.setName(name.substring(1));
+			}
+		}.executeConcurrently();
+
+		Thread threadB = new Transaction(manager) {
+			public void run() {
+				Room room = manager.getEntity(1, Room.class);
+				
+				String name = room.getName();
+				room.setName(name + " (test2)");
+				
+				name = room.getName();
+				room.setName(name.substring(2));
+			}
+		}.executeConcurrently();
+
+		Thread threadC = new Transaction(manager) {
+			public void run() {
+				Room room = manager.getEntity(1, Room.class);
+				
+				String name = room.getName();
+				room.setName(name + " (test3)");
+				
+				name = room.getName();
+				room.setName(name.substring(3));
+			}
+		}.executeConcurrently();
+		
+		try {
+			threadA.join();
+			threadB.join();
+			threadC.join();
+		} catch (InterruptedException e) {
+		}
 	}
 }

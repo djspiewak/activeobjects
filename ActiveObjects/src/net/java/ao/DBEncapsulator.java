@@ -36,10 +36,6 @@ class DBEncapsulator {
 	
 	void setConnection(Connection connection) {
 		this.connection = connection;
-		
-		if (connection == null) {
-			notifyAll();
-		}
 	}
 	
 	boolean hasManualConnection() {
@@ -47,7 +43,7 @@ class DBEncapsulator {
 	}
 	
 	public void closeConnection(Connection connection) throws SQLException {
-		if (!this.connection.equals(connection)) {
+		if (!connection.equals(this.connection)) {
 			connection.close();
 		}
 	}

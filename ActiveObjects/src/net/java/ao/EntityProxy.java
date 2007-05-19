@@ -74,7 +74,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType());
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
 				&& interfaceIneritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
-			String otherTableName = getTableName((Class<? extends Entity>) method.getReturnType().getComponentType());
+			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
+			String otherTableName = getTableName(type);
 			
 			String mapField = oneToManyAnnotation.value();
 			if (mapField.equals("")) {
