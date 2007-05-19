@@ -29,15 +29,51 @@ public abstract class Transaction {
 		this.manager = manager;
 	}
 	
-	public void execute() throws SQLException {
-		Connection conn = manager.getProvider().getConnection();
-		conn.setAutoCommit(false);
-		
-		// TODO	come up with something clever here
-		
-		conn.commit();
-		conn.close();
+	public void execute() {
+		try {
+			executeConcurrently().join();
+		} catch (InterruptedException e) {
+		}
 	}
 	
-	public abstract void run();
+	public Thread executeConcurrently() {
+		Thread back = new Thread() {
+			@Override
+			public void run() {
+				Connection conn = null;
+				boolean committed = false;
+				
+				try {
+					conn = DBEncapsulator.getInstance(manager.getProvider()).getConnection();
+					conn.setAutoCommit(false);
+					DBEncapsulator.getInstance().setConnection(conn);
+					
+					Transaction.this.run();
+					
+					conn.commit();
+					committed = true;
+				} catch (SQLException e) {
+				} finally {
+					if (conn == null) {
+						return;
+					}
+					
+					try {
+						if (!committed) {
+							conn.rollback();
+						}
+						
+						conn.close();
+						DBEncapsulator.getInstance().setConnection(null);
+					} catch (SQLException e) {
+					}
+				}
+			}
+		};
+		back.start();
+		
+		return back;
+	}
+	
+	public abstract void run() throws SQLException;
 }

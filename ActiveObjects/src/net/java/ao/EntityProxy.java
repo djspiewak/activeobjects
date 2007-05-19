@@ -182,11 +182,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 	
 	private Connection getConnectionImpl() throws SQLException {
-		return manager.getProvider().getConnection();
+		return DBEncapsulator.getInstance(manager.getProvider()).getConnection();
 	}
 	
 	private void closeConnectionImpl(Connection conn) throws SQLException {
-		conn.close();
+		DBEncapsulator.getInstance(manager.getProvider()).closeConnection(conn);
 	}
 
 	private <V> V invokeGetter(int id, String table, String name, Class<V> type) throws Throwable {

@@ -57,7 +57,7 @@ public final class EntityManager {
 		T back = null;
 		String table = getTableName(type);
 		
-		Connection conn = provider.getConnection();
+		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + table + " () VALUES ()");
 			stmt.executeUpdate();
@@ -69,7 +69,7 @@ public final class EntityManager {
 			res.close();
 			stmt.close();
 		} finally {
-			conn.close();
+			DBEncapsulator.getInstance(provider).closeConnection(conn);
 		}
 		
 		return back;
@@ -80,7 +80,7 @@ public final class EntityManager {
 		String table = convertDowncaseName(
 				convertSimpleClassName(type.getCanonicalName()));
 		
-		Connection conn = provider.getConnection();
+		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + table);
 			ResultSet res = stmt.executeQuery();
@@ -91,7 +91,7 @@ public final class EntityManager {
 			res.close();
 			stmt.close();
 		} finally {
-			conn.close();
+			DBEncapsulator.getInstance(provider).closeConnection(conn);
 		}
 		
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
