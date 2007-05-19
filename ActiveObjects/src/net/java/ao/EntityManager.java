@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.java.ao.db.IDatabaseProvider;
 
@@ -26,10 +28,13 @@ import net.java.ao.db.IDatabaseProvider;
 public final class EntityManager {
 	private static EntityManager instance;
 	
-	private IDatabaseProvider provider;
+	private volatile IDatabaseProvider provider;
 	
 	private Map<Entity, EntityProxy<? extends Entity>> proxies;
+	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
+	
 	private Map<CacheKey, Entity> cache;
+	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private EntityManager(IDatabaseProvider provider) {
 		this.provider = provider;
@@ -39,18 +44,29 @@ public final class EntityManager {
 	}
 	
 	public <T extends Entity> T getEntity(int id, Class<T> type) {
-		if (cache.containsKey(new CacheKey(id, type))) {
-			return (T) cache.get(new CacheKey(id, type));
+		cacheLock.writeLock().lock();
+		try {
+			if (cache.containsKey(new CacheKey(id, type))) {
+				return (T) cache.get(new CacheKey(id, type));
+			}
+
+			EntityProxy<T> proxy = new EntityProxy<T>(this, type);
+			T back = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
+			back.setID(id);
+
+			proxyLock.writeLock().lock();
+			try {
+				proxies.put(back, proxy);
+			} finally {
+				proxyLock.writeLock().unlock();
+			}
+			
+			cache.put(new CacheKey(id, type), back);
+			
+			return back;
+		} finally {
+			cacheLock.writeLock().unlock();
 		}
-		
-		EntityProxy<T> proxy = new EntityProxy<T>(this, type);
-		T back = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
-		back.setID(id);
-		
-		proxies.put(back, proxy);
-		cache.put(new CacheKey(id, type), back);
-		
-		return back;
 	}
 	
 	public <T extends Entity> T createEntity(Class<T> type) throws SQLException {
@@ -106,7 +122,12 @@ public final class EntityManager {
 	}
 	
 	<T extends Entity> EntityProxy<T> getProxyForEntity(T entity) {
-		return (EntityProxy<T>) proxies.get(entity);
+		proxyLock.readLock().lock();
+		try {
+			return (EntityProxy<T>) proxies.get(entity);
+		} finally {
+			proxyLock.readLock().unlock();
+		}
 	}
 
 	public static synchronized EntityManager getInstance(IDatabaseProvider provider) {

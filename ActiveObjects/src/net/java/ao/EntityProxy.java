@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Daniel Spiewak
@@ -34,6 +36,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private Class<T> type;
 	
 	private Map<String, Object> cache;
+	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+	
 	private int id;
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
@@ -191,36 +195,47 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 
 	private <V> V invokeGetter(int id, String table, String name, Class<V> type) throws Throwable {
-		if (cache.containsKey(name)) {
-			return (V) cache.get(name);
-		}
-		
 		V back = null;
-		Connection conn = getConnectionImpl();
 		
+		cacheLock.writeLock().lock();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT " + name + " FROM " + table + " WHERE id = ?");
-			stmt.setInt(1, id);
-
-			ResultSet res = stmt.executeQuery();
-			if (res.next()) {
-				back = convertValue(res, name, type);
+			if (cache.containsKey(name)) {
+				return (V) cache.get(name);
 			}
-			res.close();
-			stmt.close();
+			
+			Connection conn = getConnectionImpl();
+			
+			try {
+				PreparedStatement stmt = conn.prepareStatement("SELECT " + name + " FROM " + table + " WHERE id = ?");
+				stmt.setInt(1, id);
+	
+				ResultSet res = stmt.executeQuery();
+				if (res.next()) {
+					back = convertValue(res, name, type);
+				}
+				res.close();
+				stmt.close();
+			} finally {
+				closeConnectionImpl(conn);
+			}
+	
+			if (back != null) {
+				cache.put(name, back);
+			}
 		} finally {
-			closeConnectionImpl(conn);
-		}
-
-		if (back != null) {
-			cache.put(name, back);
+			cacheLock.writeLock().unlock();
 		}
 		
 		return back;
 	}
 
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
-		cache.put(name, value);
+		cacheLock.writeLock().lock();
+		try {
+			cache.put(name, value);
+		} finally {
+			cacheLock.writeLock().unlock();
+		}
 		
 		Connection conn = getConnectionImpl();
 		try {
