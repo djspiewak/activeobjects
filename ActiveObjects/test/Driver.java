@@ -89,47 +89,45 @@ public class Driver {
 		System.out.println();
 	}
 	
-	private static void runTransactionTest(final EntityManager manager) {
+	private static void runTransactionTest(final EntityManager manager) throws SQLException {
+		final Account[] accounts = manager.getAllEntities(Account.class);
+		
+		accounts[0].setBalance(12345);
+		accounts[1].setBalance(54321);
+		accounts[2].setBalance(11111);
+		
 		Thread threadA = new Transaction(manager) {
 			public void run() {
-				Room room = manager.getEntity(1, Room.class);
+				final int DRAW = 22222;
 				
-				String name = room.getName();
-				room.setName(name + " (test1)");
+				int balance = accounts[1].getBalance();
+				accounts[1].setBalance(balance - DRAW);
 				
-				name = room.getName();
-				room.setName(name.substring(1));
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+				}
+				
+				balance = accounts[0].getBalance();
+				accounts[0].setBalance(balance + DRAW);
 			}
 		}.executeConcurrently();
-
+		
 		Thread threadB = new Transaction(manager) {
 			public void run() {
-				Room room = manager.getEntity(1, Room.class);
+				final int DRAW = 11111;
 				
-				String name = room.getName();
-				room.setName(name + " (test2)");
+				int balance = accounts[2].getBalance();
+				accounts[2].setBalance(balance - DRAW);
 				
-				name = room.getName();
-				room.setName(name.substring(2));
-			}
-		}.executeConcurrently();
-
-		Thread threadC = new Transaction(manager) {
-			public void run() {
-				Room room = manager.getEntity(1, Room.class);
-				
-				String name = room.getName();
-				room.setName(name + " (test3)");
-				
-				name = room.getName();
-				room.setName(name.substring(3));
+				balance = accounts[1].getBalance();
+				accounts[1].setBalance(balance + DRAW);
 			}
 		}.executeConcurrently();
 		
 		try {
 			threadA.join();
 			threadB.join();
-			threadC.join();
 		} catch (InterruptedException e) {
 		}
 	}
