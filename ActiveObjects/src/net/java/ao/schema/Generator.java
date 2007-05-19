@@ -77,7 +77,7 @@ public class Generator {
 		}
 		parsed.add(clazz);
 		
-		StringBuffer sql = new StringBuffer();
+		StringBuilder sql = new StringBuilder();
 		String sqlName = convertDowncaseName(convertSimpleClassName(clazz.getName()));
 		
 		if (clazz.getAnnotation(Table.class) != null) {
@@ -104,7 +104,7 @@ public class Generator {
 	}
 	
 	private static String parseFields(Class<? extends Entity> clazz, List<Class<? extends Entity>> classes) {
-		StringBuffer sql = new StringBuffer();
+		StringBuilder sql = new StringBuilder();
 		
 		Method[] methods = clazz.getDeclaredMethods();
 		List<String> attributes = new LinkedList<String>();
