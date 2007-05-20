@@ -91,14 +91,14 @@ public final class EntityManager {
 		return back;
 	}
 	
-	public <T extends Entity> T[] getAllEntities(Class<T> type) throws SQLException {
+	public <T extends Entity> T[] find(Class<T> type, String criteria) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		String table = convertDowncaseName(
 				convertSimpleClassName(type.getCanonicalName()));
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + table);
+			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + table + (criteria != null ? " WHERE " + criteria : ""));
 			ResultSet res = stmt.executeQuery();
 			
 			while (res.next()) {
@@ -111,6 +111,10 @@ public final class EntityManager {
 		}
 		
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
+	}
+	
+	public <T extends Entity> T[] find(Class<T> type) throws SQLException {
+		return find(type, null);
 	}
 
 	public IDatabaseProvider getProvider() {

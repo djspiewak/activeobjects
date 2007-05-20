@@ -38,7 +38,7 @@ public class Driver {
 	
 	private static void runTestTest(EntityManager manager) throws SQLException {
 		DateFormat format = DateFormat.getDateInstance(DateFormat.MEDIUM);
-		for (Test test : manager.getAllEntities(Test.class)) {
+		for (Test test : manager.find(Test.class)) {
 			System.out.print("id = " + test.getID() + ", ");
 			System.out.print("name = " + test.getName() + ", ");
 			System.out.print("age = " + test.getAge() + ", ");
@@ -57,7 +57,7 @@ public class Driver {
 	}
 	
 	private static void runRoomsTest(EntityManager manager) throws SQLException {
-		for (Room room : manager.getAllEntities(Room.class)) {
+		for (Room room : manager.find(Room.class)) {
 			System.out.print(room.getName() + " = {");
 			
 			for (Test test : room.getTests()) {
@@ -70,10 +70,10 @@ public class Driver {
 	
 	private static void runManyTest(EntityManager manager) throws SQLException {
 		Room room = manager.getEntity(1, Room.class);
-		Test[] tests = manager.getAllEntities(Test.class);
+		Test[] tests = manager.find(Test.class);
 		
 		room.setManyTests(tests);
-		tests[0].setRooms(manager.getAllEntities(Room.class));
+		tests[0].setRooms(manager.find(Room.class));
 		
 		for (Test test : tests) {
 			for (Room relatedRoom : test.getRooms()) {
@@ -90,7 +90,7 @@ public class Driver {
 	}
 	
 	private static void runTransactionTest(final EntityManager manager) throws SQLException {
-		final Account[] accounts = manager.getAllEntities(Account.class);
+		final Account[] accounts = manager.find(Account.class);
 		
 		accounts[0].setBalance(12345);
 		accounts[1].setBalance(54321);
