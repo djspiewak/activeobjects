@@ -69,7 +69,7 @@ public class Driver {
 	}
 	
 	private static void runManyTest(EntityManager manager) throws SQLException {
-		Room room = manager.getEntity(1, Room.class);
+		Room room = manager.getEntity(Room.class, 1);
 		Test[] tests = manager.find(Test.class);
 		
 		room.setManyTests(tests);

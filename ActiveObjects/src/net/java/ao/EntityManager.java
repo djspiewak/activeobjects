@@ -43,31 +43,43 @@ public final class EntityManager {
 		cache = new WeakHashMap<CacheKey, Entity>();
 	}
 	
-	public <T extends Entity> T getEntity(int id, Class<T> type) {
-		cacheLock.writeLock().lock();
-		try {
-			T back = (T) cache.get(new CacheKey(id, type));
-			if (back != null) {
-				return back;
-			}
-
-			EntityProxy<T> proxy = new EntityProxy<T>(this, type);
-			back = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
-			back.setID(id);
-
-			proxyLock.writeLock().lock();
+	public <T extends Entity> T[] getEntity(Class<T> type, int... ids) {
+		T[] back = (T[]) Array.newInstance(type, ids.length);
+		int index = 0;
+		
+		for (int id : ids) {
+			cacheLock.writeLock().lock();
 			try {
-				proxies.put(back, proxy);
+				T entity = (T) cache.get(new CacheKey(id, type));
+				if (entity != null) {
+					back[index++] = entity;
+					continue;
+				}
+	
+				EntityProxy<T> proxy = new EntityProxy<T>(this, type);
+				entity = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
+				entity.setID(id);
+	
+				proxyLock.writeLock().lock();
+				try {
+					proxies.put(entity, proxy);
+				} finally {
+					proxyLock.writeLock().unlock();
+				}
+				
+				cache.put(new CacheKey(id, type), entity);
+				
+				back[index++] = entity;
 			} finally {
-				proxyLock.writeLock().unlock();
+				cacheLock.writeLock().unlock();
 			}
-			
-			cache.put(new CacheKey(id, type), back);
-			
-			return back;
-		} finally {
-			cacheLock.writeLock().unlock();
 		}
+		
+		return back;
+	}
+	
+	public <T extends Entity> T getEntity(Class<T> type, int id) {
+		return getEntity(type, new int[] {id})[0];
 	}
 	
 	public <T extends Entity> T createEntity(Class<T> type) throws SQLException {
@@ -81,7 +93,7 @@ public final class EntityManager {
 			
 			ResultSet res = stmt.getGeneratedKeys();
 			if (res.next()) {
-				 back = getEntity(res.getInt(1), type);
+				 back = getEntity(type, res.getInt(1));
 			}
 			res.close();
 			stmt.close();
@@ -113,7 +125,7 @@ public final class EntityManager {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(getEntity(res.getInt("prime.id"), type));
+				back.add(getEntity(type, res.getInt("prime.id")));
 			}
 			res.close();
 			stmt.close();
@@ -141,7 +153,7 @@ public final class EntityManager {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(getEntity(res.getInt(idField), type));
+				back.add(getEntity(type, res.getInt(idField)));
 			}
 			res.close();
 			stmt.close();
