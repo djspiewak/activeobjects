@@ -92,14 +92,18 @@ public final class EntityManager {
 		return back;
 	}
 	
-	public <T extends Entity> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
+	/**
+	 * The actual table name is aliased as "prime" (for use in the criteria and within the join).
+	 */
+	public <T extends Entity> T[] find(Class<T> type, String join, String criteria, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		String table = convertDowncaseName(
 				convertSimpleClassName(type.getCanonicalName()));
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + table + (criteria != null ? " WHERE " + criteria : ""));
+			PreparedStatement stmt = conn.prepareStatement("SELECT prime.id FROM " + table + " prime "
+					+ (join != null ? join : "") + (criteria != null ? " WHERE " + criteria : ""));
 			
 			if (criteria != null) {
 				for (int i = 0; i < parameters.length; i++) {
@@ -109,7 +113,7 @@ public final class EntityManager {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(getEntity(res.getInt("id"), type));
+				back.add(getEntity(res.getInt("prime.id"), type));
 			}
 			res.close();
 			stmt.close();
@@ -120,8 +124,32 @@ public final class EntityManager {
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
 	}
 	
+	public <T extends Entity> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
+		return find(type, null, criteria, parameters);
+	}
+	
 	public <T extends Entity> T[] find(Class<T> type) throws SQLException {
-		return find(type, null);
+		return find(type, null, null, (Object[]) null);
+	}
+	
+	public <T extends Entity> T[] findWithSQL(Class<T> type, String sql, String idField) throws SQLException {
+		List<T> back = new ArrayList<T>();
+		
+		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			
+			ResultSet res = stmt.executeQuery();
+			while (res.next()) {
+				back.add(getEntity(res.getInt(idField), type));
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			DBEncapsulator.getInstance(provider).closeConnection(conn);
+		}
+		
+		return back.toArray((T[]) Array.newInstance(type, back.size()));
 	}
 
 	public IDatabaseProvider getProvider() {
