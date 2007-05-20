@@ -13,13 +13,16 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import net.java.ao.Accessor;
 import net.java.ao.Entity;
+import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
+import net.java.ao.OneToMany;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -83,7 +86,7 @@ public class Generator {
 			sqlName = clazz.getAnnotation(Table.class).value();
 		}
 		
-		List<Class<? extends Entity>> classes = new ArrayList<Class<? extends Entity>>();
+		Set<Class<? extends Entity>> classes = new LinkedHashSet<Class<? extends Entity>>();
 		
 		sql.append("CREATE TABLE IF NOT EXISTS ");
 		sql.append(sqlName);
@@ -102,7 +105,7 @@ public class Generator {
 		return sql.toString();
 	}
 	
-	private static String parseFields(Class<? extends Entity> clazz, List<Class<? extends Entity>> classes) {
+	private static String parseFields(Class<? extends Entity> clazz, Set<Class<? extends Entity>> classes) {
 		StringBuilder sql = new StringBuilder();
 		
 		Method[] methods = clazz.getDeclaredMethods();
@@ -111,6 +114,9 @@ public class Generator {
 		for (Method method : methods) {
 			Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 			Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
+			OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
+			ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
+			
 			String attributeName = null;
 			Class<?> type = null;
 			
@@ -120,6 +126,9 @@ public class Generator {
 			} else if (accessorAnnotation != null) {
 				attributeName = accessorAnnotation.value();
 				type = method.getReturnType();
+			} else if (oneToManyAnnotation != null) {
+			} else if (manyToManyAnnotation != null) {
+				classes.add(manyToManyAnnotation.value());
 			} else if (method.getName().startsWith("get")) {
 				attributeName = convertDowncaseName(method.getName().substring(3));
 				type = method.getReturnType();
