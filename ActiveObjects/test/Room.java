@@ -15,6 +15,6 @@ public interface Room extends Entity {
 	public Room getParent();
 	public void setParent(Room parent);
 	
-	@OneToMany("room")
+	@OneToMany
 	public Test[] getTests();
 }

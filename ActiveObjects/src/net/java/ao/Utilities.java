@@ -3,6 +3,10 @@
  */
 package net.java.ao;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.java.ao.schema.Table;
 
 /**
@@ -51,5 +55,38 @@ public final class Utilities {
 		}
 		
 		return tableName;
+	}
+	
+	public static String[] getMappingFields(Class<? extends Entity> from, Class<? extends Entity> to) { 
+		List<String> back = new ArrayList<String>();
+		
+		for (Method method : from.getMethods()) {
+			Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
+			Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
+			
+			if (accessorAnnotation != null) {
+				if (method.getReturnType().equals(to)) {
+					back.add(accessorAnnotation.value());
+				}
+			} else if (mutatorAnnotation != null) {
+				if (method.getParameterTypes()[0].equals(to)) {
+					back.add(mutatorAnnotation.value());
+				}
+			} else if (method.getName().toLowerCase().startsWith("get")) {
+				if (method.getReturnType().equals(to)) {
+					back.add(convertDowncaseName(method.getName().substring(3)));
+				}
+			} else if (method.getName().toLowerCase().startsWith("is")) {
+				if (method.getReturnType().equals(to)) {
+					back.add(convertDowncaseName(method.getName().substring(2)));
+				}
+			} else if (method.getName().toLowerCase().startsWith("set")) {
+				if (method.getParameterTypes()[0].equals(to)) {
+					back.add(convertDowncaseName(method.getName().substring(3)));
+				}
+			}
+		}
+		
+		return back.toArray(new String[back.size()]);
 	}
 }

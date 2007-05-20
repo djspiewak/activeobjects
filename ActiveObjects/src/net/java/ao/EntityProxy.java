@@ -6,6 +6,7 @@ package net.java.ao;
 import static net.java.ao.Utilities.convertDowncaseName;
 import static net.java.ao.Utilities.getTableName;
 import static net.java.ao.Utilities.interfaceIneritsFrom;
+import static net.java.ao.Utilities.getMappingFields;
 
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -79,12 +80,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getTableName(type);
 			
-			String mapField = oneToManyAnnotation.value();
-			if (mapField.equals("")) {
-				mapField = tableName + "ID";
-			}
-			
-			return retrieveRelations(otherTableName, mapField, getID(), (Class<? extends Entity>) type);
+			return retrieveRelations(otherTableName, getID(), (Class<? extends Entity>) type);
 		} else if (method.getName().startsWith("get")) {
 			String name = convertDowncaseName(method.getName().substring(3));
 			if (interfaceIneritsFrom(method.getReturnType(), Entity.class)) {
@@ -225,12 +221,27 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 	}
 	
-	private <V extends Entity> V[] retrieveRelations(String table, String relate, int id, Class<V> type) throws SQLException {
+	private <V extends Entity> V[] retrieveRelations(String table, int id, Class<V> type) throws SQLException {
 		List<V> back = new ArrayList<V>(); 
 		Connection conn = getConnectionImpl();
 		
+		String[] mapFields = getMappingFields(type, this.type);
+		
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + table + " WHERE " + relate + " = ?");
+			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.id FROM (");
+			
+			for (String field : mapFields) {
+				sql.append("SELECT id,");
+				sql.append(field);
+				sql.append(" AS mapping FROM ");
+				sql.append(table);
+				sql.append(" UNION ");
+			}
+			
+			sql.setLength(sql.length() - " UNION ".length());
+			sql.append(") a WHERE a.mapping = ?");
+			
+			PreparedStatement stmt = conn.prepareStatement(sql.toString());
 			stmt.setInt(1, id);
 			
 			ResultSet res = stmt.executeQuery();

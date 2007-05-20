@@ -1,5 +1,5 @@
 /*
- * Created on May 3, 2007
+ * Created on May 20, 2007
  */
 package net.java.ao;
 
@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface OneToMany {}
+public @interface ManyToMany {
+	Class<? extends Entity> value();
+}

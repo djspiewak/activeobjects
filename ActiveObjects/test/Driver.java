@@ -28,7 +28,7 @@ public class Driver {
 		
 		runTestTest(manager);
 		runRoomsTest(manager);
-		runTransactionTest(manager);
+//		runTransactionTest(manager);
 		
 		System.out.println("Total time: " + (System.currentTimeMillis() - millis));
 		
