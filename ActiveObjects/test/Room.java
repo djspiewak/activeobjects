@@ -1,5 +1,4 @@
 import net.java.ao.Entity;
-import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
 
 /*
@@ -18,10 +17,4 @@ public interface Room extends Entity {
 	
 	@OneToMany("room")
 	public Test[] getTests();
-	
-	@ManyToMany
-	public Test[] getManyTests();
-	
-	@ManyToMany
-	public void setManyTests(Test[] tests);
 }
