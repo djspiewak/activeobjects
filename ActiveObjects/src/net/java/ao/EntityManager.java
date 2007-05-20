@@ -168,10 +168,6 @@ public final class EntityManager {
 		return provider;
 	}
 
-	public void setProvider(IDatabaseProvider provider) {
-		this.provider = provider;
-	}
-	
 	<T extends Entity> EntityProxy<T> getProxyForEntity(T entity) {
 		proxyLock.readLock().lock();
 		try {
