@@ -74,15 +74,15 @@ public final class Utilities {
 				}
 			} else if (method.getName().toLowerCase().startsWith("get")) {
 				if (method.getReturnType().equals(to)) {
-					back.add(convertDowncaseName(method.getName().substring(3)));
+					back.add(convertDowncaseName(method.getName().substring(3)) + "ID");
 				}
 			} else if (method.getName().toLowerCase().startsWith("is")) {
 				if (method.getReturnType().equals(to)) {
-					back.add(convertDowncaseName(method.getName().substring(2)));
+					back.add(convertDowncaseName(method.getName().substring(2)) + "ID");
 				}
 			} else if (method.getName().toLowerCase().startsWith("set")) {
 				if (method.getParameterTypes()[0].equals(to)) {
-					back.add(convertDowncaseName(method.getName().substring(3)));
+					back.add(convertDowncaseName(method.getName().substring(3)) + "ID");
 				}
 			}
 		}
