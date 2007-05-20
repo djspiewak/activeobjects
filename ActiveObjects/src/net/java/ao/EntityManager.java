@@ -144,12 +144,16 @@ public final class EntityManager {
 		return find(type, null, null, (Object[]) null);
 	}
 	
-	public <T extends Entity> T[] findWithSQL(Class<T> type, String sql, String idField) throws SQLException {
+	public <T extends Entity> T[] findWithSQL(Class<T> type, String idField, String sql, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement(sql);
+			
+			for (int i = 0; i < parameters.length; i++) {
+				stmt.setObject(i + 1, parameters[i]);
+			}
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
