@@ -4,8 +4,8 @@
 package net.java.ao;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import net.java.ao.schema.Table;
 
@@ -58,7 +58,7 @@ public final class Utilities {
 	}
 	
 	public static String[] getMappingFields(Class<? extends Entity> from, Class<? extends Entity> to) { 
-		List<String> back = new ArrayList<String>();
+		Set<String> back = new LinkedHashSet<String>();
 		
 		for (Method method : from.getMethods()) {
 			Accessor accessorAnnotation = method.getAnnotation(Accessor.class);

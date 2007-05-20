@@ -69,6 +69,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
+		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 
 		if (mutatorAnnotation != null) {
 			invokeSetter(getID(), tableName, mutatorAnnotation.value(), args[0]);
@@ -80,7 +81,14 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getTableName(type);
 			
-			return retrieveRelations(otherTableName, getID(), (Class<? extends Entity>) type);
+			return retrieveRelations(otherTableName, new String[] {"id"}, getID(), (Class<? extends Entity>) type);
+		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
+				&& interfaceIneritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
+			Class<? extends Entity> throughType = manyToManyAnnotation.value();
+			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
+			String otherTableName = getTableName(throughType);
+			
+			return retrieveRelations(otherTableName, getMappingFields(throughType, type), getID(), throughType, type);
 		} else if (method.getName().startsWith("get")) {
 			String name = convertDowncaseName(method.getName().substring(3));
 			if (interfaceIneritsFrom(method.getReturnType(), Entity.class)) {
@@ -220,33 +228,49 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			closeConnectionImpl(conn);
 		}
 	}
+	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<V> type) throws SQLException {
+		return retrieveRelations(table, outMapFields, id, type, type);
+	}
 	
-	private <V extends Entity> V[] retrieveRelations(String table, int id, Class<V> type) throws SQLException {
-		List<V> back = new ArrayList<V>(); 
+	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<? extends Entity> type, 
+			Class<V> finalType) throws SQLException {
+		List<V> back = new ArrayList<V>();
 		Connection conn = getConnectionImpl();
 		
-		String[] mapFields = getMappingFields(type, this.type);
+		String[] inMapFields = getMappingFields(type, this.type);
 		
 		try {
-			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.id FROM (");
+			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.outMap FROM (");
 			
-			for (String field : mapFields) {
-				sql.append("SELECT id,");
-				sql.append(field);
-				sql.append(" AS mapping FROM ");
-				sql.append(table);
-				sql.append(" UNION ");
+			int numParams = 0;
+			for (String outMap : outMapFields) {
+				for (String inMap : inMapFields) {
+					sql.append("SELECT ");
+					sql.append(outMap);
+					sql.append(" AS outMap,");
+					sql.append(inMap);
+					sql.append(" AS inMap FROM ");
+					sql.append(table);
+					sql.append(" WHERE ");
+					sql.append(inMap);
+					sql.append(" = ? UNION ");
+					
+					numParams++;
+				}
 			}
 			
 			sql.setLength(sql.length() - " UNION ".length());
-			sql.append(") a WHERE a.mapping = ?");
+			sql.append(") a");
 			
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
-			stmt.setInt(1, id);
+			
+			for (int i = 0; i < numParams; i++) {
+				stmt.setInt(i + 1, id);
+			}
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(manager.getEntity(type, res.getInt("id")));
+				back.add(manager.getEntity(finalType, res.getInt("a.outMap")));
 			}
 			res.close();
 			stmt.close();
@@ -254,7 +278,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			closeConnectionImpl(conn);
 		}
 		
-		return back.toArray((V[]) Array.newInstance(type, back.size()));
+		return back.toArray((V[]) Array.newInstance(finalType, back.size()));
 	}
 
 	private <V> V convertValue(ResultSet res, String field, Class<V> type) throws SQLException {

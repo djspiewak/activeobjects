@@ -28,6 +28,7 @@ public class Driver {
 		
 		runTestTest(manager);
 		runRoomsTest(manager);
+		runManyTest(manager);
 //		runTransactionTest(manager);
 		
 		System.out.println("Total time: " + (System.currentTimeMillis() - millis));
@@ -61,6 +62,18 @@ public class Driver {
 			
 			for (Test test : room.getTests()) {
 				System.out.print(test.getName() + ",");
+			}
+			System.out.println("}");
+		}
+		System.out.println();
+	}
+	
+	private static void runManyTest(EntityManager manager) throws SQLException {
+		for (Test test : manager.find(Test.class)) {
+			System.out.print(test.getName() + " = {");
+			
+			for (Room room : test.getRooms()) {
+				System.out.print(room.getName() + ",");
 			}
 			System.out.println("}");
 		}
