@@ -46,12 +46,13 @@ public final class EntityManager {
 	public <T extends Entity> T getEntity(int id, Class<T> type) {
 		cacheLock.writeLock().lock();
 		try {
-			if (cache.containsKey(new CacheKey(id, type))) {
-				return (T) cache.get(new CacheKey(id, type));
+			T back = (T) cache.get(new CacheKey(id, type));
+			if (back != null) {
+				return back;
 			}
 
 			EntityProxy<T> proxy = new EntityProxy<T>(this, type);
-			T back = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
+			back = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
 			back.setID(id);
 
 			proxyLock.writeLock().lock();
