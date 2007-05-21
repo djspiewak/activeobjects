@@ -3,8 +3,6 @@
  */
 package net.java.ao;
 
-import static net.java.ao.Common.convertDowncaseName;
-import static net.java.ao.Common.convertSimpleClassName;
 import static net.java.ao.Common.getTableName;
 
 import java.lang.reflect.Array;
@@ -128,8 +126,7 @@ public final class EntityManager {
 	 */
 	public <T extends Entity> T[] find(Class<T> type, String join, String criteria, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
-		String table = convertDowncaseName(
-				convertSimpleClassName(type.getCanonicalName()));
+		String table = getTableName(type);
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
