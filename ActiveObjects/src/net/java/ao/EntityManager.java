@@ -80,13 +80,34 @@ public final class EntityManager {
 		return get(type, new int[] {id})[0];
 	}
 	
-	public <T extends Entity> T create(Class<T> type) throws SQLException {
+	public <T extends Entity> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
 		String table = getTableName(type);
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + table + " () VALUES ()");
+			StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
+			
+			for (DBParam param : params) {
+				sql.append(param.getField());
+				sql.append(',');
+			}
+			sql.setLength(sql.length() - 1);
+			
+			sql.append(") VALUES (");
+			
+			for (@SuppressWarnings("unused") DBParam param : params) {
+				sql.append("?,");
+			}
+			sql.setLength(sql.length() - 1);
+			
+			sql.append(")");
+			PreparedStatement stmt = conn.prepareStatement(sql.toString());
+			
+			for (int i = 0; i < params.length; i++) {
+				stmt.setObject(i + 1, params[i].getValue());
+			}
+			
 			stmt.executeUpdate();
 			
 			ResultSet res = stmt.getGeneratedKeys();
