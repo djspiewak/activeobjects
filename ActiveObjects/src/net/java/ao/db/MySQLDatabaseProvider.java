@@ -66,9 +66,9 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		for (DDLForeignKey key : table.getForeignKeys()) {
-			append.append("    FOREIGN KEY ");
+			append.append("    FOREIGN KEY (");
 			append.append(key.getField());
-			append.append(" RESTRICT ");
+			append.append(") REFERENCES ");
 			append.append(key.getTable());
 			append.append('(');
 			append.append(key.getForeignField());
@@ -81,7 +81,7 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		}
 		back.append(append);
 		
-		back.append(");");
+		back.append(") ENGINE=InnoDB;");
 		
 		return back.toString();
 	}
