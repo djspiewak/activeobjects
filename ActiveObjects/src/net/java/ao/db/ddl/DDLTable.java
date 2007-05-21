@@ -10,6 +10,7 @@ public class DDLTable {
 	private String name;
 	
 	private DDLField[] fields;
+	private DDLForeignKey[] foreignKeys;
 
 	public String getName() {
 		return name;
@@ -25,5 +26,13 @@ public class DDLTable {
 
 	public void setFields(DDLField[] fields) {
 		this.fields = fields;
+	}
+
+	public DDLForeignKey[] getForeignKeys() {
+		return foreignKeys;
+	}
+
+	public void setForeignKeys(DDLForeignKey[] foreignKeys) {
+		this.foreignKeys = foreignKeys;
 	}
 }

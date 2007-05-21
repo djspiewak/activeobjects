@@ -60,4 +60,8 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 		
 		return back;
 	}
+	
+	protected static String convertTypeToString(int type) {
+		return "";
+	}
 }

@@ -8,6 +8,7 @@ import java.sql.Driver;
 import java.sql.SQLException;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.db.ddl.DDLTable;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
@@ -16,9 +17,12 @@ import org.apache.commons.dbcp.BasicDataSource;
  */
 public class DBCPPoolProvider extends DatabaseProvider implements IPoolProvider {
 	private BasicDataSource ds;
+	private DatabaseProvider delegate;
 	
 	public DBCPPoolProvider(DatabaseProvider delegate) {
 		super(delegate.getURI(), delegate.getUsername(), delegate.getPassword());
+		
+		this.delegate = delegate;
 		
 		ds = new BasicDataSource();
 		try {
@@ -30,13 +34,17 @@ public class DBCPPoolProvider extends DatabaseProvider implements IPoolProvider 
 		ds.setUrl(getURI());
 	}
 	
+	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
+		return null;
+	}
+	
 	@Override
 	public Connection getConnection() throws SQLException {
 		return ds.getConnection();
 	}
 	
-	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-		return null;
+	public String render(DDLTable table) {
+		return delegate.render(table);
 	}
 
 	public void close() {

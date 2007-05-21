@@ -7,11 +7,14 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 
+import net.java.ao.db.ddl.DDLTable;
+
 /**
  * @author Daniel Spiewak
  */
 public interface IDatabaseProvider {
+	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
 	public Connection getConnection() throws SQLException;
 	
-	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
+	public String render(DDLTable table);
 }
