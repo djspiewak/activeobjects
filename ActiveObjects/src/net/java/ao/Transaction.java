@@ -45,6 +45,8 @@ public abstract class Transaction {
 				
 				try {
 					conn = DBEncapsulator.getInstance(manager.getProvider()).getConnection();
+					
+					conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 					conn.setAutoCommit(false);
 					
 					DBEncapsulator.getInstance().setConnection(conn);
@@ -64,6 +66,8 @@ public abstract class Transaction {
 							conn.rollback();
 							run();
 						}
+						
+						conn.setAutoCommit(true);
 						
 						conn.close();
 						DBEncapsulator.getInstance().setConnection(null);
