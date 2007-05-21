@@ -270,6 +270,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
+				if (finalType.equals(this.type) && res.getInt("a.outMap") == id) {
+					continue;
+				}
+				
 				back.add(manager.get(finalType, res.getInt("a.outMap")));
 			}
 			res.close();
