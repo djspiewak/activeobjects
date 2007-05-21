@@ -12,7 +12,7 @@ import net.java.ao.schema.Table;
 /**
  * @author Daniel Spiewak
  */
-public final class Utilities {
+public final class Common {
 	public static String convertSimpleClassName(String name) {
 		String[] array = name.split("\\.");
 		return array[array.length - 1];

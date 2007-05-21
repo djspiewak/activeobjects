@@ -3,8 +3,8 @@
  */
 package net.java.ao.schema;
 
-import static net.java.ao.Utilities.convertDowncaseName;
-import static net.java.ao.Utilities.interfaceIneritsFrom;
+import static net.java.ao.Common.convertDowncaseName;
+import static net.java.ao.Common.interfaceIneritsFrom;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
-import net.java.ao.Utilities;
+import net.java.ao.Common;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 
@@ -47,7 +47,6 @@ public class Generator {
 	private static List<Class<? extends Entity>> parsed = new LinkedList<Class<? extends Entity>>();
 	
 	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException {
-		
 		System.out.println(generate(args));
 	}
 	
@@ -99,7 +98,7 @@ public class Generator {
 		parsed.add(clazz);
 		
 		StringBuilder sql = new StringBuilder();
-		String sqlName = Utilities.getTableName(clazz);
+		String sqlName = Common.getTableName(clazz);
 		
 		Set<Class<? extends Entity>> classes = new LinkedHashSet<Class<? extends Entity>>();
 		

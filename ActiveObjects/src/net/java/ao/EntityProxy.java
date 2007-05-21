@@ -3,10 +3,10 @@
  */
 package net.java.ao;
 
-import static net.java.ao.Utilities.convertDowncaseName;
-import static net.java.ao.Utilities.getTableName;
-import static net.java.ao.Utilities.interfaceIneritsFrom;
-import static net.java.ao.Utilities.getMappingFields;
+import static net.java.ao.Common.convertDowncaseName;
+import static net.java.ao.Common.getTableName;
+import static net.java.ao.Common.interfaceIneritsFrom;
+import static net.java.ao.Common.getMappingFields;
 
 import java.io.InputStream;
 import java.lang.reflect.Array;

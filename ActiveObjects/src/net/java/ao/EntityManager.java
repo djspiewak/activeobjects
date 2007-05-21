@@ -3,9 +3,9 @@
  */
 package net.java.ao;
 
-import static net.java.ao.Utilities.convertDowncaseName;
-import static net.java.ao.Utilities.convertSimpleClassName;
-import static net.java.ao.Utilities.getTableName;
+import static net.java.ao.Common.convertDowncaseName;
+import static net.java.ao.Common.convertSimpleClassName;
+import static net.java.ao.Common.getTableName;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Proxy;
