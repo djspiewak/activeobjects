@@ -10,6 +10,8 @@ import java.sql.Types;
 
 import net.java.ao.db.IDatabaseProvider;
 import net.java.ao.db.SupportedDBProvider;
+import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
@@ -46,6 +48,18 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 		Connection back = DriverManager.getConnection(getURI(), getUsername(), getPassword());
 		
 		return back;
+	}
+	
+	protected void parseForeignKeys(StringBuilder append, DDLTable table) {
+		for (DDLForeignKey key : table.getForeignKeys()) {
+			append.append("    FOREIGN KEY (");
+			append.append(key.getField());
+			append.append(") REFERENCES ");
+			append.append(key.getTable());
+			append.append('(');
+			append.append(key.getForeignField());
+			append.append("),\n");
+		}
 	}
 	
 	protected String convertTypeToString(int type) {
@@ -128,7 +142,7 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 		
 		return null;
 	}
-
+	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
 		SupportedDBProvider provider = SupportedDBProvider.getProviderForURI(uri);
 		if (provider == null) {

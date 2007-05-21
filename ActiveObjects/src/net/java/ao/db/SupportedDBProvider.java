@@ -12,7 +12,8 @@ import net.java.ao.DatabaseProvider;
  * @author Daniel Spiewak
  */
 public enum SupportedDBProvider {
-	MYSQL("jdbc:mysql", MySQLDatabaseProvider.class);
+	MYSQL("jdbc:mysql", MySQLDatabaseProvider.class),
+	DERBY("jdbc:derby", EmbeddedDerbyDatabaseProvider.class);
 	
 	private String prefix;
 	private Class<? extends DatabaseProvider> type;
