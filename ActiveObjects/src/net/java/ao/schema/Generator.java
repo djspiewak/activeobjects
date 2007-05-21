@@ -27,8 +27,8 @@ import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
 import net.java.ao.Utilities;
-import net.java.ao.db.ddl.DDLField;
-import net.java.ao.db.ddl.DDLTable;
+import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLTable;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;

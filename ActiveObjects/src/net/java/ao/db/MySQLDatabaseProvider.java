@@ -6,9 +6,9 @@ package net.java.ao.db;
 import java.sql.Driver;
 
 import net.java.ao.DatabaseProvider;
-import net.java.ao.db.ddl.DDLField;
-import net.java.ao.db.ddl.DDLForeignKey;
-import net.java.ao.db.ddl.DDLTable;
+import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak

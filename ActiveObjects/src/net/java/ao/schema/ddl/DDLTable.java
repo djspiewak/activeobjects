@@ -1,7 +1,7 @@
 /*
  * Created on May 20, 2007
  */
-package net.java.ao.db.ddl;
+package net.java.ao.schema.ddl;
 
 /**
  * @author Daniel Spiewak
