@@ -20,7 +20,7 @@
 		with either an existing database schema, or it can auto-generate the database schema 
 		from the user-specified entity interfaces.</p>
 		
-		<h3>Example</h3>
+		<h4>Example</h4>
 		
 		<p>The first step in building an application which uses ActiveObjects is to define the
 		entities.  This is done in pure Java (no XML configuration).  Tthe entiy definitions are
@@ -77,12 +77,12 @@ public interface PersonToPerson {
 	familyID INTEGER,
 	PRIMARY KEY (id),
 	FOREIGN KEY (familyID) REFERENCES family(id)
-);
+) ENGINE=InnoDB;
 CREATE TABLE family (
 	id INTEGER NOT NULL AUTO_INCREMENT,
 	name VARCHAR(45),
 	PRIMARY KEY (id)
-);
+) ENGINE=InnoDB;
 CREATE TABLE personToPerson (
 	id INTEGER NOT NULL AUTO_INCREMENT,
 	personAID INTEGER,
@@ -90,7 +90,7 @@ CREATE TABLE personToPerson (
 	PRIMARY KEY (id),
 	FOREIGN KEY (personAID) REFERENCES person (id),
 	FOREIGN KEY (personBID) REFERENCES person (id)
-);</pre>
+) ENGINE=InnoDB;</pre>
 		
 		<p>You'll notice the usage of convention to determine field names, primary and foreign keys,
 		etc...</p>
