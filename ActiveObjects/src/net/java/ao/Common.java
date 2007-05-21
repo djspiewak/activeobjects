@@ -89,4 +89,58 @@ public final class Common {
 		
 		return back.toArray(new String[back.size()]);
 	}
+	
+	public static String getAttributeNameFromMethod(Method method) {
+		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
+		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
+		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
+		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
+		
+		String attributeName = null;
+		
+		if (mutatorAnnotation != null) {
+			attributeName = mutatorAnnotation.value();
+		} else if (accessorAnnotation != null) {
+			attributeName = accessorAnnotation.value();
+		} else if (oneToManyAnnotation != null) {
+			return null;
+		} else if (manyToManyAnnotation != null) {
+			return null;
+		} else if (method.getName().startsWith("get")) {
+			attributeName = convertDowncaseName(method.getName().substring(3)) + "ID";
+		} else if (method.getName().startsWith("is")) {
+			attributeName = convertDowncaseName(method.getName().substring(2)) + "ID";
+		} else if (method.getName().startsWith("set")) {
+			attributeName = convertDowncaseName(method.getName().substring(3)) + "ID";
+		}
+		
+		return attributeName;
+	}
+	
+	public static Class<?> getAttributeTypeFromMethod(Method method) {
+		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
+		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
+		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
+		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
+		
+		Class<?> type = null;
+		
+		if (mutatorAnnotation != null) {
+			type = method.getParameterTypes()[0];
+		} else if (accessorAnnotation != null) {
+			type = method.getReturnType();
+		} else if (oneToManyAnnotation != null) {
+			return null;
+		} else if (manyToManyAnnotation != null) {
+			return null;
+		} else if (method.getName().startsWith("get")) {
+			type = method.getReturnType();
+		} else if (method.getName().startsWith("is")) {
+			type = method.getReturnType();
+		} else if (method.getName().startsWith("set")) {
+			type = method.getParameterTypes()[0];
+		}
+		
+		return type;
+	}
 }

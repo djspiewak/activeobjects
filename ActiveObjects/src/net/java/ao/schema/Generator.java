@@ -3,7 +3,9 @@
  */
 package net.java.ao.schema;
 
-import static net.java.ao.Common.convertDowncaseName;
+import static net.java.ao.Common.getAttributeNameFromMethod;
+import static net.java.ao.Common.getAttributeTypeFromMethod;
+import static net.java.ao.Common.getTableName;
 import static net.java.ao.Common.interfaceIneritsFrom;
 
 import java.io.File;
@@ -20,14 +22,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import net.java.ao.Accessor;
+import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
-import net.java.ao.Mutator;
-import net.java.ao.OneToMany;
-import net.java.ao.Common;
 import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 
 import org.apache.commons.cli.CommandLine;
@@ -106,6 +106,7 @@ public class Generator {
 		table.setName(sqlName);
 		
 		table.setFields(parseFields(clazz, classes));
+		table.setForeignKeys(parseForeignKeys(clazz));
 		
 		sql.append(provider.render(table));
 		sql.append('\n');
@@ -120,7 +121,6 @@ public class Generator {
 	private static DDLField[] parseFields(Class<? extends Entity> clazz, Set<Class<? extends Entity>> classes) {
 		List<DDLField> fields = new ArrayList<DDLField>();
 		
-		Method[] methods = clazz.getDeclaredMethods();
 		List<String> attributes = new LinkedList<String>();
 		
 		DDLField field = new DDLField();
@@ -133,33 +133,14 @@ public class Generator {
 		
 		fields.add(field);
 		
-		for (Method method : methods) {
-			Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
-			Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
-			OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
+		for (Method method : clazz.getDeclaredMethods()) {
 			ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 			
-			String attributeName = null;
-			Class<?> type = null;
+			String attributeName = getAttributeNameFromMethod(method);
+			Class<?> type = getAttributeTypeFromMethod(method);
 			
-			if (mutatorAnnotation != null) {
-				attributeName = mutatorAnnotation.value();
-				type = method.getParameterTypes()[0];
-			} else if (accessorAnnotation != null) {
-				attributeName = accessorAnnotation.value();
-				type = method.getReturnType();
-			} else if (oneToManyAnnotation != null) {
-			} else if (manyToManyAnnotation != null) {
+			if (manyToManyAnnotation != null) {
 				classes.add(manyToManyAnnotation.value());
-			} else if (method.getName().startsWith("get")) {
-				attributeName = convertDowncaseName(method.getName().substring(3));
-				type = method.getReturnType();
-			} else if (method.getName().startsWith("is")) {
-				attributeName = convertDowncaseName(method.getName().substring(2));
-				type = method.getReturnType();
-			} else if (method.getName().startsWith("set")) {
-				attributeName = convertDowncaseName(method.getName().substring(3));
-				type = method.getParameterTypes()[0];
 			}
 			
 			if (attributeName != null && type != null) {
@@ -179,10 +160,6 @@ public class Generator {
 					scale = sqlTypeAnnotation.scale();
 				} else if (interfaceIneritsFrom(type, Entity.class)) {
 					classes.add((Class<? extends Entity>) type);
-					
-					if (mutatorAnnotation == null && accessorAnnotation == null) {
-						attributeName += "ID";
-					}
 					
 					sqlType = Types.INTEGER;
 				} else if (type.isArray()) {
@@ -220,5 +197,32 @@ public class Generator {
 		}
 		
 		return fields.toArray(new DDLField[fields.size()]);
+	}
+	
+	private static DDLForeignKey[] parseForeignKeys(Class<? extends Entity> clazz) {
+		Set<DDLForeignKey> back = new LinkedHashSet<DDLForeignKey>();
+		
+		for (Method method : clazz.getMethods()) {
+			String attributeName = getAttributeNameFromMethod(method);
+			Class<?> type =  getAttributeTypeFromMethod(method);
+			
+			if (type != null && attributeName != null && interfaceIneritsFrom(type, Entity.class)) {
+				DDLForeignKey key = new DDLForeignKey();
+				
+				key.setField(attributeName);
+				key.setTable(getTableName((Class<? extends Entity>) type));
+				key.setForeignField("id");
+				
+				back.add(key);
+			}
+		}
+		
+		for (Class<?> superInterface : clazz.getInterfaces()) {
+			if (!superInterface.equals(Entity.class)) {
+				back.addAll(Arrays.asList(parseForeignKeys((Class<? extends Entity>) superInterface)));
+			}
+		}
+		
+		return back.toArray(new DDLForeignKey[back.size()]);
 	}
 }
