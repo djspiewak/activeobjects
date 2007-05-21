@@ -43,7 +43,7 @@ public final class EntityManager {
 		cache = new WeakHashMap<CacheKey, Entity>();
 	}
 	
-	public <T extends Entity> T[] getEntity(Class<T> type, int... ids) {
+	public <T extends Entity> T[] get(Class<T> type, int... ids) {
 		T[] back = (T[]) Array.newInstance(type, ids.length);
 		int index = 0;
 		
@@ -78,11 +78,11 @@ public final class EntityManager {
 		return back;
 	}
 	
-	public <T extends Entity> T getEntity(Class<T> type, int id) {
-		return getEntity(type, new int[] {id})[0];
+	public <T extends Entity> T get(Class<T> type, int id) {
+		return get(type, new int[] {id})[0];
 	}
 	
-	public <T extends Entity> T createEntity(Class<T> type) throws SQLException {
+	public <T extends Entity> T create(Class<T> type) throws SQLException {
 		T back = null;
 		String table = getTableName(type);
 		
@@ -93,7 +93,7 @@ public final class EntityManager {
 			
 			ResultSet res = stmt.getGeneratedKeys();
 			if (res.next()) {
-				 back = getEntity(type, res.getInt(1));
+				 back = get(type, res.getInt(1));
 			}
 			res.close();
 			stmt.close();
@@ -125,7 +125,7 @@ public final class EntityManager {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(getEntity(type, res.getInt("prime.id")));
+				back.add(get(type, res.getInt("prime.id")));
 			}
 			res.close();
 			stmt.close();
@@ -157,7 +157,7 @@ public final class EntityManager {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(getEntity(type, res.getInt(idField)));
+				back.add(get(type, res.getInt(idField)));
 			}
 			res.close();
 			stmt.close();

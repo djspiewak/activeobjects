@@ -270,7 +270,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(manager.getEntity(finalType, res.getInt("a.outMap")));
+				back.add(manager.get(finalType, res.getInt("a.outMap")));
 			}
 			res.close();
 			stmt.close();
@@ -312,7 +312,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} else if (type.equals(InputStream.class)) {
 			return (V) res.getBlob(field).getBinaryStream();
 		} else if (interfaceIneritsFrom(type, Entity.class)) {
-			return (V) manager.getEntity((Class<? extends Entity>) type, res.getInt(field));
+			return (V) manager.get((Class<? extends Entity>) type, res.getInt(field));
 		} else {
 			throw new RuntimeException("Unrecognized type: " + type.toString());
 		}
