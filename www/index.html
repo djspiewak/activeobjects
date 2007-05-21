@@ -141,5 +141,11 @@ Person[] inFamilyOver21 = manager.find(Person.class, "age >= ? AND familyID = ?"
 		of the schema.  The only place where this rule is broken is in the <code>find</code>
 		methods, which are designed to leverage the power of SQL, rather than to
 		completely shelter the developer.</p>
+		
+		<p>One particular detail which is worth noting, is that at no point do we call
+		a <code>update()</code> or a <code>commit()</code> method.  All of the
+		changes we make to the entity instances are committed immediately to the
+		database.  While ActiveObjects does support transactions, and thus delayed
+		commit, it does not <i>force</i> this manual committing.</p>
 	</body>
 </html>
