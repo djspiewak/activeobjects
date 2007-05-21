@@ -56,7 +56,7 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 			if (field.isPrimaryKey()) {
 				append.append("    PRIMARY KEY (");
 				append.append(field.getName());
-				append.append(",\n");
+				append.append("),\n");
 			}
 			
 			back.append(",\n");
@@ -72,7 +72,10 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 			append.append("),\n");
 		}
 		
-		append.setLength(append.length() - ",\n".length());
+		if (append.length() > 0) {
+			append.setLength(append.length() - ",\n".length());
+			append.append('\n');
+		}
 		back.append(append);
 		
 		back.append(");");

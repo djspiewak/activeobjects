@@ -9,8 +9,8 @@ package net.java.ao.db.ddl;
 public class DDLTable {
 	private String name;
 	
-	private DDLField[] fields;
-	private DDLForeignKey[] foreignKeys;
+	private DDLField[] fields = {};
+	private DDLForeignKey[] foreignKeys = {};
 
 	public String getName() {
 		return name;

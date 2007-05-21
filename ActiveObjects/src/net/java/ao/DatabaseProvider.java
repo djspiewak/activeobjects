@@ -98,7 +98,7 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 				return "FLOAT";
 				
 			case Types.INTEGER:
-				return "FLOAT";
+				return "INTEGER";
 				
 			case Types.LONGVARBINARY:
 				return "LONGVARBINARY";

@@ -10,7 +10,6 @@ import java.util.List;
 
 import net.java.ao.schema.Generator;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.tools.ant.Task;
 
 /**
@@ -36,8 +35,6 @@ public class SchemaGeneratorTask extends Task {
 			FileWriter writer = new FileWriter(dest);
 			writer.append(Generator.generate(copy.toArray(new String[copy.size()])));
 			writer.close();
-		} catch (ParseException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
