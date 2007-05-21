@@ -6,7 +6,7 @@ package net.java.ao.schema;
 import static net.java.ao.Common.getAttributeNameFromMethod;
 import static net.java.ao.Common.getAttributeTypeFromMethod;
 import static net.java.ao.Common.getTableName;
-import static net.java.ao.Common.interfaceIneritsFrom;
+import static net.java.ao.Common.interfaceInheritsFrom;
 
 import java.io.File;
 import java.io.IOException;
@@ -158,7 +158,7 @@ public class Generator {
 					sqlType = sqlTypeAnnotation.value();
 					precision = sqlTypeAnnotation.precision();
 					scale = sqlTypeAnnotation.scale();
-				} else if (interfaceIneritsFrom(type, Entity.class)) {
+				} else if (interfaceInheritsFrom(type, Entity.class)) {
 					classes.add((Class<? extends Entity>) type);
 					
 					sqlType = Types.INTEGER;
@@ -206,7 +206,7 @@ public class Generator {
 			String attributeName = getAttributeNameFromMethod(method);
 			Class<?> type =  getAttributeTypeFromMethod(method);
 			
-			if (type != null && attributeName != null && interfaceIneritsFrom(type, Entity.class)) {
+			if (type != null && attributeName != null && interfaceInheritsFrom(type, Entity.class)) {
 				DDLForeignKey key = new DDLForeignKey();
 				
 				key.setField(attributeName);

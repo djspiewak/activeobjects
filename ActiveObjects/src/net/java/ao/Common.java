@@ -32,14 +32,14 @@ public final class Common {
 		return back;
 	}
 
-	public static boolean interfaceIneritsFrom(Class<?> type, Class<?> superType) {
+	public static boolean interfaceInheritsFrom(Class<?> type, Class<?> superType) {
 		if (type.equals(superType)) {
 			return true;
 		}
 
 		Class<?>[] interfaces = type.getInterfaces();
 		for (Class<?> t : interfaces) {
-			if (interfaceIneritsFrom(t, superType)) {
+			if (interfaceInheritsFrom(t, superType)) {
 				return true;
 			}
 		}
@@ -110,19 +110,19 @@ public final class Common {
 		} else if (method.getName().startsWith("get")) {
 			attributeName = convertDowncaseName(method.getName().substring(3));
 			
-			if (interfaceIneritsFrom(type, Entity.class)) {
+			if (interfaceInheritsFrom(type, Entity.class)) {
 				attributeName += "ID";
 			}
 		} else if (method.getName().startsWith("is")) {
 			attributeName = convertDowncaseName(method.getName().substring(2));
 			
-			if (interfaceIneritsFrom(type, Entity.class)) {
+			if (interfaceInheritsFrom(type, Entity.class)) {
 				attributeName += "ID";
 			}
 		} else if (method.getName().startsWith("set")) {
 			attributeName = convertDowncaseName(method.getName().substring(3));
 			
-			if (interfaceIneritsFrom(type, Entity.class)) {
+			if (interfaceInheritsFrom(type, Entity.class)) {
 				attributeName += "ID";
 			}
 		}
