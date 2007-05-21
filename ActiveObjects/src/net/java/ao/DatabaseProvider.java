@@ -48,21 +48,7 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 		return back;
 	}
 	
-	public final static DatabaseProvider getInstance(String uri, String username, String password) {
-		SupportedDBProvider provider = SupportedDBProvider.getProviderForURI(uri);
-		if (provider == null) {
-			throw new RuntimeException("Unable to locate a valid database provider for URI: " + uri);
-		}
-		
-		DatabaseProvider back = provider.createInstance(uri, username, password);
-		if (back == null) {
-			throw new RuntimeException("Unable to instantiate database provider for URI: " + uri);
-		}
-		
-		return back;
-	}
-	
-	protected static String convertTypeToString(int type) {
+	protected String convertTypeToString(int type) {
 		switch (type) {
 			case Types.BIGINT:
 				return "BIGINT";
@@ -141,5 +127,19 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 		}
 		
 		return null;
+	}
+
+	public final static DatabaseProvider getInstance(String uri, String username, String password) {
+		SupportedDBProvider provider = SupportedDBProvider.getProviderForURI(uri);
+		if (provider == null) {
+			throw new RuntimeException("Unable to locate a valid database provider for URI: " + uri);
+		}
+		
+		DatabaseProvider back = provider.createInstance(uri, username, password);
+		if (back == null) {
+			throw new RuntimeException("Unable to instantiate database provider for URI: " + uri);
+		}
+		
+		return back;
 	}
 }
