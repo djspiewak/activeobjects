@@ -26,8 +26,6 @@ import net.java.ao.db.IDatabaseProvider;
  * @author Daniel Spiewak
  */
 public final class EntityManager {
-	private static EntityManager instance;
-	
 	private volatile IDatabaseProvider provider;
 	
 	private Map<Entity, EntityProxy<? extends Entity>> proxies;
@@ -36,7 +34,7 @@ public final class EntityManager {
 	private Map<CacheKey, Entity> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
-	private EntityManager(IDatabaseProvider provider) {
+	public EntityManager(IDatabaseProvider provider) {
 		this.provider = provider;
 		
 		proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
@@ -179,14 +177,6 @@ public final class EntityManager {
 		} finally {
 			proxyLock.readLock().unlock();
 		}
-	}
-
-	public static synchronized EntityManager getInstance(IDatabaseProvider provider) {
-		if (instance == null) {
-			instance = new EntityManager(provider);
-		}
-		
-		return instance;
 	}
 	
 	private static class CacheKey {

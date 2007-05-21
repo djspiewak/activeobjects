@@ -24,7 +24,7 @@ public class Driver {
 		IPoolProvider provider = new DBCPPoolProvider(DatabaseProvider.getInstance(args[0], args[1], args[2]));
 
 		long millis = System.currentTimeMillis();
-		EntityManager manager = EntityManager.getInstance(provider);
+		EntityManager manager = new EntityManager(provider);
 		
 		runTestTest(manager);
 		runRoomsTest(manager);
