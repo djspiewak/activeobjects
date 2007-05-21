@@ -135,6 +135,10 @@ public final class EntityManager {
 			
 			if (criteria != null) {
 				for (int i = 0; i < parameters.length; i++) {
+					if (parameters[i] instanceof Entity) {
+						parameters[i] = ((Entity) parameters[i]).getID();
+					}
+					
 					stmt.setObject(i + 1, parameters[i]);
 				}
 			}
@@ -168,6 +172,10 @@ public final class EntityManager {
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
 			for (int i = 0; i < parameters.length; i++) {
+				if (parameters[i] instanceof Entity) {
+					parameters[i] = ((Entity) parameters[i]).getID();
+				}
+				
 				stmt.setObject(i + 1, parameters[i]);
 			}
 			
