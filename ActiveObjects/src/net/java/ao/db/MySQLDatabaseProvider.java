@@ -53,6 +53,9 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 			if (field.isAutoIncrement()) {
 				back.append(" AUTO_INCREMENT");
 			}
+			if (field.isUnique()) {
+				back.append(" UNIQUE");
+			}
 			if (field.isPrimaryKey()) {
 				append.append("    PRIMARY KEY (");
 				append.append(field.getName());
