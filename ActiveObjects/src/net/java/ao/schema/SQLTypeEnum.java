@@ -26,7 +26,7 @@ public enum SQLTypeEnum {
 	CHAR_OBJ(Character.class, Types.CHAR, -1),
 	BOOLEAN(boolean.class, Types.BOOLEAN, -1),
 	BOOLEAN_OBJ(Boolean.class, Types.BOOLEAN, -1),
-	VARCHAR(String.class, Types.VARCHAR, 255),
+	VARCHAR(String.class, Types.VARCHAR, 45),
 	BLOB(InputStream.class, Types.BLOB, -1),
 	TIMESTAMP(Calendar.class, Types.TIMESTAMP, -1),
 	TIMESTAMP_DATE(Date.class, Types.TIMESTAMP, -1);
