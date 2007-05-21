@@ -68,7 +68,7 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		for (DDLForeignKey key : table.getForeignKeys()) {
 			append.append("    FOREIGN KEY ");
 			append.append(key.getField());
-			append.append(" CONSTRAIN ");
+			append.append(" RESTRICT ");
 			append.append(key.getTable());
 			append.append('(');
 			append.append(key.getForeignField());
