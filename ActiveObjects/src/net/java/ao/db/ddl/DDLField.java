@@ -16,6 +16,7 @@ public class DDLField {
 	private boolean primaryKey;
 	private boolean autoIncrement;
 	private boolean notNull;
+	private boolean unique;
 	
 	private String defaultValue;
 
@@ -73,6 +74,14 @@ public class DDLField {
 
 	public void setNotNull(boolean notNull) {
 		this.notNull = notNull;
+	}
+
+	public boolean isUnique() {
+		return unique;
+	}
+
+	public void setUnique(boolean unique) {
+		this.unique = unique;
 	}
 
 	public String getDefaultValue() {
