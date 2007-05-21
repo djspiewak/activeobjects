@@ -83,7 +83,7 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 				return "CHAR";
 				
 			case Types.CLOB:
-				return "CLOB";
+				return "TEXT";
 				
 			case Types.DATE:
 				return "DATE";
