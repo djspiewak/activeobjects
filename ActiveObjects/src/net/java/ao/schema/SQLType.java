@@ -15,4 +15,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface SQLType {
 	int value();
+	int precision() default -1;
+	int scale() default -1;
 }

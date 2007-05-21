@@ -171,9 +171,13 @@ public class Generator {
 				
 				int sqlType = -1;
 				int precision = -1;
+				int scale = -1;
 				
-				if (method.getAnnotation(SQLType.class) != null) {
-					sqlType = method.getAnnotation(SQLType.class).value();
+				SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+				if (sqlTypeAnnotation != null) {
+					sqlType = sqlTypeAnnotation.value();
+					precision = sqlTypeAnnotation.precision();
+					scale = sqlTypeAnnotation.scale();
 				} else if (interfaceIneritsFrom(type, Entity.class)) {
 					classes.add((Class<? extends Entity>) type);
 					
@@ -194,6 +198,7 @@ public class Generator {
 				field.setName(attributeName);
 				field.setType(sqlType);
 				field.setPrecision(precision);
+				field.setScale(scale);
 				
 				if (method.getAnnotation(NotNull.class) != null) {
 					field.setNotNull(true);
