@@ -97,6 +97,7 @@ public final class Common {
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		
 		String attributeName = null;
+		Class<?> type = getAttributeTypeFromMethod(method);
 		
 		if (mutatorAnnotation != null) {
 			attributeName = mutatorAnnotation.value();
@@ -107,11 +108,23 @@ public final class Common {
 		} else if (manyToManyAnnotation != null) {
 			return null;
 		} else if (method.getName().startsWith("get")) {
-			attributeName = convertDowncaseName(method.getName().substring(3)) + "ID";
+			attributeName = convertDowncaseName(method.getName().substring(3));
+			
+			if (interfaceIneritsFrom(type, Entity.class)) {
+				attributeName += "ID";
+			}
 		} else if (method.getName().startsWith("is")) {
-			attributeName = convertDowncaseName(method.getName().substring(2)) + "ID";
+			attributeName = convertDowncaseName(method.getName().substring(2));
+			
+			if (interfaceIneritsFrom(type, Entity.class)) {
+				attributeName += "ID";
+			}
 		} else if (method.getName().startsWith("set")) {
-			attributeName = convertDowncaseName(method.getName().substring(3)) + "ID";
+			attributeName = convertDowncaseName(method.getName().substring(3));
+			
+			if (interfaceIneritsFrom(type, Entity.class)) {
+				attributeName += "ID";
+			}
 		}
 		
 		return attributeName;
