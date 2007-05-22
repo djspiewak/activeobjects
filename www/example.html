@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+	<head>
+		<title>ActiveObjects: Example Usage</title>
+	</head>
+	<body>
+		<script src="https://ssl.google-analytics.com/urchin.js" type="text/javascript">
+		</script>
+		<script type="text/javascript">
+			_uacct = "UA-1070906-4";
+			urchinTracker();
+		</script>
+		
+		<h2>Example</h2>
+		
+		<p>The first step in building an application which uses ActiveObjects is to define the
+		entities.  This is done in pure Java (no XML configuration).  Tthe entiy definitions are
+		database non-specific.</p>
+		
+<pre>// Person.java
+public interface Person {
+	public String getName();
+	public void setName(String name);
+	
+	public int getAge();
+	public void setAge(int age);
+	
+	@SQLType(Types.CLOB)
+	public String getComment();
+	
+	@SQLType(Types.CLOB)
+	public void setComment(String comment);
+	
+	public Family getFamily();
+	public void setFamily();
+	
+	@ManyToMany(PersonToPerson.class)
+	public Person[] getPeople();
+}
+
+// Family.java
+public interface Family {
+	public String getName();
+	public void setName(String name);
+	
+	@OneToMany
+	public Person[] getPeople();
+}
+
+// PersonToPerson.java
+public interface PersonToPerson {
+	public Person getPersonA();
+	public void setPersonA(Person person);
+	
+	public Person getPersonB();
+	public void setPersonB(Person person);
+}</pre>
+
+		<p>Once we have the entity definitions, the DDL statements can be auto-generated for
+		whatever database you may be using.  This is done using the <code>Generator</code> utility.
+		Here's what the SQL would look like as generated for the MySQL database.</p>
+
+<pre>CREATE TABLE person (
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	name VARCHAR(45),
+	age INTEGER,
+	comment TEXT,
+	familyID INTEGER,
+	PRIMARY KEY (id),
+	FOREIGN KEY (familyID) REFERENCES family(id)
+) ENGINE=InnoDB;
+CREATE TABLE family (
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	name VARCHAR(45),
+	PRIMARY KEY (id)
+) ENGINE=InnoDB;
+CREATE TABLE personToPerson (
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	personAID INTEGER,
+	personBID INTEGER,
+	PRIMARY KEY (id),
+	FOREIGN KEY (personAID) REFERENCES person (id),
+	FOREIGN KEY (personBID) REFERENCES person (id)
+) ENGINE=InnoDB;</pre>
+		
+		<p>You'll notice the usage of convention to determine field names, primary and foreign keys,
+		etc...</p>
+		
+		<p>Of course, an ORM layer isn't very useful unless you actually <i>use</i> it.  Here's some
+		sample code showing some basic CRUD operations with our new model.</p>
+
+<pre>// ...
+EntityManager manager = new EntityManager(DatabaseProvider.getInstance(
+		"jdbc:mysql://localhost/ao_test", "user", "password");
+		
+Family family = manager.create(Family.class);
+family.setName("Spiewak");
+		
+Person me = manager.create(Person.class);
+me.setName("Daniel Spiewak");
+me.setAge(27);
+me.setComment("I love databasing");
+me.setFamily(family);
+
+Person you = manager.create(Person.class);
+you.setName("Joe Blow");
+you.setName(23);
+you.setComment("Guess who?");
+you.setFamily(family);
+
+PersonToPerson relation = manager.create(PersonToPerson.class);
+relation.setPersonA(me);
+relation.setPersonB(you);
+
+family.getPeople();		// ...returns new Person[] {you, me}
+you.getPeople();		// ...returns new Person[] {me}
+
+// notice, this is the first use of SQL in the whole example
+Family[] families = manager.findWithSQL(Family.class, "familyID", "SELECT familyID FROM person");
+
+// returns any person with age >= 18
+Person[] overAge = manager.find(Person.class, "age >= ?", 18);
+
+/*
+ * notice the varargs parameters, as well as the direct use of an
+ * entity instance without worrying about the ID value
+ */
+Person[] inFamilyOver21 = manager.find(Person.class, "age >= ? AND familyID = ?", 21, family);</pre>
+		
+		<p>As you see, much of the framework is designed to completely encapsulate
+		the developer from the complexities of SQL and even from the precise specifics
+		of the schema.  The only place where this rule is broken is in the <code>find</code>
+		methods, which are designed to leverage the power of SQL, rather than to
+		completely shelter the developer.</p>
+		
+		<p>One particular detail which is worth noting, is that at no point do we call
+		a <code>update()</code> or a <code>commit()</code> method.  All of the
+		changes we make to the entity instances are committed immediately to the
+		database.  While ActiveObjects does support transactions, and thus delayed
+		commit, it does not <i>force</i> this manual committing.</p>
+	</body>
+</html>
