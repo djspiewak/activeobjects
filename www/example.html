@@ -18,7 +18,7 @@
 		database non-specific.</p>
 		
 <pre>// Person.java
-public interface Person {
+public interface Person extends Entity {
 	public String getName();
 	public void setName(String name);
 	
@@ -39,7 +39,7 @@ public interface Person {
 }
 
 // Family.java
-public interface Family {
+public interface Family extends Entity {
 	public String getName();
 	public void setName(String name);
 	
@@ -48,7 +48,7 @@ public interface Family {
 }
 
 // PersonToPerson.java
-public interface PersonToPerson {
+public interface PersonToPerson extends Entity {
 	public Person getPersonA();
 	public void setPersonA(Person person);
 	
