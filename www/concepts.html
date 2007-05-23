@@ -13,5 +13,50 @@
 		</script>
 		
 		<h1>Basic Concepts</h1>
+		
+		<p>The underlying principle behind ActiveObjects is that ever-popular catch phrase:
+		convention rather than configuration.  With ActiveObjects, you create the abstract Java
+		class interfaces using standard Java data object conventions (<code>get</code>, <code>set</code>,
+		<code>is</code>, etc...) and ActiveObjects handles the wiring to the database.  In
+		fact, ActiveObjects will even generate the database-specific schema to correspond
+		with the specified Java class model.</p>
+		
+		<p>From a developer standpoint, using ActiveObjects is as simple as the following:</p>
+<pre>public interface Person extends Entity {
+	public String getName();
+	public void setName(String name);
+}
+
+EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "user", "password");
+
+Person frank = manager.create(Person.class);
+frank.setName("Frank");</pre>
+
+		<p>ActiveObjects entities can be treated as POJOs (Plain Old Java Object) without any fears
+		surrounding change committing or data loss.</p>
+		
+		<p>The code specified above is fully functional; there are no unspecified configuration files.  In 
+		fact, the only missing step would be to create the corresponding database schema.  ActiveObjects
+		can handle this step too, ensuring that the database schema is perfectly in step with accepted
+		database conventions as well as optimized to the particular database you may be using.  Generating
+		the schema is as simple as the following invocation (also available as an Ant task):</p>
+		
+		<code>java net.java.ao.schema.Generator --classpath bin --uri jdbc:mysql://localhost/ao_test Person</code>
+		
+		<p>This utility will generate the following MySQL DDL statements:</p>
+		
+<pre>CREATE TABLE person (
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	name VARCHAR(45),
+	PRIMARY KEY (id)
+);</pre>
+
+		<p>Switching databases is as easy as changing the JDBC URI value in the EntityManager constructor
+		and in the schema generator utility.  There is never any need to be concerned about the ins and outs
+		of database specifics.</p>
+		
+		<p>In fact, any Java developer can use ActiveObjects, even if they have no experience whatsoever
+		in databases or their underlying concepts.  The framework is designed so that it "feels" natural to any
+		Java developer, not requiring an advanced knowledge of relational databases.</p>
 	</body>
 </html>
