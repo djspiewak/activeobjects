@@ -39,6 +39,10 @@ public final class EntityManager {
 		cache = new WeakHashMap<CacheKey, Entity>();
 	}
 	
+	public EntityManager(String uri, String username, String password) {
+		this(DatabaseProvider.getInstance(uri, username, password));
+	}
+	
 	public <T extends Entity> T[] get(Class<T> type, int... ids) {
 		T[] back = (T[]) Array.newInstance(type, ids.length);
 		int index = 0;
