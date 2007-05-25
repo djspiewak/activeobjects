@@ -1,10 +1,11 @@
 commons-cli.path=C:/Users/Daniel Spiewak/Libraries/commons-cli-1.0/commons-cli-1.0.jar
+commons-dbcp.path=C:/Users/Daniel Spiewak/Libraries/commons-dbcp-1.2.2/commons-dbcp-1.2.2.jar
 mysql-connector-java.path=C:/Users/Daniel Spiewak/Libraries/mysql-connector-java-5.0.4/mysql-connector-java-5.0.4-bin.jar
 ant.path=C:/Users/Daniel Spiewak/Applications/eclipse/plugins/org.apache.ant_1.6.5/lib/ant.jar
 
 javadoc.path=../www/api
 
-build.classpath=${commons-cli.path}${path.separator}${mysql-connector-java.path}${path.separator}${ant.path}
+build.classpath=${commons-cli.path}${path.separator}${commons-dbcp.path}${path.separator}${mysql-connector-java.path}${path.separator}${ant.path}
 build.debug=yes
 
 activeobjects.version=0.1
