@@ -57,8 +57,9 @@ public interface PersonToPerson extends Entity {
 }</pre>
 
 		<p>Once we have the entity definitions, the DDL statements can be auto-generated for
-		whatever database you may be using.  This is done using the <code>Generator</code> utility.
-		Here's what the SQL would look like as generated for the MySQL database.</p>
+		whatever database you may be using.  This is done using the <code>Generator</code> 
+		utility (set as the main class for the dist JAR). Here's what the SQL would look like as generated 
+		for the MySQL database.</p>
 
 <pre>CREATE TABLE person (
 	id INTEGER NOT NULL AUTO_INCREMENT,
