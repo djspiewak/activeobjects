@@ -13,7 +13,7 @@
 		<mkdir dir="dist/activeobjects-${activeobjects.version}/doc"/>
 	</target>
 	
-	<target name="init-doc">
+	<target name="init-doc" unless="supress-doc-deletion">
 		<delete>
 			<fileset dir="${javadoc.path}">
 				<include name="**/*"/>
@@ -52,6 +52,7 @@
 	
 	<target name="dist" depends="jar">
 		<property name="javadoc.intern.path" value="dist/activeobjects-${activeobjects.version}/doc"/>
+		<property name="supress-doc-deletion" value="yes"/>
 		<antcall target="doc"/>
 		
 		<copy todir="dist/activeobjects-${activeobjects.version}/src">
