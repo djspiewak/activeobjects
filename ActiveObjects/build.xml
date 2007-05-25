@@ -60,14 +60,25 @@
 		</copy>
 		
 		<zip destfile="dist/activeobjects-${activeobjects.version}.zip">
-			<fileset dir="dist">
+			<fileset id="productDir" dir="dist">
 				<include name="activeobjects-${activeobjects.version}/**/*"/>
 			</fileset>
 		</zip>
 		
-		<delete>
-			<fileset dir="dist/activeobjects-${activeobjects.version}">
-				<include name="**/*"/>
+		<tar destfile="dist/activeobjects-${activeobjects.version}.tar">
+			<fileset refid="productDir"/>
+		</tar>
+		<gzip src="dist/activeobjects-${activeobjects.version}.tar" zipfile="dist/activeobjects-${activeobjects.version}.tar.gz"/>
+		<delete file="dist/activeobjects-${activeobjects.version}.tar"/>
+		
+		<delete includeemptydirs="yes">
+			<fileset dir="dist">
+				<include name="activeobjects-${activeobjects.version}/**/*"/>
+			</fileset>
+		</delete>
+		<delete includeemptydirs="yes">
+			<fileset dir="dist">
+				<include name="activeobjects-${activeobjects.version}"/>
 			</fileset>
 		</delete>
 	</target>
