@@ -42,7 +42,7 @@ import org.apache.commons.cli.PosixParser;
  * @author Daniel Spiewak
  */
 public class Generator {
-	private static final String CL_INVOCATION = "java net.java.ao.schema.Generator <options> class1 class2 ...";
+	private static final String CL_INVOCATION = "java -jar activeobjects-*.jar <options> class1 class2 ...";
 	
 	private static List<Class<? extends Entity>> parsed = new LinkedList<Class<? extends Entity>>();
 	
