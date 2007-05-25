@@ -7,8 +7,25 @@
 		<mkdir dir="bin"/>
 	</target>
 	
+	<target name="init-doc">
+		<delete>
+			<fileset dir="${javadoc.path}">
+				<include name="**/*"/>
+			</fileset>
+		</delete>
+	</target>
+	
 	<target name="build" depends="init">
 		<javac srcdir="src" destdir="bin" classpath="${build.classpath}" source="1.5" target="1.5" debug="${build.debug}"/>
+	</target>
+	
+	<target name="doc" depends="init-doc">
+		<javadoc sourcepath="src" classpath="${build.classpath}" destdir="${javadoc.path}"
+		 		windowtitle="ActiveObjects: Javadoc" private="no" protected="yes">
+			<packageset dir="src">
+				<include name="net/java/ao/**/*.java"/>
+			</packageset>
+		</javadoc>
 	</target>
 	
 	<target name="jar" depends="build">
