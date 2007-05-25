@@ -60,6 +60,11 @@
 				<include name="**/*.java"/>
 			</fileset>
 		</copy>
+		<copy todir="dist/activeobjects-${activeobjects.version}">
+			<fileset dir=".">
+				<include name="LICENSE"/>
+			</fileset>
+		</copy>
 		
 		<zip destfile="dist/activeobjects-${activeobjects.version}.zip">
 			<fileset id="productDir" dir="dist">
