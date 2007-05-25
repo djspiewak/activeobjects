@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+	<head>
+		<title>ActiveObjects: Internals</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+	</head>
+	<body>
+		<script src="https://ssl.google-analytics.com/urchin.js" type="text/javascript">
+		</script>
+		<script type="text/javascript">
+			_uacct = "UA-1070906-4";
+			urchinTracker();
+		</script>
+		
+		<h1>Internals</h1>
+		
+		<p>While the ActiveObjects API does allow for some rather unusual usage patterns
+		(such as the construction of entity definitions as pure Java interfaces), the code to
+		support this API isn't all that complex.  Much of the heart and soul of the ActiveObjects
+		library revolves around the concept of reflective instance proxying.</p>
+		
+		<p>Instance proxying is a lesser known part of the Java reflection API which allows
+		a specified instance of the <code>InvocationHandler</code> class to intercept all
+		method calls to a contrived instance of a specified class type.  This is how the
+		<code>EntityManager</code> can dynamically create an instance of an arbitrary
+		<code>Entity</code> sub-interface.  In fact, the instance created by <code>EntityManager</code>
+		is extremely special in that it will dynamically parse all method calls, attempting to
+		proxy the relevant calls down to the database.  This is how a call to an accessor within
+		an entity instance will immediately correspond to a call to the database.</p>
+		
+		<p>The instance proxy <code>InvocationHandler</code> for ActiveObjects is the
+		<code>EntityProxy</code> class.  <code>EntityProxy</code> has a single method -
+		<code>invoke</code> - which receives all method calls to the corresponding <code>Entity</code>
+		instance.  <code>EntityProxy</code> then applies a set of rules to the method name,
+		method annotations and method parameters to determine if it is a data accessor method.
+		If the method should correspond to a database function, <code>EntityProxy</code> handles
+		the retrieval of a database connection and the execution of the appropriate SQL.</p>
+	</body>
+</html>
