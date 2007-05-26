@@ -107,7 +107,7 @@ public class Generator {
 			System.exit(-1);
 		}
 		
-		URLClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpathValue).getCanonicalPath())});
+		URLClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpathValue ).getCanonicalPath() + "/")});
 		
 		String sql = "";
 		DatabaseProvider provider = DatabaseProvider.getInstance(cl.getOptionValue(uriOption.getOpt()), null, null);
