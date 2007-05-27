@@ -36,6 +36,7 @@ import static net.java.ao.Common.interfaceInheritsFrom;
 import static net.java.ao.Common.getMappingFields;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -47,6 +48,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -58,18 +60,20 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * @author Daniel Spiewak
  */
-class EntityProxy<T extends Entity> implements InvocationHandler {
-	private EntityManager manager;	
+class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
+	private final static Map<EntityProxy<?>, EntityManager> managers = Collections.synchronizedMap(
+			new HashMap<EntityProxy<?>, EntityManager>());
+	
 	private Class<T> type;
 	
-	private Map<String, Object> cache;
-	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+	private final transient Map<String, Object> cache;
+	private final transient ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private int id;
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
-		this.manager = manager;
 		this.type = type;
+		managers.put(this, manager);
 		
 		cache = new HashMap<String, Object>();
 	}
@@ -173,12 +177,32 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		return getTableName(type) + " {id = " + getID() + "}";
 	}
 	
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		
+		if (obj instanceof EntityProxy) {
+			EntityProxy<?> proxy = (EntityProxy<?>) obj;
+			
+			if (proxy.type.equals(type) && proxy.id == id) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public int hashCode() {
+		return type.hashCode();
+	}
+	
 	private Connection getConnectionImpl() throws SQLException {
-		return DBEncapsulator.getInstance(manager.getProvider()).getConnection();
+		return DBEncapsulator.getInstance(managers.get(this).getProvider()).getConnection();
 	}
 	
 	private void closeConnectionImpl(Connection conn) throws SQLException {
-		DBEncapsulator.getInstance(manager.getProvider()).closeConnection(conn);
+		DBEncapsulator.getInstance(managers.get(this).getProvider()).closeConnection(conn);
 	}
 
 	private <V> V invokeGetter(int id, String table, String name, Class<V> type) throws Throwable {
@@ -186,7 +210,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		cacheLock.writeLock().lock();
 		try {
-			if (DBEncapsulator.getInstance(manager.getProvider()).hasManualConnection()) {
+			if (DBEncapsulator.getInstance(managers.get(this).getProvider()).hasManualConnection()) {
 				cache.remove(name);
 			}
 			
@@ -210,7 +234,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				closeConnectionImpl(conn);
 			}
 	
-			if (back != null && !DBEncapsulator.getInstance(manager.getProvider()).hasManualConnection()) {
+			if (back != null && !DBEncapsulator.getInstance(managers.get(this).getProvider()).hasManualConnection()) {
 				cache.put(name, back);
 			}
 		} finally {
@@ -223,7 +247,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
 		cacheLock.writeLock().lock();
 		try {
-			if (DBEncapsulator.getInstance(manager.getProvider()).hasManualConnection()) {
+			if (DBEncapsulator.getInstance(managers.get(this).getProvider()).hasManualConnection()) {
 				cache.remove(name);
 			} else {
 				cache.put(name, value);
@@ -301,7 +325,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 					continue;
 				}
 				
-				back.add(manager.get(finalType, res.getInt("a.outMap")));
+				back.add(managers.get(this).get(finalType, res.getInt("a.outMap")));
 			}
 			res.close();
 			stmt.close();
@@ -343,7 +367,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} else if (type.equals(InputStream.class)) {
 			return (V) res.getBlob(field).getBinaryStream();
 		} else if (interfaceInheritsFrom(type, Entity.class)) {
-			return (V) manager.get((Class<? extends Entity>) type, res.getInt(field));
+			return (V) managers.get(this).get((Class<? extends Entity>) type, res.getInt(field));
 		} else {
 			throw new RuntimeException("Unrecognized type: " + type.toString());
 		}
