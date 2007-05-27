@@ -121,20 +121,30 @@ public final class EntityManager {
 				sql.append(param.getField());
 				sql.append(',');
 			}
-			sql.setLength(sql.length() - 1);
+			if (params.length > 0) {
+				sql.setLength(sql.length() - 1);
+			}
 			
 			sql.append(") VALUES (");
 			
 			for (@SuppressWarnings("unused") DBParam param : params) {
 				sql.append("?,");
 			}
-			sql.setLength(sql.length() - 1);
+			if (params.length > 0) {
+				sql.setLength(sql.length() - 1);
+			}
 			
 			sql.append(")");
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
 			
 			for (int i = 0; i < params.length; i++) {
-				stmt.setObject(i + 1, params[i].getValue());
+				Object value = params[i].getValue();
+				
+				if (value instanceof Entity) {
+					value = ((Entity) value).getID();
+				}
+				
+				stmt.setObject(i + 1, value);
 			}
 			
 			stmt.executeUpdate();
