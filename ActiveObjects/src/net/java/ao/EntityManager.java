@@ -162,6 +162,33 @@ public final class EntityManager {
 		return back;
 	}
 	
+	public void delete(Entity entity) throws SQLException {
+		cacheLock.writeLock().lock();
+		try {
+			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+			try {
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + getTableName(entity.getClass()) + " WHERE id = ?");
+				stmt.setInt(1, entity.getID());
+				
+				stmt.executeUpdate();
+				stmt.close();
+			} finally {
+				DBEncapsulator.getInstance(provider).closeConnection(conn);
+			}
+			
+			cache.remove(entity);
+		} finally {
+			cacheLock.writeLock().unlock();
+		}
+		
+		proxyLock.writeLock().lock();
+		try {
+			proxies.remove(entity);
+		} finally {
+			proxyLock.writeLock().unlock();
+		}
+	}
+	
 	/**
 	 * The actual table name is aliased as "prime" (for use in the criteria and within the join).
 	 */
