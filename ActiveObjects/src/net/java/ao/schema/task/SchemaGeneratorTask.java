@@ -60,7 +60,7 @@ public class SchemaGeneratorTask extends Task {
 		
 		try {
 			FileWriter writer = new FileWriter(dest);
-			writer.append(Generator.generate(copy.toArray(new String[copy.size()])));
+			writer.append(Generator.generate(null, copy.toArray(new String[copy.size()])));
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
