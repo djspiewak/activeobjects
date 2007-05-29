@@ -167,7 +167,7 @@ public final class EntityManager {
 		try {
 			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 			try {
-				PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + getTableName(entity.getClass()) + " WHERE id = ?");
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + entity.getTableName() + " WHERE id = ?");
 				stmt.setInt(1, entity.getID());
 				
 				stmt.executeUpdate();
@@ -177,15 +177,15 @@ public final class EntityManager {
 			}
 			
 			cache.remove(entity);
+			
+			proxyLock.writeLock().lock();
+			try {
+				proxies.remove(entity);
+			} finally {
+				proxyLock.writeLock().unlock();
+			}
 		} finally {
 			cacheLock.writeLock().unlock();
-		}
-		
-		proxyLock.writeLock().lock();
-		try {
-			proxies.remove(entity);
-		} finally {
-			proxyLock.writeLock().unlock();
 		}
 	}
 	
