@@ -41,6 +41,9 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +51,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
@@ -74,10 +78,10 @@ public class Generator {
 	private static List<Class<? extends Entity>> parsed = new LinkedList<Class<? extends Entity>>();
 	
 	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException {
-		System.out.println(generate(args));
+		System.out.println(generate(null, args));
 	}
 	
-	public static String generate(String... args) throws ClassNotFoundException, MalformedURLException, IOException {
+	public static String generate(ClassLoader classloader, String... args) throws ClassNotFoundException, MalformedURLException, IOException {
 		Options options = new Options();
 		
 		Option classpathOption = new Option("C", "classpath", true, "(required) The path from which to load the " +
@@ -107,7 +111,9 @@ public class Generator {
 			System.exit(-1);
 		}
 		
-		URLClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpathValue ).getCanonicalPath() + "/")});
+		if (classloader == null) {
+			classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpathValue ).getCanonicalPath() + "/")});
+		}
 		
 		String sql = "";
 		DatabaseProvider provider = DatabaseProvider.getInstance(cl.getOptionValue(uriOption.getOpt()), null, null);
@@ -116,6 +122,44 @@ public class Generator {
 		}
 		
 		return sql;
+	}
+	
+	public static void generate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
+		List<String> args = new ArrayList<String>();
+		args.addAll(Arrays.asList(new String[] {"-C", ".", "-U", provider.getURI()}));
+		
+		for (Class<? extends Entity> clazz : classes) {
+			args.add(clazz.getCanonicalName());
+		}
+		
+		String sql = null;
+		try {
+			sql = generate(Generator.class.getClassLoader(), args.toArray(new String[args.size()]));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		StringTokenizer tokenizer = new StringTokenizer(sql, ";\n");
+		Connection conn = provider.getConnection();
+		
+		try {
+			Statement stmt = conn.createStatement();
+			
+			while (tokenizer.hasMoreTokens()) {
+				stmt.addBatch(tokenizer.nextToken());
+			}
+			stmt.executeBatch();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
 	}
 	
 	private static String parseInterface(DatabaseProvider provider, Class<? extends Entity> clazz) {
