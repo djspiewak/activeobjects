@@ -47,6 +47,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -146,16 +147,24 @@ public class Generator {
 			return;
 		}
 		
-		StringTokenizer tokenizer = new StringTokenizer(sql, ";\n");
+		StringTokenizer tokenizer = new StringTokenizer(sql, ";");
 		Connection conn = provider.getConnection();
 		
 		try {
 			Statement stmt = conn.createStatement();
 			
+			List<String> statements = new LinkedList<String>();
 			while (tokenizer.hasMoreTokens()) {
-				stmt.addBatch(tokenizer.nextToken());
+				statements.add(tokenizer.nextToken());
 			}
-			stmt.executeBatch();
+			Collections.reverse(statements);
+			
+			for (String statement : statements) {
+				if (!statement.trim().equals("")) {
+					stmt.executeUpdate(statement);
+				}
+			}
+			
 			stmt.close();
 		} finally {
 			conn.close();
