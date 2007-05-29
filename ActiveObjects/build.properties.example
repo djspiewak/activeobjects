@@ -8,4 +8,4 @@ javadoc.path=../www/api
 build.classpath=${commons-cli.path}${path.separator}${commons-dbcp.path}${path.separator}${mysql-connector-java.path}${path.separator}${ant.path}
 build.debug=yes
 
-activeobjects.version=0.1
+activeobjects.version=0.2
