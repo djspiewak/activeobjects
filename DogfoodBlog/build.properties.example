@@ -1,0 +1,16 @@
+tomcat.home=C:/Users/Daniel Spiewak/Applications/apache-tomcat-6.0.10
+
+activeobjects.jar=WEB-INF/lib/activeobjects-0.2.jar
+commons-dbcp.jar=WEB-INF/lib/commons-dbcp-1.2.2.jar
+commons-pool.jar=WEB-INF/lib/commons-pool-1.3.jar
+mysql-connector-java.jar=WEB-INF/lib/mysql-connector-java-5.0.4-bin.jar
+wicket.jar=WEB-INF/lib/wicket-1.2.5.jar
+
+servlet-api.jar=${tomcat.home}/lib/servlet-api.jar
+jasper.jar=${tomcat.home}/lib/jasper.jar
+jsp-api.jar=${tomcat.home}/lib/jsp-api.jar
+el-api.jar=${tomcat.home}/lib/el-api.jar
+annotations-api.jar=${tomcat.home}/lib/annotations-api.jar
+
+build.classpath=${activeobjects.jar}${path.separator}${commons-dbcp.jar}${path.separator}${commons-pool.jar}${path.separator}${mysql-connector-java.jar}${path.separator}${wicket.jar}${path.separator}${servlet-api.jar}${path.separator}${jesper.jar}${path.separator}${jsp-api.jar}${path.separator}${el-api.jar}${path.separator}${annotations-api.jar}
+build.debug=yes
