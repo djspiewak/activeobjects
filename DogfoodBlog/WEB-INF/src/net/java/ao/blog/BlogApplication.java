@@ -58,7 +58,7 @@ public class BlogApplication extends WebApplication {
 	
 	private void generateSchema(EntityManager manager) {
 		try {
-			Generator.generate(provider, Comment.class);
+			Generator.migrate(provider, Comment.class);
 			
 			manager.create(Blog.class).setName("AO Dogfood Blog");
 		} catch (SQLException e) {
