@@ -76,10 +76,6 @@ public class Generator {
 	private static final String CL_INVOCATION = "java -jar activeobjects-*.jar <options> class1 class2 ...";
 	
 	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException {
-		System.out.println(generate(null, args));
-	}
-	
-	public static String generate(ClassLoader classloader, String... args) throws ClassNotFoundException, MalformedURLException, IOException {
 		Options options = new Options();
 		
 		Option classpathOption = new Option("C", "classpath", true, "(required) The path from which to load the " +
@@ -101,20 +97,19 @@ public class Generator {
 			System.exit(-1);
 		}
 		
-		String[] classes = cl.getArgs();
-		String classpathValue = cl.getOptionValue(classpathOption.getOpt());
-		
-		if (classpathValue == null || classes.length == 0) {
+		if (cl.getOptionValue(classpathOption.getOpt()) == null || cl.getArgs().length == 0) {
 			new HelpFormatter().printHelp(CL_INVOCATION, options);
 			System.exit(-1);
 		}
 		
-		if (classloader == null) {
-			classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpathValue ).getCanonicalPath() + "/")});
-		}
+		System.out.println(generate(cl.getOptionValue(classpathOption.getOpt()), cl.getOptionValue(uriOption.getOpt()), cl.getArgs()));
+	}
+	
+	public static String generate(String classpath, String uri, String... classes) throws ClassNotFoundException, MalformedURLException, IOException {
+		ClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpath).getCanonicalPath() + "/")});
 		
 		String sql = "";
-		DatabaseProvider provider = DatabaseProvider.getInstance(cl.getOptionValue(uriOption.getOpt()), null, null);
+		DatabaseProvider provider = DatabaseProvider.getInstance(uri, null, null);
 		
 		String[] statements = generateImpl(provider, classloader, classes);
 		for (String statement : statements) {

@@ -44,6 +44,8 @@ import org.apache.tools.ant.Task;
  */
 public class SchemaGeneratorTask extends Task {
 	private String classpath;
+	private String uri;
+	
 	private String dest;
 	
 	private List<String> entities = new ArrayList<String>();
@@ -51,26 +53,29 @@ public class SchemaGeneratorTask extends Task {
 	public void execute() {
 		System.out.println("Generating SQL schema from entities...");
 		
-		List<String> copy = new ArrayList<String>();
-		
-		copy.add("--classpath");
-		copy.add(classpath);
-		
-		copy.addAll(entities);
-		
+		FileWriter writer = null;
 		try {
-			FileWriter writer = new FileWriter(dest);
-			writer.append(Generator.generate(null, copy.toArray(new String[copy.size()])));
-			writer.close();
+			writer = new FileWriter(dest);
+			writer.append(Generator.generate(classpath, uri, entities.toArray(new String[entities.size()])));
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				writer.close();
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 	}
 	
 	public void setClasspath(String classpath) {
 		this.classpath = classpath;
+	}
+	
+	public void setURI(String uri) {
+		this.uri = uri;
 	}
 	
 	public void setDest(String dest) {
