@@ -1,0 +1,3 @@
+db.uri=jdbc:mysql://localhost/dogfood
+db.username=
+db.password=

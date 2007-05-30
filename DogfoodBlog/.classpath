@@ -10,7 +10,6 @@
 	<classpathentry kind="src" output="work" path="work"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/commons-dbcp-1.2.2.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/commons-pool-1.3.jar"/>
-	<classpathentry kind="lib" path="WEB-INF/lib/mysql-connector-java-5.0.4-bin.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/wicket-1.2.5.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/activeobjects-0.2.jar" sourcepath="/ActiveObjects/src"/>
 	<classpathentry kind="output" path="WEB-INF/classes"/>

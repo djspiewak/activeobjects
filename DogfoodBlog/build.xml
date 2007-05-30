@@ -13,6 +13,12 @@
 	
 	<target name="build" depends="init">
 		<javac srcdir="WEB-INF/src" destdir="WEB-INF/classes" classpath="${build.classpath}" source="1.5" target="1.5" debug="${build.debug}"/>
+		
+		<copy todir="WEB-INF/classes">
+			<fileset id="propertiesFiles" dir="WEB-INF/src">
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="war" depends="init-war,build">

@@ -3,25 +3,23 @@
  */
 package net.java.ao.blog;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Properties;
 
-import net.java.ao.DBParam;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
 import net.java.ao.blog.db.Blog;
 import net.java.ao.blog.db.Comment;
-import net.java.ao.blog.pages.EditPost;
 import net.java.ao.blog.pages.Index;
 import net.java.ao.blog.pages.ViewPost;
 import net.java.ao.db.DBCPPoolProvider;
 import net.java.ao.schema.Generator;
 import wicket.ISessionFactory;
-import wicket.Request;
 import wicket.Session;
 import wicket.markup.html.WebPage;
 import wicket.protocol.http.WebApplication;
-import wicket.session.ISessionStore;
 
 /**
  * @author Daniel Spiewak
@@ -40,8 +38,10 @@ public class BlogApplication extends WebApplication {
 		
 		getMarkupSettings().setStripWicketTags(true);
 		
-		provider = new DBCPPoolProvider(DatabaseProvider.getInstance(
-				"jdbc:mysql://localhost/wicket_blog", "root", "mysqlroot"));
+		Properties dbProperties = getDBProperties();
+		
+		provider = new DBCPPoolProvider(DatabaseProvider.getInstance(dbProperties.getProperty("db.uri"), 
+				dbProperties.getProperty("db.username"), dbProperties.getProperty("db.password")));
 		manager = new EntityManager(provider);
 		
 		try {
@@ -54,6 +54,25 @@ public class BlogApplication extends WebApplication {
 
 		mountBookmarkablePage("/index", Index.class);
 		mountBookmarkablePage("/post", ViewPost.class);
+	}
+	
+	private Properties getDBProperties() {
+		Properties back = new Properties();
+		
+		InputStream is = BlogApplication.class.getResourceAsStream("/db.properties");
+		
+		if (is == null) {
+			throw new RuntimeException("Unable to locate db.properties");
+		}
+		
+		try {
+			back.load(is);
+			is.close();
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to load db.properties");
+		}
+		
+		return back;
 	}
 	
 	private void generateSchema(EntityManager manager) {
