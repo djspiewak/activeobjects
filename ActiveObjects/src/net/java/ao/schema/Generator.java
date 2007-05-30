@@ -119,7 +119,7 @@ public class Generator {
 		return sql;
 	}
 	
-	public static void generate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
+	public static void migrate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
 		List<String> classNames = new ArrayList<String>();
 		
 		for (Class<? extends Entity> clazz : classes) {
