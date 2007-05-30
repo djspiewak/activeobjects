@@ -43,5 +43,9 @@ public interface IDatabaseProvider {
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
 	public Connection getConnection() throws SQLException;
 	
+	/**
+	 * Renders the abstract DDLTable to DB-specific DDL statements
+	 * <i>without the terminating semi-colon.</i> 
+	 */
 	public String render(DDLTable table);
 }

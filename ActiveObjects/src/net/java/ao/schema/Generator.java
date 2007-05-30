@@ -52,7 +52,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
@@ -75,8 +74,6 @@ import org.apache.commons.cli.PosixParser;
  */
 public class Generator {
 	private static final String CL_INVOCATION = "java -jar activeobjects-*.jar <options> class1 class2 ...";
-	
-	private static List<Class<? extends Entity>> parsed = new LinkedList<Class<? extends Entity>>();
 	
 	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException {
 		System.out.println(generate(null, args));
@@ -118,46 +115,33 @@ public class Generator {
 		
 		String sql = "";
 		DatabaseProvider provider = DatabaseProvider.getInstance(cl.getOptionValue(uriOption.getOpt()), null, null);
-		for (String cls : classes) {
-			sql += parseInterface(provider, (Class<? extends Entity>) Class.forName(cls, true, classloader));
+		
+		String[] statements = generateImpl(provider, classloader, classes);
+		for (String statement : statements) {
+			sql += statement + ";\n";
 		}
 		
 		return sql;
 	}
 	
 	public static void generate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
-		List<String> args = new ArrayList<String>();
-		args.addAll(Arrays.asList(new String[] {"-C", ".", "-U", provider.getURI()}));
+		List<String> classNames = new ArrayList<String>();
 		
 		for (Class<? extends Entity> clazz : classes) {
-			args.add(clazz.getCanonicalName());
+			classNames.add(clazz.getCanonicalName());
 		}
 		
-		String sql = null;
+		String[] statements = null;
 		try {
-			sql = generate(Generator.class.getClassLoader(), args.toArray(new String[args.size()]));
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			return;
+			statements = generateImpl(provider, Generator.class.getClassLoader(), classNames.toArray(new String[classNames.size()]));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
 		}
 		
-		StringTokenizer tokenizer = new StringTokenizer(sql, ";");
 		Connection conn = provider.getConnection();
-		
 		try {
 			Statement stmt = conn.createStatement();
-			
-			List<String> statements = new LinkedList<String>();
-			while (tokenizer.hasMoreTokens()) {
-				statements.add(tokenizer.nextToken());
-			}
-			Collections.reverse(statements);
 			
 			for (String statement : statements) {
 				if (!statement.trim().equals("")) {
@@ -171,9 +155,22 @@ public class Generator {
 		}
 	}
 	
-	private static String parseInterface(DatabaseProvider provider, Class<? extends Entity> clazz) {
+	private static String[] generateImpl(DatabaseProvider provider, ClassLoader classloader, String... classes) throws ClassNotFoundException {
+		List<String> back = new ArrayList<String>();
+		List<Class<? extends Entity>> parsed = new LinkedList<Class<? extends Entity>>();
+		
+		for (String cls : classes) {
+			parseInterface(provider, (Class<? extends Entity>) Class.forName(cls, true, classloader), parsed, back);
+		}
+		Collections.reverse(back);		// dependency tree is implicitly built by the recursive algorithm, reversing the list is sufficient
+		
+		return back.toArray(new String[back.size()]);
+	}
+	
+	private static void parseInterface(DatabaseProvider provider, Class<? extends Entity> clazz, List<Class<? extends Entity>> parsed,
+			List<String> back) {
 		if (parsed.contains(clazz)) {
-			return "";
+			return;
 		}
 		parsed.add(clazz);
 		
@@ -189,13 +186,12 @@ public class Generator {
 		table.setForeignKeys(parseForeignKeys(clazz));
 		
 		sql.append(provider.render(table));
-		sql.append('\n');
+		
+		back.add(sql.toString());
 		
 		for (Class<? extends Entity> refClass : classes) {
-			sql.append(parseInterface(provider, refClass));
+			parseInterface(provider, refClass, parsed, back);
 		}
-		
-		return sql.toString();
 	}
 	
 	private static DDLField[] parseFields(Class<? extends Entity> clazz, Set<Class<? extends Entity>> classes) {

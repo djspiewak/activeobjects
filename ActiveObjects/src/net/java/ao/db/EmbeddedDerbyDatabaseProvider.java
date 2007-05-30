@@ -100,7 +100,7 @@ public class EmbeddedDerbyDatabaseProvider extends DatabaseProvider {
 		}
 		back.append(append);
 		
-		back.append(");");
+		back.append(")");
 		
 		return back.toString();
 	}

@@ -99,7 +99,7 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		}
 		back.append(append);
 		
-		back.append(") ENGINE=InnoDB;");
+		back.append(") ENGINE=InnoDB");
 		
 		return back.toString();
 	}
