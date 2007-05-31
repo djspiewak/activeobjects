@@ -74,6 +74,17 @@ public class DBCPPoolProvider extends PoolProvider {
 	public String render(DDLTable table) {
 		return delegate.render(table);
 	}
+	
+	@Override
+	public boolean isAvailable() {
+		try {
+			Class.forName("org.apache.commons.dbcp.BasicDataSource");
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+		
+		return true;
+	}
 
 	public void close() {
 		try {

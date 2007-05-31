@@ -40,5 +40,8 @@ public abstract class PoolProvider extends DatabaseProvider {
 		super(uri, username, password);
 	}
 	
+	@Override
+	public abstract boolean isAvailable();
+	
 	public abstract void close();
 }
