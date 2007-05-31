@@ -50,12 +50,9 @@ public class DBCPPoolProvider extends PoolProvider {
 	}
 	
 	private BasicDataSource ds;
-	private DatabaseProvider delegate;
 	
 	public DBCPPoolProvider(DatabaseProvider delegate) {
-		super(delegate.getURI(), delegate.getUsername(), delegate.getPassword());
-		
-		this.delegate = delegate;
+		super(delegate);
 		
 		ds = new BasicDataSource();
 		try {
@@ -77,10 +74,11 @@ public class DBCPPoolProvider extends PoolProvider {
 	}
 	
 	public String render(DDLTable table) {
-		return delegate.render(table);
+		return getDelegate().render(table);
 	}
 
-	public void close() {
+	@Override
+	public void dispose() {
 		try {
 			ds.close();
 		} catch (SQLException e) {

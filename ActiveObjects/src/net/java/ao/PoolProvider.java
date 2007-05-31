@@ -39,10 +39,14 @@ import java.util.List;
  */
 public abstract class PoolProvider extends DatabaseProvider {
 	protected static final List<Class<? extends PoolProvider>> PROVIDERS = new ArrayList<Class<? extends PoolProvider>>();
-
-	protected PoolProvider(String uri, String username, String password) {
-		super(uri, username, password);
-	}
 	
-	public abstract void close();
+	private DatabaseProvider delegate;
+
+	protected PoolProvider(DatabaseProvider delegate) {
+		super(delegate.getURI(), delegate.getUsername(), delegate.getPassword());
+	}
+
+	public final DatabaseProvider getDelegate() {
+		return delegate;
+	}
 }

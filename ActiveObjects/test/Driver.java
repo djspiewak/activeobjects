@@ -3,9 +3,7 @@ import java.text.DateFormat;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
-import net.java.ao.PoolProvider;
 import net.java.ao.Transaction;
-import net.java.ao.db.DBCPPoolProvider;
 
 /*
  * Created on May 2, 2007
@@ -21,10 +19,8 @@ public class Driver {
 			System.exit(-1);
 		}
 		
-		PoolProvider provider = new DBCPPoolProvider(DatabaseProvider.getInstance(args[0], args[1], args[2]));
-
 		long millis = System.currentTimeMillis();
-		EntityManager manager = new EntityManager(provider);
+		EntityManager manager = new EntityManager(DatabaseProvider.getInstance(args[0], args[1], args[2]));
 		
 		runTestTest(manager);
 		runRoomsTest(manager);
@@ -33,7 +29,7 @@ public class Driver {
 		
 		System.out.println("Total time: " + (System.currentTimeMillis() - millis));
 		
-		provider.close();
+		manager.getProvider().dispose();
 	}
 	
 	private static void runTestTest(EntityManager manager) throws SQLException {

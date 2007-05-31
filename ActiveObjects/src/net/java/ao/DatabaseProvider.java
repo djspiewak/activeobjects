@@ -30,6 +30,7 @@
  */
 package net.java.ao;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -79,6 +80,9 @@ public abstract class DatabaseProvider {
 		Connection back = DriverManager.getConnection(getURI(), getUsername(), getPassword());
 		
 		return back;
+	}
+	
+	public void dispose() {
 	}
 	
 	protected void parseForeignKeys(StringBuilder append, DDLTable table) {
@@ -175,6 +179,10 @@ public abstract class DatabaseProvider {
 	}
 	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
+		return getInstance(uri, username, password, true);		// enable pooling by default (if available)
+	}
+	
+	public final static DatabaseProvider getInstance(String uri, String username, String password, boolean enablePooling) {
 		SupportedDBProvider provider = SupportedDBProvider.getProviderForURI(uri);
 		if (provider == null) {
 			throw new RuntimeException("Unable to locate a valid database provider for URI: " + uri);
@@ -183,6 +191,29 @@ public abstract class DatabaseProvider {
 		DatabaseProvider back = provider.createInstance(uri, username, password);
 		if (back == null) {
 			throw new RuntimeException("Unable to instantiate database provider for URI: " + uri);
+		}
+		
+		if (enablePooling) {
+			for (Class<? extends PoolProvider> providerClass : PoolProvider.PROVIDERS) {
+				try {
+					if ((Boolean) providerClass.getMethod("isAvailable").invoke(null)) {
+						back = providerClass.getConstructor(DatabaseProvider.class).newInstance(back);
+						break;
+					}
+				} catch (IllegalArgumentException e) {
+					continue;
+				} catch (SecurityException e) {
+					continue;
+				} catch (IllegalAccessException e) {
+					continue;
+				} catch (InvocationTargetException e) {
+					continue;
+				} catch (NoSuchMethodException e) {
+					continue;
+				} catch (InstantiationException e) {
+					continue;
+				}
+			}
 		}
 		
 		return back;
