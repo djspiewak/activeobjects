@@ -109,7 +109,7 @@ public class Generator {
 		ClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpath).getCanonicalPath() + "/")});
 		
 		String sql = "";
-		DatabaseProvider provider = DatabaseProvider.getInstance(uri, null, null);
+		DatabaseProvider provider = DatabaseProvider.getInstance(uri, null, null, false);
 		
 		String[] statements = generateImpl(provider, classloader, classes);
 		for (String statement : statements) {
