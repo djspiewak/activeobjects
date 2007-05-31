@@ -35,6 +35,7 @@ import java.sql.Driver;
 import java.sql.SQLException;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.PoolProvider;
 import net.java.ao.schema.ddl.DDLTable;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -42,7 +43,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 /**
  * @author Daniel Spiewak
  */
-public class DBCPPoolProvider extends DatabaseProvider implements IPoolProvider {
+public class DBCPPoolProvider extends PoolProvider {
 	private BasicDataSource ds;
 	private DatabaseProvider delegate;
 	

@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import net.java.ao.db.IDatabaseProvider;
-
 /**
  * @author Daniel Spiewak
  */
@@ -46,10 +44,10 @@ class DBEncapsulator {
 	private static final Map<Thread, DBEncapsulator> instances = new HashMap<Thread, DBEncapsulator>();
 	private static final ReadWriteLock instancesLock = new ReentrantReadWriteLock();
 	
-	private IDatabaseProvider provider;
+	private DatabaseProvider provider;
 	private Connection connection;
 	
-	private DBEncapsulator(IDatabaseProvider provider) {
+	private DBEncapsulator(DatabaseProvider provider) {
 		this.provider = provider;
 	}
 	
@@ -75,7 +73,7 @@ class DBEncapsulator {
 		}
 	}
 
-	public static DBEncapsulator getInstance(IDatabaseProvider databaseProvider) {
+	public static DBEncapsulator getInstance(DatabaseProvider databaseProvider) {
 		instancesLock.writeLock().lock();
 		try {
 			if (instances.containsKey(Thread.currentThread())) {

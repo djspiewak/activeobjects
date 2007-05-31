@@ -3,9 +3,9 @@ import java.text.DateFormat;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
+import net.java.ao.PoolProvider;
 import net.java.ao.Transaction;
 import net.java.ao.db.DBCPPoolProvider;
-import net.java.ao.db.IPoolProvider;
 
 /*
  * Created on May 2, 2007
@@ -21,7 +21,7 @@ public class Driver {
 			System.exit(-1);
 		}
 		
-		IPoolProvider provider = new DBCPPoolProvider(DatabaseProvider.getInstance(args[0], args[1], args[2]));
+		PoolProvider provider = new DBCPPoolProvider(DatabaseProvider.getInstance(args[0], args[1], args[2]));
 
 		long millis = System.currentTimeMillis();
 		EntityManager manager = new EntityManager(provider);

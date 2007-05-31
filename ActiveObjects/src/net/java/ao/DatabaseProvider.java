@@ -31,11 +31,11 @@
 package net.java.ao;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import net.java.ao.db.IDatabaseProvider;
 import net.java.ao.db.SupportedDBProvider;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
@@ -43,7 +43,7 @@ import net.java.ao.schema.ddl.DDLTable;
 /**
  * @author Daniel Spiewak
  */
-public abstract class DatabaseProvider implements IDatabaseProvider {
+public abstract class DatabaseProvider {
 	private String uri, username, password;
 	
 	protected DatabaseProvider(String uri, String username, String password) {
@@ -52,6 +52,10 @@ public abstract class DatabaseProvider implements IDatabaseProvider {
 		this.username = username;
 		this.password = password;
 	}
+	
+	public abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
+	
+	public abstract String render(DDLTable table);
 	
 	public String getURI() {
 		return uri;

@@ -45,13 +45,11 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import net.java.ao.db.IDatabaseProvider;
-
 /**
  * @author Daniel Spiewak
  */
 public final class EntityManager {
-	private volatile IDatabaseProvider provider;
+	private volatile DatabaseProvider provider;
 	
 	private Map<Entity, EntityProxy<? extends Entity>> proxies;
 	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
@@ -59,7 +57,7 @@ public final class EntityManager {
 	private Map<CacheKey, Entity> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
-	public EntityManager(IDatabaseProvider provider) {
+	public EntityManager(DatabaseProvider provider) {
 		this.provider = provider;
 		
 		proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
@@ -260,7 +258,7 @@ public final class EntityManager {
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
 	}
 
-	public IDatabaseProvider getProvider() {
+	public DatabaseProvider getProvider() {
 		return provider;
 	}
 

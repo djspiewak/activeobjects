@@ -1,7 +1,7 @@
 /*
  * Copyright 2007, Daniel Spiewak
  * All rights reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -28,24 +28,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.java.ao.db;
+package net.java.ao;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-
-import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
  */
-public interface IDatabaseProvider {
-	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
-	public Connection getConnection() throws SQLException;
+public abstract class PoolProvider extends DatabaseProvider {
+
+	protected PoolProvider(String uri, String username, String password) {
+		super(uri, username, password);
+	}
 	
-	/**
-	 * Renders the abstract DDLTable to DB-specific DDL statements
-	 * <i>without the terminating semi-colon.</i> 
-	 */
-	public String render(DDLTable table);
+	public abstract void close();
 }
