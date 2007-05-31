@@ -38,6 +38,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.db.SupportedDBProvider;
+import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 
@@ -56,7 +57,69 @@ public abstract class DatabaseProvider {
 	
 	public abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
 	
-	public abstract String render(DDLTable table);
+	protected abstract String renderAutoIncrement();
+	
+	public String render(DDLTable table) {
+		StringBuilder back = new StringBuilder("CREATE TABLE ");
+		back.append(table.getName());
+		back.append(" (\n");
+		
+		StringBuilder append = new StringBuilder();
+		for (DDLField field : table.getFields()) {
+			back.append("    ");
+			back.append(field.getName());
+			back.append(" ");
+			back.append(convertTypeToString(field.getType()));
+			
+			if (considerPrecision(field) && field.getPrecision() > 0) {
+				back.append('(');
+				if (field.getScale() > 0) {
+					back.append(field.getPrecision());
+					back.append(',');
+					back.append(field.getScale());
+				} else {
+					back.append(field.getPrecision());
+				}
+				back.append(')');
+			}
+			
+			if (field.isNotNull()) {
+				back.append(" NOT NULL");
+			}
+			if (field.isAutoIncrement()) {
+				back.append(' ');
+				back.append(renderAutoIncrement());
+			}
+			if (field.isUnique()) {
+				back.append(" UNIQUE");
+			}
+			if (field.isPrimaryKey()) {
+				append.append("    PRIMARY KEY (");
+				append.append(field.getName());
+				append.append("),\n");
+			}
+			
+			back.append(",\n");
+		}
+		
+		parseForeignKeys(append, table);
+		
+		if (append.length() > 0) {
+			append.setLength(append.length() - ",\n".length());
+			append.append('\n');
+		}
+		back.append(append);
+		
+		back.append(")");
+		
+		String tailAppend = renderAppend();
+		if (tailAppend != null) {
+			back.append(' ');
+			back.append(tailAppend);
+		}
+		
+		return back.toString();
+	}
 	
 	public String getURI() {
 		return uri;
@@ -97,7 +160,13 @@ public abstract class DatabaseProvider {
 		}
 	}
 	
+	protected int sanitizeType(int type) {
+		return type;
+	}
+
 	protected String convertTypeToString(int type) {
+		type = sanitizeType(type);
+		
 		switch (type) {
 			case Types.BIGINT:
 				return "BIGINT";
@@ -176,6 +245,14 @@ public abstract class DatabaseProvider {
 		}
 		
 		return null;
+	}
+	
+	protected String renderAppend() {
+		return null;
+	}
+	
+	protected boolean considerPrecision(DDLField field) {
+		return true;
 	}
 	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {

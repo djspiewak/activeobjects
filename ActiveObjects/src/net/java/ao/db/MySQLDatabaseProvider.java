@@ -34,8 +34,6 @@ import java.sql.Driver;
 import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
-import net.java.ao.schema.ddl.DDLField;
-import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
@@ -50,61 +48,6 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		return (Class<? extends Driver>) Class.forName("com.mysql.jdbc.Driver");
 	}
 	
-	public String render(DDLTable table) {
-		StringBuilder back = new StringBuilder("CREATE TABLE ");
-		back.append(table.getName());
-		back.append(" (\n");
-		
-		StringBuilder append = new StringBuilder();
-		for (DDLField field : table.getFields()) {
-			back.append("    ");
-			back.append(field.getName());
-			back.append(" ");
-			back.append(convertTypeToString(field.getType()));
-			
-			if (field.getPrecision() > 0) {
-				back.append('(');
-				if (field.getScale() > 0) {
-					back.append(field.getPrecision());
-					back.append(',');
-					back.append(field.getScale());
-				} else {
-					back.append(field.getPrecision());
-				}
-				back.append(')');
-			}
-			
-			if (field.isNotNull()) {
-				back.append(" NOT NULL");
-			}
-			if (field.isAutoIncrement()) {
-				back.append(" AUTO_INCREMENT");
-			}
-			if (field.isUnique()) {
-				back.append(" UNIQUE");
-			}
-			if (field.isPrimaryKey()) {
-				append.append("    PRIMARY KEY (");
-				append.append(field.getName());
-				append.append("),\n");
-			}
-			
-			back.append(",\n");
-		}
-		
-		parseForeignKeys(append, table);
-		
-		if (append.length() > 0) {
-			append.setLength(append.length() - ",\n".length());
-			append.append('\n');
-		}
-		back.append(append);
-		
-		back.append(") ENGINE=InnoDB");
-		
-		return back.toString();
-	}
-	
 	@Override
 	protected String convertTypeToString(int type) {
 		switch (type) {
@@ -113,5 +56,15 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		return super.convertTypeToString(type);
+	}
+
+	@Override
+	protected String renderAutoIncrement() {
+		return "AUTO_INCREMENT";
+	}
+	
+	@Override
+	protected String renderAppend() {
+		return "ENGINE=InnoDB";
 	}
 }

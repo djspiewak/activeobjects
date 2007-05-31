@@ -31,9 +31,9 @@
 package net.java.ao.db;
 
 import java.sql.Driver;
+import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
-import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
@@ -48,9 +48,37 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("oracle.jdbc.OracleDriver");
 	}
-
+	
 	@Override
-	public String render(DDLTable table) {
-		throw new UnsupportedOperationException("Oracle DDL generation currently not supported");		// TODO	implement
+	protected String convertTypeToString(int type) {
+		switch (type) {
+			case Types.INTEGER:
+				return "NUMBER";
+
+			case Types.NUMERIC:
+				return "NUMBER";
+				
+			case Types.DECIMAL:
+				return "NUMBER";
+				
+			case Types.SMALLINT:
+				return "NUMBER";
+				
+			case Types.FLOAT:
+				return "NUMBER";
+				
+			case Types.DOUBLE:
+				return "NUMBER";
+				
+			case Types.REAL:
+				return "NUMBER";
+		}
+		
+		return super.convertTypeToString(type);
+	}
+	
+	@Override
+	protected String renderAutoIncrement() {
+		return "INCREMENT_BY 1";
 	}
 }

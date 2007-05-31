@@ -36,7 +36,6 @@ import java.sql.SQLException;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.PoolProvider;
-import net.java.ao.schema.ddl.DDLTable;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
@@ -72,10 +71,6 @@ public class DBCPPoolProvider extends PoolProvider {
 	public Connection getConnection() throws SQLException {
 		return ds.getConnection();
 	}
-	
-	public String render(DDLTable table) {
-		return getDelegate().render(table);
-	}
 
 	@Override
 	public void dispose() {
@@ -86,7 +81,7 @@ public class DBCPPoolProvider extends PoolProvider {
 		
 		ds = null;
 	}
-	
+
 	public static boolean isAvailable() {
 		try {
 			Class.forName("org.apache.commons.dbcp.BasicDataSource");

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.java.ao.db.DBCPPoolProvider;
+import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
@@ -54,5 +55,15 @@ public abstract class PoolProvider extends DatabaseProvider {
 
 	public final DatabaseProvider getDelegate() {
 		return delegate;
+	}
+	
+	@Override
+	public String render(DDLTable table) {
+		return delegate.render(table);
+	}
+	
+	@Override
+	protected String renderAutoIncrement() {
+		return delegate.renderAutoIncrement();
 	}
 }
