@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Daniel Spiewak
@@ -221,9 +223,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			Connection conn = getConnectionImpl();
 			
 			try {
-				PreparedStatement stmt = conn.prepareStatement("SELECT " + name + " FROM " + table + " WHERE id = ?");
+				String sql = "SELECT " + name + " FROM " + table + " WHERE id = ?";
+				PreparedStatement stmt = conn.prepareStatement(sql);
 				stmt.setInt(1, id);
 	
+				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 				ResultSet res = stmt.executeQuery();
 				if (res.next()) {
 					back = convertValue(res, name, type);
@@ -272,6 +276,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			}
 			stmt.setInt(index++, id);
 
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			stmt.executeUpdate();
 
 			stmt.close();
@@ -319,6 +324,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 				stmt.setInt(i + 1, id);
 			}
 			
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
 				if (finalType.equals(this.type) && res.getInt("a.outMap") == id) {

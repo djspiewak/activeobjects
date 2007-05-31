@@ -22,6 +22,8 @@ public class Driver {
 		long millis = System.currentTimeMillis();
 		EntityManager manager = new EntityManager(DatabaseProvider.getInstance(args[0], args[1], args[2]));
 		
+//		Logger.getLogger("net.java.ao").setLevel(Level.INFO);
+		
 		runTestTest(manager);
 		runRoomsTest(manager);
 		runManyTest(manager);

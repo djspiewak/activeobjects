@@ -44,11 +44,18 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Daniel Spiewak
  */
 public final class EntityManager {
+	
+	static {
+		Logger.getLogger("net.java.ao").setLevel(Level.OFF);
+	}
+	
 	private volatile DatabaseProvider provider;
 	
 	private Map<Entity, EntityProxy<? extends Entity>> proxies;
@@ -145,6 +152,7 @@ public final class EntityManager {
 				stmt.setObject(i + 1, value);
 			}
 			
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			stmt.executeUpdate();
 			
 			ResultSet res = stmt.getGeneratedKeys();
@@ -165,9 +173,11 @@ public final class EntityManager {
 		try {
 			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 			try {
-				PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + entity.getTableName() + " WHERE id = ?");
+				String sql = "DELETE FROM " + entity.getTableName() + " WHERE id = ?";
+				PreparedStatement stmt = conn.prepareStatement(sql);
 				stmt.setInt(1, entity.getID());
 				
+				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 				stmt.executeUpdate();
 				stmt.close();
 			} finally {
@@ -196,8 +206,8 @@ public final class EntityManager {
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT prime.id FROM " + table + " prime "
-					+ (join != null ? join : "") + (criteria != null ? " WHERE " + criteria : ""));
+			String sql = "SELECT prime.id FROM " + table + " prime " + (join != null ? join : "") + (criteria != null ? " WHERE " + criteria : "");
+			PreparedStatement stmt = conn.prepareStatement(sql);
 			
 			if (criteria != null) {
 				for (int i = 0; i < parameters.length; i++) {
@@ -208,7 +218,8 @@ public final class EntityManager {
 					stmt.setObject(i + 1, parameters[i]);
 				}
 			}
-			
+
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
 				back.add(get(type, res.getInt("prime.id")));
@@ -244,7 +255,8 @@ public final class EntityManager {
 				
 				stmt.setObject(i + 1, parameters[i]);
 			}
-			
+
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
 				back.add(get(type, res.getInt(idField)));

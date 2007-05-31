@@ -52,6 +52,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
@@ -140,6 +142,7 @@ public class Generator {
 			
 			for (String statement : statements) {
 				if (!statement.trim().equals("")) {
+					Logger.getLogger("net.java.ao").log(Level.INFO, statement);
 					stmt.executeUpdate(statement);
 				}
 			}
