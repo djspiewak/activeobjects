@@ -30,8 +30,6 @@
  */
 package net.java.ao.db;
 
-import java.sql.Types;
-
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
@@ -98,15 +96,5 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 		back.append(")");
 		
 		return back.toString();
-	}
-	
-	@Override
-	protected String convertTypeToString(int type) {
-		switch (type) {
-			case Types.CLOB:
-				return "CLOB";
-		}
-		
-		return super.convertTypeToString(type);
 	}
 }

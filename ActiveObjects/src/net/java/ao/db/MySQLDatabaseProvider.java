@@ -31,6 +31,7 @@
 package net.java.ao.db;
 
 import java.sql.Driver;
+import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLField;
@@ -102,5 +103,15 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		back.append(") ENGINE=InnoDB");
 		
 		return back.toString();
+	}
+	
+	@Override
+	protected String convertTypeToString(int type) {
+		switch (type) {
+			case Types.CLOB:
+				return "TEXT";
+		}
+		
+		return super.convertTypeToString(type);
 	}
 }

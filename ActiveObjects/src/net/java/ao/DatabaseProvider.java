@@ -118,7 +118,7 @@ public abstract class DatabaseProvider {
 				return "CHAR";
 				
 			case Types.CLOB:
-				return "TEXT";
+				return "CLOB";
 				
 			case Types.DATE:
 				return "DATE";
