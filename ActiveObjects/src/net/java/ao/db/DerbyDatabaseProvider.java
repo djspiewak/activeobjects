@@ -30,6 +30,8 @@
  */
 package net.java.ao.db;
 
+import java.sql.Types;
+
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
@@ -55,7 +57,50 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 			back.append(" ");
 			back.append(convertTypeToString(field.getType()));
 			
-			if (field.getPrecision() > 0) {
+			boolean considerPrecision = true;
+			switch (field.getType()) {
+				case Types.BIGINT:
+					considerPrecision = false;
+				break;
+				
+				case Types.DATE:
+					considerPrecision = false;
+				break;
+				
+				case Types.DOUBLE:
+					considerPrecision = false;
+				break;
+				
+				case Types.INTEGER:
+					considerPrecision = false;
+				break;
+				
+				case Types.REAL:
+					considerPrecision = false;
+				break;
+				
+				case Types.SMALLINT:
+					considerPrecision = false;
+				break;
+				
+				case Types.TIME:
+					considerPrecision = false;
+				break;
+				
+				case Types.TIMESTAMP:
+					considerPrecision = false;
+				break;
+				
+				case Types.TINYINT:
+					considerPrecision = false;
+				break;
+				
+				case Types.BIT:
+					considerPrecision = false;
+				break;
+			}
+			
+			if (considerPrecision && field.getPrecision() > 0) {
 				back.append('(');
 				if (field.getScale() > 0) {
 					back.append(field.getPrecision());
@@ -96,5 +141,18 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 		back.append(")");
 		
 		return back.toString();
+	}
+	
+	@Override
+	protected int sanitizeType(int type) {
+		switch (type) {
+			case Types.TINYINT:
+				return Types.SMALLINT;
+			
+			case Types.BIT:
+				return Types.SMALLINT;
+		}
+		
+		return super.sanitizeType(type);
 	}
 }
