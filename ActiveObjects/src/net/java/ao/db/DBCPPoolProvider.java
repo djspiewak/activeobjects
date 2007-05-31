@@ -44,6 +44,11 @@ import org.apache.commons.dbcp.BasicDataSource;
  * @author Daniel Spiewak
  */
 public class DBCPPoolProvider extends PoolProvider {
+	
+	static {
+		PROVIDERS.add(DBCPPoolProvider.class);
+	}
+	
 	private BasicDataSource ds;
 	private DatabaseProvider delegate;
 	
@@ -74,17 +79,6 @@ public class DBCPPoolProvider extends PoolProvider {
 	public String render(DDLTable table) {
 		return delegate.render(table);
 	}
-	
-	@Override
-	public boolean isAvailable() {
-		try {
-			Class.forName("org.apache.commons.dbcp.BasicDataSource");
-		} catch (ClassNotFoundException e) {
-			return false;
-		}
-		
-		return true;
-	}
 
 	public void close() {
 		try {
@@ -93,5 +87,15 @@ public class DBCPPoolProvider extends PoolProvider {
 		}
 		
 		ds = null;
+	}
+	
+	public static boolean isAvailable() {
+		try {
+			Class.forName("org.apache.commons.dbcp.BasicDataSource");
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+		
+		return true;
 	}
 }

@@ -81,16 +81,6 @@ public abstract class DatabaseProvider {
 		return back;
 	}
 	
-	public boolean isAvailable() {
-		try {
-			getDriverClass();
-		} catch (ClassNotFoundException e) {
-			return false;
-		}
-		
-		return true;
-	}
-	
 	protected void parseForeignKeys(StringBuilder append, DDLTable table) {
 		for (DDLForeignKey key : table.getForeignKeys()) {
 			append.append("    FOREIGN KEY (");

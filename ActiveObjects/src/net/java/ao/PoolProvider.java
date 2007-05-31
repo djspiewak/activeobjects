@@ -30,18 +30,19 @@
  */
 package net.java.ao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * @author Daniel Spiewak
  */
 public abstract class PoolProvider extends DatabaseProvider {
+	protected static final List<Class<? extends PoolProvider>> PROVIDERS = new ArrayList<Class<? extends PoolProvider>>();
 
 	protected PoolProvider(String uri, String username, String password) {
 		super(uri, username, password);
 	}
-	
-	@Override
-	public abstract boolean isAvailable();
 	
 	public abstract void close();
 }
