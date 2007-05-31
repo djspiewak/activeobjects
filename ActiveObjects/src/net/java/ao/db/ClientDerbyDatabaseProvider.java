@@ -1,7 +1,7 @@
 /*
  * Copyright 2007, Daniel Spiewak
  * All rights reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -35,13 +35,14 @@ import java.sql.Driver;
 /**
  * @author Daniel Spiewak
  */
-public class EmbeddedDerbyDatabaseProvider extends DerbyDatabaseProvider {
+public class ClientDerbyDatabaseProvider extends DerbyDatabaseProvider {
 
-	public EmbeddedDerbyDatabaseProvider(String uri, String username, String password) {
+	public ClientDerbyDatabaseProvider(String uri, String username, String password) {
 		super(uri, username, password);
 	}
 
+	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-		return (Class<? extends Driver>) Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+		return (Class<? extends Driver>) Class.forName("org.apache.derby.jdbc.ClientDriver");
 	}
 }
