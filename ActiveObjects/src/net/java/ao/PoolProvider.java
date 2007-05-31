@@ -30,15 +30,22 @@
  */
 package net.java.ao;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import net.java.ao.db.DBCPPoolProvider;
 
 
 /**
  * @author Daniel Spiewak
  */
 public abstract class PoolProvider extends DatabaseProvider {
-	protected static final List<Class<? extends PoolProvider>> PROVIDERS = new ArrayList<Class<? extends PoolProvider>>();
+	
+	static {
+		DBCPPoolProvider.class.getName();
+	}
+	
+	protected static final Set<Class<? extends PoolProvider>> PROVIDERS = new HashSet<Class<? extends PoolProvider>>();
 	
 	private DatabaseProvider delegate;
 
