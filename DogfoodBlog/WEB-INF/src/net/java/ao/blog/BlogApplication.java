@@ -53,7 +53,6 @@ import wicket.protocol.http.WebApplication;
  */
 public class BlogApplication extends WebApplication {
 	private EntityManager manager;
-	private DBCPPoolProvider provider;
 	
 	public EntityManager getEntityManager() {
 		return manager;
@@ -67,9 +66,10 @@ public class BlogApplication extends WebApplication {
 		
 		Properties dbProperties = getDBProperties();
 		
-		provider = new DBCPPoolProvider(DatabaseProvider.getInstance(dbProperties.getProperty("db.uri"), 
-				dbProperties.getProperty("db.username"), dbProperties.getProperty("db.password")));
-		manager = new EntityManager(provider);
+		String uri = dbProperties.getProperty("db.uri");
+		String username = dbProperties.getProperty("db.username");
+		String password = dbProperties.getProperty("db.password");
+		manager = new EntityManager(DatabaseProvider.getInstance(uri, username, password));
 		
 		try {
 			if (manager.find(Blog.class).length == 0) {
@@ -104,7 +104,7 @@ public class BlogApplication extends WebApplication {
 	
 	private void generateSchema(EntityManager manager) {
 		try {
-			Generator.migrate(provider, Comment.class);
+			Generator.migrate(manager.getProvider(), Comment.class);
 			
 			manager.create(Blog.class).setName("AO Dogfood Blog");
 		} catch (SQLException e) {
@@ -116,7 +116,7 @@ public class BlogApplication extends WebApplication {
 	protected void destroy() {
 		super.destroy();
 		
-		provider.close();
+		manager.getProvider().dispose();
 	}
 
 	@Override
