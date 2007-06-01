@@ -91,8 +91,10 @@ CREATE TABLE personToPerson (
 		sample code showing some basic CRUD operations with our new model.</p>
 
 <pre>// ...
-EntityManager manager = new EntityManager(DatabaseProvider.getInstance(
-		"jdbc:mysql://localhost/ao_test", "user", "password");
+
+// retrieves an EntityManager relevant to the specified URI
+// if available (i.e. the classpath set appropriately), the connection will be pooled
+EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "user", "password");
 		
 Family family = manager.create(Family.class);
 family.setName("Spiewak");
