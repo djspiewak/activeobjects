@@ -40,6 +40,8 @@ public abstract class PoolProvider extends DatabaseProvider {
 
 	protected PoolProvider(DatabaseProvider delegate) {
 		super(delegate.getURI(), delegate.getUsername(), delegate.getPassword());
+		
+		this.delegate = delegate;
 	}
 
 	public final DatabaseProvider getDelegate() {
