@@ -47,10 +47,12 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +60,6 @@ import java.util.logging.Logger;
 import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
-import net.java.ao.ManyToMany;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
@@ -155,44 +156,87 @@ public class Generator {
 	
 	private static String[] generateImpl(DatabaseProvider provider, ClassLoader classloader, String... classes) throws ClassNotFoundException {
 		List<String> back = new ArrayList<String>();
-		List<Class<? extends Entity>> parsed = new LinkedList<Class<? extends Entity>>();
+		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
+			new HashMap<Class<? extends Entity>, Set<Class<? extends Entity>>>();
+		Set<Class<? extends Entity>> roots = new LinkedHashSet<Class<? extends Entity>>();
 		
 		for (String cls : classes) {
-			parseInterface(provider, (Class<? extends Entity>) Class.forName(cls, true, classloader), parsed, back);
+			parseDependencies(deps, roots, (Class<? extends Entity>) Class.forName(cls, true, classloader));
 		}
-		Collections.reverse(back);		// dependency tree is implicitly built by the recursive algorithm, reversing the list is sufficient
+		
+		while (!roots.isEmpty()) {
+			Class<? extends Entity>[] rootsArray = roots.toArray(new Class[roots.size()]);
+			roots.remove(rootsArray[0]);
+			
+			Class<? extends Entity> clazz = rootsArray[0];
+			parseInterface(provider, clazz, back);
+			
+			List<Class<? extends Entity>> toRemove = new LinkedList<Class<? extends Entity>>();
+			Iterator<Class<? extends Entity>> depIterator = deps.keySet().iterator();
+			while (depIterator.hasNext()) {
+				Class<? extends Entity> depClass = depIterator.next();
+				
+				Set<Class<? extends Entity>> individualDeps = deps.get(depClass);
+				individualDeps.remove(clazz);
+				
+				if (individualDeps.isEmpty()) {
+					roots.add(depClass);
+					toRemove.add(depClass);
+				}
+			}
+			
+			for (Class<? extends Entity> remove : toRemove) {
+				deps.remove(remove);
+			}
+		}
 		
 		return back.toArray(new String[back.size()]);
 	}
 	
-	private static void parseInterface(DatabaseProvider provider, Class<? extends Entity> clazz, List<Class<? extends Entity>> parsed,
-			List<String> back) {
-		if (parsed.contains(clazz)) {
-			return;
+	private static void parseDependencies(Map<Class <? extends Entity>, Set<Class<? extends Entity>>> deps, 
+			Set<Class <? extends Entity>> roots, Class<? extends Entity>... classes) {
+		for (Class<? extends Entity> clazz : classes) {
+			if (deps.containsKey(clazz)) {
+				continue;
+			}
+			
+			Set<Class<? extends Entity>> individualDeps = new LinkedHashSet<Class<? extends Entity>>();
+			
+			for (Method method : clazz.getMethods()) {
+				String attributeName = getAttributeNameFromMethod(method);
+				Class<?> type = getAttributeTypeFromMethod(method);
+				
+				if (attributeName != null && type != null && interfaceInheritsFrom(type, Entity.class)) {
+					individualDeps.add((Class<? extends Entity>) type);
+					
+					parseDependencies(deps, roots, (Class<? extends Entity>) type);
+				}
+			}
+			
+			if (individualDeps.size() == 0) {
+				roots.add(clazz);
+			} else {
+				deps.put(clazz, individualDeps);
+			}
 		}
-		parsed.add(clazz);
-		
+	}
+	
+	private static void parseInterface(DatabaseProvider provider, Class<? extends Entity> clazz, List<String> back) {
 		StringBuilder sql = new StringBuilder();
 		String sqlName = Common.getTableName(clazz);
-		
-		Set<Class<? extends Entity>> classes = new LinkedHashSet<Class<? extends Entity>>();
 		
 		DDLTable table = new DDLTable();
 		table.setName(sqlName);
 		
-		table.setFields(parseFields(clazz, classes));
+		table.setFields(parseFields(clazz));
 		table.setForeignKeys(parseForeignKeys(clazz));
 		
 		sql.append(provider.render(table));
 		
 		back.add(sql.toString());
-		
-		for (Class<? extends Entity> refClass : classes) {
-			parseInterface(provider, refClass, parsed, back);
-		}
 	}
 	
-	private static DDLField[] parseFields(Class<? extends Entity> clazz, Set<Class<? extends Entity>> classes) {
+	private static DDLField[] parseFields(Class<? extends Entity> clazz) {
 		List<DDLField> fields = new ArrayList<DDLField>();
 		
 		List<String> attributes = new LinkedList<String>();
@@ -208,14 +252,8 @@ public class Generator {
 		fields.add(field);
 		
 		for (Method method : clazz.getDeclaredMethods()) {
-			ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
-			
 			String attributeName = getAttributeNameFromMethod(method);
 			Class<?> type = getAttributeTypeFromMethod(method);
-			
-			if (manyToManyAnnotation != null) {
-				classes.add(manyToManyAnnotation.value());
-			}
 			
 			if (attributeName != null && type != null) {
 				if (attributes.contains(attributeName)) {
@@ -233,8 +271,6 @@ public class Generator {
 					precision = sqlTypeAnnotation.precision();
 					scale = sqlTypeAnnotation.scale();
 				} else if (interfaceInheritsFrom(type, Entity.class)) {
-					classes.add((Class<? extends Entity>) type);
-					
 					sqlType = Types.INTEGER;
 				} else if (type.isArray()) {
 					continue;
@@ -266,7 +302,7 @@ public class Generator {
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
 			if (!superInterface.equals(Entity.class)) {
-				fields.addAll(Arrays.asList(parseFields((Class<? extends Entity>) superInterface, classes)));
+				fields.addAll(Arrays.asList(parseFields((Class<? extends Entity>) superInterface)));
 			}
 		}
 		
