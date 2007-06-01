@@ -1,7 +1,7 @@
 /*
  * Copyright 2007, Daniel Spiewak
  * All rights reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -30,60 +30,21 @@
  */
 package net.java.ao.db;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-
-import net.java.ao.DatabaseProvider;
 import net.java.ao.PoolProvider;
-
-import org.apache.commons.dbcp.BasicDataSource;
 
 /**
  * @author Daniel Spiewak
  */
-public class DBCPPoolProvider extends PoolProvider {
-	private BasicDataSource ds;
+public enum SupportedPoolProvider {
+	DBCP(DBCPPoolProvider.class);
 	
-	public DBCPPoolProvider(DatabaseProvider delegate) {
-		super(delegate);
-		
-		ds = new BasicDataSource();
-		try {
-			ds.setDriverClassName(delegate.getDriverClass().getCanonicalName());
-		} catch (ClassNotFoundException e) {
-		}
-		ds.setUsername(getUsername());
-		ds.setPassword(getPassword());
-		ds.setUrl(getURI());
+	private final Class<? extends PoolProvider> provider;
+	
+	private SupportedPoolProvider(Class<? extends PoolProvider> provider) {
+		this.provider = provider;
 	}
 	
-	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-		return null;
-	}
-	
-	@Override
-	public Connection getConnection() throws SQLException {
-		return ds.getConnection();
-	}
-
-	@Override
-	public void dispose() {
-		try {
-			ds.close();
-		} catch (SQLException e) {
-		}
-		
-		ds = null;
-	}
-
-	public static boolean isAvailable() {
-		try {
-			Class.forName("org.apache.commons.dbcp.BasicDataSource");
-		} catch (ClassNotFoundException e) {
-			return false;
-		}
-		
-		return true;
+	public Class<? extends PoolProvider> getProvider() {
+		return provider;
 	}
 }

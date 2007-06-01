@@ -38,6 +38,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.db.SupportedDBProvider;
+import net.java.ao.db.SupportedPoolProvider;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
@@ -271,7 +272,9 @@ public abstract class DatabaseProvider {
 		}
 		
 		if (enablePooling) {
-			for (Class<? extends PoolProvider> providerClass : PoolProvider.PROVIDERS) {
+			for (SupportedPoolProvider supportedProvider : SupportedPoolProvider.values()) {
+				Class<? extends PoolProvider> providerClass = supportedProvider.getProvider();
+				
 				try {
 					if ((Boolean) providerClass.getMethod("isAvailable").invoke(null)) {
 						back = providerClass.getConstructor(DatabaseProvider.class).newInstance(back);

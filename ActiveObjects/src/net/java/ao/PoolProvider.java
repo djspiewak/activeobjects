@@ -30,23 +30,12 @@
  */
 package net.java.ao;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.java.ao.db.DBCPPoolProvider;
 import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
  */
 public abstract class PoolProvider extends DatabaseProvider {
-	
-	static {
-		DBCPPoolProvider.class.getName();
-	}
-	
-	protected static final List<Class<? extends PoolProvider>> PROVIDERS = new ArrayList<Class<? extends PoolProvider>>();
-	
 	private DatabaseProvider delegate;
 
 	protected PoolProvider(DatabaseProvider delegate) {
