@@ -30,18 +30,65 @@
  */
 package net.java.ao.db;
 
+import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
 
 /**
  * @author Daniel Spiewak
  */
 public class EmbeddedDerbyDatabaseProvider extends DerbyDatabaseProvider {
+	private Properties dbProperties;
 
 	public EmbeddedDerbyDatabaseProvider(String uri, String username, String password) {
 		super(uri, username, password);
+		
+		dbProperties = new Properties();
+		dbProperties.setProperty("user", username);
+		dbProperties.setProperty("password", password);
 	}
 
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+	}
+	
+	@Override
+	public Connection getConnection() throws SQLException {
+		try {
+			getDriverClass();
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+		
+		return DriverManager.getConnection(getURI(), dbProperties);
+	}
+	
+	@Override
+	protected void setPostConnectionProperties(Connection conn) throws SQLException {
+		Statement stmt = conn.createStatement();
+		
+		stmt.executeUpdate("SET SCHEMA app");
+		stmt.close();
+	}
+	
+	@Override
+	public void dispose() {
+		Connection conn = null;
+		try {
+			getDriverClass();
+			conn = DriverManager.getConnection(getURI() + ";shutdown=true");
+		} catch (SQLException e) {
+		} catch (ClassNotFoundException e) {
+		} finally {
+			try {
+				conn.close();
+			} catch (Throwable t) {
+			}
+		}
+		
+		super.dispose();
 	}
 }

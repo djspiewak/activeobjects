@@ -30,7 +30,9 @@
  */
 package net.java.ao.db;
 
+import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.SQLException;
 
 /**
  * @author Daniel Spiewak
@@ -44,5 +46,9 @@ public class ClientDerbyDatabaseProvider extends DerbyDatabaseProvider {
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("org.apache.derby.jdbc.ClientDriver");
+	}
+	
+	@Override
+	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
 }

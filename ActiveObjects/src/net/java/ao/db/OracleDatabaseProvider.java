@@ -30,7 +30,9 @@
  */
 package net.java.ao.db;
 
+import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
@@ -47,6 +49,10 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("oracle.jdbc.OracleDriver");
+	}
+	
+	@Override
+	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
 	
 	@Override

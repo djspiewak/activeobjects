@@ -30,6 +30,9 @@
  */
 package net.java.ao;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import net.java.ao.schema.ddl.DDLTable;
 
 /**
@@ -54,7 +57,19 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	protected void setPostConnectionProperties(Connection conn) throws SQLException {
+		delegate.setPostConnectionProperties(conn);
+	}
+	
+	@Override
 	protected String renderAutoIncrement() {
 		return delegate.renderAutoIncrement();
+	}
+	
+	@Override
+	public void dispose() {
+		delegate.dispose();
+		
+		super.dispose();
 	}
 }

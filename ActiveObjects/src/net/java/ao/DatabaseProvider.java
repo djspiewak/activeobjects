@@ -58,6 +58,8 @@ public abstract class DatabaseProvider {
 	
 	public abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
 	
+	protected abstract void setPostConnectionProperties(Connection conn) throws SQLException;
+	
 	protected abstract String renderAutoIncrement();
 	
 	public String render(DDLTable table) {
@@ -141,9 +143,10 @@ public abstract class DatabaseProvider {
 			return null;
 		}
 		
-		Connection back = DriverManager.getConnection(getURI(), getUsername(), getPassword());
+		Connection conn = DriverManager.getConnection(getURI(), getUsername(), getPassword());
+		setPostConnectionProperties(conn);
 		
-		return back;
+		return conn;
 	}
 	
 	public void dispose() {

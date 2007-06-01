@@ -64,7 +64,10 @@ public class DBCPPoolProvider extends PoolProvider {
 	
 	@Override
 	public Connection getConnection() throws SQLException {
-		return ds.getConnection();
+		Connection conn = ds.getConnection();
+		setPostConnectionProperties(conn);
+		
+		return conn;
 	}
 
 	@Override
@@ -75,6 +78,8 @@ public class DBCPPoolProvider extends PoolProvider {
 		}
 		
 		ds = null;
+		
+		super.dispose();
 	}
 
 	public static boolean isAvailable() {
