@@ -174,28 +174,34 @@ public final class EntityManager {
 		return back;
 	}
 	
-	public void delete(Entity entity) throws SQLException {
+	public void delete(Entity... entities) throws SQLException {
 		cacheLock.writeLock().lock();
 		try {
 			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 			try {
-				String sql = "DELETE FROM " + entity.getTableName() + " WHERE id = ?";
-				
-				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-				PreparedStatement stmt = conn.prepareStatement(sql);
-				stmt.setInt(1, entity.getID());
-				
-				stmt.executeUpdate();
-				stmt.close();
+				for (Entity entity : entities) {
+					String sql = "DELETE FROM " + entity.getTableName() + " WHERE id = ?";
+					
+					Logger.getLogger("net.java.ao").log(Level.INFO, sql);
+					PreparedStatement stmt = conn.prepareStatement(sql);
+					stmt.setInt(1, entity.getID());
+					
+					stmt.executeUpdate();
+					stmt.close();
+				}
 			} finally {
 				DBEncapsulator.getInstance(provider).closeConnection(conn);
 			}
 			
-			cache.remove(entity);
+			for (Entity entity : entities) {
+				cache.remove(entity);
+			}
 			
 			proxyLock.writeLock().lock();
 			try {
-				proxies.remove(entity);
+				for (Entity entity : entities) {
+					proxies.remove(entity);
+				}
 			} finally {
 				proxyLock.writeLock().unlock();
 			}
