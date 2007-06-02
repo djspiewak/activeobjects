@@ -37,6 +37,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -54,6 +55,9 @@ public class ContactsTable extends JTable {
 	private ContactsModel contactsModel;
 	
 	@InjectedResource
+	private int rowHeight;
+	
+	@InjectedResource
 	private Color gradientA, gradientB, columnBGA, columnBGB;
 
 	public ContactsTable() {
@@ -66,6 +70,7 @@ public class ContactsTable extends JTable {
 		setDefaultRenderer(String.class, new CustomStringRenderer());
 		setIntercellSpacing(new Dimension(0, 0));
 		setShowGrid(false);
+		setRowHeight(rowHeight);
 		
 		contactsModel = new ContactsModel();
 		setModel(contactsModel);
@@ -80,6 +85,7 @@ public class ContactsTable extends JTable {
 	}
 	
 	private class CustomStringRenderer implements TableCellRenderer {
+		
 		public Component getTableCellRendererComponent(JTable table, Object value, final boolean isSelected, 
 				boolean hasFocus, final int row, final int column) {
 			JLabel label = new JLabel((String) value) {
@@ -103,6 +109,7 @@ public class ContactsTable extends JTable {
 					super.paintComponent(g);
 				}
 			};
+			label.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
 			
 			if (isSelected) {
 				label.setForeground(Color.WHITE);

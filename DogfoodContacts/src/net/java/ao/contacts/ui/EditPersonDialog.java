@@ -32,6 +32,7 @@ package net.java.ao.contacts.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GradientPaint;
@@ -57,6 +58,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 
 import net.java.ao.contacts.db.EmailAddress;
 import net.java.ao.contacts.db.Person;
@@ -70,12 +73,45 @@ import org.jdesktop.fuse.ResourceInjector;
  */
 public class EditPersonDialog extends JDialog {
 	@InjectedResource
+	private int cellHeight;
+	
+	@InjectedResource
 	private GradientPaint backgroundGradient;
+	
+	@InjectedResource
+	private Color listBackground, gradientA, gradientB;
 	
 	public EditPersonDialog(JFrame parent, final Person person) {
 		super(parent, (person == null ? "Add Person" : "Edit Person"), true);
 		
 		ResourceInjector.get("ui.style").inject(this);
+		
+		ListCellRenderer listCellRenderer = new ListCellRenderer() {
+			public Component getListCellRendererComponent(JList list, Object value, int index, final boolean isSelected, boolean cellHasFocus) {
+				JLabel label = new JLabel(value.toString()) {
+					@Override
+					protected void paintComponent(Graphics g) {
+						Graphics2D g2 = (Graphics2D) g;
+						
+						if (isSelected) {
+							GradientPaint selectionGradient = new GradientPaint(0, 0, gradientA, 0, getHeight() - 1, gradientB);
+							
+							g2.setPaint(selectionGradient);
+							g2.fillRect(0, 0, getWidth(), getHeight());
+						}
+						
+						super.paintComponent(g);
+					}
+				};
+				label.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+				
+				if (isSelected) {
+					label.setForeground(Color.WHITE);
+				}
+				
+				return label;
+			}
+		};
 		
 		add(new GradientHeader((person == null ? "Add Person" : "Edit Person")), BorderLayout.NORTH);
 		
@@ -137,6 +173,10 @@ public class EditPersonDialog extends JDialog {
 		}
 		
 		final JList emails = new JList(serializedEmails);
+		emails.setFixedCellHeight(cellHeight);
+		emails.setBackground(listBackground);
+		emails.setCellRenderer(listCellRenderer);
+		emails.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		emailBody.add(new JScrollPane(emails));
 		
 		JPanel rightEmailButtons = new JPanel(new SWTGridLayout(1, false));
@@ -204,6 +244,10 @@ public class EditPersonDialog extends JDialog {
 		}
 		
 		final JList people = new JList(personWrappers);
+		people.setFixedCellHeight(cellHeight);
+		people.setBackground(listBackground);
+		people.setCellRenderer(listCellRenderer);
+		people.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		peopleBody.add(new JScrollPane(people));
 		
 		JPanel rightPeopleButtons = new JPanel(new SWTGridLayout(1, false));
