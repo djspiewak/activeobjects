@@ -37,6 +37,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.SQLException;
 
 import javax.swing.BorderFactory;
@@ -80,6 +82,36 @@ public class MainFrame extends JFrame {
 		body.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
 		
 		final ContactsTable contactsTable = new ContactsTable();
+		contactsTable.addMouseListener(new MouseListener() {
+			private long clickTime = 0;
+			
+			public void mouseClicked(MouseEvent e) {
+				if (e.getWhen() - clickTime < 250) {
+					mouseDoubleClicked(e);
+				}
+				clickTime = e.getWhen();
+			}
+			
+			public void mouseDoubleClicked(MouseEvent e) {
+				EditPersonDialog dialog = new EditPersonDialog(MainFrame.this, contactsTable.getSelectedContact());
+				dialog.setVisible(true);
+				
+				((ContactsModel) contactsTable.getModel()).refreshModel();
+			}
+
+			public void mouseEntered(MouseEvent e) {
+			}
+
+			public void mouseExited(MouseEvent e) {
+			}
+
+			public void mousePressed(MouseEvent e) {
+			}
+
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		
 		JScrollPane scrollPane = new JScrollPane(contactsTable);
 		scrollPane.getViewport().setBackground(Color.WHITE);
 		body.add(scrollPane);

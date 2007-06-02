@@ -30,21 +30,42 @@
  */
 package net.java.ao.contacts.ui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.TableCellRenderer;
 
 import net.java.ao.contacts.db.Person;
+
+import org.jdesktop.fuse.InjectedResource;
+import org.jdesktop.fuse.ResourceInjector;
 
 /**
  * @author Daniel Spiewak
  */
 public class ContactsTable extends JTable {
 	private ContactsModel contactsModel;
+	
+	@InjectedResource
+	private Color gradientA, gradientB, columnBGA, columnBGB;
 
 	public ContactsTable() {
+		ResourceInjector.get("ui.style").inject(this);
+		
 		getTableHeader().setVisible(true);
 
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		setDefaultRenderer(String.class, new CustomStringRenderer());
+		setIntercellSpacing(new Dimension(0, 0));
+		setShowGrid(false);
 		
 		contactsModel = new ContactsModel();
 		setModel(contactsModel);
@@ -56,5 +77,38 @@ public class ContactsTable extends JTable {
 		}
 		
 		return contactsModel.getPersonAt(getSelectedRow());
+	}
+	
+	private class CustomStringRenderer implements TableCellRenderer {
+		public Component getTableCellRendererComponent(JTable table, Object value, final boolean isSelected, 
+				boolean hasFocus, final int row, final int column) {
+			JLabel label = new JLabel((String) value) {
+				@Override
+				protected void paintComponent(Graphics g) {
+					Graphics2D g2 = (Graphics2D) g;
+					
+					if (isSelected) {
+						GradientPaint selectionGradient = new GradientPaint(0, 0, gradientA, 0, getHeight() - 1, gradientB);
+						
+						g2.setPaint(selectionGradient);
+						g2.fillRect(0, 0, getWidth(), getHeight());
+					} else if (column % 2 == 0) {
+						g2.setColor(columnBGA);
+						g2.fillRect(0, 0, getWidth(), getHeight());
+					} else if (column % 2 == 1) {
+						g2.setColor(columnBGB);
+						g2.fillRect(0, 0, getWidth(), getHeight());
+					}
+					
+					super.paintComponent(g);
+				}
+			};
+			
+			if (isSelected) {
+				label.setForeground(Color.WHITE);
+			}
+			
+			return label;
+		}
 	}
 }
