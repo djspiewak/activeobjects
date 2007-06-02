@@ -38,6 +38,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +129,8 @@ public final class EntityManager {
 			}
 			if (params.length > 0) {
 				sql.setLength(sql.length() - 1);
+			} else {
+				sql.append("id");
 			}
 			
 			sql.append(") VALUES (");
@@ -137,10 +140,14 @@ public final class EntityManager {
 			}
 			if (params.length > 0) {
 				sql.setLength(sql.length() - 1);
+			} else {
+				sql.append("DEFAULT");
 			}
 			
 			sql.append(")");
-			PreparedStatement stmt = conn.prepareStatement(sql.toString());
+			
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
+			PreparedStatement stmt = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 			
 			for (int i = 0; i < params.length; i++) {
 				Object value = params[i].getValue();
@@ -152,7 +159,6 @@ public final class EntityManager {
 				stmt.setObject(i + 1, value);
 			}
 			
-			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			stmt.executeUpdate();
 			
 			ResultSet res = stmt.getGeneratedKeys();
@@ -174,10 +180,11 @@ public final class EntityManager {
 			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 			try {
 				String sql = "DELETE FROM " + entity.getTableName() + " WHERE id = ?";
+				
+				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				stmt.setInt(1, entity.getID());
 				
-				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 				stmt.executeUpdate();
 				stmt.close();
 			} finally {
@@ -207,6 +214,8 @@ public final class EntityManager {
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
 			String sql = "SELECT prime.id FROM " + table + " prime " + (join != null ? join : "") + (criteria != null ? " WHERE " + criteria : "");
+
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
 			if (criteria != null) {
@@ -219,7 +228,6 @@ public final class EntityManager {
 				}
 			}
 
-			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
 				back.add(get(type, res.getInt("prime.id")));
@@ -246,6 +254,7 @@ public final class EntityManager {
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
 			for (int i = 0; i < parameters.length; i++) {
@@ -256,7 +265,6 @@ public final class EntityManager {
 				stmt.setObject(i + 1, parameters[i]);
 			}
 
-			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
 				back.add(get(type, res.getInt(idField)));

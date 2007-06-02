@@ -224,10 +224,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			
 			try {
 				String sql = "SELECT " + name + " FROM " + table + " WHERE id = ?";
+
+				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				stmt.setInt(1, id);
 	
-				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 				ResultSet res = stmt.executeQuery();
 				if (res.next()) {
 					back = convertValue(res, name, type);
@@ -268,6 +269,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 				sql = "UPDATE " + table + " SET " + name + " = NULL WHERE id = ?";
 			}
 
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 
 			int index = 1;
@@ -276,7 +278,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			}
 			stmt.setInt(index++, id);
 
-			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			stmt.executeUpdate();
 
 			stmt.close();
@@ -317,14 +318,14 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			
 			sql.setLength(sql.length() - " UNION ".length());
 			sql.append(") a");
-			
+
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
 			
 			for (int i = 0; i < numParams; i++) {
 				stmt.setInt(i + 1, id);
 			}
 			
-			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
 				if (finalType.equals(this.type) && res.getInt("a.outMap") == id) {
