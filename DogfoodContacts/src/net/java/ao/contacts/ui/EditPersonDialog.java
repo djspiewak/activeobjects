@@ -77,6 +77,8 @@ public class EditPersonDialog extends JDialog {
 		
 		ResourceInjector.get("ui.style").inject(this);
 		
+		add(new GradientHeader((person == null ? "Add Person" : "Edit Person")), BorderLayout.NORTH);
+		
 		JPanel body = new JPanel() {
 			@Override
 			protected void paintComponent(Graphics g) {

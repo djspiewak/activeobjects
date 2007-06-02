@@ -64,6 +64,8 @@ public class MainFrame extends JFrame {
 		
 		ResourceInjector.get("ui.style").inject(this);
 		
+		add(new GradientHeader("Dogfood Contacts"), BorderLayout.NORTH);
+		
 		JPanel body = new JPanel() {
 			@Override
 			protected void paintComponent(Graphics g) {
