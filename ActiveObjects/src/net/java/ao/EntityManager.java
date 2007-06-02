@@ -213,7 +213,7 @@ public final class EntityManager {
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			String sql = "SELECT prime.id FROM " + table + " prime " + (join != null ? join : "") + (criteria != null ? " WHERE " + criteria : "");
+			String sql = "SELECT prime.id AS id FROM " + table + " prime " + (join != null ? join : "") + (criteria != null ? " WHERE " + criteria : "");
 
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
@@ -230,7 +230,7 @@ public final class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, res.getInt("prime.id")));
+				back.add(get(type, res.getInt("id")));
 			}
 			res.close();
 			stmt.close();

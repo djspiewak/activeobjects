@@ -297,7 +297,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		String[] inMapFields = getMappingFields(type, this.type);
 		
 		try {
-			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.outMap FROM (");
+			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.outMap AS outMap FROM (");
 			
 			int numParams = 0;
 			for (String outMap : outMapFields) {
@@ -328,11 +328,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				if (finalType.equals(this.type) && res.getInt("a.outMap") == id) {
+				if (finalType.equals(this.type) && res.getInt("outMap") == id) {
 					continue;
 				}
 				
-				back.add(managers.get(this).get(finalType, res.getInt("a.outMap")));
+				back.add(managers.get(this).get(finalType, res.getInt("outMap")));
 			}
 			res.close();
 			stmt.close();
