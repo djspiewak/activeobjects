@@ -1,0 +1,10 @@
+activeobjects.dir=../ActiveObjects
+
+commons-dbcp.jar=C:/Users/Daniel Spiewak/Libraries/commons-dbcp-1.2.2/commons-dbcp-1.2.2.jar
+commons-pool.jar=C:/Users/Daniel Spiewak/Libraries/commons-pool-1.3/commons-pool-1.3.jar
+derby.jar=C:/Users/Daniel Spiewak/Libraries/db-derby-10.2.2.0-bin/lib/derby.jar
+fuse-core.jar=C:/Users/Daniel Spiewak/Libraries/fuse-0.4/lib/fuse-core.jar
+fuse-swing.jar=C:/Users/Daniel Spiewak/Libraries/fuse-0.4/lib/fuse-swing.jar
+
+build.classpath=${activeobjects.dir}/bin${path.separator}${commons-dbcp.jar}${path.separator}${commons-pool.jar}${path.separator}${derby.jar}${path.separator}${fuse-core.jar}${path.separator}${fuse-swing.jar}
+build.debug=yes

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="DogfoodContacts" default="build">
+	<property file="build.properties"/>
+	<property name="tmp.jar.dir" value="tmp-jar"/>
+	
+	<import file="${activeobjects.dir}/build.xml"/>
+	
+	<target name="init">
+		<mkdir dir="bin"/>
+	</target>
+	
+	<target name="init-jar">
+		<mkdir dir="${tmp.jar.dir}"/>
+	</target>
+	
+	<target name="build" depends="init,ActiveObjects.build">
+		<javac srcdir="src" destdir="bin" classpath="${build.classpath}" source="1.5" target="1.5" debug="${build.debug}"/>
+		
+		<copy todir="bin">
+			<fileset id="properties" dir="src">
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="jar" depends="init-jar,build">
+		<copy todir="${tmp.jar.dir}">
+			<fileset dir="${activeobjects.dir}/bin">
+				<include name="**/*.class"/>
+			</fileset>
+			<fileset dir="bin">
+				<include name="**/*.class"/>
+			</fileset>
+			
+			<fileset id="properties" dir="src"/>
+		</copy>
+		
+		<unjar src="${commons-dbcp.jar}" dest="${tmp.jar.dir}"/>
+		<unjar src="${commons-pool.jar}" dest="${tmp.jar.dir}"/>
+		<unjar src="${derby.jar}" dest="${tmp.jar.dir}"/>
+		<unjar src="${fuse-core.jar}" dest="${tmp.jar.dir}"/>
+		<unjar src="${fuse-swing.jar}" dest="${tmp.jar.dir}"/>
+		
+		<delete dir="${tmp.jar.dir}/META-INF"/>
+
+		<jar basedir="${tmp.jar.dir}" destfile="DogfoodContacts.jar">
+			<manifest>
+				<attribute name="Main-Class" value="DogfoodContacts"/>
+			</manifest>
+		</jar>
+		<delete dir="${tmp.jar.dir}"/>
+	</target>
+	
+	<target name="clean">
+	</target>
+</project>
