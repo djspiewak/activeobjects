@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="ActiveObjects" default="build">
-	<property file="build.properties"/>
+<project name="ActiveObjects" default="build" basedir="${activeobjects.dir}">
+	<dirname property="activeobjects.dir" file="${ant.file.ActiveObjects}"/>
+	
+	<property file="$build.properties"/>
 	
 	<target name="init">
 		<mkdir dir="bin"/>
