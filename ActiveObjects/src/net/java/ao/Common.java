@@ -34,8 +34,6 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import net.java.ao.schema.Table;
-
 /**
  * @author Daniel Spiewak
  */
@@ -75,13 +73,7 @@ public final class Common {
 	}
 	
 	public static String getTableName(Class<? extends Entity> type) {
-		String tableName = convertDowncaseName(convertSimpleClassName(type.getCanonicalName()));
-		
-		if (type.getAnnotation(Table.class) != null) {
-			tableName = type.getAnnotation(Table.class).value();
-		}
-		
-		return tableName;
+		return EntityNameManager.getInstance().getName(type);
 	}
 	
 	public static String[] getMappingFields(Class<? extends Entity> from, Class<? extends Entity> to) { 
