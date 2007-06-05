@@ -97,9 +97,7 @@ public abstract class DatabaseProvider {
 				back.append(" UNIQUE");
 			}
 			if (field.isPrimaryKey()) {
-				append.append("    PRIMARY KEY (");
-				append.append(field.getName());
-				append.append("),\n");
+				back.append(" PRIMARY KEY");
 			}
 			
 			back.append(",\n");

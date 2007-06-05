@@ -288,6 +288,10 @@ public class Generator {
 				field.setPrecision(precision);
 				field.setScale(scale);
 				
+				if (method.getAnnotation(PrimaryKey.class) != null) {
+					field.setPrimaryKey(true);
+				}
+				
 				if (method.getAnnotation(NotNull.class) != null) {
 					field.setNotNull(true);
 				}
