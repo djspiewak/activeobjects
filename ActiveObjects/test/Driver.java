@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.EntityManager;
 import net.java.ao.Transaction;
+import net.java.ao.schema.Generator;
 
 /*
  * Created on May 2, 2007
@@ -24,6 +25,7 @@ public class Driver {
 		
 //		Logger.getLogger("net.java.ao").setLevel(Level.INFO);
 		
+		runMigrationTest(manager);
 		runTestTest(manager);
 		runRoomsTest(manager);
 		runManyTest(manager);
@@ -32,6 +34,26 @@ public class Driver {
 		System.out.println("Total time: " + (System.currentTimeMillis() - millis));
 		
 		manager.getProvider().dispose();
+	}
+	
+	private static void runMigrationTest(EntityManager manager) throws SQLException {
+		boolean needsSchema = false;
+		try {
+			manager.find(Test.class);
+		} catch (SQLException e) {
+			needsSchema = true;
+		}
+		
+		if (needsSchema) {
+			Generator.migrate(manager.getProvider(), RoomToTest.class, Account.class);
+			
+			Room kitchen = manager.create(Room.class);
+			kitchen.setName("Kitchen");
+			
+			Room pantry = manager.create(Room.class);
+			pantry.setName("Pantry");
+			pantry.setParent(kitchen);
+		}
 	}
 	
 	private static void runTestTest(EntityManager manager) throws SQLException {
