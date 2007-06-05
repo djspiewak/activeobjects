@@ -88,8 +88,9 @@ public final class EntityManager {
 					back[index++] = entity;
 					continue;
 				}
-	
+				
 				EntityProxy<T> proxy = new EntityProxy<T>(this, type);
+				
 				entity = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
 				entity.setID(id);
 	
