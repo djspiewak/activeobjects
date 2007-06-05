@@ -207,9 +207,11 @@ public class Generator {
 				Class<?> type = getAttributeTypeFromMethod(method);
 				
 				if (attributeName != null && type != null && interfaceInheritsFrom(type, Entity.class)) {
-					individualDeps.add((Class<? extends Entity>) type);
+					if (!type.equals(clazz)) {
+						individualDeps.add((Class<? extends Entity>) type);
 					
-					parseDependencies(deps, roots, (Class<? extends Entity>) type);
+						parseDependencies(deps, roots, (Class<? extends Entity>) type);
+					}
 				}
 			}
 			
