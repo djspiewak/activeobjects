@@ -122,30 +122,7 @@ public class Generator {
 		String sql = "";
 		DatabaseProvider provider = DatabaseProvider.getInstance(uri, null, null, false);
 		
-		Class<? extends PluggableNameConverter> converterClass = null;
-		
-		try {
-			converterClass = (Class<? extends PluggableNameConverter>) Class.forName(nameConverterClassname);
-		} catch (Throwable t) {
-		}
-		
-		if (converterClass == null) {
-			try {
-				converterClass = (Class<? extends PluggableNameConverter>) Class.forName(nameConverterClassname, true, classloader);
-			} catch (Throwable t) {
-			}
-		}
-		
-		PluggableNameConverter nameConverter = null;
-		try {
-			nameConverter = converterClass.newInstance();
-		} catch (Throwable t) {
-			System.out.println("Using default name converter");
-			
-			nameConverter = new CamelCaseNameConverter();
-		}
-		
-		String[] statements = generateImpl(provider, nameConverter, classloader, classes);
+		String[] statements = generateImpl(provider, loadConverter(classloader, nameConverterClassname), classloader, classes);
 		for (String statement : statements) {
 			sql += statement + ";\n";
 		}
@@ -188,6 +165,38 @@ public class Generator {
 		} finally {
 			conn.close();
 		}
+	}
+	
+	private static PluggableNameConverter loadConverter(ClassLoader classloader, String name) {
+		if (name.split(".").length == 0) {
+			name = "net.java.ao.schema." + name;
+		}
+		
+		Class<? extends PluggableNameConverter> converterClass = null;
+		
+		try {
+			converterClass = (Class<? extends PluggableNameConverter>) Class.forName(name);
+		} catch (Throwable t) {
+		}
+		
+		if (converterClass == null) {
+			try {
+				converterClass = (Class<? extends PluggableNameConverter>) Class.forName(name, true, classloader);
+			} catch (Throwable t) {
+			}
+		}
+		
+		PluggableNameConverter nameConverter = null;
+		try {
+			nameConverter = converterClass.newInstance();
+		} catch (Throwable t) {
+			System.err.println("Unable to load " + name);
+			System.err.println("Using default name converter...");
+			
+			nameConverter = new CamelCaseNameConverter();
+		}
+		
+		return nameConverter;
 	}
 	
 	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, ClassLoader classloader, String... classes) throws ClassNotFoundException {
