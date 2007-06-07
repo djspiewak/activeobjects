@@ -93,8 +93,10 @@ public abstract class AbstractNameConverter implements PluggableNameConverter {
 				Pattern mapPattern = Pattern.compile("\\{\\d+\\}");
 				Matcher mapMatcher = mapPattern.matcher(mapResult);
 				
-				while (mapMatcher.matches()) {
-					Matcher groupMatcher = Pattern.compile("\\{(\\d+)\\}").matcher(mapMatcher.group(1));
+				while (mapMatcher.find()) {
+					Matcher groupMatcher = Pattern.compile("\\{(\\d+)\\}").matcher(mapResult);
+					groupMatcher.find();
+					
 					String toReplace = matcher.group(Integer.parseInt(groupMatcher.group(1)));
 					
 					mapResult = mapMatcher.replaceFirst(toReplace);
