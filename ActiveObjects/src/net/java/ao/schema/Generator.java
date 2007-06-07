@@ -32,7 +32,6 @@ package net.java.ao.schema;
 
 import static net.java.ao.Common.getAttributeNameFromMethod;
 import static net.java.ao.Common.getAttributeTypeFromMethod;
-import static net.java.ao.Common.getTableName;
 import static net.java.ao.Common.interfaceInheritsFrom;
 
 import java.io.File;
@@ -57,7 +56,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.schema.ddl.DDLField;
@@ -114,7 +112,8 @@ public class Generator {
 		String sql = "";
 		DatabaseProvider provider = DatabaseProvider.getInstance(uri, null, null, false);
 		
-		String[] statements = generateImpl(provider, classloader, classes);
+		// TODO	support specified name converters in CL invocation (and Ant)
+		String[] statements = generateImpl(provider, new CamelCaseNameConverter(), classloader, classes);
 		for (String statement : statements) {
 			sql += statement + ";\n";
 		}
@@ -123,6 +122,11 @@ public class Generator {
 	}
 	
 	public static void migrate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
+		migrate(provider, new CamelCaseNameConverter(), classes);
+	}
+	
+	public static void migrate(DatabaseProvider provider, PluggableNameConverter nameConverter,
+			Class<? extends Entity>... classes) throws SQLException {
 		List<String> classNames = new ArrayList<String>();
 		
 		for (Class<? extends Entity> clazz : classes) {
@@ -131,7 +135,7 @@ public class Generator {
 		
 		String[] statements = null;
 		try {
-			statements = generateImpl(provider, Generator.class.getClassLoader(), classNames.toArray(new String[classNames.size()]));
+			statements = generateImpl(provider, nameConverter, Generator.class.getClassLoader(), classNames.toArray(new String[classNames.size()]));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return;
@@ -154,7 +158,7 @@ public class Generator {
 		}
 	}
 	
-	private static String[] generateImpl(DatabaseProvider provider, ClassLoader classloader, String... classes) throws ClassNotFoundException {
+	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, ClassLoader classloader, String... classes) throws ClassNotFoundException {
 		List<String> back = new ArrayList<String>();
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
 			new HashMap<Class<? extends Entity>, Set<Class<? extends Entity>>>();
@@ -169,7 +173,7 @@ public class Generator {
 			roots.remove(rootsArray[0]);
 			
 			Class<? extends Entity> clazz = rootsArray[0];
-			parseInterface(provider, clazz, back);
+			parseInterface(provider, nameConverter, clazz, back);
 			
 			List<Class<? extends Entity>> toRemove = new LinkedList<Class<? extends Entity>>();
 			Iterator<Class<? extends Entity>> depIterator = deps.keySet().iterator();
@@ -223,15 +227,15 @@ public class Generator {
 		}
 	}
 	
-	private static void parseInterface(DatabaseProvider provider, Class<? extends Entity> clazz, List<String> back) {
+	private static void parseInterface(DatabaseProvider provider, PluggableNameConverter nameConverter, Class<? extends Entity> clazz, List<String> back) {
 		StringBuilder sql = new StringBuilder();
-		String sqlName = Common.getTableName(clazz);
+		String sqlName = nameConverter.getName(clazz);
 		
 		DDLTable table = new DDLTable();
 		table.setName(sqlName);
 		
 		table.setFields(parseFields(clazz));
-		table.setForeignKeys(parseForeignKeys(clazz));
+		table.setForeignKeys(parseForeignKeys(nameConverter, clazz));
 		
 		sql.append(provider.render(table));
 		
@@ -315,7 +319,7 @@ public class Generator {
 		return fields.toArray(new DDLField[fields.size()]);
 	}
 	
-	private static DDLForeignKey[] parseForeignKeys(Class<? extends Entity> clazz) {
+	private static DDLForeignKey[] parseForeignKeys(PluggableNameConverter nameConverter, Class<? extends Entity> clazz) {
 		Set<DDLForeignKey> back = new LinkedHashSet<DDLForeignKey>();
 		
 		for (Method method : clazz.getMethods()) {
@@ -326,7 +330,7 @@ public class Generator {
 				DDLForeignKey key = new DDLForeignKey();
 				
 				key.setField(attributeName);
-				key.setTable(getTableName((Class<? extends Entity>) type));
+				key.setTable(nameConverter.getName((Class<? extends Entity>) type));
 				key.setForeignField("id");
 				
 				back.add(key);
@@ -335,7 +339,7 @@ public class Generator {
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
 			if (!superInterface.equals(Entity.class)) {
-				back.addAll(Arrays.asList(parseForeignKeys((Class<? extends Entity>) superInterface)));
+				back.addAll(Arrays.asList(parseForeignKeys(nameConverter, (Class<? extends Entity>) superInterface)));
 			}
 		}
 		

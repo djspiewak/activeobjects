@@ -72,9 +72,9 @@ public final class Common {
 		return false;
 	}
 	
-	public static String getTableName(Class<? extends Entity> type) {
-		return EntityNameManager.getInstance().getName(type);
-	}
+//	public static String getTableName(Class<? extends Entity> type) {
+//		return EntityNameManager.getInstance().getName(type);
+//	}
 	
 	public static String[] getMappingFields(Class<? extends Entity> from, Class<? extends Entity> to) { 
 		Set<String> back = new LinkedHashSet<String>();

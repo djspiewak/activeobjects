@@ -30,8 +30,6 @@
  */
 package net.java.ao;
 
-import static net.java.ao.Common.getTableName;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -48,6 +46,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.schema.CamelCaseNameConverter;
+import net.java.ao.schema.PluggableNameConverter;
+
 /**
  * @author Daniel Spiewak
  */
@@ -57,7 +58,7 @@ public final class EntityManager {
 		Logger.getLogger("net.java.ao").setLevel(Level.OFF);
 	}
 	
-	private volatile DatabaseProvider provider;
+	private DatabaseProvider provider;
 	
 	private Map<Entity, EntityProxy<? extends Entity>> proxies;
 	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
@@ -65,11 +66,15 @@ public final class EntityManager {
 	private Map<CacheKey, Entity> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
+	private PluggableNameConverter nameConverter;
+	
 	public EntityManager(DatabaseProvider provider) {
 		this.provider = provider;
 		
 		proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
 		cache = new WeakHashMap<CacheKey, Entity>();
+		
+		nameConverter = new CamelCaseNameConverter();
 	}
 	
 	public EntityManager(String uri, String username, String password) {
@@ -118,7 +123,7 @@ public final class EntityManager {
 	
 	public <T extends Entity> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
-		String table = getTableName(type);
+		String table = nameConverter.getName(type);
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
@@ -216,7 +221,7 @@ public final class EntityManager {
 	 */
 	public <T extends Entity> T[] find(Class<T> type, String join, String criteria, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
-		String table = getTableName(type);
+		String table = nameConverter.getName(type);
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
@@ -283,6 +288,14 @@ public final class EntityManager {
 		}
 		
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
+	}
+	
+	public void setNameConverter(PluggableNameConverter nameConverter) {
+		this.nameConverter = nameConverter;
+	}
+	
+	public PluggableNameConverter getNameConverter() {
+		return nameConverter;
 	}
 
 	public DatabaseProvider getProvider() {
