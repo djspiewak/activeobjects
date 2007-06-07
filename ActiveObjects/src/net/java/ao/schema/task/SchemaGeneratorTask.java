@@ -45,6 +45,7 @@ import org.apache.tools.ant.Task;
 public class SchemaGeneratorTask extends Task {
 	private String classpath;
 	private String uri;
+	private String nameConverter;
 	
 	private String dest;
 	
@@ -56,7 +57,7 @@ public class SchemaGeneratorTask extends Task {
 		FileWriter writer = null;
 		try {
 			writer = new FileWriter(dest);
-			writer.append(Generator.generate(classpath, uri, entities.toArray(new String[entities.size()])));
+			writer.append(Generator.generate(classpath, uri, nameConverter, entities.toArray(new String[entities.size()])));
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -76,6 +77,10 @@ public class SchemaGeneratorTask extends Task {
 	
 	public void setURI(String uri) {
 		this.uri = uri;
+	}
+	
+	public void setNameConverter(String nameConverter) {
+		this.nameConverter = nameConverter;
 	}
 	
 	public void setDest(String dest) {

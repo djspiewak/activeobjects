@@ -84,6 +84,10 @@ public class Generator {
 		classpathOption.setRequired(true);
 		options.addOption(classpathOption);
 		
+		Option nameConverterOption = new Option("N", "converter", true, "A qualified Java class-name specifying which " +
+				"name converter to use");
+		options.addOption(nameConverterOption);
+		
 		Option uriOption = new Option("U", "uri", true, "(required) The JDBC URI used to access the database against " +
 				"which the schema will be created");
 		uriOption.setRequired(true);
@@ -103,17 +107,45 @@ public class Generator {
 			System.exit(-1);
 		}
 		
-		System.out.println(generate(cl.getOptionValue(classpathOption.getOpt()), cl.getOptionValue(uriOption.getOpt()), cl.getArgs()));
+		System.out.println(generate(cl.getOptionValue(classpathOption.getOpt()), cl.getOptionValue(uriOption.getOpt()), 
+				cl.getOptionValue(nameConverterOption.getOpt()), cl.getArgs()));
 	}
 	
 	public static String generate(String classpath, String uri, String... classes) throws ClassNotFoundException, MalformedURLException, IOException {
+		return generate(classpath, uri, null, classes);
+	}
+	
+	public static String generate(String classpath, String uri, String nameConverterClassname, 
+			String... classes) throws ClassNotFoundException, MalformedURLException, IOException {
 		ClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpath).getCanonicalPath() + "/")});
 		
 		String sql = "";
 		DatabaseProvider provider = DatabaseProvider.getInstance(uri, null, null, false);
 		
-		// TODO	support specified name converters in CL invocation (and Ant)
-		String[] statements = generateImpl(provider, new CamelCaseNameConverter(), classloader, classes);
+		Class<? extends PluggableNameConverter> converterClass = null;
+		
+		try {
+			converterClass = (Class<? extends PluggableNameConverter>) Class.forName(nameConverterClassname);
+		} catch (Throwable t) {
+		}
+		
+		if (converterClass == null) {
+			try {
+				converterClass = (Class<? extends PluggableNameConverter>) Class.forName(nameConverterClassname, true, classloader);
+			} catch (Throwable t) {
+			}
+		}
+		
+		PluggableNameConverter nameConverter = null;
+		try {
+			nameConverter = converterClass.newInstance();
+		} catch (Throwable t) {
+			System.out.println("Using default name converter");
+			
+			nameConverter = new CamelCaseNameConverter();
+		}
+		
+		String[] statements = generateImpl(provider, nameConverter, classloader, classes);
 		for (String statement : statements) {
 			sql += statement + ";\n";
 		}
