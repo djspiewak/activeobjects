@@ -31,6 +31,7 @@
 package net.java.ao;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.SQLException;
 
 import net.java.ao.schema.ddl.DDLTable;
@@ -45,6 +46,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 		super(delegate.getURI(), delegate.getUsername(), delegate.getPassword());
 		
 		this.delegate = delegate;
+	}
+	
+	@Override
+	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
+		return null;
 	}
 
 	public final DatabaseProvider getDelegate() {
