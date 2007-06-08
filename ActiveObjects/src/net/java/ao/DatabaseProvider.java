@@ -69,38 +69,7 @@ public abstract class DatabaseProvider {
 		
 		StringBuilder append = new StringBuilder();
 		for (DDLField field : table.getFields()) {
-			back.append("    ");
-			back.append(field.getName());
-			back.append(" ");
-			back.append(convertTypeToString(field.getType()));
-			
-			if (considerPrecision(field) && field.getPrecision() > 0) {
-				back.append('(');
-				if (field.getScale() > 0) {
-					back.append(field.getPrecision());
-					back.append(',');
-					back.append(field.getScale());
-				} else {
-					back.append(field.getPrecision());
-				}
-				back.append(')');
-			}
-			
-			if (field.isNotNull()) {
-				back.append(" NOT NULL");
-			}
-			if (field.isAutoIncrement()) {
-				back.append(' ');
-				back.append(renderAutoIncrement());
-			}
-			if (field.isUnique()) {
-				back.append(" UNIQUE");
-			}
-			if (field.isPrimaryKey()) {
-				back.append(" PRIMARY KEY");
-			}
-			
-			back.append(",\n");
+			back.append(renderField(field));
 		}
 		
 		parseForeignKeys(append, table);
@@ -251,6 +220,48 @@ public abstract class DatabaseProvider {
 	
 	protected String renderAppend() {
 		return null;
+	}
+	
+	protected String renderField(DDLField field) {
+		StringBuilder back = new StringBuilder();
+		
+		back.append("    ");
+		back.append(field.getName());
+		back.append(" ");
+		back.append(renderFieldType(field));
+		
+		if (considerPrecision(field) && field.getPrecision() > 0) {
+			back.append('(');
+			if (field.getScale() > 0) {
+				back.append(field.getPrecision());
+				back.append(',');
+				back.append(field.getScale());
+			} else {
+				back.append(field.getPrecision());
+			}
+			back.append(')');
+		}
+		
+		if (field.isNotNull()) {
+			back.append(" NOT NULL");
+		}
+		if (field.isAutoIncrement()) {
+			back.append(' ');
+			back.append(renderAutoIncrement());
+		}
+		if (field.isUnique()) {
+			back.append(" UNIQUE");
+		}
+		if (field.isPrimaryKey()) {
+			back.append(" PRIMARY KEY");
+		}
+		
+		back.append(",\n");
+		return back.toString();
+	}
+	
+	protected String renderFieldType(DDLField field) {
+		return convertTypeToString(field.getType());
 	}
 	
 	protected boolean considerPrecision(DDLField field) {
