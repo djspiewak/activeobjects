@@ -8,5 +8,6 @@
 	<classpathentry kind="var" path="commons-dbcp"/>
 	<classpathentry kind="var" path="commons-pool"/>
 	<classpathentry kind="var" path="derby"/>
+	<classpathentry kind="var" path="c3p0"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
