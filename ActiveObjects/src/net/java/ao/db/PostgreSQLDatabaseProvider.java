@@ -1,7 +1,7 @@
 /*
  * Copyright 2007, Daniel Spiewak
  * All rights reserved
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -30,63 +30,43 @@
  */
 package net.java.ao.db;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.SQLException;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.ddl.DDLField;
 
 /**
  * @author Daniel Spiewak
  */
-public enum SupportedDBProvider {
-	MYSQL("jdbc:mysql", MySQLDatabaseProvider.class),
-	DERBY("jdbc:derby", EmbeddedDerbyDatabaseProvider.class),
-	ORACLE_THIN("jdbc:oracle:thin", OracleDatabaseProvider.class),
-	ORACLE_OCI("jdbc:oracle:oci", OracleDatabaseProvider.class),
-	POSTGRESQL("jdbc:postgresql", PostgreSQLDatabaseProvider.class);
-	
-	private String prefix;
-	private Class<? extends DatabaseProvider> type;
-	
-	private SupportedDBProvider(String prefix, Class<? extends DatabaseProvider> type) {
-		this.prefix = prefix;
-		this.type = type;
+public class PostgreSQLDatabaseProvider extends DatabaseProvider {
+
+	public PostgreSQLDatabaseProvider(String uri, String username, String password) {
+		super(uri, username, password);
+	}
+
+	@Override
+	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
+		return (Class<? extends Driver>) Class.forName("org.postgresql.Driver");
+	}
+
+	@Override
+	protected String renderAutoIncrement() {
+		return "";
 	}
 	
-	public String getPrefix() {
-		return prefix;
-	}
-	
-	public Class<? extends DatabaseProvider> getType() {
-		return type;
-	}
-	
-	public DatabaseProvider createInstance(String uri, String username, String password) {
-		DatabaseProvider back = null;
-		
-		try {
-			Constructor<? extends DatabaseProvider> constructor = type.getDeclaredConstructor(String.class, String.class, String.class);
-			constructor.setAccessible(true);
-			
-			back = constructor.newInstance(uri, username, password);
-		} catch (SecurityException e) {
-		} catch (NoSuchMethodException e) {
-		} catch (IllegalArgumentException e) {
-		} catch (InstantiationException e) {
-		} catch (IllegalAccessException e) {
-		} catch (InvocationTargetException e) {
+	@Override
+	protected String renderFieldType(DDLField field) {
+		if (field.isAutoIncrement()) {
+			return "SERIAL";
 		}
 		
-		return back;
+		return super.renderFieldType(field);
 	}
-	
-	public static SupportedDBProvider getProviderForURI(String uri) {
-		for (SupportedDBProvider provider : values()) {
-			if (uri.trim().startsWith(provider.prefix.trim())) {
-				return provider;
-			}
-		}
-		
-		return null;
+
+	@Override
+	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
+
 }
