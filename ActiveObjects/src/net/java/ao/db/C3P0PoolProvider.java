@@ -30,22 +30,61 @@
  */
 package net.java.ao.db;
 
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import net.java.ao.DatabaseProvider;
 import net.java.ao.PoolProvider;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.c3p0.DataSources;
 
 /**
  * @author Daniel Spiewak
  */
-public enum SupportedPoolProvider {
-	DBCP(DBCPPoolProvider.class),
-	C3P0(C3P0PoolProvider.class);
-	
-	private final Class<? extends PoolProvider> provider;
-	
-	private SupportedPoolProvider(Class<? extends PoolProvider> provider) {
-		this.provider = provider;
+public class C3P0PoolProvider extends PoolProvider {
+	private ComboPooledDataSource cpds;
+
+	public C3P0PoolProvider(DatabaseProvider delegate) {
+		super(delegate);
+
+		cpds = new ComboPooledDataSource();
+		try {
+			cpds.setDriverClass(delegate.getClass().getCanonicalName());
+		} catch (PropertyVetoException e) {
+		}
+		cpds.setJdbcUrl(delegate.getURI());
+		cpds.setUser(delegate.getUsername());
+		cpds.setPassword(delegate.getPassword());
+		
+		cpds.setMinPoolSize(5);
+		cpds.setMaxPoolSize(30);
+		cpds.setMaxStatements(180);
 	}
 	
-	public Class<? extends PoolProvider> getProvider() {
-		return provider;
+	@Override
+	public Connection getConnection() throws SQLException {
+		return cpds.getConnection();
+	}
+	
+	@Override
+	public void dispose() {
+		super.dispose();
+		
+		try {
+			DataSources.destroy(cpds);
+		} catch (SQLException e) {
+		}
+	}
+	
+	public static boolean isAvailable() {
+		try {
+			Class.forName("com.mchange.v2.c3p0.ComboPooledDataSource");
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+		
+		return true;
 	}
 }

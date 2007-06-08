@@ -31,7 +31,6 @@
 package net.java.ao.db;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
 
 import net.java.ao.DatabaseProvider;
@@ -56,10 +55,6 @@ public class DBCPPoolProvider extends PoolProvider {
 		ds.setUsername(getUsername());
 		ds.setPassword(getPassword());
 		ds.setUrl(getURI());
-	}
-	
-	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-		return null;
 	}
 	
 	@Override
