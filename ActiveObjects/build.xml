@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="ActiveObjects" default="build" basedir="${activeobjects.dir}">
+<project name="ActiveObjects" default="build" basedir=".">
 	<dirname property="activeobjects.dir" file="${ant.file.ActiveObjects}"/>
 	
-	<property file="$build.properties"/>
+	<property file="${activeobjects.dir}/build.properties"/>
 	
 	<target name="init">
-		<mkdir dir="bin"/>
+		<mkdir dir="${activeobjects.dir}/bin"/>
 	</target>
 	
 	<target name="init-dist">
-		<mkdir dir="dist/activeobjects-${activeobjects.version}/lib"/>
-		<mkdir dir="dist/activeobjects-${activeobjects.version}/src"/>
-		<mkdir dir="dist/activeobjects-${activeobjects.version}/doc"/>
+		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/lib"/>
+		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src"/>
+		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
 	</target>
 	
 	<target name="init-doc" unless="supress-doc-deletion">
 		<delete>
-			<fileset dir="${javadoc.path}">
+			<fileset dir="${activeobjects.dir}/${javadoc.path}">
 				<include name="**/*"/>
 			</fileset>
 		</delete>
 	</target>
 	
 	<target name="build" depends="init">
-		<javac srcdir="src" destdir="bin" classpath="${build.classpath}" source="1.5" target="1.5" debug="${build.debug}"/>
+		<javac srcdir="${activeobjects.dir}/src" destdir="${activeobjects.dir}/bin" classpath="${build.classpath}" source="1.5" target="1.5" debug="${build.debug}"/>
 	</target>
 	
 	<target name="assign-doc-dir" unless="javadoc.intern.path">
-		<property name="javadoc.intern.path" value="${javadoc.path}"/>
+		<property name="javadoc.intern.path" value="${activeobjects.dir}/${javadoc.path}"/>
 	</target>
 	
 	<target name="doc" depends="init-doc,assign-doc-dir">
-		<javadoc sourcepath="src" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
+		<javadoc sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
 		 		windowtitle="ActiveObjects: Javadoc" private="no" protected="yes">
-			<packageset dir="src">
+			<packageset dir="${activeobjects.dir}/src">
 				<include name="net/java/ao/**/*.java"/>
 			</packageset>
 		</javadoc>
 	</target>
 	
 	<target name="jar" depends="build">
-		<copy file="${commons-cli.path}" todir="dist/activeobjects-${activeobjects.version}/lib"/>
+		<copy file="${commons-cli.path}" todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/lib"/>
 		
-		<jar basedir="bin" compress="${jar.compress}" 
-				destfile="dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar">
+		<jar basedir="${activeobjects.dir}/bin" compress="${jar.compress}" 
+				destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar">
 			<manifest>
 				<attribute name="Class-Path" value="lib/commons-cli-1.0.jar"/>
 				<attribute name="Main-Class" value="net.java.ao.schema.Generator"/>
@@ -53,50 +53,51 @@
 	</target>
 	
 	<target name="dist" depends="jar">
-		<property name="javadoc.intern.path" value="dist/activeobjects-${activeobjects.version}/doc"/>
+		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
 		<property name="supress-doc-deletion" value="yes"/>
 		<antcall target="doc"/>
 		
-		<copy todir="dist/activeobjects-${activeobjects.version}/src">
-			<fileset dir="src">
+		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src">
+			<fileset dir="${activeobjects.dir}/src">
 				<include name="**/*.java"/>
 			</fileset>
 		</copy>
-		<copy todir="dist/activeobjects-${activeobjects.version}">
-			<fileset dir=".">
+		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}">
+			<fileset dir="${activeobjects.dir}">
 				<include name="LICENSE"/>
 			</fileset>
 		</copy>
 		
-		<zip destfile="dist/activeobjects-${activeobjects.version}.zip">
-			<fileset id="productDir" dir="dist">
+		<zip destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.zip">
+			<fileset id="productDir" dir="${activeobjects.dir}/dist">
 				<include name="activeobjects-${activeobjects.version}/**/*"/>
 			</fileset>
 		</zip>
 		
-		<tar destfile="dist/activeobjects-${activeobjects.version}.tar">
+		<tar destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar">
 			<fileset refid="productDir"/>
 		</tar>
-		<gzip src="dist/activeobjects-${activeobjects.version}.tar" zipfile="dist/activeobjects-${activeobjects.version}.tar.gz"/>
-		<delete file="dist/activeobjects-${activeobjects.version}.tar"/>
+		<gzip src="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar" 
+				zipfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar.gz"/>
+		<delete file="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar"/>
 		
 		<delete includeemptydirs="yes">
-			<fileset dir="dist">
+			<fileset dir="${activeobjects.dir}/dist">
 				<include name="activeobjects-${activeobjects.version}/**/*"/>
 			</fileset>
 		</delete>
 		<delete includeemptydirs="yes">
-			<fileset dir="dist">
+			<fileset dir="${activeobjects.dir}/dist">
 				<include name="activeobjects-${activeobjects.version}"/>
 			</fileset>
 		</delete>
 	</target>
 	
 	<target name="clean">
-		<delete dir="bin"/>
+		<delete dir="${activeobjects.dir}/bin"/>
 	</target>
 	
 	<target name="clean-dist">
-		<delete dir="dist"/>
+		<delete dir="${activeobjects.dir}/dist"/>
 	</target>
 </project>
