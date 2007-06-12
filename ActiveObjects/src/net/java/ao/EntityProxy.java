@@ -31,10 +31,12 @@
 package net.java.ao;
 
 import static net.java.ao.Common.convertDowncaseName;
-import static net.java.ao.Common.interfaceInheritsFrom;
 import static net.java.ao.Common.getMappingFields;
+import static net.java.ao.Common.interfaceInheritsFrom;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
@@ -50,9 +52,11 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -70,12 +74,16 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	
 	private final transient Map<String, Object> cache;
 	private final transient ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+	
+	private final transient Set<String> dirtyFields;
+	private final transient ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
 		this.type = type;
 		managers.put(this, manager);
 		
 		cache = new HashMap<String, Object>();
+		dirtyFields = new LinkedHashSet<String>();
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -85,8 +93,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			return Void.TYPE;
 		} else if (method.getName().equals("getID")) {
 			return getID();
+		} else if (method.getName().equals("save")) {
+			save();
+			
+			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
-			return getManager().getNameConverter().getName(type);
+			return getTableName();
 		} else if (method.getName().equals("hashCode")) {
 			return hashCodeImpl();
 		} else if (method.getName().equals("equals")) {
@@ -150,9 +162,69 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	public int getID() {
 		return id;
 	}
+	
+	public String getTableName() {
+		return getManager().getNameConverter().getName(type);
+	}
 
 	public void setID(int id) {
 		this.id = id;
+	}
+	
+	public void save() throws SQLException {
+		dirtyFieldsLock.writeLock().lock();
+		try {
+			if (dirtyFields.isEmpty()) {
+				return;
+			}
+			
+			String table = getTableName();
+			Connection conn = getConnectionImpl();
+
+			cacheLock.readLock().lock();
+			try {
+				StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
+
+				for (String field : dirtyFields) {
+					sql.append(field);
+
+					if (cache.containsKey(field)) {
+						sql.append(" = ?,");
+					} else {
+						sql.append(" = NULL,");
+					}
+				}
+
+				if (dirtyFields.size() > 0) {
+					sql.setLength(sql.length() - 1);
+				}
+
+				sql.append(" WHERE id = ?");
+
+				Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
+				PreparedStatement stmt = conn.prepareStatement(sql.toString());
+
+				int index = 1;
+				for (String field : dirtyFields) {
+					if (cache.containsKey(field)) {
+						convertValue(stmt, index++, cache.get(field));
+					}
+				}
+				stmt.setInt(index++, id);
+
+				stmt.executeUpdate();
+
+				dirtyFields.removeAll(dirtyFields);
+
+				stmt.close();
+			} finally {
+				cacheLock.readLock().unlock();
+
+				closeConnectionImpl(conn);
+			}
+		} finally {
+			dirtyFieldsLock.writeLock().unlock();
+		}
 	}
 	
 	public int hashCodeImpl() {
@@ -252,9 +324,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	}
 
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
+		boolean saveable = interfaceInheritsFrom(type, Saveable.class);
+		
 		cacheLock.writeLock().lock();
 		try {
-			if (DBEncapsulator.getInstance(getManager().getProvider()).hasManualConnection()) {
+			if (DBEncapsulator.getInstance(getManager().getProvider()).hasManualConnection() && !saveable) {
 				cache.remove(name);
 			} else {
 				cache.put(name, value);
@@ -263,30 +337,18 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			cacheLock.writeLock().unlock();
 		}
 		
-		Connection conn = getConnectionImpl();
+		dirtyFieldsLock.writeLock().lock();
 		try {
-			String sql = "UPDATE " + table + " SET " + name + " = ? WHERE id = ?";
-
-			if (value == null) {
-				sql = "UPDATE " + table + " SET " + name + " = NULL WHERE id = ?";
-			}
-
-			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-			PreparedStatement stmt = conn.prepareStatement(sql);
-
-			int index = 1;
-			if (value != null) {
-				convertValue(stmt, index++, value);
-			}
-			stmt.setInt(index++, id);
-
-			stmt.executeUpdate();
-
-			stmt.close();
+			dirtyFields.add(name);
 		} finally {
-			closeConnectionImpl(conn);
+			dirtyFieldsLock.writeLock().unlock();
+		}
+		
+		if (!saveable) {
+			save();
 		}
 	}
+	
 	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<V> type) throws SQLException {
 		return retrieveRelations(table, outMapFields, id, type, type);
 	}
@@ -408,5 +470,16 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		} else {
 			throw new RuntimeException("Unrecognized type: " + value.getClass().toString());
 		}
+	}
+	
+	// special call from ObjectOutputStream
+	private void writeObject(ObjectOutputStream oos) throws IOException {
+		try {
+			save();
+		} catch (SQLException e) {
+			throw new IOException(e);
+		}
+		
+		oos.defaultWriteObject();
 	}
 }
