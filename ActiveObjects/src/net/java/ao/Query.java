@@ -46,6 +46,8 @@ public class Query {
 	private final QueryType type;
 	private final String fields;
 	
+	private boolean distinct = false;
+	
 	private String whereClause;
 	private Object[] whereParams;
 	
@@ -60,6 +62,12 @@ public class Query {
 		this.fields = fields;
 		
 		joins = new HashMap<String, String>();
+	}
+	
+	public Query distinct() {
+		distinct = true;
+		
+		return this;
 	}
 	
 	public Query where(String clause, Object... params) {
@@ -105,6 +113,11 @@ public class Query {
 		switch (type) {
 			case SELECT:
 				sql.append("SELECT ");
+				
+				if (distinct) {
+					sql.append("DISTINCT ");
+				}
+				
 				sql.append(fields);
 				sql.append(" FROM ");
 				sql.append(tableName);
