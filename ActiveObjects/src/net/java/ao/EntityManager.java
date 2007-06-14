@@ -216,33 +216,33 @@ public final class EntityManager {
 		}
 	}
 	
-	/**
-	 * The actual table name is aliased as "prime" (for use in the criteria and within the join).
-	 */
-	public <T extends Entity> T[] find(Class<T> type, String join, String criteria, Object... parameters) throws SQLException {
+	public <T extends Entity> T[] find(Class<T> type) throws SQLException {
+		return find(type, Query.select());
+	}
+	
+	public <T extends Entity> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
+		return find(type, Query.select().where(criteria, parameters));
+	}
+	
+	public <T extends Entity> T[] find(Class<T> type, Query query) throws SQLException {
+		return find(type, "id", query);
+	}
+	
+	public <T extends Entity> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		String table = nameConverter.getName(type);
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			String sql = "SELECT prime.id AS id FROM " + table + " prime " + (join != null ? join : "") + (criteria != null ? " WHERE " + criteria : "");
-
+			String sql = query.toSQL(table);
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
-			if (criteria != null) {
-				for (int i = 0; i < parameters.length; i++) {
-					if (parameters[i] instanceof Entity) {
-						parameters[i] = ((Entity) parameters[i]).getID();
-					}
-					
-					stmt.setObject(i + 1, parameters[i]);
-				}
-			}
+			query.setParameters(stmt);
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, res.getInt("id")));
+				back.add(get(type, res.getInt(field)));
 			}
 			res.close();
 			stmt.close();
@@ -251,14 +251,6 @@ public final class EntityManager {
 		}
 		
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
-	}
-	
-	public <T extends Entity> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
-		return find(type, null, criteria, parameters);
-	}
-	
-	public <T extends Entity> T[] find(Class<T> type) throws SQLException {
-		return find(type, null, null, (Object[]) null);
 	}
 	
 	public <T extends Entity> T[] findWithSQL(Class<T> type, String idField, String sql, Object... parameters) throws SQLException {
