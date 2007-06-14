@@ -34,15 +34,14 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import net.java.ao.EntityManager;
+import net.java.ao.Query;
 import net.java.ao.blog.BlogApplication;
 import net.java.ao.blog.db.Blog;
 import net.java.ao.blog.db.Comment;
 import net.java.ao.blog.db.Post;
-import wicket.Component;
 import wicket.PageParameters;
 import wicket.markup.html.WebPage;
 import wicket.markup.html.basic.Label;
@@ -52,7 +51,6 @@ import wicket.markup.html.link.Link;
 import wicket.markup.html.link.PageLink;
 import wicket.markup.html.list.ListItem;
 import wicket.markup.html.list.ListView;
-import wicket.model.IModel;
 import wicket.model.PropertyModel;
 
 /**
@@ -121,6 +119,6 @@ public class Index extends WebPage {
 	}
 	
 	private List<Post> constructPostsList(EntityManager manager) throws SQLException {
-		return Arrays.asList(manager.find(Post.class, "blogID = ? ORDER BY published DESC", blog));
+		return Arrays.asList(manager.find(Post.class, Query.select().where("blogID = ?", blog).order("published DESC")));
 	}
 }

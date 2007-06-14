@@ -11,6 +11,6 @@
 	<classpathentry kind="lib" path="WEB-INF/lib/commons-dbcp-1.2.2.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/commons-pool-1.3.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/wicket-1.2.5.jar"/>
-	<classpathentry kind="lib" path="WEB-INF/lib/activeobjects-0.2.jar" sourcepath="/ActiveObjects/src"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/activeobjects-0.3.jar"/>
 	<classpathentry kind="output" path="WEB-INF/classes"/>
 </classpath>
