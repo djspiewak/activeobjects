@@ -36,6 +36,8 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.LinkedList;
+import java.util.List;
 
 import net.java.ao.db.SupportedDBProvider;
 import net.java.ao.db.SupportedPoolProvider;
@@ -67,18 +69,30 @@ public abstract class DatabaseProvider {
 		back.append(table.getName());
 		back.append(" (\n");
 		
+		List<String> primaryKeys = new LinkedList<String>();
 		StringBuilder append = new StringBuilder();
 		for (DDLField field : table.getFields()) {
 			back.append(renderField(field));
+			
+			if (field.isPrimaryKey()) {
+				primaryKeys.add(field.getName());
+			}
 		}
 		
 		parseForeignKeys(append, table);
 		
-		if (append.length() > 0) {
-			append.setLength(append.length() - ",\n".length());
-			append.append('\n');
-		}
 		back.append(append);
+		
+		if (primaryKeys.size() > 0) {
+			back.append("    PRIMARY KEY(");
+			back.append(primaryKeys.get(0));
+			
+			for (int i = 1; i < primaryKeys.size(); i++) {
+				back.append(",");
+				back.append(primaryKeys.get(i));
+			}
+			back.append(")\n");
+		}
 		
 		back.append(")");
 		
@@ -251,9 +265,6 @@ public abstract class DatabaseProvider {
 		}
 		if (field.isUnique()) {
 			back.append(" UNIQUE");
-		}
-		if (field.isPrimaryKey()) {
-			back.append(" PRIMARY KEY");
 		}
 		
 		back.append(",\n");
