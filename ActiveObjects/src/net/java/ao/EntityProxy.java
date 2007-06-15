@@ -129,7 +129,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 				&& interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> throughType = manyToManyAnnotation.value();
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
-			String otherTableName = getManager().getNameConverter().getName(type);
+			String otherTableName = getManager().getNameConverter().getName(throughType);
 			
 			return retrieveRelations(otherTableName, getMappingFields(throughType, type), getID(), throughType, type);
 		} else if (method.getName().startsWith("get")) {
