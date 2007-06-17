@@ -36,8 +36,6 @@ import java.awt.Window;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -69,7 +67,7 @@ public final class UIManager {
 		manager = new EntityManager(dbProperties.getProperty("db.uri"), dbProperties.getProperty("db.username"), 
 				dbProperties.getProperty("db.password"));
 		
-		Logger.getLogger("net.java.ao").setLevel(Level.FINE);
+//		Logger.getLogger("net.java.ao").setLevel(Level.FINE);
 		
 		manager.setNameConverter(new PluralizedNameConverter());
 		
