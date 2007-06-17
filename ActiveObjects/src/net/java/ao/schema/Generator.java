@@ -169,22 +169,21 @@ public class Generator {
 	
 	public static boolean hasSchema(DatabaseProvider provider, PluggableNameConverter nameConverter,
 			Class<? extends Entity>... classes) throws SQLException {
-		List<String> entityNames = new ArrayList<String>();
-		
-		for (Class<? extends Entity> entity : classes) {
-			entityNames.add(nameConverter.getName(entity));
+		if (classes.length == 0) {
+			return true;
 		}
 		
 		Connection conn = provider.getConnection();
 		try {
 			Statement stmt = conn.createStatement();
-			for (String table : entityNames) {
-				try {
-					stmt.executeQuery("SELECT * FROM " + table).close();		// TODO	kind of a hacky way to figure this out, but it works
-				} catch (SQLException e) {
-					return false;
-				}
+			
+			try {
+				// TODO	kind of a hacky way to figure this out, but it works
+				stmt.executeQuery("SELECT * FROM " + nameConverter.getName(classes[0])).close();
+			} catch (SQLException e) {
+				return false;
 			}
+			
 			stmt.close();
 		} finally {
 			conn.close();
