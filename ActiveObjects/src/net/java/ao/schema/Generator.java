@@ -167,6 +167,32 @@ public class Generator {
 		}
 	}
 	
+	public static boolean hasSchema(DatabaseProvider provider, PluggableNameConverter nameConverter,
+			Class<? extends Entity>... classes) throws SQLException {
+		List<String> entityNames = new ArrayList<String>();
+		
+		for (Class<? extends Entity> entity : classes) {
+			entityNames.add(nameConverter.getName(entity));
+		}
+		
+		Connection conn = provider.getConnection();
+		try {
+			Statement stmt = conn.createStatement();
+			for (String table : entityNames) {
+				try {
+					stmt.executeQuery("SELECT * FROM " + table).close();		// TODO	kind of a hacky way to figure this out, but it works
+				} catch (SQLException e) {
+					return false;
+				}
+			}
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		return true;
+	}
+	
 	private static PluggableNameConverter loadConverter(ClassLoader classloader, String name) {
 		if (name.split(".").length == 0) {
 			name = "net.java.ao.schema." + name;

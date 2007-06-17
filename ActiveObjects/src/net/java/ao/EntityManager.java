@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.java.ao.schema.CamelCaseNameConverter;
+import net.java.ao.schema.Generator;
 import net.java.ao.schema.PluggableNameConverter;
 
 /**
@@ -79,6 +80,16 @@ public final class EntityManager {
 	
 	public EntityManager(String uri, String username, String password) {
 		this(DatabaseProvider.getInstance(uri, username, password));
+	}
+	
+	public void migrate(Class<? extends Entity>... entities) throws SQLException {
+		Generator.migrate(provider, nameConverter, entities);
+	}
+	
+	public void conditionallyMigrate(Class<? extends Entity>... entities) throws SQLException {
+		if (!Generator.hasSchema(provider, nameConverter, entities)) {
+			migrate(entities);
+		}
 	}
 	
 	public <T extends Entity> T[] get(Class<T> type, int... ids) {
