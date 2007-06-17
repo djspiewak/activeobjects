@@ -42,7 +42,9 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.Connection;
@@ -76,6 +78,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	private int id;
 	private Class<T> type;
 	
+	private Object implementation;
+	
 	private final transient Map<String, Object> cache;
 	private final transient ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
@@ -95,6 +99,19 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		Object implementation = getImplementation((T) proxy);
+		
+		if (implementation != null) {
+			if (Common.getCallingClass(1) != implementation.getClass()) {
+				try {
+					Method implMethod = implementation.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
+					
+					return implMethod.invoke(implementation, args);
+				} catch (Throwable t) {
+				}
+			}
+		}
+		
 		if (method.getName().equals("setID")) {
 			setID((Integer) args[0]);
 
@@ -502,6 +519,38 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		} else {
 			throw new RuntimeException("Unrecognized type: " + value.getClass().toString());
 		}
+	}
+	
+	private Object getImplementation(T proxy) {
+		if (implementation != null) {
+			return implementation;
+		} else if (implementation == Void.TYPE) {
+			return null;
+		}
+		
+		try {
+			Field field = type.getDeclaredField("IMPLEMENTATION");
+			Class<?> value = (Class<?>) field.get(null);
+			
+			implementation = value.getConstructor(type).newInstance(proxy);
+			return implementation;
+		} catch (SecurityException e) {
+			implementation = Void.TYPE;
+		} catch (NoSuchFieldException e) {
+			implementation = Void.TYPE;
+		} catch (IllegalArgumentException e) {
+			implementation = Void.TYPE;
+		} catch (IllegalAccessException e) {
+			implementation = Void.TYPE;
+		} catch (NoSuchMethodException e) {
+			implementation = Void.TYPE;
+		} catch (InstantiationException e) {
+			implementation = Void.TYPE;
+		} catch (InvocationTargetException e) {
+			implementation = Void.TYPE;
+		}
+		
+		return null;
 	}
 	
 	// special call from ObjectOutputStream

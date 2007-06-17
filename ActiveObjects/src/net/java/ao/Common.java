@@ -175,4 +175,13 @@ public final class Common {
 		
 		return type;
 	}
+    
+   public static Class<?> getCallingClass(int depth) {
+        StackTraceElement[] stack = new Exception().getStackTrace();
+        try {
+            return Class.forName(stack[depth + 2].getClassName());
+        } catch (ClassNotFoundException e) {}
+        
+        return null;
+    }
 }
