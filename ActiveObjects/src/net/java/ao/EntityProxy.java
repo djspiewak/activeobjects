@@ -35,8 +35,7 @@ import static net.java.ao.Common.getMappingFields;
 import static net.java.ao.Common.interfaceInheritsFrom;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -86,7 +85,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	private final transient Set<String> dirtyFields;
 	private final transient ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
 	
-	private List<VetoableChangeListener> vetoableChangeListeners;
+	private List<PropertyChangeListener> listeners;
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
 		this.type = type;
@@ -95,7 +94,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		cache = new HashMap<String, Object>();
 		dirtyFields = new LinkedHashSet<String>();
 		
-		vetoableChangeListeners = new LinkedList<VetoableChangeListener>();
+		listeners = new LinkedList<PropertyChangeListener>();
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -124,10 +123,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
 			return getTableName();
-		} else if (method.getName().equals("addVetoableChangeListener")) {
-			addVetoableChangeListener((VetoableChangeListener) args[0]);
-		} else if (method.getName().equals("removeVetoableChangeListener")) {
-			removeVetoableChangeListener((VetoableChangeListener) args[0]);
+		} else if (method.getName().equals("addPropertyChangeListener")) {
+			addPropertyChangeListener((PropertyChangeListener) args[0]);
+		} else if (method.getName().equals("removePropertyChangeListener")) {
+			removePropertyChangeListener((PropertyChangeListener) args[0]);
 		} else if (method.getName().equals("hashCode")) {
 			return hashCodeImpl();
 		} else if (method.getName().equals("equals")) {
@@ -256,12 +255,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		}
 	}
 	
-	public void addVetoableChangeListener(VetoableChangeListener listener) {
-		vetoableChangeListeners.add(listener);
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		listeners.add(listener);
 	}
 	
-	public void removeVetoableChangeListener(VetoableChangeListener listener) {
-		vetoableChangeListeners.remove(listener);
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		listeners.remove(listener);
 	}
 	
 	public int hashCodeImpl() {
@@ -364,13 +363,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		
 		boolean veto = false;
 		PropertyChangeEvent evt = new PropertyChangeEvent(this, name, oldValue, value);
-		for (VetoableChangeListener l : vetoableChangeListeners) {
-			try {
-				l.vetoableChange(evt);
-			} catch (PropertyVetoException e) {
-				veto = true;
-				break;
-			}
+		for (PropertyChangeListener l : listeners) {
+			l.propertyChange(evt);
 		}
 		
 		if (veto) {
