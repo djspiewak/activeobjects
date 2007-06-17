@@ -31,9 +31,9 @@
 package net.java.ao;
 
 import static net.java.ao.Common.convertDowncaseName;
+import static net.java.ao.Common.getCallingClass;
 import static net.java.ao.Common.getMappingFields;
 import static net.java.ao.Common.interfaceInheritsFrom;
-import static net.java.ao.Common.getCallingClass;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -524,14 +523,15 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		}
 		
 		try {
-			Field field = type.getDeclaredField("IMPLEMENTATION");
-			Class<?> value = (Class<?>) field.get(null);
-			
-			implementation = value.getConstructor(type).newInstance(proxy);
-			return implementation;
+			Implementation impl = type.getAnnotation(Implementation.class);
+			if (impl == null) {
+				implementation = Void.TYPE;
+			} else {
+				implementation = impl.value().getConstructor(type).newInstance(proxy);
+				
+				return implementation;
+			}
 		} catch (SecurityException e) {
-			implementation = Void.TYPE;
-		} catch (NoSuchFieldException e) {
 			implementation = Void.TYPE;
 		} catch (IllegalArgumentException e) {
 			implementation = Void.TYPE;
