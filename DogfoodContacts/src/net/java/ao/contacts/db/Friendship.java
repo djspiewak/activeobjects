@@ -30,12 +30,12 @@
  */
 package net.java.ao.contacts.db;
 
-import net.java.ao.Entity;
+import net.java.ao.SaveableEntity;
 
 /**
  * @author Daniel Spiewak
  */
-public interface Friendship extends Entity {
+public interface Friendship extends SaveableEntity {
 	
 	public Person getFromPerson();
 	public void setFromPerson(Person fromPerson);

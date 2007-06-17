@@ -62,8 +62,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 
 import net.java.ao.contacts.db.EmailAddress;
-import net.java.ao.contacts.db.Person;
 import net.java.ao.contacts.db.Friendship;
+import net.java.ao.contacts.db.Person;
 
 import org.jdesktop.fuse.InjectedResource;
 import org.jdesktop.fuse.ResourceInjector;
@@ -369,6 +369,13 @@ public class EditPersonDialog extends JDialog {
 						editPerson.setFirstName(firstName.getText());
 						editPerson.setLastName(lastName.getText());
 						
+						try {
+							editPerson.save();
+						} catch (SQLException e) {
+							e.printStackTrace();
+							return;
+						}
+						
 						EmailAddress[] existingEmails = editPerson.getEmailAddresses();
 						
 						for (int i = 0; i < emails.getModel().getSize(); i++) {
@@ -379,6 +386,7 @@ public class EditPersonDialog extends JDialog {
 									
 									newAddress.setEmail(email);
 									newAddress.setPerson(editPerson);
+									newAddress.save();
 								} catch (SQLException e1) {
 									e1.printStackTrace();
 								}
@@ -395,6 +403,7 @@ public class EditPersonDialog extends JDialog {
 									
 									relation.setFromPerson(wrapper.getPerson());
 									relation.setToPerson(editPerson);
+									relation.save();
 								} catch (SQLException e1) {
 									e1.printStackTrace();
 								}

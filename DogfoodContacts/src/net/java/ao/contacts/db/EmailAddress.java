@@ -30,13 +30,13 @@
  */
 package net.java.ao.contacts.db;
 
-import net.java.ao.Entity;
+import net.java.ao.SaveableEntity;
 import net.java.ao.schema.Unique;
 
 /**
  * @author Daniel Spiewak
  */
-public interface EmailAddress extends Entity {
+public interface EmailAddress extends SaveableEntity {
 	
 	@Unique
 	public String getEmail();
