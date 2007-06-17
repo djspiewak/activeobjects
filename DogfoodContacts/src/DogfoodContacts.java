@@ -2,10 +2,7 @@ import java.sql.SQLException;
 
 import net.java.ao.contacts.db.EmailAddress;
 import net.java.ao.contacts.db.Friendship;
-import net.java.ao.contacts.db.Person;
 import net.java.ao.contacts.ui.UIManager;
-import net.java.ao.schema.Generator;
-import net.java.ao.schema.PluralizedNameConverter;
 
 /*
  * Copyright 2007, Daniel Spiewak
@@ -45,20 +42,11 @@ public class DogfoodContacts {
 	public static void main(String... args) {
 		UIManager.init();
 		
-		boolean hasSchema = true;
 		try {
-			UIManager.getManager().find(Person.class);
+			UIManager.getManager().conditionallyMigrate(EmailAddress.class, Friendship.class);
 		} catch (SQLException e) {
-			hasSchema = false;
-		}
-		
-		if (!hasSchema) {
-			try {
-				Generator.migrate(UIManager.getManager().getProvider(), new PluralizedNameConverter(), EmailAddress.class, Friendship.class);
-			} catch (SQLException e) {
-				e.printStackTrace();
-				System.exit(0);
-			}
+			e.printStackTrace();
+			System.exit(-1);
 		}
 		
 		UIManager.show();
