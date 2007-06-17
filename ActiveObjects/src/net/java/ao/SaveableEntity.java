@@ -35,6 +35,6 @@ import java.sql.SQLException;
 /**
  * @author Daniel Spiewak
  */
-public interface Saveable {
+public interface SaveableEntity {
 	public void save() throws SQLException;
 }

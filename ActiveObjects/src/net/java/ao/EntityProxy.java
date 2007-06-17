@@ -324,7 +324,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	}
 
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
-		boolean saveable = interfaceInheritsFrom(type, Saveable.class);
+		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
 		
 		cacheLock.writeLock().lock();
 		try {
