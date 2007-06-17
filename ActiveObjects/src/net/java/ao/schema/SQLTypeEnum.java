@@ -38,7 +38,7 @@ import java.util.Date;
 /**
  * @author Daniel Spiewak
  */
-public enum SQLTypeEnum {
+enum SQLTypeEnum {
 	TINYINT(short.class, Types.TINYINT, -1),
 	TINYINT_OBJ(Short.class, Types.TINYINT, -1),
 	INTEGER(int.class, Types.INTEGER, -1),
