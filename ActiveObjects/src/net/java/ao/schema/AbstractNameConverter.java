@@ -31,6 +31,7 @@
 package net.java.ao.schema;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -68,9 +69,9 @@ public abstract class AbstractNameConverter implements PluggableNameConverter {
 		patternMappings.put(pattern, result);
 	}
 
-	public void addPatternMappings(Map<String, String> mappings) {
-		for (String pattern : mappings.keySet()) {
-			patterns.add(pattern);
+	public void addPatternMappings(Map<String, String> mappings, Iterator<String> keys) {
+		while (keys.hasNext()) {
+			patterns.add(keys.next());
 		}
 		
 		patternMappings.putAll(mappings);
@@ -84,10 +85,10 @@ public abstract class AbstractNameConverter implements PluggableNameConverter {
 		String back = getNameImpl(entity);
 		
 		for (String regexp : patterns) {
-			Pattern pattern = Pattern.compile(regexp);
+			Pattern pattern = Pattern.compile("^" + regexp + "$");
 			Matcher matcher = pattern.matcher(back);
 			
-			if (matcher.matches()) {
+			if (matcher.find()) {
 				String mapResult = patternMappings.get(regexp);
 				
 				Pattern mapPattern = Pattern.compile("\\{\\d+\\}");

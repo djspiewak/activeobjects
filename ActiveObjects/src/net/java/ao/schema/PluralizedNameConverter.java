@@ -33,7 +33,6 @@ package net.java.ao.schema;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author Daniel Spiewak
@@ -42,7 +41,7 @@ public class PluralizedNameConverter extends CamelCaseNameConverter {
 	
 	@SuppressWarnings("unchecked")
 	public PluralizedNameConverter() {
-		Properties rules = new Properties();
+		OrderedProperties rules = new OrderedProperties();
 		InputStream is = PluralizedNameConverter.class.getResourceAsStream("/net/java/ao/schema/englishPluralRules.properties");
 		
 		try {
@@ -56,6 +55,6 @@ public class PluralizedNameConverter extends CamelCaseNameConverter {
 			}
 		}
 		
-		addPatternMappings((Map) rules);
+		addPatternMappings((Map) rules, rules.iterator());
 	}
 }

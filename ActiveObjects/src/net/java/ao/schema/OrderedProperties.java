@@ -30,30 +30,47 @@
  */
 package net.java.ao.schema;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-
-import net.java.ao.Entity;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Daniel Spiewak
  */
-public interface PluggableNameConverter {
-	public String getName(Class<? extends Entity> clazz);
+class OrderedProperties extends HashMap<String, String> implements Iterable<String> {
+	private List<String> keyList;
 	
-	/**
-	 * pattern example: "(.+)y"
-	 * result example: "{1}ies"
-	 * 
-	 * Would map "company" to "companies"
-	 * 
-	 * Pattern mappings are applied after Class to String
-	 * mapping and is bypassed by any explicit class mappings.
-	 */
-	public void addPatternMapping(String pattern, String result);
-	
-	public void addPatternMappings(Map<String, String> mappings, Iterator<String> keys);
-	
-	public void addClassMapping(Class<? extends Entity> clazz, String name);
-	public void addClassMappings(Map<Class<? extends Entity>, String> mappings);
+	public OrderedProperties() {
+		keyList = new LinkedList<String>();
+	}
+
+	public void load(InputStream inStream) throws IOException {
+		load(new InputStreamReader(inStream));
+	}
+
+	public void load(Reader reader) throws IOException {
+		 BufferedReader bufferedReader = new BufferedReader(reader);
+		 Pattern pattern = Pattern.compile("([^#].+)=([^#\\r\\n]+)");
+		 
+		 String line = null;
+		 while ((line = bufferedReader.readLine()) != null) {
+			 Matcher matcher = pattern.matcher(line);
+			 if (matcher.find()) {
+				 keyList.add(matcher.group(1).trim());
+				 put(matcher.group(1).trim(), matcher.group(2).trim());
+			 }
+		 }
+	}
+
+	public Iterator<String> iterator() {
+		return keyList.iterator();
+	}
 }
