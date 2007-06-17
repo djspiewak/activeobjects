@@ -34,6 +34,9 @@ import static net.java.ao.Common.convertDowncaseName;
 import static net.java.ao.Common.getMappingFields;
 import static net.java.ao.Common.interfaceInheritsFrom;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -53,6 +56,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -77,6 +81,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	
 	private final transient Set<String> dirtyFields;
 	private final transient ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
+	
+	private List<VetoableChangeListener> vetoableChangeListeners;
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
 		this.type = type;
@@ -84,6 +90,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		
 		cache = new HashMap<String, Object>();
 		dirtyFields = new LinkedHashSet<String>();
+		
+		vetoableChangeListeners = new LinkedList<VetoableChangeListener>();
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -99,6 +107,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
 			return getTableName();
+		} else if (method.getName().equals("addVetoableChangeListener")) {
+			addVetoableChangeListener((VetoableChangeListener) args[0]);
+		} else if (method.getName().equals("removeVetoableChangeListener")) {
+			removeVetoableChangeListener((VetoableChangeListener) args[0]);
 		} else if (method.getName().equals("hashCode")) {
 			return hashCodeImpl();
 		} else if (method.getName().equals("equals")) {
@@ -115,7 +127,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 
 		if (mutatorAnnotation != null) {
-			invokeSetter(getID(), tableName, mutatorAnnotation.value(), args[0]);
+			invokeSetter(id, tableName, mutatorAnnotation.value(), args[0]);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType());
@@ -151,7 +163,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			if (interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
 				name += "ID";
 			}
-			invokeSetter(getID(), tableName, name, args[0]);
+			invokeSetter(id, tableName, name, args[0]);
 			
 			return Void.TYPE;
 		}
@@ -227,6 +239,14 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		}
 	}
 	
+	public void addVetoableChangeListener(VetoableChangeListener listener) {
+		vetoableChangeListeners.add(listener);
+	}
+	
+	public void removeVetoableChangeListener(VetoableChangeListener listener) {
+		vetoableChangeListeners.remove(listener);
+	}
+	
 	public int hashCodeImpl() {
 		return (int) (new Random(getID()).nextFloat() * getID()) + getID() % (2 << 15);
 	}
@@ -286,10 +306,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		
 		cacheLock.writeLock().lock();
 		try {
-			if (DBEncapsulator.getInstance(getManager().getProvider()).hasManualConnection()) {
-				cache.remove(name);
-			}
-			
 			if (cache.containsKey(name)) {
 				return (V) cache.get(name);
 			}
@@ -313,7 +329,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 				closeConnectionImpl(conn);
 			}
 	
-			if (back != null && !DBEncapsulator.getInstance(getManager().getProvider()).hasManualConnection()) {
+			if (back != null) {
 				cache.put(name, back);
 			}
 		} finally {
@@ -326,15 +342,22 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
 		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
 		
-		cacheLock.writeLock().lock();
-		try {
-			if (DBEncapsulator.getInstance(getManager().getProvider()).hasManualConnection() && !saveable) {
-				cache.remove(name);
-			} else {
-				cache.put(name, value);
+		Object oldValue = invokeGetter(id, table, name, value.getClass());
+		invokeSetterImpl(name, value, saveable);
+		
+		boolean veto = false;
+		PropertyChangeEvent evt = new PropertyChangeEvent(this, name, oldValue, value);
+		for (VetoableChangeListener l : vetoableChangeListeners) {
+			try {
+				l.vetoableChange(evt);
+			} catch (PropertyVetoException e) {
+				veto = true;
+				break;
 			}
-		} finally {
-			cacheLock.writeLock().unlock();
+		}
+		
+		if (veto) {
+			invokeSetterImpl(name, oldValue, saveable);
 		}
 		
 		dirtyFieldsLock.writeLock().lock();
@@ -346,6 +369,15 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		
 		if (!saveable) {
 			save();
+		}
+	}
+	
+	private void invokeSetterImpl(String name, Object value, boolean saveable) throws Throwable {
+		cacheLock.writeLock().lock();
+		try {
+			cache.put(name, value);
+		} finally {
+			cacheLock.writeLock().unlock();
 		}
 	}
 	

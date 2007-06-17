@@ -30,6 +30,8 @@
  */
 package net.java.ao;
 
+import java.beans.VetoableChangeListener;
+
 /**
  * @author Daniel Spiewak
  */
@@ -38,4 +40,7 @@ public interface Entity {
 	public void setID(int id);
 	
 	public String getTableName();
+	
+	public void addVetoableChangeListener(VetoableChangeListener listener);
+	public void removeVetoableChangeListener(VetoableChangeListener listener);
 }
