@@ -324,6 +324,10 @@ public class Generator {
 		fields.add(field);
 		
 		for (Method method : clazz.getDeclaredMethods()) {
+			if (method.getAnnotation(Ignore.class) != null) {
+				continue;
+			}
+			
 			String attributeName = getAttributeNameFromMethod(method);
 			Class<?> type = getAttributeTypeFromMethod(method);
 			
