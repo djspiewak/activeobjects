@@ -33,6 +33,7 @@ package net.java.ao;
 import static net.java.ao.Common.convertDowncaseName;
 import static net.java.ao.Common.getMappingFields;
 import static net.java.ao.Common.interfaceInheritsFrom;
+import static net.java.ao.Common.getCallingClass;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -101,7 +102,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		Object implementation = getImplementation((T) proxy);
 		
 		if (implementation != null) {
-			if (Common.getCallingClass(1) != implementation.getClass()) {
+			if (getCallingClass(1) != implementation.getClass()) {
 				try {
 					Method implMethod = implementation.getClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
 					
