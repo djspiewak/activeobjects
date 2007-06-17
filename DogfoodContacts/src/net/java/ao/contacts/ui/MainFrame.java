@@ -49,7 +49,7 @@ import javax.swing.JScrollPane;
 
 import net.java.ao.contacts.db.EmailAddress;
 import net.java.ao.contacts.db.Person;
-import net.java.ao.contacts.db.PersonToPerson;
+import net.java.ao.contacts.db.Friendship;
 
 import org.jdesktop.fuse.InjectedResource;
 import org.jdesktop.fuse.ResourceInjector;
@@ -152,7 +152,7 @@ public class MainFrame extends JFrame {
 					for (EmailAddress address : selectedContact.getEmailAddresses()) {
 						UIManager.getManager().delete(address);
 					}
-					for (PersonToPerson relation : UIManager.getManager().find(PersonToPerson.class, "personAID = ? OR personBID = ?", 
+					for (Friendship relation : UIManager.getManager().find(Friendship.class, "personAID = ? OR personBID = ?", 
 							selectedContact.getID(), selectedContact.getID())) {
 						UIManager.getManager().delete(relation);
 					}

@@ -35,11 +35,11 @@ import net.java.ao.Entity;
 /**
  * @author Daniel Spiewak
  */
-public interface PersonToPerson extends Entity {
+public interface Friendship extends Entity {
 	
-	public Person getPersonA();
-	public void setPersonA(Person personA);
+	public Person getFromPerson();
+	public void setFromPerson(Person fromPerson);
 	
-	public Person getPersonB();
-	public void setPersonB(Person personB);
+	public Person getToPerson();
+	public void setToPerson(Person toPerson);
 }

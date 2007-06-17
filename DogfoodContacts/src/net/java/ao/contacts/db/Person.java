@@ -48,6 +48,6 @@ public interface Person extends Entity {
 	@OneToMany
 	public EmailAddress[] getEmailAddresses();
 	
-	@ManyToMany(PersonToPerson.class)
+	@ManyToMany(Friendship.class)
 	public Person[] getPeople();
 }

@@ -1,12 +1,11 @@
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.java.ao.contacts.db.EmailAddress;
+import net.java.ao.contacts.db.Friendship;
 import net.java.ao.contacts.db.Person;
-import net.java.ao.contacts.db.PersonToPerson;
 import net.java.ao.contacts.ui.UIManager;
 import net.java.ao.schema.Generator;
+import net.java.ao.schema.PluralizedNameConverter;
 
 /*
  * Copyright 2007, Daniel Spiewak
@@ -55,7 +54,7 @@ public class DogfoodContacts {
 		
 		if (!hasSchema) {
 			try {
-				Generator.migrate(UIManager.getManager().getProvider(), EmailAddress.class, PersonToPerson.class);
+				Generator.migrate(UIManager.getManager().getProvider(), new PluralizedNameConverter(), EmailAddress.class, Friendship.class);
 			} catch (SQLException e) {
 				e.printStackTrace();
 				System.exit(0);
