@@ -53,7 +53,7 @@ import net.java.ao.schema.PluggableNameConverter;
 /**
  * @author Daniel Spiewak
  */
-public final class EntityManager {
+public class EntityManager {
 	
 	static {
 		Logger.getLogger("net.java.ao").setLevel(Level.OFF);
