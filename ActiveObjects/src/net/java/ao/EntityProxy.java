@@ -305,6 +305,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		return type.hashCode();
 	}
 	
+	Class<T> getType() {
+		return type;
+	}
+	
 	private EntityManager getManager() {
 		return managers.get(this);
 	}
