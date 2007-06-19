@@ -38,6 +38,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -279,16 +281,42 @@ public class EntityManager {
 	}
 
 	public void delete(Entity... entities) throws SQLException {
+		if (entities.length == 0) {
+			return;
+		}
+		
+		Map<Class<? extends Entity>, List<Entity>> organizedEntities = new HashMap<Class<? extends Entity>, List<Entity>>();
+		
+		for (Entity entity : entities) {
+			Class<? extends Entity> type = getProxyForEntity(entity).getType(); 
+			
+			if (!organizedEntities.containsKey(type)) {
+				organizedEntities.put(type, new LinkedList<Entity>());
+			}
+			organizedEntities.get(type).add(entity);
+		}
+		
 		cacheLock.writeLock().lock();
 		try {
 			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 			try {
-				for (Entity entity : entities) {
-					String sql = "DELETE FROM " + entity.getTableName() + " WHERE id = ?";
+				for (Class<? extends Entity> type : organizedEntities.keySet()) {
+					StringBuilder sql = new StringBuilder("DELETE FROM ");
+					sql.append(nameConverter.getName(type));
+					sql.append(" WHERE id IN (?");
 					
-					Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-					PreparedStatement stmt = conn.prepareStatement(sql);
-					stmt.setInt(1, entity.getID());
+					for (int i = 1; i < organizedEntities.get(type).size(); i++) {
+						sql.append(",?");
+					}
+					sql.append(')');
+					
+					Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
+					PreparedStatement stmt = conn.prepareStatement(sql.toString());
+					
+					int index = 1;
+					for (Entity entity : organizedEntities.get(type)) {
+						stmt.setInt(index++, entity.getID());
+					}
 					
 					stmt.executeUpdate();
 					stmt.close();
