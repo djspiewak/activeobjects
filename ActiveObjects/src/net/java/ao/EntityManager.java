@@ -51,6 +51,24 @@ import net.java.ao.schema.Generator;
 import net.java.ao.schema.PluggableNameConverter;
 
 /**
+ * <p>The root control class for the entire ActiveObjects API.  <code>EntityManager</code>
+ * is the source of all {@link Entity} objects, as well as the dispatch layer between the entities,
+ * the pluggable table name converters, and the database abstraction layers.  This is the
+ * entry point for any use of the API.</p>
+ * 
+ * <p><code>EntityManager</code> is designed to be used in an instance fashion with each
+ * instance corresponding to a single database.  Thus, rather than a singleton instance or a
+ * static factory method, <code>EntityManager</code> does have a proper constructor.  Any
+ * static instance management is left up to the developer using the API.</p>
+ * 
+ * <p>As a side note, ActiveObjects can optionally log all SQL queries prior to their
+ * execution.  This query logging is done with the Java Logging API using the {@link Logger}
+ * instance for the <code>net.java.ao</code> package.  This logging is disabled by default
+ * by the <code>EntityManager</code> static initializer.  Thus, if it is desirable to log the
+ * SQL statements, the <code>Logger</code> level must be set to {@link Level.OFF}
+ * <i>after</i> the <code>EntityManager</code> class is first used.  This usually means
+ * setting the log level after the constructer has been called.</p>
+ * 
  * @author Daniel Spiewak
  */
 public class EntityManager {
@@ -69,6 +87,13 @@ public class EntityManager {
 	
 	private PluggableNameConverter nameConverter;
 	
+	/**
+	 * Creates a new instance of <code>EntityManager</code> using the specified
+	 * {@link DatabaseProvider}.  This constructor intializes the entity cache, as well
+	 * as creates the default {@link PluggableNameConverter} (the default is 
+	 * {@link CamelCaseNameConverter}, which is non-pluralized).  The provider
+	 * instance is immutable once set using this constructor.
+	 */
 	public EntityManager(DatabaseProvider provider) {
 		this.provider = provider;
 		
@@ -78,20 +103,55 @@ public class EntityManager {
 		nameConverter = new CamelCaseNameConverter();
 	}
 	
+	/**
+	 * Creates a new instance of <code>EntityManager</code> by auto-magically
+	 * finding a {@link DatabaseProvider} instnace for the specified JDBC URI, username
+	 * and password.  The auto-magically determined instance is pooled by default
+	 * (if a supported connection pooling library is available on the classpath). 
+	 * 
+	 * @see #EntityManager(DatabaseProvider)
+	 * @see net.java.ao.DatabaseProvider#getInstance(String, String, String)
+	 */
 	public EntityManager(String uri, String username, String password) {
 		this(DatabaseProvider.getInstance(uri, username, password));
 	}
 	
+	/**
+	 * Convenience method to create the schema for the specified entities
+	 * using the current settings (name converter and database provider).
+	 * 
+	 *  @see net.java.ao.schema.Generator#migrate(DatabaseProvider, PluggableNameConverter, Class...)
+	 */
 	public void migrate(Class<? extends Entity>... entities) throws SQLException {
 		Generator.migrate(provider, nameConverter, entities);
 	}
 	
+	/**
+	 * First checks to see if the schema for the specified entities pre-exists in
+	 * the database abstracted by the current settings.  If the schema does not
+	 * exist, then the {@link #migrate(Class...)} method is invoked.
+	 * 
+	 * @see net.java.ao.schema.Generator#hasSchema(DatabaseProvider, PluggableNameConverter, Class...)
+	 */
 	public void conditionallyMigrate(Class<? extends Entity>... entities) throws SQLException {
 		if (!Generator.hasSchema(provider, nameConverter, entities)) {
 			migrate(entities);
 		}
 	}
 	
+	/**
+	 * <p>Returns an array of entities of the specified type corresponding to the
+	 * varargs ids.  If an in-memory reference already exists to a corresponding
+	 * entity (of the specified type and id), it is returned rather than creating
+	 * a new instance.</p>
+	 * 
+	 * <p>No checks are performed to ensure that the id actually exists in the
+	 * database for the specified object.  Thus, this method is solely a Java
+	 * memory state modifying method.  There is not database access involved.
+	 * The upshot of this is that the method is very very fast.  The flip side of
+	 * course is that one could conceivably maintain entities which reference
+	 * non-existant database rows.</p>
+	 */
 	public <T extends Entity> T[] get(Class<T> type, int... ids) {
 		T[] back = (T[]) Array.newInstance(type, ids.length);
 		int index = 0;
@@ -128,10 +188,37 @@ public class EntityManager {
 		return back;
 	}
 	
+	/**
+	 * Cleverly overloaded method to return a single entity of the specified type
+	 * rather than an array in the case where only one ID is passed.  This method
+	 * meerly delegates the call to the overloaded <code>get</code> method 
+	 * and functions as syntactical sugar.
+	 * 
+	 * @see #get(Class, int...)
+	 */
 	public <T extends Entity> T get(Class<T> type, int id) {
 		return get(type, new int[] {id})[0];
 	}
 	
+	/**
+	 * <p>Creates a new entity of the specified type with the optionally specified
+	 * initial parameters.  This method actually inserts a row into the table represented
+	 * by the entity type and returns the entity instance which corresponds to that
+	 * row.</p>
+	 * 
+	 * <p>The {@link DBParam} object parameters are designed to allow the creation
+	 * of entities which have non-null fields which have no defalut or auto-generated
+	 * value.  Insertion of a row without such field values would of course fail,
+	 * thus the need for db params.  The db params can also be used to set
+	 * the values for any field in the row, leading to more compact code under
+	 * certain circumstances.</p>
+	 * 
+	 * <p>Unless within a transaction, this method will commit to the database
+	 * immediately and exactly once per call.  Thus, care should be taken in
+	 * the creation of large numbers of entities.  There doesn't seem to be a more
+	 * efficient way to create large numbers of entities, however one should still
+	 * be aware of the performance implications.</p>
+	 */
 	public <T extends Entity> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
 		String table = nameConverter.getName(type);
@@ -190,7 +277,7 @@ public class EntityManager {
 		
 		return back;
 	}
-	
+
 	public void delete(Entity... entities) throws SQLException {
 		cacheLock.writeLock().lock();
 		try {
