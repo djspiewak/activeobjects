@@ -301,11 +301,13 @@ public class EntityManager {
 			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 			try {
 				for (Class<? extends Entity> type : organizedEntities.keySet()) {
+					List<Entity> entityList = organizedEntities.get(type);
+					
 					StringBuilder sql = new StringBuilder("DELETE FROM ");
 					sql.append(nameConverter.getName(type));
 					sql.append(" WHERE id IN (?");
 					
-					for (int i = 1; i < organizedEntities.get(type).size(); i++) {
+					for (int i = 1; i < entityList.size(); i++) {
 						sql.append(",?");
 					}
 					sql.append(')');
@@ -314,7 +316,7 @@ public class EntityManager {
 					PreparedStatement stmt = conn.prepareStatement(sql.toString());
 					
 					int index = 1;
-					for (Entity entity : organizedEntities.get(type)) {
+					for (Entity entity : entityList) {
 						stmt.setInt(index++, entity.getID());
 					}
 					
