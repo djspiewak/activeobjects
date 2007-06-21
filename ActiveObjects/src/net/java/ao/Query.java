@@ -107,7 +107,7 @@ public class Query {
 		return this;
 	}
 	
-	public String toSQL(String tableName) {
+	String toSQL(String tableName, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		
 		switch (type) {
@@ -118,7 +118,11 @@ public class Query {
 					sql.append("DISTINCT ");
 				}
 				
-				sql.append(fields);
+				if (count) {
+					sql.append("COUNT(*)");
+				} else {
+					sql.append(fields);
+				}
 				sql.append(" FROM ");
 				sql.append(tableName);
 			break;
@@ -160,7 +164,7 @@ public class Query {
 		return sql.toString();
 	}
 	
-	public void setParameters(PreparedStatement stmt) throws SQLException {
+	void setParameters(PreparedStatement stmt) throws SQLException {
 		if (whereParams != null) {
 			for (int i = 0; i < whereParams.length; i++) {
 				if (whereParams[i] instanceof Entity) {
