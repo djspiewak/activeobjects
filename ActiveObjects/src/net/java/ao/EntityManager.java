@@ -88,6 +88,7 @@ public class EntityManager {
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private PluggableNameConverter nameConverter;
+	private final ReadWriteLock nameConverterLock = new ReentrantReadWriteLock();
 	
 	/**
 	 * Creates a new instance of <code>EntityManager</code> using the specified
@@ -125,7 +126,12 @@ public class EntityManager {
 	 *  @see net.java.ao.schema.Generator#migrate(DatabaseProvider, PluggableNameConverter, Class...)
 	 */
 	public void migrate(Class<? extends Entity>... entities) throws SQLException {
-		Generator.migrate(provider, nameConverter, entities);
+		nameConverterLock.readLock().lock();
+		try {
+			Generator.migrate(provider, nameConverter, entities);
+		} finally {
+			nameConverterLock.readLock().unlock();
+		}
 	}
 	
 	/**
@@ -136,7 +142,16 @@ public class EntityManager {
 	 * @see net.java.ao.schema.Generator#hasSchema(DatabaseProvider, PluggableNameConverter, Class...)
 	 */
 	public void conditionallyMigrate(Class<? extends Entity>... entities) throws SQLException {
-		if (!Generator.hasSchema(provider, nameConverter, entities)) {
+		boolean hasSchema = false;
+		
+		nameConverterLock.readLock().lock();
+		try {
+			hasSchema = Generator.hasSchema(provider, nameConverter, entities);
+		} finally {
+			nameConverterLock.readLock().unlock();
+		}
+		
+		if (!hasSchema) {
 			migrate(entities);
 		}
 	}
@@ -223,7 +238,14 @@ public class EntityManager {
 	 */
 	public <T extends Entity> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
-		String table = nameConverter.getName(type);
+		String table = null;
+		
+		nameConverterLock.readLock().lock();
+		try {
+			table = nameConverter.getName(type);
+		} finally {
+			nameConverterLock.readLock().unlock();
+		}
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
@@ -304,7 +326,14 @@ public class EntityManager {
 					List<Entity> entityList = organizedEntities.get(type);
 					
 					StringBuilder sql = new StringBuilder("DELETE FROM ");
-					sql.append(nameConverter.getName(type));
+					
+					nameConverterLock.readLock().lock();
+					try {
+						sql.append(nameConverter.getName(type));
+					} finally {
+						nameConverterLock.readLock().unlock();
+					}
+					
 					sql.append(" WHERE id IN (?");
 					
 					for (int i = 1; i < entityList.size(); i++) {
@@ -358,11 +387,18 @@ public class EntityManager {
 	
 	public <T extends Entity> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
-		String table = nameConverter.getName(type);
+		String table = null;
+		
+		nameConverterLock.readLock().lock();
+		try {
+			table = nameConverter.getName(type);
+		} finally {
+			nameConverterLock.readLock().unlock();
+		}
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			String sql = query.toSQL(table);
+			String sql = query.toSQL(table, false);
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
@@ -410,12 +446,62 @@ public class EntityManager {
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
 	}
 	
+	public int count(Class<? extends Entity> type) throws SQLException {
+		return count(type, Query.select());
+	}
+	
+	public int count(Class<? extends Entity> type, String criteria, Object... parameters) throws SQLException {
+		return count(type, Query.select().where(criteria, parameters));
+	}
+	
+	public int count(Class<? extends Entity> type, Query query) throws SQLException {
+		int back = -1;
+		String table = null;
+		
+		nameConverterLock.readLock().lock();
+		try {
+			table = nameConverter.getName(type);
+		} finally {
+			nameConverterLock.readLock().unlock();
+		}
+		
+		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+		try {
+			String sql = query.toSQL(table, true);
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			
+			query.setParameters(stmt);
+
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				back = res.getInt(1);
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			DBEncapsulator.getInstance(provider).closeConnection(conn);
+		}
+		
+		return back;
+	}
+	
 	public void setNameConverter(PluggableNameConverter nameConverter) {
-		this.nameConverter = nameConverter;
+		nameConverterLock.writeLock().lock();
+		try {
+			this.nameConverter = nameConverter;
+		} finally {
+			nameConverterLock.writeLock().unlock();
+		}
 	}
 	
 	public PluggableNameConverter getNameConverter() {
-		return nameConverter;
+		nameConverterLock.readLock().lock();
+		try {
+			return nameConverter;
+		} finally {
+			nameConverterLock.readLock().unlock();
+		}
 	}
 
 	public DatabaseProvider getProvider() {
