@@ -33,6 +33,7 @@ package net.java.ao.db;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLField;
@@ -64,9 +65,17 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		
 		return super.renderFieldType(field);
 	}
+	
+	@Override
+	protected String convertTypeToString(int type) {
+		if (type == Types.CLOB) {
+			return "TEXT";
+		}
+		
+		return super.convertTypeToString(type);
+	}
 
 	@Override
 	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
-
 }
