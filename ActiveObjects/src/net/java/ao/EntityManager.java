@@ -302,6 +302,25 @@ public class EntityManager {
 		return back;
 	}
 
+	/**
+	 * <p>Deletes the specified entities from the database.  DELETE statements are
+	 * called on the rows in the corresponding tables and the entities are removed
+	 * from the instance cache.  The entity instances themselves are not invalidated,
+	 * but it doesn't even make sense to continue using the instance without a row
+	 * with which it is paired.</p>
+	 * 
+	 * <p>This method does attempt to group the DELETE statements on a per-type
+	 * basis.  Thus, if you pass 5 instances of <code>EntityA</code> and two 
+	 * instances of <code>EntityB</code>, the following prepared statement SQL
+	 * will be invoked:</p>
+	 * 
+	 * <pre>DELETE FROM entityA WHERE id IN (?,?,?,?,?);
+	 * DELETE FROM entityB WHERE id IN (?,?);</pre>
+	 * 
+	 * <p>Thus, this method scales very well for large numbers of entities grouped
+	 * into types.  However, the execution time scales linearly for each entity of
+	 * unique type.</p>
+	 */
 	public void delete(Entity... entities) throws SQLException {
 		if (entities.length == 0) {
 			return;
@@ -373,14 +392,34 @@ public class EntityManager {
 		}
 	}
 	
+	/**
+	 * Returns all entities of the given type.  This actually peers the call to
+	 * the {@link #find(Class, Query)} method.
+	 */
 	public <T extends Entity> T[] find(Class<T> type) throws SQLException {
 		return find(type, Query.select());
 	}
 	
+	/**
+	 * <p>Convenience method to select all entities of the given type with the
+	 * specified, parameterized criteria.  The <code>criteria</code> String
+	 * specified is appended to the SQL prepared statement immediately
+	 * following the <code>WHERE</code>.</p>
+	 * 
+	 * <p>Example:</p>
+	 * 
+	 * <pre>manager.find(Person.class, "name LIKE ? OR age > ?", "Joe", 9);</pre>
+	 * 
+	 * <p>This actually peers the call to the {@link #find(Class, Query)}
+	 * method, properly parameterizing the {@link Query} object.</p>
+	 */
 	public <T extends Entity> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
 		return find(type, Query.select().where(criteria, parameters));
 	}
 	
+	/**
+	 * <p></p>
+	 */
 	public <T extends Entity> T[] find(Class<T> type, Query query) throws SQLException {
 		return find(type, "id", query);
 	}
