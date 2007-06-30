@@ -109,7 +109,7 @@ public class Query {
 		return this;
 	}
 	
-	String toSQL(Class<? extends Entity> table, PluggableNameConverter nameConverter, boolean count) {
+	protected String toSQL(Class<? extends Entity> table, PluggableNameConverter nameConverter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		
 		switch (type) {
@@ -166,7 +166,7 @@ public class Query {
 		return sql.toString();
 	}
 	
-	void setParameters(PreparedStatement stmt) throws SQLException {
+	protected void setParameters(PreparedStatement stmt) throws SQLException {
 		if (whereParams != null) {
 			for (int i = 0; i < whereParams.length; i++) {
 				if (whereParams[i] instanceof Entity) {
