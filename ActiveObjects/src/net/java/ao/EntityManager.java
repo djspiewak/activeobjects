@@ -417,16 +417,27 @@ public class EntityManager {
 		return find(type, Query.select().where(criteria, parameters));
 	}
 	
+	public <T extends Entity> T[] find(Class<T> type, Query query) throws SQLException {
+		String selectField = "id";
+		
+		String[] fields = query.getFields();
+		if (fields.length == 1) {
+			selectField = fields[0];
+		}
+		
+		return find(type, selectField, query);
+	}
+	
 	/**
 	 * <p>Selects all entities of the specified type which match the given
 	 * <code>Query</code>.  This method creates a <code>PreparedStatement</code>
 	 * using the <code>Query</code> instance specified against the table
 	 * represented by the given type.  This query is then executed (with the
 	 * parameters specified in the query).  The method then iterates through
-	 * the result set and extracts the "id" field, mapping an <code>Entity</code>
+	 * the result set and extracts the specified field, mapping an <code>Entity</code>
 	 * of the given type to each row.  This array of entities is then returned.</p>
 	 */
-	public <T extends Entity> T[] find(Class<T> type, Query query) throws SQLException {
+	public <T extends Entity> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
@@ -446,7 +457,7 @@ public class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, res.getInt("id")));
+				back.add(get(type, res.getInt(field)));
 			}
 			res.close();
 			stmt.close();

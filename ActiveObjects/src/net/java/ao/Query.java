@@ -50,6 +50,9 @@ public class Query {
 	
 	private boolean distinct = false;
 	
+	private Class<? extends Entity> tableType;
+	private String table;
+	
 	private String whereClause;
 	private Object[] whereParams;
 	
@@ -66,8 +69,26 @@ public class Query {
 		joins = new HashMap<Class<? extends Entity>, String>();
 	}
 	
+	public String[] getFields() {
+		return fields.split(",");
+	}
+	
 	public Query distinct() {
 		distinct = true;
+		
+		return this;
+	}
+	
+	public Query from(Class<? extends Entity> tableType) {
+		table = null;
+		this.tableType = tableType;
+		
+		return this;
+	}
+	
+	public Query from(String table) {
+		tableType = null;
+		this.table = table;
 		
 		return this;
 	}
@@ -109,8 +130,17 @@ public class Query {
 		return this;
 	}
 	
-	protected String toSQL(Class<? extends Entity> table, PluggableNameConverter nameConverter, boolean count) {
+	protected String toSQL(Class<? extends Entity> tableType, PluggableNameConverter nameConverter, boolean count) {
 		StringBuilder sql = new StringBuilder();
+		
+		if (this.tableType != null) {
+			tableType = tableType;
+		}
+		
+		String tableName = nameConverter.getName(tableType);
+		if (this.table != null) {
+			tableName = this.table;
+		}
 		
 		switch (type) {
 			case SELECT:
@@ -126,7 +156,8 @@ public class Query {
 					sql.append(fields);
 				}
 				sql.append(" FROM ");
-				sql.append(nameConverter.getName(table));
+				
+				sql.append(tableName);
 			break;
 		}
 		
@@ -182,7 +213,7 @@ public class Query {
 		return select("id");
 	}
 	
-	private static Query select(String fields) {
+	public static Query select(String fields) {
 		return new Query(QueryType.SELECT, fields);
 	}
 }
