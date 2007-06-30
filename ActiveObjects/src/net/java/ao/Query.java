@@ -180,7 +180,7 @@ public class Query {
 		return select("id");
 	}
 	
-	public static Query select(String fields) {
+	private static Query select(String fields) {
 		return new Query(QueryType.SELECT, fields);
 	}
 }

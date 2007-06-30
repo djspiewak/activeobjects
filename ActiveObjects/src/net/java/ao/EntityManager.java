@@ -418,13 +418,15 @@ public class EntityManager {
 	}
 	
 	/**
-	 * <p></p>
+	 * <p>Selects all entities of the specified type which match the given
+	 * <code>Query</code>.  This method creates a <code>PreparedStatement</code>
+	 * using the <code>Query</code> instance specified against the table
+	 * represented by the given type.  This query is then executed (with the
+	 * parameters specified in the query).  The method then iterates through
+	 * the result set and extracts the "id" field, mapping an <code>Entity</code>
+	 * of the given type to each row.  This array of entities is then returned.</p>
 	 */
 	public <T extends Entity> T[] find(Class<T> type, Query query) throws SQLException {
-		return find(type, "id", query);
-	}
-	
-	public <T extends Entity> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		String table = null;
 		
@@ -445,7 +447,7 @@ public class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, res.getInt(field)));
+				back.add(get(type, res.getInt("id")));
 			}
 			res.close();
 			stmt.close();
