@@ -428,18 +428,17 @@ public class EntityManager {
 	 */
 	public <T extends Entity> T[] find(Class<T> type, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
-		String table = null;
-		
-		nameConverterLock.readLock().lock();
-		try {
-			table = nameConverter.getName(type);
-		} finally {
-			nameConverterLock.readLock().unlock();
-		}
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			String sql = query.toSQL(table, false);
+			String sql = null;
+			nameConverterLock.readLock().lock();
+			try {
+				sql = query.toSQL(type, nameConverter, false);
+			} finally {
+				nameConverterLock.readLock().unlock();
+			}
+			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
@@ -497,18 +496,17 @@ public class EntityManager {
 	
 	public int count(Class<? extends Entity> type, Query query) throws SQLException {
 		int back = -1;
-		String table = null;
-		
-		nameConverterLock.readLock().lock();
-		try {
-			table = nameConverter.getName(type);
-		} finally {
-			nameConverterLock.readLock().unlock();
-		}
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			String sql = query.toSQL(table, true);
+			String sql = null;
+			nameConverterLock.readLock().lock();
+			try {
+				sql = query.toSQL(type, nameConverter, true);
+			} finally {
+				nameConverterLock.readLock().unlock();
+			}
+			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			

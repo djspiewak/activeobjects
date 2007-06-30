@@ -35,6 +35,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.java.ao.schema.PluggableNameConverter;
+
 /**
  * @author Daniel Spiewak
  */
@@ -55,13 +57,13 @@ public class Query {
 	private String groupClause;
 	private int limit = -1;
 	
-	private Map<String, String> joins;
+	private Map<Class<? extends Entity>, String> joins;
 	
 	public Query(QueryType type, String fields) {
 		this.type = type;
 		this.fields = fields;
 		
-		joins = new HashMap<String, String>();
+		joins = new HashMap<Class<? extends Entity>, String>();
 	}
 	
 	public Query distinct() {
@@ -95,19 +97,19 @@ public class Query {
 		return this;
 	}
 	
-	public Query join(String join, String on) {
+	public Query join(Class<? extends Entity> join, String on) {
 		joins.put(join, on);
 		
 		return this;
 	}
 	
-	public Query join(String join) {
+	public Query join(Class<? extends Entity> join) {
 		joins.put(join, null);
 		
 		return this;
 	}
 	
-	String toSQL(String tableName, boolean count) {
+	String toSQL(Class<? extends Entity> table, PluggableNameConverter nameConverter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		
 		switch (type) {
@@ -124,14 +126,14 @@ public class Query {
 					sql.append(fields);
 				}
 				sql.append(" FROM ");
-				sql.append(tableName);
+				sql.append(nameConverter.getName(table));
 			break;
 		}
 		
 		if (joins.size() > 0) {
-			for (String join : joins.keySet()) {
+			for (Class<? extends Entity> join : joins.keySet()) {
 				sql.append(" JOIN ");
-				sql.append(join);
+				sql.append(nameConverter.getName(join));
 				
 				String on = joins.get(join);
 				if (on != null) {
