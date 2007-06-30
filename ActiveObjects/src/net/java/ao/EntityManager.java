@@ -547,7 +547,7 @@ public class EntityManager {
 		return provider;
 	}
 
-	<T extends Entity> EntityProxy<T> getProxyForEntity(T entity) {
+	protected <T extends Entity> EntityProxy<T> getProxyForEntity(T entity) {
 		proxyLock.readLock().lock();
 		try {
 			return (EntityProxy<T>) proxies.get(entity);
