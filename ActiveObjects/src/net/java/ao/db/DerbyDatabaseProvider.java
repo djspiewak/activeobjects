@@ -49,6 +49,9 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 		switch (type) {
 			case Types.TINYINT:
 				return Types.SMALLINT;
+				
+			case Types.BOOLEAN:
+				return Types.SMALLINT;
 			
 			case Types.BIT:
 				return Types.SMALLINT;

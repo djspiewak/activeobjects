@@ -310,7 +310,6 @@ public final class Generator {
 	
 	private static DDLField[] parseFields(Class<? extends Entity> clazz) {
 		List<DDLField> fields = new ArrayList<DDLField>();
-		
 		List<String> attributes = new LinkedList<String>();
 		
 		DDLField field = new DDLField();
