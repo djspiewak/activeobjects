@@ -73,7 +73,7 @@ import org.apache.commons.cli.PosixParser;
 /**
  * @author Daniel Spiewak
  */
-public class Generator {
+public final class Generator {
 	private static final String CL_INVOCATION = "java -jar activeobjects-*.jar <options> class1 class2 ...";
 	
 	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException {
