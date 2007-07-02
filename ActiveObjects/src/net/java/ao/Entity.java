@@ -32,14 +32,17 @@ package net.java.ao;
 
 import java.beans.PropertyChangeListener;
 
+import net.java.ao.schema.Ignore;
+
 /**
  * @author Daniel Spiewak
  */
 public interface Entity {
-	public int getID();
-	public void setID(int id);
 	
-	public String getTableName();
+	@Ignore public int getID();
+	@Ignore public void setID(int id);
+
+	@Ignore public String getTableName();
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	public void removePropertyChangeListener(PropertyChangeListener listener);

@@ -30,6 +30,7 @@
  */
 package net.java.ao;
 
+import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -202,6 +203,8 @@ public class Query {
 			for (int i = 0; i < whereParams.length; i++) {
 				if (whereParams[i] instanceof Entity) {
 					whereParams[i] = ((Entity) whereParams[i]).getID();
+				} else if (whereParams[i] instanceof URL) {
+					whereParams[i] = whereParams[i].toString();
 				}
 				
 				stmt.setObject(i + 1, whereParams[i]);

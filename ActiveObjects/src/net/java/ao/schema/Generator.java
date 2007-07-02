@@ -323,7 +323,7 @@ public final class Generator {
 		
 		fields.add(field);
 		
-		for (Method method : clazz.getDeclaredMethods()) {
+		for (Method method : clazz.getMethods()) {
 			if (method.getAnnotation(Ignore.class) != null) {
 				continue;
 			}
@@ -377,12 +377,6 @@ public final class Generator {
 				}
 				
 				fields.add(field);
-			}
-		}
-		
-		for (Class<?> superInterface : clazz.getInterfaces()) {
-			if (!superInterface.equals(Entity.class)) {
-				fields.addAll(Arrays.asList(parseFields((Class<? extends Entity>) superInterface)));
 			}
 		}
 		

@@ -45,6 +45,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -484,6 +485,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			return (V) new Byte(res.getByte(field));
 		} else if (type.equals(String.class)) {
 			return (V) res.getString(field);
+		} else if (type.equals(URL.class)) {
+			try {
+				return (V) new URL(res.getString(field));
+			} catch (MalformedURLException e) {
+				throw new SQLException(e);
+			}
 		} else if (type.equals(Calendar.class)) {
 			Calendar back = Calendar.getInstance();
 			back.setTimeInMillis(res.getTimestamp(field).getTime());
@@ -518,7 +525,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		} else if (value instanceof String) {
 			stmt.setString(index, (String) value);
 		} else if (value instanceof URL) {
-			stmt.setURL(index, (URL) value);
+			stmt.setString(index, value.toString());
 		} else if (value instanceof Calendar) {
 			stmt.setTimestamp(index, new Timestamp(((Calendar) value).getTimeInMillis()));
 		} else if (value instanceof Date) {

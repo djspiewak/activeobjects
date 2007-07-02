@@ -31,6 +31,7 @@
 package net.java.ao.schema;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,6 +55,7 @@ enum SQLTypeEnum {
 	BOOLEAN(boolean.class, Types.BOOLEAN, -1),
 	BOOLEAN_OBJ(Boolean.class, Types.BOOLEAN, -1),
 	VARCHAR(String.class, Types.VARCHAR, 45),
+	URL(URL.class, Types.VARCHAR, 255),
 	BLOB(InputStream.class, Types.BLOB, -1),
 	TIMESTAMP(Calendar.class, Types.TIMESTAMP, -1),
 	TIMESTAMP_DATE(Date.class, Types.TIMESTAMP, -1);
@@ -86,6 +88,7 @@ enum SQLTypeEnum {
 				return value;
 			}
 		}
+		
 		return null;
 	}
 }

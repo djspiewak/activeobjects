@@ -32,6 +32,7 @@ package net.java.ao;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Proxy;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -492,6 +493,8 @@ public class EntityManager {
 			for (int i = 0; i < parameters.length; i++) {
 				if (parameters[i] instanceof Entity) {
 					parameters[i] = ((Entity) parameters[i]).getID();
+				} else if (parameters[i] instanceof URL) {
+					parameters[i] = parameters[i].toString();
 				}
 				
 				stmt.setObject(i + 1, parameters[i]);
