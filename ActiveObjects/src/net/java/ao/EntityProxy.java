@@ -540,10 +540,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	}
 	
 	private Object getImplementation(T proxy) {
-		if (implementation != null) {
-			return implementation;
-		} else if (implementation == Void.TYPE) {
+		if (implementation == Void.TYPE) {
 			return null;
+		} else if (implementation != null) {
+			return implementation;
 		}
 		
 		try {
