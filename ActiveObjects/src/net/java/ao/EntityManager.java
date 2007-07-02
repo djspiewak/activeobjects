@@ -90,6 +90,9 @@ public class EntityManager {
 	private PluggableNameConverter nameConverter;
 	private final ReadWriteLock nameConverterLock = new ReentrantReadWriteLock();
 	
+	private RSCachingStrategy rsStrategy;
+	private final ReadWriteLock rsStrategyLock = new ReentrantReadWriteLock();
+	
 	/**
 	 * Creates a new instance of <code>EntityManager</code> using the specified
 	 * {@link DatabaseProvider}.  This constructor intializes the entity cache, as well
@@ -104,6 +107,7 @@ public class EntityManager {
 		cache = new WeakHashMap<CacheKey, Entity>();
 		
 		nameConverter = new CamelCaseNameConverter();
+		rsStrategy = RSCachingStrategy.AGGRESSIVE;
 	}
 	
 	/**
@@ -457,7 +461,16 @@ public class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, res.getInt(field)));
+				T entity = get(type, res.getInt(field));
+				
+				rsStrategyLock.readLock().lock();
+				try {
+					rsStrategy.cache(res, getProxyForEntity(entity));
+				} finally {
+					rsStrategyLock.readLock().unlock();
+				}
+				
+				back.add(entity);
 			}
 			res.close();
 			stmt.close();
@@ -551,6 +564,24 @@ public class EntityManager {
 			return nameConverter;
 		} finally {
 			nameConverterLock.readLock().unlock();
+		}
+	}
+
+	public RSCachingStrategy getRSCachingStrategy() {
+		rsStrategyLock.readLock().lock();
+		try {
+			return rsStrategy;
+		} finally {
+			rsStrategyLock.readLock().unlock();
+		}
+	}
+
+	public void setRSCachingStrategy(RSCachingStrategy rsStrategy) {
+		rsStrategyLock.writeLock().lock();
+		try {
+			this.rsStrategy = rsStrategy;
+		} finally {
+			rsStrategyLock.writeLock().unlock();
 		}
 	}
 

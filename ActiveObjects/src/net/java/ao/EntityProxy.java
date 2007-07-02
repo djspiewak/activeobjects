@@ -305,6 +305,17 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 		return type.hashCode();
 	}
 	
+	void addToCache(String key, Object value) {
+		cacheLock.writeLock().lock();
+		try {
+			if (!cache.containsKey(key)) {
+				cache.put(key, value);
+			}
+		} finally {
+			cacheLock.writeLock().unlock();
+		}
+	}
+	
 	Class<T> getType() {
 		return type;
 	}
