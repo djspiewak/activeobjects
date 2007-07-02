@@ -522,6 +522,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			stmt.setDouble(index, (Double) value);
 		} else if (value instanceof Byte) {
 			stmt.setByte(index, (Byte) value);
+		} else if (value instanceof Boolean) {
+			stmt.setBoolean(index, (Boolean) value);
 		} else if (value instanceof String) {
 			stmt.setString(index, (String) value);
 		} else if (value instanceof URL) {
