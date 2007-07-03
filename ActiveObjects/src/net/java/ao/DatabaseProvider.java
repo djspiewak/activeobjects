@@ -263,7 +263,7 @@ public abstract class DatabaseProvider {
 			back.append(' ');
 			back.append(renderAutoIncrement());
 		} else if (field.getDefaultValue() != null) {
-			back.append(' ');
+			back.append(" DEFAULT ");
 			back.append(field.getDefaultValue());
 		}
 		if (field.isUnique()) {
