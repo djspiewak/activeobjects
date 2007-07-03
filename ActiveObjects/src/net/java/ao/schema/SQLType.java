@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface SQLType {
-	int value();
+	int value() default -1;
 	int precision() default -1;
 	int scale() default -1;
 }

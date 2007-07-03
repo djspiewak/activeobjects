@@ -338,20 +338,24 @@ public final class Generator {
 				
 				int sqlType = -1;
 				int precision = -1;
-				int scale = -1;
+				int scale = -1; 
 				
-				SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
-				if (sqlTypeAnnotation != null) {
-					sqlType = sqlTypeAnnotation.value();
-					precision = sqlTypeAnnotation.precision();
-					scale = sqlTypeAnnotation.scale();
-				} else if (interfaceInheritsFrom(type, Entity.class)) {
+				if (interfaceInheritsFrom(type, Entity.class)) {
 					sqlType = Types.INTEGER;
 				} else if (type.isArray()) {
 					continue;
 				} else {
 					sqlType = SQLTypeEnum.getType(type).getSQLType();
 					precision = SQLTypeEnum.getType(type).getPrecision();
+				}
+				
+				SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+				if (sqlTypeAnnotation != null) {
+					if (sqlTypeAnnotation.value() > 0) {
+						sqlType = sqlTypeAnnotation.value();
+					}
+					precision = sqlTypeAnnotation.precision();
+					scale = sqlTypeAnnotation.scale();
 				}
 				
 				field = new DDLField();
