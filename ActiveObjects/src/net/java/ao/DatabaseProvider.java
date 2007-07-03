@@ -36,6 +36,8 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -264,7 +266,7 @@ public abstract class DatabaseProvider {
 			back.append(renderAutoIncrement());
 		} else if (field.getDefaultValue() != null) {
 			back.append(" DEFAULT ");
-			back.append(field.getDefaultValue());
+			back.append(renderValue(field.getDefaultValue()));
 		}
 		if (field.isUnique()) {
 			back.append(" UNIQUE");
@@ -272,6 +274,20 @@ public abstract class DatabaseProvider {
 		
 		back.append(",\n");
 		return back.toString();
+	}
+	
+	protected String renderValue(Object value) {
+		if (value instanceof Calendar) {
+			return "'" + renderCalendar((Calendar) value) + "'";
+		} else if (value instanceof Boolean) {
+			return ((Boolean) value ? "1" : "0");
+		}
+		
+		return value.toString();
+	}
+	
+	protected String renderCalendar(Calendar calendar) {
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(calendar.getTime());
 	}
 	
 	protected String renderFieldType(DDLField field) {

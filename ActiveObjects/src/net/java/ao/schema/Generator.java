@@ -44,8 +44,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -338,7 +340,7 @@ public final class Generator {
 				
 				int sqlType = -1;
 				int precision = -1;
-				int scale = -1; 
+				int scale = -1;
 				
 				if (interfaceInheritsFrom(type, Entity.class)) {
 					sqlType = Types.INTEGER;
@@ -376,7 +378,7 @@ public final class Generator {
 				if (method.getAnnotation(AutoIncrement.class) != null) {
 					field.setAutoIncrement(true);
 				} else if (method.getAnnotation(Default.class) != null) {
-					field.setDefaultValue(method.getAnnotation(Default.class).value());
+					field.setDefaultValue(convertDefaultValue(method.getAnnotation(Default.class).value(), sqlType));
 				}
 				
 				fields.add(field);
@@ -411,5 +413,74 @@ public final class Generator {
 		}
 		
 		return back.toArray(new DDLForeignKey[back.size()]);
+	}
+	
+	private static Object convertDefaultValue(String value, int type) {
+		if (value == null) {
+			return null;
+		}
+		
+		switch (type) {
+			case Types.BIGINT:
+				return Long.parseLong(value.trim());
+				
+			case Types.BIT:
+				return Byte.parseByte(value.trim());
+				
+			case Types.BOOLEAN:
+				return Boolean.parseBoolean(value.trim());
+				
+			case Types.CHAR:
+				return value.charAt(0);
+				
+			case Types.DATE:
+				return parseCalendar(value.trim());
+				
+			case Types.DECIMAL:
+				return Double.parseDouble(value.trim());
+				
+			case Types.DOUBLE:
+				return Double.parseDouble(value.trim());
+				
+			case Types.FLOAT:
+				return Float.parseFloat(value.trim());
+				
+			case Types.INTEGER:
+				return Integer.parseInt(value.trim());
+				
+			case Types.NUMERIC:
+				return Integer.parseInt(value.trim());
+				
+			case Types.REAL:
+				return Double.parseDouble(value.trim());
+				
+			case Types.SMALLINT:
+				return Short.parseShort(value.trim());
+				
+			case Types.TIME:
+				return parseCalendar(value.trim());
+				
+			case Types.TIMESTAMP:
+				return parseCalendar(value.trim());
+				
+			case Types.TINYINT:
+				return Short.parseShort(value.trim());
+				
+			case Types.VARCHAR:
+				return "'" + value + "'";
+		}
+		
+		return null;
+	}
+	
+	private static Calendar parseCalendar(String ts) {
+		try {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(ts));
+			
+			return cal;
+		} catch (java.text.ParseException e) {
+			return Calendar.getInstance();
+		}
 	}
 }

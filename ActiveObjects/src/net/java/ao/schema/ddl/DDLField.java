@@ -45,7 +45,7 @@ public class DDLField {
 	private boolean notNull;
 	private boolean unique;
 	
-	private String defaultValue;
+	private Object defaultValue;
 
 	public String getName() {
 		return name;
@@ -111,11 +111,11 @@ public class DDLField {
 		this.unique = unique;
 	}
 
-	public String getDefaultValue() {
+	public Object getDefaultValue() {
 		return defaultValue;
 	}
 
-	public void setDefaultValue(String defaultValue) {
+	public void setDefaultValue(Object defaultValue) {
 		this.defaultValue = defaultValue;
 	}
 }
