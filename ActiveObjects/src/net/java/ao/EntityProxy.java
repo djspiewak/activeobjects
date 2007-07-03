@@ -42,6 +42,7 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -551,7 +552,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			if (impl == null) {
 				implementation = Void.TYPE;
 			} else {
-				implementation = impl.value().getConstructor(type).newInstance(proxy);
+				Constructor<?> constructor = impl.value().getConstructor(type);
+				constructor.setAccessible(true);
+				
+				implementation = constructor.newInstance(proxy);
 				
 				return implementation;
 			}
