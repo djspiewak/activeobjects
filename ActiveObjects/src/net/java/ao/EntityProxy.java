@@ -484,6 +484,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			return (V) new Double(res.getDouble(field));
 		} else if (type.equals(Byte.class) || type.equals(byte.class)) {
 			return (V) new Byte(res.getByte(field));
+		} else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+			return (V) new Boolean(res.getBoolean(field));
 		} else if (type.equals(String.class)) {
 			return (V) res.getString(field);
 		} else if (type.equals(URL.class)) {
