@@ -281,6 +281,8 @@ public abstract class DatabaseProvider {
 			return "'" + renderCalendar((Calendar) value) + "'";
 		} else if (value instanceof Boolean) {
 			return ((Boolean) value ? "1" : "0");
+		} else if (value instanceof DatabaseFunction) {
+			return renderFunction((DatabaseFunction) value);
 		}
 		
 		return value.toString();
@@ -292,6 +294,18 @@ public abstract class DatabaseProvider {
 	
 	protected String renderFieldType(DDLField field) {
 		return convertTypeToString(field.getType());
+	}
+
+	protected String renderFunction(DatabaseFunction func) {
+		switch (func) {
+			case CURRENT_DATE:
+				return "CURRENT_DATE";
+				
+			case CURRENT_TIMESTAMP:
+				return "CURRENT_TIMESTAMP";
+		}
+		
+		return null;
 	}
 	
 	protected boolean considerPrecision(DDLField field) {

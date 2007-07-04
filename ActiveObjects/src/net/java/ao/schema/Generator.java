@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.schema.ddl.DDLField;
@@ -418,6 +419,11 @@ public final class Generator {
 	private static Object convertDefaultValue(String value, int type) {
 		if (value == null) {
 			return null;
+		}
+		
+		DatabaseFunction func = DatabaseFunction.get(value.trim());
+		if (func != null) {
+			return func;
 		}
 		
 		switch (type) {
