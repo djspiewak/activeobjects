@@ -40,7 +40,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -55,7 +54,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -72,26 +70,25 @@ import java.util.logging.Logger;
 /**
  * @author Daniel Spiewak
  */
-class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
-	private final static Map<EntityProxy<?>, EntityManager> managers = Collections.synchronizedMap(
-			new HashMap<EntityProxy<?>, EntityManager>());
-
+class EntityProxy<T extends Entity> implements InvocationHandler {
 	private int id;
 	private Class<T> type;
 	
+	private EntityManager manager;
+	
 	private Object implementation;
 	
-	private final transient Map<String, Object> cache;
-	private final transient ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+	private final Map<String, Object> cache;
+	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
-	private final transient Set<String> dirtyFields;
-	private final transient ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
+	private final Set<String> dirtyFields;
+	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
 	
 	private List<PropertyChangeListener> listeners;
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
 		this.type = type;
-		managers.put(this, manager);
+		this.manager = manager;
 		
 		cache = new HashMap<String, Object>();
 		dirtyFields = new LinkedHashSet<String>();
@@ -125,8 +122,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
 			return getTableName();
-		} else if (method.getName().equals("getEntityManager()")) {
+		} else if (method.getName().equals("getEntityManager")) {
 			return getManager();
+		} else if (method.getName().equals("getEntityType")) {
+			return type;
 		} else if (method.getName().equals("addPropertyChangeListener")) {
 			addPropertyChangeListener((PropertyChangeListener) args[0]);
 		} else if (method.getName().equals("removePropertyChangeListener")) {
@@ -325,7 +324,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 	}
 	
 	private EntityManager getManager() {
-		return managers.get(this);
+		return manager;
 	}
 	
 	private Connection getConnectionImpl() throws SQLException {

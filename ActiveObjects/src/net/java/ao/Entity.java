@@ -44,6 +44,7 @@ public interface Entity {
 
 	@Ignore public String getTableName();
 	@Ignore public EntityManager getEntityManager();
+	@Ignore public Class<? extends Entity> getEntityType();
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	public void removePropertyChangeListener(PropertyChangeListener listener);
