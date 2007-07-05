@@ -269,7 +269,7 @@ public abstract class DatabaseProvider {
 			back.append(renderValue(field.getDefaultValue()));
 		}
 		if (field.getOnUpdate() != null) {
-			renderOnUpdate(field);
+			back.append(renderOnUpdate(field));
 		}
 		if (field.isUnique()) {
 			back.append(" UNIQUE");
