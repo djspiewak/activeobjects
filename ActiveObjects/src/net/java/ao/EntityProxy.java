@@ -125,6 +125,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler, Serializable {
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
 			return getTableName();
+		} else if (method.getName().equals("getEntityManager()")) {
+			return getManager();
 		} else if (method.getName().equals("addPropertyChangeListener")) {
 			addPropertyChangeListener((PropertyChangeListener) args[0]);
 		} else if (method.getName().equals("removePropertyChangeListener")) {

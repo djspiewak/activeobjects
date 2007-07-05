@@ -43,6 +43,7 @@ public interface Entity {
 	@Ignore public void setID(int id);
 
 	@Ignore public String getTableName();
+	@Ignore public EntityManager getEntityManager();
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener);
 	public void removePropertyChangeListener(PropertyChangeListener listener);
