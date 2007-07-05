@@ -379,7 +379,11 @@ public final class Generator {
 				if (method.getAnnotation(AutoIncrement.class) != null) {
 					field.setAutoIncrement(true);
 				} else if (method.getAnnotation(Default.class) != null) {
-					field.setDefaultValue(convertDefaultValue(method.getAnnotation(Default.class).value(), sqlType));
+					field.setDefaultValue(convertStringValue(method.getAnnotation(Default.class).value(), sqlType));
+				}
+				
+				if (method.getAnnotation(OnUpdate.class) != null) {
+					field.setOnUpdate(convertStringValue(method.getAnnotation(OnUpdate.class).value(), sqlType));
 				}
 				
 				fields.add(field);
@@ -416,7 +420,7 @@ public final class Generator {
 		return back.toArray(new DDLForeignKey[back.size()]);
 	}
 	
-	private static Object convertDefaultValue(String value, int type) {
+	private static Object convertStringValue(String value, int type) {
 		if (value == null) {
 			return null;
 		}

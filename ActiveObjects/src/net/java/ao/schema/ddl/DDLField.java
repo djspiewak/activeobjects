@@ -46,6 +46,7 @@ public class DDLField {
 	private boolean unique;
 	
 	private Object defaultValue;
+	private Object onUpdate;
 
 	public String getName() {
 		return name;
@@ -117,5 +118,13 @@ public class DDLField {
 
 	public void setDefaultValue(Object defaultValue) {
 		this.defaultValue = defaultValue;
+	}
+
+	public Object getOnUpdate() {
+		return onUpdate;
+	}
+
+	public void setOnUpdate(Object onUpdate) {
+		this.onUpdate = onUpdate;
 	}
 }

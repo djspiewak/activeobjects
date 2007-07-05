@@ -268,6 +268,9 @@ public abstract class DatabaseProvider {
 			back.append(" DEFAULT ");
 			back.append(renderValue(field.getDefaultValue()));
 		}
+		if (field.getOnUpdate() != null) {
+			renderOnUpdate(field);
+		}
 		if (field.isUnique()) {
 			back.append(" UNIQUE");
 		}
@@ -306,6 +309,15 @@ public abstract class DatabaseProvider {
 		}
 		
 		return null;
+	}
+	
+	protected String renderOnUpdate(DDLField field) {
+		StringBuilder back = new StringBuilder();
+		
+		back.append(" ON UPDATE ");
+		back.append(renderValue(field.getOnUpdate()));
+		
+		return back.toString();
 	}
 	
 	protected boolean considerPrecision(DDLField field) {
