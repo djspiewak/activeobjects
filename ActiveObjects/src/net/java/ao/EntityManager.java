@@ -146,7 +146,7 @@ public class EntityManager {
 	 * 
 	 * @see net.java.ao.schema.Generator#hasSchema(DatabaseProvider, PluggableNameConverter, Class...)
 	 */
-	public void conditionallyMigrate(Class<? extends Entity>... entities) throws SQLException {
+	public boolean conditionallyMigrate(Class<? extends Entity>... entities) throws SQLException {
 		boolean hasSchema = false;
 		
 		nameConverterLock.readLock().lock();
@@ -159,6 +159,8 @@ public class EntityManager {
 		if (!hasSchema) {
 			migrate(entities);
 		}
+		
+		return !hasSchema;
 	}
 	
 	/**
