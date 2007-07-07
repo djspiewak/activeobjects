@@ -57,9 +57,32 @@ public abstract class Transaction {
 	}
 	
 	public void execute() {
+		Connection conn = null;
+		
 		try {
-			executeConcurrently().join();
-		} catch (InterruptedException e) {
+			conn = DBEncapsulator.getInstance(manager.getProvider()).getConnection();
+			
+			conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+			conn.setAutoCommit(false);
+			
+			DBEncapsulator.getInstance().setConnection(conn);
+			
+			Transaction.this.run();
+			
+			conn.commit();
+		} catch (SQLException e) {
+		} finally {
+			if (conn == null) {
+				return;
+			}
+			
+			try {
+				conn.setAutoCommit(true);
+				
+				conn.close();
+				DBEncapsulator.getInstance().setConnection(null);
+			} catch (SQLException e) {
+			}
 		}
 	}
 	
@@ -67,40 +90,7 @@ public abstract class Transaction {
 		Thread back = new Thread() {
 			@Override
 			public void run() {
-				Connection conn = null;
-				boolean committed = false;
-				
-				try {
-					conn = DBEncapsulator.getInstance(manager.getProvider()).getConnection();
-					
-					conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-					conn.setAutoCommit(false);
-					
-					DBEncapsulator.getInstance().setConnection(conn);
-					
-					Transaction.this.run();
-					
-					conn.commit();
-					committed = true;
-				} catch (SQLException e) {
-				} finally {
-					if (conn == null) {
-						return;
-					}
-					
-					try {
-						if (!committed) {
-							conn.rollback();
-							run();
-						}
-						
-						conn.setAutoCommit(true);
-						
-						conn.close();
-						DBEncapsulator.getInstance().setConnection(null);
-					} catch (SQLException e) {
-					}
-				}
+				execute();
 			}
 		};
 		back.start();
