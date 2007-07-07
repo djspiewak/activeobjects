@@ -378,7 +378,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
 		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
 		
-		Object oldValue = invokeGetter(id, table, name, value.getClass());
+		Object oldValue = null;
+		
+		if (value != null) {
+			oldValue = invokeGetter(id, table, name, value.getClass());
+		}
+		
 		invokeSetterImpl(name, value, saveable);
 		
 		boolean veto = false;
@@ -540,6 +545,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			stmt.setTimestamp(index, new Timestamp(((Date) value).getTime()));
 		} else if (value instanceof Entity) {
 			stmt.setInt(index, ((Entity) value).getID());
+		} else if (value == null) {
+			stmt.setString(index, null);
 		} else {
 			throw new RuntimeException("Unrecognized type: " + value.getClass().toString());
 		}
