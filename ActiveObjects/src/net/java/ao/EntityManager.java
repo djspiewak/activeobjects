@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -104,8 +103,8 @@ public class EntityManager {
 	public EntityManager(DatabaseProvider provider) {
 		this.provider = provider;
 		
-		proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
-		cache = new WeakHashMap<CacheKey, Entity>();
+		proxies = new HashMap<Entity, EntityProxy<? extends Entity>>();
+		cache = new HashMap<CacheKey, Entity>();
 		
 		nameConverter = new CamelCaseNameConverter();
 		rsStrategy = RSCachingStrategy.AGGRESSIVE;
@@ -383,7 +382,7 @@ public class EntityManager {
 			}
 			
 			for (Entity entity : entities) {
-				cache.remove(entity);
+				cache.remove(new CacheKey(entity.getID(), entity.getEntityType()));
 			}
 			
 			proxyLock.writeLock().lock();
