@@ -44,17 +44,12 @@ public final class Common {
 	}
 
 	public static String convertDowncaseName(String name) {
-		String back = "";
+		StringBuilder back = new StringBuilder();
 
-		for (char c : name.toCharArray()) {
-			if (c == name.charAt(0)) {
-				back += Character.toLowerCase(c);
-			} else {
-				back += c;
-			}
-		}
+		back.append(Character.toLowerCase(name.charAt(0)));
+		back.append(name.substring(1));
 
-		return back;
+		return back.toString();
 	}
 
 	public static boolean interfaceInheritsFrom(Class<?> type, Class<?> superType) {
