@@ -423,6 +423,8 @@ public final class Generator {
 	private static Object convertStringValue(String value, int type) {
 		if (value == null) {
 			return null;
+		} else if (value.trim().equals("NULL")) {
+			return value.trim();
 		}
 		
 		DatabaseFunction func = DatabaseFunction.get(value.trim());

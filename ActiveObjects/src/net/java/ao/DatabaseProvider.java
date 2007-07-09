@@ -280,7 +280,9 @@ public abstract class DatabaseProvider {
 	}
 	
 	protected String renderValue(Object value) {
-		if (value instanceof Calendar) {
+		if (value == null) {
+			return "NULL";
+		} else if (value instanceof Calendar) {
 			return "'" + renderCalendar((Calendar) value) + "'";
 		} else if (value instanceof Boolean) {
 			return ((Boolean) value ? "1" : "0");
