@@ -104,7 +104,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		MethodImplWrapper methodImpl = implementation.getMethod(method.getName(), method.getParameterTypes());
 		if (methodImpl != null) {
-			return methodImpl.getMethod().invoke(methodImpl.getInstance(), args);
+			if (!Common.getCallingClass(1).equals(methodImpl.getMethod().getDeclaringClass())) {
+				return methodImpl.getMethod().invoke(methodImpl.getInstance(), args);
+			}
 		}
 		
 		if (method.getName().equals("setID")) {
