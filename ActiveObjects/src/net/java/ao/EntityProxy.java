@@ -31,7 +31,6 @@
 package net.java.ao;
 
 import static net.java.ao.Common.convertDowncaseName;
-import static net.java.ao.Common.getCallingClass;
 import static net.java.ao.Common.getMappingFields;
 import static net.java.ao.Common.interfaceInheritsFrom;
 
@@ -41,9 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -76,7 +73,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	
 	private EntityManager manager;
 	
-	private Object implementation;
+	private ImplementationWrapper<T> implementation;
 	
 	private final Map<String, Object> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
@@ -97,19 +94,17 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		Object implementation = getImplementation((T) proxy);
+		if (method.getName().equals("getEntityType")) {
+			return type;
+		} 
 		
-		if (implementation != null) {
-			if (getCallingClass(1) != implementation.getClass()) {
-				try {
-					Method implMethod = implementation.getClass().getMethod(method.getName(), method.getParameterTypes());
-					
-					if (!implMethod.getDeclaringClass().equals(Object.class)) {
-						return implMethod.invoke(implementation, args);
-					}
-				} catch (Throwable t) {
-				}
-			}
+		if (implementation == null) {
+			implementation = new ImplementationWrapper<T>((T) proxy);
+		}
+		
+		MethodImplWrapper methodImpl = implementation.getMethod(method.getName(), method.getParameterTypes());
+		if (methodImpl != null) {
+			return methodImpl.getMethod().invoke(methodImpl.getInstance(), args);
 		}
 		
 		if (method.getName().equals("setID")) {
@@ -126,8 +121,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return getTableName();
 		} else if (method.getName().equals("getEntityManager")) {
 			return getManager();
-		} else if (method.getName().equals("getEntityType")) {
-			return type;
 		} else if (method.getName().equals("addPropertyChangeListener")) {
 			addPropertyChangeListener((PropertyChangeListener) args[0]);
 		} else if (method.getName().equals("removePropertyChangeListener")) {
@@ -550,42 +543,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} else {
 			throw new RuntimeException("Unrecognized type: " + value.getClass().toString());
 		}
-	}
-	
-	private Object getImplementation(T proxy) {
-		if (implementation == Void.TYPE) {
-			return null;
-		} else if (implementation != null) {
-			return implementation;
-		}
-		
-		try {
-			Implementation impl = type.getAnnotation(Implementation.class);
-			if (impl == null) {
-				implementation = Void.TYPE;
-			} else {
-				Constructor<?> constructor = impl.value().getConstructor(type);
-				constructor.setAccessible(true);
-				
-				implementation = constructor.newInstance(proxy);
-				
-				return implementation;
-			}
-		} catch (SecurityException e) {
-			implementation = Void.TYPE;
-		} catch (IllegalArgumentException e) {
-			implementation = Void.TYPE;
-		} catch (IllegalAccessException e) {
-			implementation = Void.TYPE;
-		} catch (NoSuchMethodException e) {
-			implementation = Void.TYPE;
-		} catch (InstantiationException e) {
-			implementation = Void.TYPE;
-		} catch (InvocationTargetException e) {
-			implementation = Void.TYPE;
-		}
-		
-		return null;
 	}
 	
 	// special call from ObjectOutputStream
