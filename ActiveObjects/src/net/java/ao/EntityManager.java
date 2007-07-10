@@ -443,7 +443,7 @@ public class EntityManager {
 	 * represented by the given type.  This query is then executed (with the
 	 * parameters specified in the query).  The method then iterates through
 	 * the result set and extracts the specified field, mapping an <code>Entity</code>
-	 * of the given type to each row.  This array of entities is then returned.</p>
+	 * of the given type to each row.  This array of entities is returned.</p>
 	 */
 	public <T extends Entity> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
@@ -485,6 +485,11 @@ public class EntityManager {
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
 	}
 	
+	/**
+	 * Executes the specified SQL and extracts the given idfield, wrapping each
+	 * row into a instance of the specified type.  The SQL itself is executed as 
+	 * a PreparedStatement with the given parameters. 
+	 */
 	public <T extends Entity> T[] findWithSQL(Class<T> type, String idField, String sql, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		
