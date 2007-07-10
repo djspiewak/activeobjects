@@ -67,6 +67,16 @@ public final class Common {
 		return false;
 	}
 	
+	public static boolean typeInstanceOf(Class<?> type, Class<?> otherType) {
+		try {
+			type.asSubclass(otherType);
+		} catch (ClassCastException e) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 //	public static String getTableName(Class<? extends Entity> type) {
 //		return EntityNameManager.getInstance().getName(type);
 //	}

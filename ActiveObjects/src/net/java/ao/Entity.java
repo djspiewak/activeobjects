@@ -39,6 +39,8 @@ import net.java.ao.schema.Ignore;
  */
 public interface Entity {
 	
+	@Ignore public void init();
+	
 	@Ignore public int getID();
 	@Ignore public void setID(int id);
 

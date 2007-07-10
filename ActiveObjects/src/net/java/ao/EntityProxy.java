@@ -498,12 +498,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			} catch (MalformedURLException e) {
 				throw new SQLException(e);
 			}
-		} else if (type.equals(Calendar.class)) {
+		} else if (Common.typeInstanceOf(type, Calendar.class)) {
 			Calendar back = Calendar.getInstance();
 			back.setTimeInMillis(res.getTimestamp(field).getTime());
 
 			return (V) back;
-		} else if (type.equals(Date.class)) {
+		} else if (Common.typeInstanceOf(type, Date.class)) {
 			return (V) new Date(res.getTimestamp(field).getTime());
 		} else if (type.equals(URL.class)) {
 			return (V) res.getURL(field);

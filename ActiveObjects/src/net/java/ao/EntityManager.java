@@ -305,6 +305,8 @@ public class EntityManager {
 			DBEncapsulator.getInstance(provider).closeConnection(conn);
 		}
 		
+		back.init();
+		
 		return back;
 	}
 
