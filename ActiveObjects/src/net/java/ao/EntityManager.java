@@ -521,14 +521,30 @@ public class EntityManager {
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
 	}
 	
+	/**
+	 * Counts all entities of the specified type.  This method is actually
+	 * a delegate for the <code>count(Class&lt;? extends Entity&gt;, Query)</code>
+	 * method.
+	 */
 	public int count(Class<? extends Entity> type) throws SQLException {
 		return count(type, Query.select());
 	}
 	
+	/**
+	 * Counts all entities of the specified type matching the given criteria
+	 * and parameters.  This is a convenience method for:
+	 * 
+	 * <code>count(type, Query.select().where(criteria, parameters))</code>
+	 */
 	public int count(Class<? extends Entity> type, String criteria, Object... parameters) throws SQLException {
 		return count(type, Query.select().where(criteria, parameters));
 	}
 	
+	/**
+	 * Counts all entities of the specified type matching the given {@link Query}
+	 * instance.  The SQL runs as a <code>SELECT COUNT(*)</code> to
+	 * ensure maximum performance.
+	 */
 	public int count(Class<? extends Entity> type, Query query) throws SQLException {
 		int back = -1;
 		
@@ -560,6 +576,14 @@ public class EntityManager {
 		return back;
 	}
 	
+	/**
+	 * <p>Specifies the {@link PluggableNameConverter} instance to use for
+	 * name conversion of all entity types.  Name conversion is the process
+	 * of determining the appropriate table name from an arbitrary {@link Entity}
+	 * class.</p>
+	 * 
+	 * <p>The default nameConverter is {@link CamelCaseNameConverter}.</p>
+	 */
 	public void setNameConverter(PluggableNameConverter nameConverter) {
 		nameConverterLock.writeLock().lock();
 		try {
@@ -569,6 +593,12 @@ public class EntityManager {
 		}
 	}
 	
+	/**
+	 * Retrieves the {@link PluggableNameConverter} instance used for name
+	 * conversion of all entity types.
+	 * 
+	 * @see #setNameConverter(PluggableNameConverter)
+	 */
 	public PluggableNameConverter getNameConverter() {
 		nameConverterLock.readLock().lock();
 		try {
@@ -578,21 +608,24 @@ public class EntityManager {
 		}
 	}
 
-	public RSCachingStrategy getRSCachingStrategy() {
-		rsStrategyLock.readLock().lock();
-		try {
-			return rsStrategy;
-		} finally {
-			rsStrategyLock.readLock().unlock();
-		}
-	}
-
+	/**
+	 * 
+	 */
 	public void setRSCachingStrategy(RSCachingStrategy rsStrategy) {
 		rsStrategyLock.writeLock().lock();
 		try {
 			this.rsStrategy = rsStrategy;
 		} finally {
 			rsStrategyLock.writeLock().unlock();
+		}
+	}
+	
+	public RSCachingStrategy getRSCachingStrategy() {
+		rsStrategyLock.readLock().lock();
+		try {
+			return rsStrategy;
+		} finally {
+			rsStrategyLock.readLock().unlock();
 		}
 	}
 
