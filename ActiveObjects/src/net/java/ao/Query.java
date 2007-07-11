@@ -180,11 +180,6 @@ public class Query {
 			sql.append(whereClause);
 		}
 		
-		if (limit >= 0) {
-			sql.append(" LIMIT ");
-			sql.append(limit);
-		}
-		
 		if (groupClause != null) {
 			sql.append(" GROUP BY ");
 			sql.append(groupClause);
@@ -193,6 +188,11 @@ public class Query {
 		if (orderClause != null) {
 			sql.append(" ORDER BY ");
 			sql.append(orderClause);
+		}
+		
+		if (limit >= 0) {
+			sql.append(" LIMIT ");
+			sql.append(limit);
 		}
 		
 		return sql.toString();
