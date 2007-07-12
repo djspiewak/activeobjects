@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -98,13 +99,36 @@ public class EntityManager {
 	 * {@link DatabaseProvider}.  This constructor intializes the entity cache, as well
 	 * as creates the default {@link PluggableNameConverter} (the default is 
 	 * {@link CamelCaseNameConverter}, which is non-pluralized).  The provider
-	 * instance is immutable once set using this constructor.
+	 * instance is immutable once set using this constructor.  By default (using this
+	 * constructor), all entities are strongly cached, meaning references are held to
+	 * the instances, preventing garbage collection.
+	 * 
+	 * @see #EntityManager(DatabaseProvider, boolean)
 	 */
 	public EntityManager(DatabaseProvider provider) {
+		this(provider, false);
+	}
+	
+	/**
+	 * Creates a new instance of <code>EntityManager</code> using the specified
+	 * {@link DatabaseProvider}.  This constructor initializes the entity and proxy
+	 * caches based on the given boolean value.  If <code>true</code>, the entities
+	 * will be weakly cached, not maintaining a reference allowing for garbage 
+	 * collection.  If <code>false</code>, then strong caching will be used, preventing
+	 * garbage collection and ensuring the cache is logically complete.  If you are
+	 * concerned about memory leaks, specify <code>true</code>.  Otherwise, for
+	 * maximum performance use <code>false</code>.  
+	 */
+	public EntityManager(DatabaseProvider provider, boolean weaklyCache) {
 		this.provider = provider;
 		
-		proxies = new HashMap<Entity, EntityProxy<? extends Entity>>();
-		cache = new HashMap<CacheKey, Entity>();
+		if (weaklyCache) {
+			proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
+			cache = new WeakHashMap<CacheKey, Entity>();
+		} else {
+			proxies = new HashMap<Entity, EntityProxy<? extends Entity>>();
+			cache = new HashMap<CacheKey, Entity>();
+		}
 		
 		nameConverter = new CamelCaseNameConverter();
 		rsStrategy = RSCachingStrategy.AGGRESSIVE;
