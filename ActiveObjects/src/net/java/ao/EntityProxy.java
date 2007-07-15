@@ -343,7 +343,18 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		cacheLock.writeLock().lock();
 		try {
 			if (cache.containsKey(name)) {
-				return (V) cache.get(name);
+				Object value = cache.get(name);
+				
+				if (type.isInstance(value)) {
+					return (V) value;
+				} else if (interfaceInheritsFrom(type, Entity.class) && value instanceof Integer) {
+					value = getManager().get((Class<? extends Entity>) type, (Integer) value);
+					
+					cache.put(name, value);
+					return (V) value;
+				} else {
+					cache.remove(name);		// invalid cached value
+				}
 			}
 			
 			Connection conn = getConnectionImpl();
