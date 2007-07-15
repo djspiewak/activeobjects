@@ -307,6 +307,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 	
 	void addToCache(String key, Object value) {
+		if (key.trim().equalsIgnoreCase("id")) {
+			return;
+		}
+		
 		cacheLock.writeLock().lock();
 		try {
 			if (!cache.containsKey(key)) {
