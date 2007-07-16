@@ -103,6 +103,19 @@ public class IndexingEntityManager extends EntityManager {
 		return get(type, ids);
 	}
 	
+	public void optimize() throws IOException {
+		IndexWriter writer = null;
+		try {
+			writer = new IndexWriter(indexDir, analyzer, false);
+			writer.optimize();
+		} finally {
+			try {
+				writer.close();
+			} catch (NullPointerException e) {
+			}
+		}
+	}
+	
 	public Directory getIndexDir() {
 		return indexDir;
 	}
