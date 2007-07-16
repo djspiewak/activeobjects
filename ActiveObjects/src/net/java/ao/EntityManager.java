@@ -212,27 +212,31 @@ public class EntityManager {
 					continue;
 				}
 				
-				EntityProxy<T> proxy = new EntityProxy<T>(this, type);
-				
-				entity = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
-				entity.setID(id);
-	
-				proxyLock.writeLock().lock();
-				try {
-					proxies.put(entity, proxy);
-				} finally {
-					proxyLock.writeLock().unlock();
-				}
-				
-				cache.put(new CacheKey(id, type), entity);
-				
-				back[index++] = entity;
+				back[index++] = getAndInstantiate(type, id);
 			} finally {
 				cacheLock.writeLock().unlock();
 			}
 		}
 		
 		return back;
+	}
+	
+	// assumes cache doesn't contain object
+	protected <T extends Entity> T getAndInstantiate(Class<T> type, int id) {
+		EntityProxy<T> proxy = new EntityProxy<T>(this, type);
+		
+		T entity = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
+		entity.setID(id);
+
+		proxyLock.writeLock().lock();
+		try {
+			proxies.put(entity, proxy);
+		} finally {
+			proxyLock.writeLock().unlock();
+		}
+		
+		cache.put(new CacheKey(id, type), entity);
+		return entity;
 	}
 	
 	/**
