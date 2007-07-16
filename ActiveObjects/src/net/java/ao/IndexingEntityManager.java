@@ -43,6 +43,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
@@ -127,6 +128,10 @@ public class IndexingEntityManager extends EntityManager {
 		this.indexDir = indexDir;
 		
 		analyzer = new StopAnalyzer();
+		
+		if (!indexDir.fileExists("segments.gen")) {
+			new IndexWriter(indexDir, analyzer, true).close();
+		}
 	}
 	
 	private static List<String> getIndexFields(Class<? extends Entity> type) {
@@ -197,8 +202,8 @@ public class IndexingEntityManager extends EntityManager {
 						
 						IndexWriter writer = null;
 						try {
-							writer = new IndexWriter(getIndexDir(), getAnalyzer(), true);
-							writer.addDocument(doc);
+							writer = new IndexWriter(getIndexDir(), getAnalyzer(), false);
+							writer.updateDocument(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()), doc);
 						} catch (CorruptIndexException e) {
 						} catch (LockObtainFailedException e) {
 						} catch (IOException e) {
