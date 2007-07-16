@@ -33,7 +33,9 @@ package net.java.ao;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,6 +120,81 @@ public class IndexingEntityManager extends EntityManager {
 		return get(type, ids);
 	}
 	
+	@Override
+	public void delete(Entity... entities) throws SQLException {
+		super.delete(entities);
+		
+		IndexWriter writer = null;
+		try {
+			writer = new IndexWriter(indexDir, analyzer, false);
+			for (Entity entity : entities) {
+				writer.deleteDocuments(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
+			}
+		} catch (CorruptIndexException e) {
+			throw new SQLException(e);
+		} catch (LockObtainFailedException e) {
+			throw new SQLException(e);
+		} catch (IOException e) {
+			throw new SQLException(e);
+		} finally {
+			try {
+				writer.close();
+			} catch (Throwable t) {}
+		}
+	}
+	
+	public void addToIndex(Entity entity) throws IOException {
+		String table = getNameConverter().getName(entity.getEntityType());
+		
+		IndexWriter writer = null;
+		try {
+			writer = new IndexWriter(indexDir, analyzer, false);
+			
+			Document doc = new Document();
+			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), 
+					Field.Store.YES, Field.Index.NO));
+			
+			for (Method m : entity.getEntityType().getMethods()) {
+				Index indexAnno = m.getAnnotation(Index.class);
+				
+				if (indexAnno != null) {
+					if (m.getName().startsWith("get") || m.getName().startsWith("is") || m.getAnnotation(Accessor.class) != null) {
+						String attribute = Common.getAttributeNameFromMethod(m);
+						Object value = m.invoke(entity);
+						
+						if (value != null) {
+							doc.add(new Field(table + '.' + attribute, 	value.toString(), Field.Store.YES, Field.Index.TOKENIZED));
+						}
+					}
+				}
+			}
+			
+			writer.addDocument(doc);
+		} catch (IllegalArgumentException e) {
+			throw new IOException(e);
+		} catch (IllegalAccessException e) {
+			throw new IOException(e);
+		} catch (InvocationTargetException e) {
+			throw new IOException(e);
+		} finally {
+			try {
+				writer.close();
+			} catch (Throwable t) {}
+		}
+	}
+	
+	public void removeFromIndex(Entity entity) throws IOException {
+		IndexWriter writer = null;
+		try {
+			writer = new IndexWriter(indexDir, analyzer, false);
+			writer.deleteDocuments(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
+		} finally {
+			try {
+				writer.close();
+			} catch (Throwable t) {}
+		}
+	}
+	
 	public void optimize() throws IOException {
 		IndexWriter writer = null;
 		try {
@@ -167,26 +244,6 @@ public class IndexingEntityManager extends EntityManager {
 		}
 		
 		return back;
-	}
-	
-	private static String getDefaultSearchField(Class<? extends Entity> type) {
-		for (Method m : type.getMethods()) {
-			Index annot = m.getAnnotation(Index.class);
-			
-			if (annot != null) {
-				Class<?> attributeType = Common.getAttributeTypeFromMethod(m);
-				String name = Common.getAttributeNameFromMethod(m);
-				
-				// don't index Entity fields
-				if (name != null && !Common.interfaceInheritsFrom(attributeType, Entity.class)) {
-					if (annot.value()) {
-						return name;
-					}
-				}
-			}
-		}
-		
-		return getIndexFields(type).get(0);
 	}
 	
 	private class IndexAppender<T extends Entity> implements PropertyChangeListener {
