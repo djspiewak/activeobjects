@@ -44,6 +44,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
@@ -86,9 +87,15 @@ public class IndexingEntityManager extends EntityManager {
 	
 	public <T extends Entity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
 		String table = getNameConverter().getName(type);
+		List<String> indexFields = getIndexFields(type);
+		String[] searchFields = new String[indexFields.size()];
+		
+		for (int i = 0; i < searchFields.length; i++) {
+			searchFields[i] = table + '.' + indexFields.get(i);
+		}
 		
 		IndexSearcher searcher = new IndexSearcher(indexDir);
-		QueryParser parser = new QueryParser(table + '.' + getDefaultSearchField(type), analyzer);
+		QueryParser parser = new MultiFieldQueryParser(searchFields, analyzer);
 		org.apache.lucene.search.Query query = parser.parse(strQuery);
 		
 		Hits hits = searcher.search(query);
@@ -104,9 +111,8 @@ public class IndexingEntityManager extends EntityManager {
 		searcher.close();
 		
 		int[] ids = new int[idList.size()];
-		int i = 0;
-		for (int id : idList) {
-			ids[i++] = id;
+		for (int i = 0; i < ids.length; i++) {
+			ids[i] = idList.get(i);
 		}
 		
 		return get(type, ids);
