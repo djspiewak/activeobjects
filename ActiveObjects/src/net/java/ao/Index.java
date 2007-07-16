@@ -40,6 +40,4 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Index {
-	boolean value() default false;
-}
+public @interface Index {}
