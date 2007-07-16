@@ -92,13 +92,22 @@ public class IndexingEntityManager extends EntityManager {
 		org.apache.lucene.search.Query query = parser.parse(strQuery);
 		
 		Hits hits = searcher.search(query);
-		int[] ids = new int[hits.length()];
+		List<Integer> idList = new ArrayList<Integer>();
 		for (int i = 0; i < hits.length(); i++) {
 			Document doc = hits.doc(i);
 			
-			ids[i] = Integer.parseInt(doc.get(table + ".id"));
+			int id = Integer.parseInt(doc.get(table + ".id"));
+			if (!idList.contains(id)) {
+				idList.add(id);
+			}
 		}
 		searcher.close();
+		
+		int[] ids = new int[idList.size()];
+		int i = 0;
+		for (int id : idList) {
+			ids[i++] = id;
+		}
 		
 		return get(type, ids);
 	}
