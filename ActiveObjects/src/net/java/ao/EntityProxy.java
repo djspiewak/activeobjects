@@ -144,7 +144,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 
 		if (mutatorAnnotation != null) {
-			invokeSetter(id, tableName, mutatorAnnotation.value(), args[0]);
+			invokeSetter((T) proxy, id, tableName, mutatorAnnotation.value(), args[0]);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType());
@@ -180,7 +180,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			if (interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
 				name += "ID";
 			}
-			invokeSetter(id, tableName, name, args[0]);
+			invokeSetter((T) proxy, id, tableName, name, args[0]);
 			
 			return Void.TYPE;
 		}
@@ -386,7 +386,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		return back;
 	}
 
-	private void invokeSetter(int id, String table, String name, Object value) throws Throwable {
+	private void invokeSetter(T entity, int id, String table, String name, Object value) throws Throwable {
 		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
 		
 		Object oldValue = null;
@@ -397,14 +397,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		invokeSetterImpl(name, value, saveable);
 		
-		boolean veto = false;
-		PropertyChangeEvent evt = new PropertyChangeEvent(this, name, oldValue, value);
+		PropertyChangeEvent evt = new PropertyChangeEvent(entity, name, oldValue, value);
 		for (PropertyChangeListener l : listeners) {
 			l.propertyChange(evt);
-		}
-		
-		if (veto) {
-			invokeSetterImpl(name, oldValue, saveable);
 		}
 		
 		dirtyFieldsLock.writeLock().lock();
