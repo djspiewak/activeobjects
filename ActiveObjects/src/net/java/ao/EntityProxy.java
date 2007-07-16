@@ -345,7 +345,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			if (cache.containsKey(name)) {
 				Object value = cache.get(name);
 				
-				if (type.isInstance(value)) {
+				if (instanceOf(value, type)) {
 					return (V) value;
 				} else if (interfaceInheritsFrom(type, Entity.class) && value instanceof Integer) {
 					value = getManager().get((Class<? extends Entity>) type, (Integer) value);
@@ -557,6 +557,32 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			throw new RuntimeException("Unrecognized type: " + value.getClass().toString());
 		}
 	}
+	
+ 	private boolean instanceOf(Object value, Class<?> type) {
+ 		if (type.isPrimitive()) {
+ 			if (type.equals(boolean.class)) {
+ 				return instanceOf(value, Boolean.class);
+ 			} else if (type.equals(char.class)) {
+ 				return instanceOf(value, Character.class);
+ 			} else if (type.equals(byte.class)) {
+ 				return instanceOf(value, Byte.class);
+ 			} else if (type.equals(short.class)) {
+ 				return instanceOf(value, Short.class);
+ 			} else if (type.equals(int.class)) {
+ 				return instanceOf(value, Integer.class);
+ 			} else if (type.equals(long.class)) {
+ 				return instanceOf(value, Long.class);
+ 			} else if (type.equals(float.class)) {
+ 				return instanceOf(value, Float.class);
+ 			} else if (type.equals(double.class)) {
+ 				return instanceOf(value, Double.class);
+ 			}
+ 		} else {
+ 			return type.isInstance(value);
+ 		}
+ 		
+ 		return false;
+ 	}
 	
 	// special call from ObjectOutputStream
 	private void writeObject(ObjectOutputStream oos) throws IOException {
