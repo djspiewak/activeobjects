@@ -84,8 +84,10 @@ public class IndexingEntityManager extends EntityManager {
 	}
 	
 	public <T extends Entity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
+		String table = getNameConverter().getName(type);
+		
 		IndexSearcher searcher = new IndexSearcher(indexDir);
-		QueryParser parser = new QueryParser(getDefaultSearchField(type), analyzer);
+		QueryParser parser = new QueryParser(table + '.' + getDefaultSearchField(type), analyzer);
 		org.apache.lucene.search.Query query = parser.parse(strQuery);
 		
 		Hits hits = searcher.search(query);
@@ -95,7 +97,7 @@ public class IndexingEntityManager extends EntityManager {
 		for (int i = 0; i < hits.length(); i++) {
 			Document doc = hits.doc(i);
 			
-			ids[i] = Integer.parseInt(doc.get("id"));
+			ids[i] = Integer.parseInt(doc.get(table + ".id"));
 		}
 		
 		return get(type, ids);
@@ -164,7 +166,8 @@ public class IndexingEntityManager extends EntityManager {
 			indexFields = getIndexFields(entity.getEntityType());
 			
 			doc = new Document();
-			doc.add(new Field("id", "" + entity.getID(), Field.Store.YES, Field.Index.NO));
+			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), 
+					Field.Store.YES, Field.Index.NO));
 		}
 		
 		public void propertyChange(final PropertyChangeEvent evt) {
@@ -175,7 +178,10 @@ public class IndexingEntityManager extends EntityManager {
 					}
 					
 					public void run() {
-						doc.add(new Field(evt.getPropertyName(), evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
+						T entity = (T) evt.getSource();
+						
+						doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + '.' + evt.getPropertyName(), 
+								evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
 						
 						IndexWriter writer = null;
 						try {
