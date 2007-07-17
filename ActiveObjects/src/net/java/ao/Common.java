@@ -31,7 +31,9 @@
 package net.java.ao;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -189,4 +191,24 @@ public final class Common {
         
         return null;
     }
+
+	public static List<String> getIndexFields(Class<? extends Entity> type) {
+		List<String> back = new ArrayList<String>();
+		
+		for (Method m : type.getMethods()) {
+			Index annot = m.getAnnotation(Index.class);
+			
+			if (annot != null) {
+				Class<?> attributeType = Common.getAttributeTypeFromMethod(m);
+				String name = Common.getAttributeNameFromMethod(m);
+				
+				// don't index Entity fields
+				if (name != null && !Common.interfaceInheritsFrom(attributeType, Entity.class)) {
+					back.add(name);
+				}
+			}
+		}
+		
+		return back;
+	}
 }

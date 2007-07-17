@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -90,7 +89,7 @@ public class IndexingEntityManager extends EntityManager {
 	
 	public <T extends Entity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
 		String table = getNameConverter().getName(type);
-		List<String> indexFields = getIndexFields(type);
+		List<String> indexFields = Common.getIndexFields(type);
 		String[] searchFields = new String[indexFields.size()];
 		
 		for (int i = 0; i < searchFields.length; i++) {
@@ -221,33 +220,13 @@ public class IndexingEntityManager extends EntityManager {
 		}
 	}
 	
-	private static List<String> getIndexFields(Class<? extends Entity> type) {
-		List<String> back = new ArrayList<String>();
-		
-		for (Method m : type.getMethods()) {
-			Index annot = m.getAnnotation(Index.class);
-			
-			if (annot != null) {
-				Class<?> attributeType = Common.getAttributeTypeFromMethod(m);
-				String name = Common.getAttributeNameFromMethod(m);
-				
-				// don't index Entity fields
-				if (name != null && !Common.interfaceInheritsFrom(attributeType, Entity.class)) {
-					back.add(name);
-				}
-			}
-		}
-		
-		return back;
-	}
-	
 	private class IndexAppender<T extends Entity> implements PropertyChangeListener {
 		private List<String> indexFields;
 		
 		private Document doc;
 		
 		private IndexAppender(T entity) {
-			indexFields = getIndexFields(entity.getEntityType());
+			indexFields = Common.getIndexFields(entity.getEntityType());
 			
 			doc = new Document();
 			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), 

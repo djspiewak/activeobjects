@@ -10,5 +10,6 @@
 	<classpathentry kind="var" path="derby"/>
 	<classpathentry kind="var" path="c3p0"/>
 	<classpathentry kind="var" path="lucene" sourcepath="/lucene-src"/>
+	<classpathentry kind="var" path="lucene-queries" sourcepath="/lucene-queries-src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
