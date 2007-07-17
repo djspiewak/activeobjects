@@ -44,6 +44,7 @@ import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
@@ -124,11 +125,11 @@ public class IndexingEntityManager extends EntityManager {
 	public void delete(Entity... entities) throws SQLException {
 		super.delete(entities);
 		
-		IndexWriter writer = null;
+		IndexReader reader = null;
 		try {
-			writer = new IndexWriter(indexDir, analyzer, false);
+			reader = IndexReader.open(indexDir);
 			for (Entity entity : entities) {
-				writer.deleteDocuments(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
+				removeFromIndexImpl(entity, reader);
 			}
 		} catch (CorruptIndexException e) {
 			throw new SQLException(e);
@@ -138,7 +139,7 @@ public class IndexingEntityManager extends EntityManager {
 			throw new SQLException(e);
 		} finally {
 			try {
-				writer.close();
+				reader.close();
 			} catch (Throwable t) {}
 		}
 	}
@@ -152,7 +153,7 @@ public class IndexingEntityManager extends EntityManager {
 			
 			Document doc = new Document();
 			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), 
-					Field.Store.YES, Field.Index.NO));
+					Field.Store.YES, Field.Index.UN_TOKENIZED));
 			
 			for (Method m : entity.getEntityType().getMethods()) {
 				Index indexAnno = m.getAnnotation(Index.class);
@@ -184,15 +185,19 @@ public class IndexingEntityManager extends EntityManager {
 	}
 	
 	public void removeFromIndex(Entity entity) throws IOException {
-		IndexWriter writer = null;
+		IndexReader reader = null;
 		try {
-			writer = new IndexWriter(indexDir, analyzer, false);
-			writer.deleteDocuments(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
+			reader = IndexReader.open(indexDir);
+			removeFromIndexImpl(entity, reader);
 		} finally {
 			try {
-				writer.close();
+				reader.close();
 			} catch (Throwable t) {}
 		}
+	}
+	
+	private void removeFromIndexImpl(Entity entity, IndexReader reader) throws IOException {
+		reader.deleteDocuments(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
 	}
 	
 	public void optimize() throws IOException {
@@ -221,7 +226,7 @@ public class IndexingEntityManager extends EntityManager {
 		
 		analyzer = new StopAnalyzer();
 		
-		if (!indexDir.fileExists("segments.gen")) {
+		if (!IndexReader.indexExists(indexDir)) {
 			new IndexWriter(indexDir, analyzer, true).close();
 		}
 	}
@@ -256,7 +261,7 @@ public class IndexingEntityManager extends EntityManager {
 			
 			doc = new Document();
 			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), 
-					Field.Store.YES, Field.Index.NO));
+					Field.Store.YES, Field.Index.UN_TOKENIZED));
 		}
 		
 		public void propertyChange(final PropertyChangeEvent evt) {
