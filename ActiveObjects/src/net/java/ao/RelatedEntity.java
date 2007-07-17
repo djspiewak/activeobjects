@@ -39,5 +39,5 @@ import net.java.ao.schema.Ignore;
 public interface RelatedEntity<T extends RelatedEntity<T>> extends Entity {
 	
 	@Ignore
-	public T getRelated();
+	public T[] getRelated();
 }

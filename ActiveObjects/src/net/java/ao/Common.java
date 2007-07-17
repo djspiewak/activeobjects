@@ -203,7 +203,7 @@ public final class Common {
 				String name = Common.getAttributeNameFromMethod(m);
 				
 				// don't index Entity fields
-				if (name != null && !Common.interfaceInheritsFrom(attributeType, Entity.class)) {
+				if (name != null && !Common.interfaceInheritsFrom(attributeType, Entity.class) && !back.contains(name)) {
 					back.add(name);
 				}
 			}

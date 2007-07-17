@@ -71,7 +71,8 @@ class RelatedEntityImpl {
 
 			MoreLikeThis more = new MoreLikeThis(reader);
 			more.setFieldNames(searchFields);
-
+			more.setAnalyzer(((IndexingEntityManager) entity.getEntityManager()).getAnalyzer());
+			
 			int docID = -1;
 			TermDocs docs = reader.termDocs(new Term(table + ".id", "" + entity.getID()));
 			if (docs.next()) {
