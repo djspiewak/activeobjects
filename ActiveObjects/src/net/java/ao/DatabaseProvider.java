@@ -37,6 +37,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -105,6 +106,19 @@ public abstract class DatabaseProvider {
 		}
 		
 		return back.toString();
+	}
+	
+	public String[] renderTriggers(DDLTable table) {
+		List<String> back = new ArrayList<String>();
+		
+		for (DDLField field : table.getFields()) {
+			String trigger = renderTriggerForField(table, field);
+			if (trigger != null) {
+				back.add(trigger);
+			}
+		}
+		
+		return back.toArray(new String[back.size()]);
 	}
 	
 	public String getURI() {
@@ -324,6 +338,10 @@ public abstract class DatabaseProvider {
 	
 	protected boolean considerPrecision(DDLField field) {
 		return true;
+	}
+	
+	protected String renderTriggerForField(DDLTable table, DDLField field) {
+		return null;
 	}
 	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {

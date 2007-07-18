@@ -297,7 +297,6 @@ public final class Generator {
 	}
 	
 	private static void parseInterface(DatabaseProvider provider, PluggableNameConverter nameConverter, Class<? extends Entity> clazz, List<String> back) {
-		StringBuilder sql = new StringBuilder();
 		String sqlName = nameConverter.getName(clazz);
 		
 		DDLTable table = new DDLTable();
@@ -306,9 +305,11 @@ public final class Generator {
 		table.setFields(parseFields(clazz));
 		table.setForeignKeys(parseForeignKeys(nameConverter, clazz));
 		
-		sql.append(provider.render(table));
+		back.add(provider.render(table));
 		
-		back.add(sql.toString());
+		for (String trigger : provider.renderTriggers(table)) {
+			back.add(trigger);
+		}
 	}
 	
 	private static DDLField[] parseFields(Class<? extends Entity> clazz) {

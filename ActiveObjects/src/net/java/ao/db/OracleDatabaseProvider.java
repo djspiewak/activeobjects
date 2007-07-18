@@ -36,6 +36,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
@@ -86,5 +88,27 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	@Override
 	protected String renderAutoIncrement() {
 		return "INCREMENT_BY 1";
+	}
+	
+	@Override
+	protected String renderOnUpdate(DDLField field) {
+		return "";
+	}
+	
+	@Override
+	protected String renderTriggerForField(DDLTable table, DDLField field) {
+		if (field.getOnUpdate() != null) {
+			StringBuilder back = new StringBuilder();
+			String value = renderValue(field.getOnUpdate());
+			
+			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("onupdate\n");
+			back.append("BEFORE UPDATE\n").append("    ON ").append(table.getName()).append("\n    FOR EACH ROW\n");
+			back.append("BEGIN\n");
+			back.append("    :new.").append(field.getName()).append(" := ").append(value).append(";\nEND");
+			
+			return back.toString();
+		}
+		
+		return super.renderTriggerForField(table, field);
 	}
 }
