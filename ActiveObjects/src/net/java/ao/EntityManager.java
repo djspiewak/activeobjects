@@ -68,7 +68,7 @@ import net.java.ao.schema.PluggableNameConverter;
  * execution.  This query logging is done with the Java Logging API using the {@link Logger}
  * instance for the <code>net.java.ao</code> package.  This logging is disabled by default
  * by the <code>EntityManager</code> static initializer.  Thus, if it is desirable to log the
- * SQL statements, the <code>Logger</code> level must be set to {@link Level.OFF}
+ * SQL statements, the <code>Logger</code> level must be set to {@link Level.FINE}
  * <i>after</i> the <code>EntityManager</code> class is first used.  This usually means
  * setting the log level after the constructer has been called.</p>
  * 

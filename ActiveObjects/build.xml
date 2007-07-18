@@ -33,7 +33,7 @@
 	
 	<target name="doc" depends="init-doc,assign-doc-dir">
 		<javadoc sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
-		 		windowtitle="ActiveObjects: Javadoc" private="no" protected="yes">
+		 		windowtitle="ActiveObjects: Javadoc" access="protected">
 			<packageset dir="${activeobjects.dir}/src">
 				<include name="net/java/ao/**/*.java"/>
 			</packageset>
