@@ -48,12 +48,12 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 
 	public OracleDatabaseProvider(String uri, String username, String password) {
 		super(uri, username, password);
+		
+		System.err.println("ActiveObjects: Warning, you are using an untested database provider.  Please report any problems.");
 	}
 
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-		System.err.println("ActiveObjects: Warning, you are using an untested database provider.  Please report any problems.");
-		
 		return (Class<? extends Driver>) Class.forName("oracle.jdbc.OracleDriver");
 	}
 	
