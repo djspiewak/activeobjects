@@ -40,6 +40,8 @@ import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 
 /**
+ * FIXME	UNTESTED!!!!!!!!!
+ * 
  * @author Daniel Spiewak
  */
 public class OracleDatabaseProvider extends DatabaseProvider {
@@ -50,6 +52,8 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
+		System.err.println("ActiveObjects: Warning, you are using an untested database provider.  Please report any problems.");
+		
 		return (Class<? extends Driver>) Class.forName("oracle.jdbc.OracleDriver");
 	}
 	
