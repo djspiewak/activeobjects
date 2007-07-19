@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+	<head>
+		<title wicket:id="pageTitle"></title>
+		<link rel="stylesheet" type="text/css" href="styles/main.css"/>
+		<link rel="stylesheet" type="text/css" href="styles/post.css"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+	</head>
+	
+	<body>
+		<h1><a wicket:id="indexLink"><span wicket:id="blogTitle"></span></a></h1>
+		
+		<h2>
+			<span wicket:id="pageHeader"></span>
+			<a class="fxnLink" wicket:id="editPostLink">edit</a>
+		</h2>
+		
+		<h4 wicket:id="posted"></h4>
+		
+		<div class="postBody" wicket:id="text"></div>
+		
+		<h3>Comments</h3>
+		<div class="comment" wicket:id="comments">
+			<b><span wicket:id="commentBy"></span> says,</b><br/>
+			
+			<span wicket:id="comment"></span>
+		</div>
+		
+		<form wicket:id="commentForm">
+			<table>
+				<tr>
+					<td>
+						<b>Name:</b>
+					</td>
+					<td width="100%">
+						<input type="text" wicket:id="name"/>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" width="100%">
+						<textarea cols="40" rows="10" wicket:id="commentText"></textarea>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="submit" value="Post Comment"/>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</body>
+</html>
