@@ -27,7 +27,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -37,7 +36,6 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.LockObtainFailedException;
 
 /**
  * @author Daniel Spiewak
@@ -105,10 +103,6 @@ public class IndexingEntityManager extends EntityManager {
 			for (Entity entity : entities) {
 				removeFromIndexImpl(entity, reader);
 			}
-		} catch (CorruptIndexException e) {
-			throw new SQLException(e);
-		} catch (LockObtainFailedException e) {
-			throw new SQLException(e);
 		} catch (IOException e) {
 			throw new SQLException(e);
 		} finally {
@@ -235,8 +229,6 @@ public class IndexingEntityManager extends EntityManager {
 						try {
 							writer = new IndexWriter(getIndexDir(), getAnalyzer(), false);
 							writer.updateDocument(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()), doc);
-						} catch (CorruptIndexException e) {
-						} catch (LockObtainFailedException e) {
 						} catch (IOException e) {
 						} finally {
 							try {
