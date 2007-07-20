@@ -22,7 +22,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -293,27 +292,12 @@ public class EntityManager {
 			
 			sql.append(")");
 			
-			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
-			PreparedStatement stmt = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
-			
+			Object[] args = new Object[params.length];
 			for (int i = 0; i < params.length; i++) {
-				Object value = params[i].getValue();
-				
-				if (value instanceof Entity) {
-					value = ((Entity) value).getID();
-				}
-				
-				stmt.setObject(i + 1, value);
+				args[i] = params[i].getValue();
 			}
 			
-			stmt.executeUpdate();
-			
-			ResultSet res = stmt.getGeneratedKeys();
-			if (res.next()) {
-				 back = get(type, res.getInt(1));
-			}
-			res.close();
-			stmt.close();
+			back = get(type, provider.insertReturningKeys(conn, table, sql.toString(), args));
 		} finally {
 			DBEncapsulator.getInstance(provider).closeConnection(conn);
 		}

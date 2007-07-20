@@ -17,10 +17,15 @@ package net.java.ao.db;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.Entity;
 import net.java.ao.schema.ddl.DDLField;
 
 /**
@@ -62,5 +67,39 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 
 	@Override
 	protected void setPostConnectionProperties(Connection conn) throws SQLException {
+	}
+	
+	@Override
+	public int insertReturningKeys(Connection conn, String table, String sql, Object... params) throws SQLException {
+		int back = -1;
+		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
+		PreparedStatement stmt = conn.prepareStatement(sql);
+		
+		for (int i = 0; i < params.length; i++) {
+			Object value = params[i];
+			
+			if (value instanceof Entity) {
+				value = ((Entity) value).getID();
+			}
+			
+			stmt.setObject(i + 1, value);
+		}
+		
+		stmt.executeUpdate();
+		stmt.close();
+
+		String curvalSQL = "SELECT curval(" + table + ".id)";
+		
+		Logger.getLogger("net.java.ao").log(Level.INFO, curvalSQL);
+		stmt = conn.prepareStatement(curvalSQL);
+		
+		ResultSet res = stmt.executeQuery();
+		if (res.next()) {
+			back = res.getInt(1);
+		}
+		res.close();
+		stmt.close();
+		
+		return back;
 	}
 }

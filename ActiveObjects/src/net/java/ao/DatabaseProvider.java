@@ -19,13 +19,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.java.ao.db.SupportedDBProvider;
 import net.java.ao.db.SupportedPoolProvider;
@@ -327,6 +332,34 @@ public abstract class DatabaseProvider {
 	
 	protected String renderTriggerForField(DDLTable table, DDLField field) {
 		return null;
+	}
+	
+	public int insertReturningKeys(Connection conn, String table, String sql, Object... params) throws SQLException {
+		int back = -1;
+		
+		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
+		PreparedStatement stmt = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
+		
+		for (int i = 0; i < params.length; i++) {
+			Object value = params[i];
+			
+			if (value instanceof Entity) {
+				value = ((Entity) value).getID();
+			}
+			
+			stmt.setObject(i + 1, value);
+		}
+		
+		stmt.executeUpdate();
+		
+		ResultSet res = stmt.getGeneratedKeys();
+		if (res.next()) {
+			 back = res.getInt(1);
+		}
+		res.close();
+		stmt.close();
+		
+		return back;
 	}
 	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
