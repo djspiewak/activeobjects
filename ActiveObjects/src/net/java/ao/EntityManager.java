@@ -111,8 +111,8 @@ public class EntityManager {
 			proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
 			cache = new WeakHashMap<CacheKey, Entity>();
 		} else {
-			proxies = new HashMap<Entity, EntityProxy<? extends Entity>>();
-			cache = new HashMap<CacheKey, Entity>();
+			proxies = new SoftHashMap<Entity, EntityProxy<? extends Entity>>();
+			cache = new SoftHashMap<CacheKey, Entity>();
 		}
 		
 		nameConverter = new CamelCaseNameConverter();
