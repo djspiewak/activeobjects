@@ -25,7 +25,8 @@ import net.java.ao.DatabaseProvider;
  */
 public enum SupportedDBProvider {
 	MYSQL("jdbc:mysql", MySQLDatabaseProvider.class),
-	DERBY("jdbc:derby", EmbeddedDerbyDatabaseProvider.class),
+	NETWORK_DERBY("jdbc:derby://", ClientDerbyDatabaseProvider.class),
+	EMBEDDED_DERBY("jdbc:derby", EmbeddedDerbyDatabaseProvider.class),
 	ORACLE_THIN("jdbc:oracle:thin", OracleDatabaseProvider.class),
 	ORACLE_OCI("jdbc:oracle:oci", OracleDatabaseProvider.class),
 	POSTGRESQL("jdbc:postgresql", PostgreSQLDatabaseProvider.class),
