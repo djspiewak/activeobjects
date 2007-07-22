@@ -30,7 +30,8 @@ public enum SupportedDBProvider {
 	ORACLE_THIN("jdbc:oracle:thin", OracleDatabaseProvider.class),
 	ORACLE_OCI("jdbc:oracle:oci", OracleDatabaseProvider.class),
 	POSTGRESQL("jdbc:postgresql", PostgreSQLDatabaseProvider.class),
-	MS_SQL_SERVER("jdbc:sqlserver", SQLServerDatabaseProvider.class);
+	MS_SQL_SERVER("jdbc:sqlserver", SQLServerDatabaseProvider.class),
+	JTDS_MS_SQL_SERVER("jdbc:jtds:sqlserver", JTDSSQLServerDatabaseProvider.class);
 	
 	private String prefix;
 	private Class<? extends DatabaseProvider> type;

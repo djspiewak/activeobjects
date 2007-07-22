@@ -30,7 +30,7 @@ import net.java.ao.DatabaseProvider;
  */
 public class SQLServerDatabaseProvider extends DatabaseProvider {
 
-	protected SQLServerDatabaseProvider(String uri, String username, String password) {
+	public SQLServerDatabaseProvider(String uri, String username, String password) {
 		super(uri, username, password);
 		
 		System.err.println("ActiveObjects: Warning, you are using an untested database provider.  Please report any problems.");
