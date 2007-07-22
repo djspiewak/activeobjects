@@ -64,6 +64,19 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		
 		return super.convertTypeToString(type);
 	}
+	
+	@Override
+	protected String renderValue(Object value) {
+		if (value instanceof Boolean) {
+			if (value.equals(true)) {
+				return "TRUE";
+			} else {
+				return "FALSE";
+			}
+		}
+		
+		return super.renderValue(value);
+	}
 
 	@Override
 	protected void setPostConnectionProperties(Connection conn) throws SQLException {
