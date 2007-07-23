@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * @author Daniel Spiewak
@@ -77,16 +78,65 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		
 		return super.renderValue(value);
 	}
+	
+	@Override
+	protected String renderFunctionForField(DDLTable table, DDLField field) {
+		Object onUpdate = field.getOnUpdate();
+		if (onUpdate != null) {
+			StringBuilder back = new StringBuilder();
+			
+			back.append("CREATE FUNCTION ").append(table.getName()).append('_').append(field.getName()).append("()");
+			back.append(" RETURNS trigger AS $$\nBEGIN\n");
+			back.append("    NEW.").append(field.getName()).append(" := ").append(renderValue(onUpdate));
+			back.append(";\n    RETURN NEW;\nEND;\n$$ LANGUAGE plpgsql");
+			
+			return back.toString();
+		}
+		
+		return super.renderFunctionForField(table, field);
+	}
+	
+	@Override
+	protected String renderTriggerForField(DDLTable table, DDLField field) {
+		Object onUpdate = field.getOnUpdate();
+		if (onUpdate != null) {
+			StringBuilder back = new StringBuilder();
+			
+			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName());
+			back.append(" BEFORE UPDATE OR INSERT ON ").append(field.getName()).append('\n');
+			back.append("    FOR EACH ROW EXECUTE PROCEDURE ");
+			back.append(table.getName()).append('_').append(field.getName()).append("()");
+		}
+		
+		return super.renderTriggerForField(table, field);
+	}
+	
+	@Override
+	protected String renderOnUpdate(DDLField field) {
+		return "";
+	}
 
 	@Override
 	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
 	
 	@Override
-	public int insertReturningKeys(Connection conn, String table, String sql, Object... params) throws SQLException {
+	public synchronized int insertReturningKeys(Connection conn, String table, String sql, Object... params) throws SQLException {
 		int back = -1;
+		String curvalSQL = "SELECT NEXTVAL('" + table + "_id_seq')";
+		
+		Logger.getLogger("net.java.ao").log(Level.INFO, curvalSQL);
+		PreparedStatement stmt = conn.prepareStatement(curvalSQL);
+		
+		ResultSet res = stmt.executeQuery();
+		if (res.next()) {
+			back = res.getInt(1);
+		}
+		res.close();
+		stmt.close();
+		
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-		PreparedStatement stmt = conn.prepareStatement(sql);
+		stmt = conn.prepareStatement(sql);
 		
 		for (int i = 0; i < params.length; i++) {
 			Object value = params[i];
@@ -99,18 +149,6 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		stmt.executeUpdate();
-		stmt.close();
-
-		String curvalSQL = "SELECT curval(" + table + ".id)";
-		
-		Logger.getLogger("net.java.ao").log(Level.INFO, curvalSQL);
-		stmt = conn.prepareStatement(curvalSQL);
-		
-		ResultSet res = stmt.executeQuery();
-		if (res.next()) {
-			back = res.getInt(1);
-		}
-		res.close();
 		stmt.close();
 		
 		return back;

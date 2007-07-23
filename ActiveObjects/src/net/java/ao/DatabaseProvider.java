@@ -98,6 +98,19 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	public String[] renderFunctions(DDLTable table) {
+		List<String> back = new ArrayList<String>();
+		
+		for (DDLField field : table.getFields()) {
+			String function = renderFunctionForField(table, field);
+			if (function != null) {
+				back.add(function);
+			}
+		}
+		
+		return back.toArray(new String[back.size()]);
+	}
+	
 	public String[] renderTriggers(DDLTable table) {
 		List<String> back = new ArrayList<String>();
 		
@@ -331,6 +344,10 @@ public abstract class DatabaseProvider {
 	}
 	
 	protected String renderTriggerForField(DDLTable table, DDLField field) {
+		return null;
+	}
+	
+	protected String renderFunctionForField(DDLTable table, DDLField field) {
 		return null;
 	}
 	

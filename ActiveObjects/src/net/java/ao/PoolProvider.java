@@ -48,6 +48,21 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	public String[] renderFunctions(DDLTable table) {
+		return delegate.renderFunctions(table);
+	}
+	
+	@Override
+	public String[] renderTriggers(DDLTable table) {
+		return delegate.renderTriggers(table);
+	}
+	
+	@Override
+	public int insertReturningKeys(Connection conn, String table, String sql, Object... params) throws SQLException {
+		return delegate.insertReturningKeys(conn, table, sql, params);
+	}
+	
+	@Override
 	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 		delegate.setPostConnectionProperties(conn);
 	}

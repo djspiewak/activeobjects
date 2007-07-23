@@ -292,6 +292,10 @@ public final class Generator {
 		
 		back.add(provider.render(table));
 		
+		for (String function : provider.renderFunctions(table)) {
+			back.add(function);
+		}
+		
 		for (String trigger : provider.renderTriggers(table)) {
 			back.add(trigger);
 		}
