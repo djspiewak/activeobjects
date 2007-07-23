@@ -181,12 +181,11 @@ public final class Generator {
 	}
 	
 	private static PluggableNameConverter loadConverter(ClassLoader classloader, String name) {
-		if (name.split(".").length == 0) {
+		if (name != null && name.split(".").length == 0) {
 			name = "net.java.ao.schema." + name;
 		}
 		
 		Class<? extends PluggableNameConverter> converterClass = null;
-		
 		try {
 			converterClass = (Class<? extends PluggableNameConverter>) Class.forName(name);
 		} catch (Throwable t) {
