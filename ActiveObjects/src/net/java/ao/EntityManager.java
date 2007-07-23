@@ -267,37 +267,7 @@ public class EntityManager {
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
-			StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
-			
-			for (DBParam param : params) {
-				sql.append(param.getField());
-				sql.append(',');
-			}
-			if (params.length > 0) {
-				sql.setLength(sql.length() - 1);
-			} else {
-				sql.append("id");
-			}
-			
-			sql.append(") VALUES (");
-			
-			for (@SuppressWarnings("unused") DBParam param : params) {
-				sql.append("?,");
-			}
-			if (params.length > 0) {
-				sql.setLength(sql.length() - 1);
-			} else {
-				sql.append("DEFAULT");
-			}
-			
-			sql.append(")");
-			
-			Object[] args = new Object[params.length];
-			for (int i = 0; i < params.length; i++) {
-				args[i] = params[i].getValue();
-			}
-			
-			back = get(type, provider.insertReturningKeys(conn, table, sql.toString(), args));
+			back = get(type, provider.insertReturningKeys(conn, table, params));
 		} finally {
 			DBEncapsulator.getInstance(provider).closeConnection(conn);
 		}

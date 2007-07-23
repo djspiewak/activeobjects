@@ -351,14 +351,42 @@ public abstract class DatabaseProvider {
 		return null;
 	}
 	
-	public int insertReturningKeys(Connection conn, String table, String sql, Object... params) throws SQLException {
-		int back = -1;
+	public int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
+		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
+		for (DBParam param : params) {
+			sql.append(param.getField());
+			sql.append(',');
+		}
+		if (params.length > 0) {
+			sql.setLength(sql.length() - 1);
+		} else {
+			sql.append("id");
+		}
+		
+		sql.append(") VALUES (");
+		
+		for (@SuppressWarnings("unused") DBParam param : params) {
+			sql.append("?,");
+		}
+		if (params.length > 0) {
+			sql.setLength(sql.length() - 1);
+		} else {
+			sql.append("DEFAULT");
+		}
+		
+		sql.append(")");
+		
+		return executeInsertReturningKeys(conn, sql.toString(), params);
+	}
+	
+	protected int executeInsertReturningKeys(Connection conn, String sql, DBParam... params) throws SQLException {
+		int back = -1;
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-		PreparedStatement stmt = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
+		PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		
 		for (int i = 0; i < params.length; i++) {
-			Object value = params[i];
+			Object value = params[i].getValue();
 			
 			if (value instanceof Entity) {
 				value = ((Entity) value).getID();

@@ -21,9 +21,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.DBParam;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.schema.ddl.DDLField;
@@ -121,25 +125,47 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	public synchronized int insertReturningKeys(Connection conn, String table, String sql, Object... params) throws SQLException {
+	public synchronized int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
 		int back = -1;
-		String curvalSQL = "SELECT NEXTVAL('" + table + "_id_seq')";
-		
-		Logger.getLogger("net.java.ao").log(Level.INFO, curvalSQL);
-		PreparedStatement stmt = conn.prepareStatement(curvalSQL);
-		
-		ResultSet res = stmt.executeQuery();
-		if (res.next()) {
-			back = res.getInt(1);
+		for (DBParam param : params) {
+			if (param.getField().trim().equalsIgnoreCase("id")) {
+				back = (Integer) param.getValue();
+				break;
+			}
 		}
-		res.close();
-		stmt.close();
 		
+		if (back < 0) {
+			String sql = "SELECT NEXTVAL('" + table + "_id_seq')";
+			
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				back = res.getInt(1);
+			}
+			res.close();
+			stmt.close();
+			
+			List<DBParam> newParams = new ArrayList<DBParam>();
+			newParams.addAll(Arrays.asList(params));
+			
+			newParams.add(new DBParam("id", back));
+			params = newParams.toArray(new DBParam[newParams.size()]);
+		}
+		
+		super.insertReturningKeys(conn, table, params);
+		
+		return back;
+	}
+	
+	@Override
+	protected int executeInsertReturningKeys(Connection conn, String sql, DBParam... params) throws SQLException {
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-		stmt = conn.prepareStatement(sql);
+		PreparedStatement stmt = conn.prepareStatement(sql);
 		
 		for (int i = 0; i < params.length; i++) {
-			Object value = params[i];
+			Object value = params[i].getValue();
 			
 			if (value instanceof Entity) {
 				value = ((Entity) value).getID();
@@ -151,6 +177,6 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		stmt.executeUpdate();
 		stmt.close();
 		
-		return back;
+		return -1;
 	}
 }
