@@ -28,7 +28,6 @@ import net.java.ao.blog.pages.Index;
 import net.java.ao.blog.pages.ViewPost;
 import net.java.ao.schema.Generator;
 
-import org.apache.wicket.ISessionFactory;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
 import org.apache.wicket.Session;
@@ -39,25 +38,65 @@ import org.apache.wicket.protocol.http.WebApplication;
  * @author Daniel Spiewak
  */
 public class BlogApplication extends WebApplication {
+
 	private EntityManager manager;
-	
+
 	public EntityManager getEntityManager() {
 		return manager;
 	}
-	
+
+	@Override
+	public Class<? extends WebPage> getHomePage() {
+		return Index.class;
+	}
+
+	@Override
+	public Session newSession(Request request, Response response) {
+		return new BlogSession(BlogApplication.this, request);
+	}
+
+	private void generateSchema(EntityManager manager) {
+		try {
+			Generator.migrate(manager.getProvider(), Comment.class);
+
+			manager.create(Blog.class).setName("AO Dogfood Blog");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private Properties getDBProperties() {
+		Properties back = new Properties();
+
+		InputStream is = BlogApplication.class.getResourceAsStream("/db.properties");
+
+		if (is == null) {
+			throw new RuntimeException("Unable to locate db.properties");
+		}
+
+		try {
+			back.load(is);
+			is.close();
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to load db.properties");
+		}
+
+		return back;
+	}
+
 	@Override
 	protected void init() {
 		super.init();
-		
+
 		getMarkupSettings().setStripWicketTags(true);
-		
+
 		Properties dbProperties = getDBProperties();
-		
+
 		String uri = dbProperties.getProperty("db.uri");
 		String username = dbProperties.getProperty("db.username");
 		String password = dbProperties.getProperty("db.password");
 		manager = new EntityManager(DatabaseProvider.getInstance(uri, username, password));
-		
+
 		try {
 			if (manager.find(Blog.class).length == 0) {
 				generateSchema(manager);
@@ -69,55 +108,10 @@ public class BlogApplication extends WebApplication {
 		mountBookmarkablePage("/index", Index.class);
 		mountBookmarkablePage("/post", ViewPost.class);
 	}
-	
-	private Properties getDBProperties() {
-		Properties back = new Properties();
-		
-		InputStream is = BlogApplication.class.getResourceAsStream("/db.properties");
-		
-		if (is == null) {
-			throw new RuntimeException("Unable to locate db.properties");
-		}
-		
-		try {
-			back.load(is);
-			is.close();
-		} catch (IOException e) {
-			throw new RuntimeException("Unable to load db.properties");
-		}
-		
-		return back;
-	}
-	
-	private void generateSchema(EntityManager manager) {
-		try {
-			Generator.migrate(manager.getProvider(), Comment.class);
-			
-			manager.create(Blog.class).setName("AO Dogfood Blog");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	
+
 	@Override
-	protected void destroy() {
-		super.destroy();
-		
+	protected void onDestroy() {
+		super.onDestroy();
 		manager.getProvider().dispose();
-	}
-
-	@Override
-	public Class<? extends WebPage> getHomePage() {
-		return Index.class;
-	}
-
-	@Override
-	protected ISessionFactory getSessionFactory() {
-		return new ISessionFactory() {
-			@Override
-			public Session newSession(Request request, Response response) {
-				return new BlogSession(BlogApplication.this, request);
-			}
-		};
 	}
 }
