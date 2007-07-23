@@ -121,10 +121,6 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 
 	@Override
-	protected void setPostConnectionProperties(Connection conn) throws SQLException {
-	}
-	
-	@Override
 	public synchronized int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
 		int back = -1;
 		for (DBParam param : params) {

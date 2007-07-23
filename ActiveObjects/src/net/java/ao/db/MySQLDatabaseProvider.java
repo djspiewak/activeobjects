@@ -15,9 +15,7 @@
  */
 package net.java.ao.db;
 
-import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
@@ -33,10 +31,6 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("com.mysql.jdbc.Driver");
-	}
-	
-	@Override
-	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
 	
 	@Override

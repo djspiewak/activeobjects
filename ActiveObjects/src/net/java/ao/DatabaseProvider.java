@@ -53,8 +53,6 @@ public abstract class DatabaseProvider {
 	
 	public abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
 	
-	protected abstract void setPostConnectionProperties(Connection conn) throws SQLException;
-	
 	protected abstract String renderAutoIncrement();
 	
 	public String render(DDLTable table) {
@@ -150,6 +148,9 @@ public abstract class DatabaseProvider {
 	}
 	
 	public void dispose() {
+	}
+	
+	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
 	
 	protected void parseForeignKeys(StringBuilder append, DDLTable table) {

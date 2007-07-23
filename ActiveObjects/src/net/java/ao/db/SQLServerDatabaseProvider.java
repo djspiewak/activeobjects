@@ -15,9 +15,7 @@
  */
 package net.java.ao.db;
 
-import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.DatabaseFunction;
@@ -46,10 +44,6 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 		return "IDENTITY(1,1)";
 	}
 
-	@Override
-	protected void setPostConnectionProperties(Connection conn) throws SQLException {
-	}
-	
 	@Override
 	protected String convertTypeToString(int type) {
 		switch (type) {
