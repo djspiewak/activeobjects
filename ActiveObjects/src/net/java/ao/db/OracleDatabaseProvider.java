@@ -17,22 +17,21 @@ package net.java.ao.db;
 
 import java.sql.Driver;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
+import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 
 /**
- * FIXME	UNTESTED!!!!!!!!!
- * 
  * @author Daniel Spiewak
  */
 public class OracleDatabaseProvider extends DatabaseProvider {
 
 	public OracleDatabaseProvider(String uri, String username, String password) {
 		super(uri, username, password);
-		
-		System.err.println("ActiveObjects: Warning, you are using an untested database provider.  Please report any problems.");
 	}
 
 	@Override
@@ -43,6 +42,12 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	@Override
 	protected String convertTypeToString(int type) {
 		switch (type) {
+			case Types.BIGINT:
+				return "NUMBER";
+				
+			case Types.BOOLEAN:
+				return "NUMBER";
+			
 			case Types.INTEGER:
 				return "NUMBER";
 
@@ -70,12 +75,31 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	protected String renderAutoIncrement() {
-		return "INCREMENT_BY 1";
+		return "";
 	}
 	
 	@Override
 	protected String renderOnUpdate(DDLField field) {
 		return "";
+	}
+	
+	@Override
+	protected String renderFunction(DatabaseFunction func) {
+		switch (func) {
+			case CURRENT_TIMESTAMP:
+				return "SYSDATE";
+			
+			case CURRENT_DATE:
+				return "SYSDATE";
+		}
+		
+		return super.renderFunction(func);
+	}
+	
+	@Override
+	protected String renderCalendar(Calendar calendar) {
+		return new SimpleDateFormat("dd-MMM-yy hh:mm:ss.SSS a").format(
+				calendar.getTime());
 	}
 	
 	@Override

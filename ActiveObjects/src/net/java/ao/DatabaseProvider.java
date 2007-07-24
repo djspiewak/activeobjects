@@ -276,9 +276,6 @@ public abstract class DatabaseProvider {
 			back.append(')');
 		}
 		
-		if (field.isNotNull()) {
-			back.append(" NOT NULL");
-		}
 		if (field.isAutoIncrement()) {
 			back.append(' ');
 			back.append(renderAutoIncrement());
@@ -286,6 +283,11 @@ public abstract class DatabaseProvider {
 			back.append(" DEFAULT ");
 			back.append(renderValue(field.getDefaultValue()));
 		}
+
+		if (field.isNotNull()) {
+			back.append(" NOT NULL");
+		}
+		
 		if (field.getOnUpdate() != null) {
 			back.append(renderOnUpdate(field));
 		}
