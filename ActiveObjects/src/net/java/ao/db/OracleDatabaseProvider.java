@@ -108,7 +108,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 			StringBuilder back = new StringBuilder();
 			String value = renderValue(field.getOnUpdate());
 			
-			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("onupdate\n");
+			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
 			back.append("BEFORE UPDATE\n").append("    ON ").append(table.getName()).append("\n    FOR EACH ROW\n");
 			back.append("BEGIN\n");
 			back.append("    :new.").append(field.getName()).append(" := ").append(value).append(";\nEND");
