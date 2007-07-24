@@ -230,9 +230,6 @@ public abstract class DatabaseProvider {
 			case Types.SMALLINT:
 				return "SMALLINT";
 				
-			case Types.SQLXML:
-				return "SQLXML";
-				
 			case Types.STRUCT:
 				return "STRUCT";
 				
