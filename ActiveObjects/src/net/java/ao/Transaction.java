@@ -37,8 +37,12 @@ import java.sql.SQLException;
 public abstract class Transaction {
 	private EntityManager manager;
 	
-	protected Transaction(EntityManager manager) {
+	public Transaction(EntityManager manager) {
 		this.manager = manager;
+	}
+	
+	protected final EntityManager getEntityManager() {
+		return manager;
 	}
 	
 	public void execute() {
