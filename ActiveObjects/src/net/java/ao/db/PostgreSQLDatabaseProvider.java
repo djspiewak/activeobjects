@@ -89,7 +89,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		if (onUpdate != null) {
 			StringBuilder back = new StringBuilder();
 			
-			back.append("CREATE FUNCTION ").append(table.getName()).append('_').append(field.getName()).append("()");
+			back.append("CREATE FUNCTION ").append(table.getName()).append('_').append(field.getName()).append("_onupdate()");
 			back.append(" RETURNS trigger AS $$\nBEGIN\n");
 			back.append("    NEW.").append(field.getName()).append(" := ").append(renderValue(onUpdate));
 			back.append(";\n    RETURN NEW;\nEND;\n$$ LANGUAGE plpgsql");
@@ -106,10 +106,10 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		if (onUpdate != null) {
 			StringBuilder back = new StringBuilder();
 			
-			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName());
+			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
 			back.append(" BEFORE UPDATE OR INSERT ON ").append(field.getName()).append('\n');
 			back.append("    FOR EACH ROW EXECUTE PROCEDURE ");
-			back.append(table.getName()).append('_').append(field.getName()).append("()");
+			back.append(table.getName()).append('_').append(field.getName()).append("_onupdate()");
 		}
 		
 		return super.renderTriggerForField(table, field);
