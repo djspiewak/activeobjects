@@ -120,7 +120,7 @@ public class Query {
 		StringBuilder sql = new StringBuilder();
 		
 		if (this.tableType != null) {
-			tableType = tableType;
+			tableType = this.tableType;
 		}
 		
 		String tableName = nameConverter.getName(tableType);
