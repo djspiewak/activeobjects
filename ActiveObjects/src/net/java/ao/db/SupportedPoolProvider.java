@@ -22,7 +22,8 @@ import net.java.ao.PoolProvider;
  */
 public enum SupportedPoolProvider {
 	DBCP(DBCPPoolProvider.class),
-	C3P0(C3P0PoolProvider.class);
+	C3P0(C3P0PoolProvider.class),
+	PROXOOL(ProxoolPoolProvider.class);
 	
 	private final Class<? extends PoolProvider> provider;
 	
