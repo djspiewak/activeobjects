@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
  * @author Daniel Spiewak
  */
 class OrderedProperties extends HashMap<String, String> implements Iterable<String> {
+	private static final long serialVersionUID = 1L;
 	private List<String> keyList;
 	
 	public OrderedProperties() {
