@@ -54,47 +54,49 @@ import java.util.logging.Logger;
  */
 class EntityProxy<T extends Entity> implements InvocationHandler {
 	private int id;
+
 	private Class<T> type;
-	
+
 	private EntityManager manager;
-	
+
 	private ImplementationWrapper<T> implementation;
-	
+
 	private final Map<String, Object> cache;
+
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
-	
+
 	private final Set<String> dirtyFields;
+
 	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
-	
+
 	private List<PropertyChangeListener> listeners;
 
 	public EntityProxy(EntityManager manager, Class<T> type) {
 		this.type = type;
 		this.manager = manager;
-		
+
 		cache = new HashMap<String, Object>();
 		dirtyFields = new LinkedHashSet<String>();
-		
+
 		listeners = new LinkedList<PropertyChangeListener>();
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		if (method.getName().equals("getEntityType")) {
 			return type;
-		} 
-		
+		}
+
 		if (implementation == null) {
 			implementation = new ImplementationWrapper<T>((T) proxy);
 		}
-		
+
 		MethodImplWrapper methodImpl = implementation.getMethod(method.getName(), method.getParameterTypes());
 		if (methodImpl != null) {
-			if (!Common.getCallingClass(1).equals(methodImpl.getMethod().getDeclaringClass())
-					&& !methodImpl.getMethod().getDeclaringClass().equals(Object.class)) {
+			if (!Common.getCallingClass(1).equals(methodImpl.getMethod().getDeclaringClass()) && !methodImpl.getMethod().getDeclaringClass().equals(Object.class)) {
 				return methodImpl.getMethod().invoke(methodImpl.getInstance(), args);
 			}
 		}
-		
+
 		if (method.getName().equals("setID")) {
 			setID((Integer) args[0]);
 
@@ -103,7 +105,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return getID();
 		} else if (method.getName().equals("save")) {
 			save();
-			
+
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
 			return getTableName();
@@ -122,7 +124,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 
 		String tableName = getManager().getNameConverter().getName(type);
-		
+
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
@@ -133,32 +135,30 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType());
-		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
-				&& interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
+		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() && interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(type);
-			
-			return retrieveRelations(otherTableName, new String[] {"id"}, getID(), (Class<? extends Entity>) type);
-		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
-				&& interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
+
+			return retrieveRelations(otherTableName, new String[] { "id" }, getID(), (Class<? extends Entity>) type);
+		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() && interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> throughType = manyToManyAnnotation.value();
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(throughType);
-			
+
 			return retrieveRelations(otherTableName, getMappingFields(throughType, type), getID(), throughType, type);
 		} else if (method.getName().startsWith("get")) {
 			String name = convertDowncaseName(method.getName().substring(3));
 			if (interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
 				name += "ID";
 			}
-			
+
 			return invokeGetter(getID(), tableName, name, method.getReturnType());
 		} else if (method.getName().startsWith("is")) {
 			String name = convertDowncaseName(method.getName().substring(2));
 			if (interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
 				name += "ID";
 			}
-			
+
 			return invokeGetter(getID(), tableName, name, method.getReturnType());
 		} else if (method.getName().startsWith("set")) {
 			String name = convertDowncaseName(method.getName().substring(3));
@@ -166,7 +166,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				name += "ID";
 			}
 			invokeSetter((T) proxy, id, tableName, name, args[0]);
-			
+
 			return Void.TYPE;
 		}
 
@@ -176,7 +176,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	public int getID() {
 		return id;
 	}
-	
+
 	public String getTableName() {
 		return getManager().getNameConverter().getName(type);
 	}
@@ -184,14 +184,14 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	public void setID(int id) {
 		this.id = id;
 	}
-	
+
 	public void save() throws SQLException {
 		dirtyFieldsLock.writeLock().lock();
 		try {
 			if (dirtyFields.isEmpty()) {
 				return;
 			}
-			
+
 			String table = getTableName();
 			Connection conn = getConnectionImpl();
 
@@ -240,15 +240,15 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			dirtyFieldsLock.writeLock().unlock();
 		}
 	}
-	
+
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		listeners.add(listener);
 	}
-	
+
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		listeners.remove(listener);
 	}
-	
+
 	public int hashCodeImpl() {
 		return (int) (new Random(getID()).nextFloat() * getID()) + getID() % (2 << 15);
 	}
@@ -257,45 +257,45 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		if (proxy == obj) {
 			return true;
 		}
-		
+
 		if (obj instanceof Entity) {
 			Entity entity = (Entity) obj;
-			
+
 			return entity.getID() == proxy.getID() && entity.getTableName().equals(proxy.getTableName());
 		}
-		
+
 		return false;
 	}
 
 	public String toStringImpl() {
 		return getManager().getNameConverter().getName(type) + " {id = " + getID() + "}";
 	}
-	
+
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
 		}
-		
+
 		if (obj instanceof EntityProxy) {
 			EntityProxy<?> proxy = (EntityProxy<?>) obj;
-			
+
 			if (proxy.type.equals(type) && proxy.id == id) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public int hashCode() {
 		return type.hashCode();
 	}
-	
+
 	void addToCache(String key, Object value) {
 		if (key.trim().equalsIgnoreCase("id")) {
 			return;
 		}
-		
+
 		cacheLock.writeLock().lock();
 		try {
 			if (!cache.containsKey(key)) {
@@ -305,52 +305,52 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			cacheLock.writeLock().unlock();
 		}
 	}
-	
+
 	Class<T> getType() {
 		return type;
 	}
-	
+
 	private EntityManager getManager() {
 		return manager;
 	}
-	
+
 	private Connection getConnectionImpl() throws SQLException {
 		return DBEncapsulator.getInstance(getManager().getProvider()).getConnection();
 	}
-	
+
 	private void closeConnectionImpl(Connection conn) throws SQLException {
 		DBEncapsulator.getInstance(getManager().getProvider()).closeConnection(conn);
 	}
 
 	private <V> V invokeGetter(int id, String table, String name, Class<V> type) throws Throwable {
 		V back = null;
-		
+
 		cacheLock.writeLock().lock();
 		try {
 			if (cache.containsKey(name)) {
 				Object value = cache.get(name);
-				
+
 				if (instanceOf(value, type)) {
 					return (V) value;
 				} else if (interfaceInheritsFrom(type, Entity.class) && value instanceof Integer) {
 					value = getManager().get((Class<? extends Entity>) type, (Integer) value);
-					
+
 					cache.put(name, value);
 					return (V) value;
 				} else {
-					cache.remove(name);		// invalid cached value
+					cache.remove(name); // invalid cached value
 				}
 			}
-			
+
 			Connection conn = getConnectionImpl();
-			
+
 			try {
 				String sql = "SELECT " + name + " FROM " + table + " WHERE id = ?";
 
 				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				stmt.setInt(1, id);
-	
+
 				ResultSet res = stmt.executeQuery();
 				if (res.next()) {
 					back = convertValue(res, name, type);
@@ -360,45 +360,45 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			} finally {
 				closeConnectionImpl(conn);
 			}
-	
+
 			if (back != null) {
 				cache.put(name, back);
 			}
 		} finally {
 			cacheLock.writeLock().unlock();
 		}
-		
+
 		return back;
 	}
 
 	private void invokeSetter(T entity, int id, String table, String name, Object value) throws Throwable {
 		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
-		
+
 		Object oldValue = null;
-		
+
 		if (value != null) {
 			oldValue = invokeGetter(id, table, name, value.getClass());
 		}
-		
+
 		invokeSetterImpl(name, value, saveable);
-		
+
 		PropertyChangeEvent evt = new PropertyChangeEvent(entity, name, oldValue, value);
 		for (PropertyChangeListener l : listeners) {
 			l.propertyChange(evt);
 		}
-		
+
 		dirtyFieldsLock.writeLock().lock();
 		try {
 			dirtyFields.add(name);
 		} finally {
 			dirtyFieldsLock.writeLock().unlock();
 		}
-		
+
 		if (!saveable) {
 			save();
 		}
 	}
-	
+
 	private void invokeSetterImpl(String name, Object value, boolean saveable) throws Throwable {
 		cacheLock.writeLock().lock();
 		try {
@@ -407,21 +407,20 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			cacheLock.writeLock().unlock();
 		}
 	}
-	
+
 	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<V> type) throws SQLException {
 		return retrieveRelations(table, outMapFields, id, type, type);
 	}
-	
-	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<? extends Entity> type, 
-			Class<V> finalType) throws SQLException {
+
+	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<? extends Entity> type, Class<V> finalType) throws SQLException {
 		List<V> back = new ArrayList<V>();
 		Connection conn = getConnectionImpl();
-		
+
 		String[] inMapFields = getMappingFields(type, this.type);
-		
+
 		try {
 			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.outMap AS outMap FROM (");
-			
+
 			int numParams = 0;
 			for (String outMap : outMapFields) {
 				for (String inMap : inMapFields) {
@@ -434,27 +433,27 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 					sql.append(" WHERE ");
 					sql.append(inMap);
 					sql.append(" = ? UNION ");
-					
+
 					numParams++;
 				}
 			}
-			
+
 			sql.setLength(sql.length() - " UNION ".length());
 			sql.append(") a");
 
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
-			
+
 			for (int i = 0; i < numParams; i++) {
 				stmt.setInt(i + 1, id);
 			}
-			
+
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
 				if (finalType.equals(this.type) && res.getInt("outMap") == id) {
 					continue;
 				}
-				
+
 				back.add(getManager().get(finalType, res.getInt("outMap")));
 			}
 			res.close();
@@ -462,7 +461,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} finally {
 			closeConnectionImpl(conn);
 		}
-		
+
 		return back.toArray((V[]) Array.newInstance(finalType, back.size()));
 	}
 
@@ -491,7 +490,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			try {
 				return (V) new URL(res.getString(field));
 			} catch (MalformedURLException e) {
-				throw new SQLException(e);
+				throw (SQLException) new SQLException().initCause(e);
 			}
 		} else if (Common.typeInstanceOf(type, Calendar.class)) {
 			Calendar back = Calendar.getInstance();
@@ -542,41 +541,41 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			throw new RuntimeException("Unrecognized type: " + value.getClass().toString());
 		}
 	}
-	
- 	private boolean instanceOf(Object value, Class<?> type) {
- 		if (type.isPrimitive()) {
- 			if (type.equals(boolean.class)) {
- 				return instanceOf(value, Boolean.class);
- 			} else if (type.equals(char.class)) {
- 				return instanceOf(value, Character.class);
- 			} else if (type.equals(byte.class)) {
- 				return instanceOf(value, Byte.class);
- 			} else if (type.equals(short.class)) {
- 				return instanceOf(value, Short.class);
- 			} else if (type.equals(int.class)) {
- 				return instanceOf(value, Integer.class);
- 			} else if (type.equals(long.class)) {
- 				return instanceOf(value, Long.class);
- 			} else if (type.equals(float.class)) {
- 				return instanceOf(value, Float.class);
- 			} else if (type.equals(double.class)) {
- 				return instanceOf(value, Double.class);
- 			}
- 		} else {
- 			return type.isInstance(value);
- 		}
- 		
- 		return false;
- 	}
-	
+
+	private boolean instanceOf(Object value, Class<?> type) {
+		if (type.isPrimitive()) {
+			if (type.equals(boolean.class)) {
+				return instanceOf(value, Boolean.class);
+			} else if (type.equals(char.class)) {
+				return instanceOf(value, Character.class);
+			} else if (type.equals(byte.class)) {
+				return instanceOf(value, Byte.class);
+			} else if (type.equals(short.class)) {
+				return instanceOf(value, Short.class);
+			} else if (type.equals(int.class)) {
+				return instanceOf(value, Integer.class);
+			} else if (type.equals(long.class)) {
+				return instanceOf(value, Long.class);
+			} else if (type.equals(float.class)) {
+				return instanceOf(value, Float.class);
+			} else if (type.equals(double.class)) {
+				return instanceOf(value, Double.class);
+			}
+		} else {
+			return type.isInstance(value);
+		}
+
+		return false;
+	}
+
 	// special call from ObjectOutputStream
 	private void writeObject(ObjectOutputStream oos) throws IOException {
 		try {
 			save();
 		} catch (SQLException e) {
-			throw new IOException(e);
+			throw (IOException) new IOException().initCause(e);
 		}
-		
+
 		oos.defaultWriteObject();
 	}
 }
