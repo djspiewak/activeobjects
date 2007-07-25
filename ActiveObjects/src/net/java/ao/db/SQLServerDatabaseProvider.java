@@ -29,16 +29,12 @@ import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 
 /**
- * FIXME	UNTESTED!!!!!
- * 
  * @author Daniel Spiewak
  */
 public class SQLServerDatabaseProvider extends DatabaseProvider {
 
 	public SQLServerDatabaseProvider(String uri, String username, String password) {
 		super(uri, username, password);
-		
-		System.err.println("ActiveObjects: Warning, you are using an untested database provider.  Please report any problems.");
 	}
 
 	@Override
