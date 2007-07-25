@@ -4,18 +4,37 @@
       "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-    <display-name>Wicket Blog</display-name>
-    <servlet>
-        <servlet-name>WicketBlog</servlet-name>
-        <servlet-class>wicket.protocol.http.WicketServlet</servlet-class>
-        <init-param>
-          <param-name>applicationClassName</param-name>
-          <param-value>net.java.ao.blog.BlogApplication</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>WicketBlog</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping>
+
+	<display-name>Wicket Blog</display-name>
+
+	<!--  
+		There are three means to configure Wickets configuration mode and they are
+		tested in the order given. 
+		1) A system property: -Dwicket.configuration
+		2) servlet specific <init-param>
+		3) context specific <context-param>
+		The value might be either "development" (reloading when templates change)
+		or "deployment". If no configuration is found, "deployment" is the default.
+	-->
+	<context-param>
+		<param-name>configuration</param-name>
+		<param-value>deployment</param-value>
+	</context-param>
+
+	<filter>
+		<filter-name>WicketBlog</filter-name>
+		<filter-class>
+			org.apache.wicket.protocol.http.WicketFilter
+		</filter-class>
+		<init-param>
+			<param-name>applicationClassName</param-name>
+			<param-value>net.java.ao.blog.BlogApplication</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>WicketBlog</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
 </web-app>
