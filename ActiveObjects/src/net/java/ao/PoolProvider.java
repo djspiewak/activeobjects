@@ -18,6 +18,7 @@ package net.java.ao;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import net.java.ao.schema.PluggableNameConverter;
 import net.java.ao.schema.ddl.DDLTable;
@@ -61,6 +62,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 	@Override
 	public String renderQuery(Query query, PluggableNameConverter converter, boolean count) {
 		return delegate.renderQuery(query, converter, count);
+	}
+	
+	@Override
+	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
+		delegate.setQueryStatementProperties(stmt, query);
 	}
 	
 	@Override

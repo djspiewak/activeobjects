@@ -427,6 +427,7 @@ public class EntityManager {
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
+			provider.setQueryStatementProperties(stmt, query);
 			
 			query.setParameters(stmt);
 
@@ -527,6 +528,7 @@ public class EntityManager {
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
+			provider.setQueryStatementProperties(stmt, query);
 			
 			query.setParameters(stmt);
 

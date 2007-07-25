@@ -136,6 +136,9 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
+	}
+	
 	protected String renderQuerySelect(Query query, PluggableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		String tableName = query.getTable();
