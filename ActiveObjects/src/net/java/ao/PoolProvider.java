@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 
+import net.java.ao.schema.PluggableNameConverter;
 import net.java.ao.schema.ddl.DDLTable;
 
 /**
@@ -55,6 +56,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 	@Override
 	public String[] renderTriggers(DDLTable table) {
 		return delegate.renderTriggers(table);
+	}
+	
+	@Override
+	public String renderQuery(Query query, PluggableNameConverter converter, boolean count) {
+		return delegate.renderQuery(query, converter, count);
 	}
 	
 	@Override

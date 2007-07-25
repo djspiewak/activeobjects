@@ -15,11 +15,16 @@
  */
 package net.java.ao.db;
 
+import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.DBParam;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.Query;
+import net.java.ao.schema.PluggableNameConverter;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 
@@ -39,6 +44,55 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+	}
+	
+	@Override
+	protected String renderQuerySelect(Query query, PluggableNameConverter converter, boolean count) {
+		StringBuilder sql = new StringBuilder();
+		String tableName = query.getTable();
+		
+		if (tableName == null) {
+			tableName = converter.getName(query.getTableType());
+		}
+		
+		switch (query.getType()) {
+			case SELECT:
+				sql.append("SELECT ");
+				
+				if (query.isDistinct()) {
+					sql.append("DISTINCT ");
+				}
+				
+				int limit = query.getLimit();
+				if (limit >= 0) {
+					sql.append("TOP ").append(limit).append(' ');
+				}
+				
+				if (count) {
+					sql.append("COUNT(*)");
+				} else {
+					StringBuilder fields = new StringBuilder();
+					for (String field : query.getFields()) {
+						fields.append(field).append(',');
+					}
+					if (query.getFields().length > 0) {
+						fields.setLength(fields.length() - 1);
+					}
+					
+					sql.append(fields);
+				}
+				sql.append(" FROM ");
+				
+				sql.append(tableName);
+			break;
+		}
+		
+		return sql.toString();
+	}
+	
+	@Override
+	protected String renderQueryLimit(Query query) {
+		return "";
 	}
 
 	@Override
@@ -88,9 +142,9 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 		Object onUpdate = field.getOnUpdate();
 		if (onUpdate != null) {
 			StringBuilder back = new StringBuilder();
-			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\r\n");
-			back.append("ON ").append(table.getName()).append("\r\n");
-			back.append("FOR UPDATE\r\nAS\r\n");
+			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
+			back.append("ON ").append(table.getName()).append("\n");
+			back.append("FOR UPDATE\nAS\n");
 			back.append("    UPDATE ").append(table.getName()).append(" SET ").append(field.getName());
 			back.append(" = ").append(renderValue(onUpdate)).append(" WHERE id = (SELECT id FROM inserted)");
 			
@@ -98,5 +152,49 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 		}
 		
 		return super.renderTriggerForField(table, field);
+	}
+	
+	@Override
+	public synchronized int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
+		boolean identityInsert = false;
+		StringBuilder sql = new StringBuilder();
+		
+		for (DBParam param : params) {
+			if (param.getField().trim().equalsIgnoreCase("id")) {
+				identityInsert = true;
+				sql.append("SET IDENTITY_INSERT ").append(table).append(" ON\n");
+				break;
+			}
+		}
+		
+		sql.append("INSERT INTO ").append(table);
+		
+		if (params.length > 0) {
+			sql.append(" (");
+			for (DBParam param : params) {
+				sql.append(param.getField());
+				sql.append(',');
+			}
+			sql.setLength(sql.length() - 1);
+			
+			sql.append(") VALUES (");
+			
+			for (@SuppressWarnings("unused") DBParam param : params) {
+				sql.append("?,");
+			}
+			sql.setLength(sql.length() - 1);
+			
+			sql.append(")");
+		} else {
+			sql.append(" DEFAULT VALUES");
+		}
+		
+		if (identityInsert) {
+			sql.append("\nSET IDENTITY_INSERT ").append(table).append(" OFF");
+		}
+		
+		int back = executeInsertReturningKeys(conn, sql.toString(), params);
+		
+		return back;
 	}
 }

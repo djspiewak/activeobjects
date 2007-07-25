@@ -21,8 +21,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.java.ao.schema.PluggableNameConverter;
-
 /**
  * @author Daniel Spiewak
  */
@@ -116,73 +114,90 @@ public class Query {
 		return this;
 	}
 	
-	protected String toSQL(Class<? extends Entity> tableType, PluggableNameConverter nameConverter, boolean count) {
-		StringBuilder sql = new StringBuilder();
-		
-		if (this.tableType != null) {
-			tableType = this.tableType;
-		}
-		
-		String tableName = nameConverter.getName(tableType);
-		if (this.table != null) {
-			tableName = this.table;
-		}
-		
-		switch (type) {
-			case SELECT:
-				sql.append("SELECT ");
-				
-				if (distinct) {
-					sql.append("DISTINCT ");
-				}
-				
-				if (count) {
-					sql.append("COUNT(*)");
-				} else {
-					sql.append(fields);
-				}
-				sql.append(" FROM ");
-				
-				sql.append(tableName);
-			break;
-		}
-		
-		if (joins.size() > 0) {
-			for (Class<? extends Entity> join : joins.keySet()) {
-				sql.append(" JOIN ");
-				sql.append(nameConverter.getName(join));
-				
-				String on = joins.get(join);
-				if (on != null) {
-					sql.append(" ON ");
-					sql.append(on);
-				}
-			}
-		}
-		
-		if (whereClause != null) {
-			sql.append(" WHERE ");
-			sql.append(whereClause);
-		}
-		
-		if (groupClause != null) {
-			sql.append(" GROUP BY ");
-			sql.append(groupClause);
-		}
-		
-		if (orderClause != null) {
-			sql.append(" ORDER BY ");
-			sql.append(orderClause);
-		}
-		
-		if (limit >= 0) {
-			sql.append(" LIMIT ");
-			sql.append(limit);
-		}
-		
-		return sql.toString();
+	public boolean isDistinct() {
+		return distinct;
 	}
-	
+
+	public void setDistinct(boolean distinct) {
+		this.distinct = distinct;
+	}
+
+	public Class<? extends Entity> getTableType() {
+		return tableType;
+	}
+
+	public void setTableType(Class<? extends Entity> tableType) {
+		this.tableType = tableType;
+	}
+
+	public String getTable() {
+		return table;
+	}
+
+	public void setTable(String table) {
+		this.table = table;
+	}
+
+	public String getWhereClause() {
+		return whereClause;
+	}
+
+	public void setWhereClause(String whereClause) {
+		this.whereClause = whereClause;
+	}
+
+	public Object[] getWhereParams() {
+		return whereParams;
+	}
+
+	public void setWhereParams(Object[] whereParams) {
+		this.whereParams = whereParams;
+	}
+
+	public String getOrderClause() {
+		return orderClause;
+	}
+
+	public void setOrderClause(String orderClause) {
+		this.orderClause = orderClause;
+	}
+
+	public String getGroupClause() {
+		return groupClause;
+	}
+
+	public void setGroupClause(String groupClause) {
+		this.groupClause = groupClause;
+	}
+
+	public int getLimit() {
+		return limit;
+	}
+
+	public void setLimit(int limit) {
+		this.limit = limit;
+	}
+
+	public Map<Class<? extends Entity>, String> getJoins() {
+		return joins;
+	}
+
+	public void setJoins(Map<Class<? extends Entity>, String> joins) {
+		this.joins = joins;
+	}
+
+	public QueryType getType() {
+		return type;
+	}
+
+	protected String toSQL(Class<? extends Entity> tableType, EntityManager manager, boolean count) {
+		if (this.tableType == null && table == null) {
+			this.tableType = tableType;
+		}
+		
+		return manager.getProvider().renderQuery(this, manager.getNameConverter(), count);
+	}
+
 	protected void setParameters(PreparedStatement stmt) throws SQLException {
 		if (whereParams != null) {
 			for (int i = 0; i < whereParams.length; i++) {
@@ -196,11 +211,11 @@ public class Query {
 			}
 		}
 	}
-	
+
 	public static Query select() {
 		return select("id");
 	}
-	
+
 	public static Query select(String fields) {
 		return new Query(QueryType.SELECT, fields);
 	}

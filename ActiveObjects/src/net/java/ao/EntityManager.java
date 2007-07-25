@@ -420,7 +420,7 @@ public class EntityManager {
 			String sql = null;
 			nameConverterLock.readLock().lock();
 			try {
-				sql = query.toSQL(type, nameConverter, false);
+				sql = query.toSQL(type, this, false);
 			} finally {
 				nameConverterLock.readLock().unlock();
 			}
@@ -520,7 +520,7 @@ public class EntityManager {
 			String sql = null;
 			nameConverterLock.readLock().lock();
 			try {
-				sql = query.toSQL(type, nameConverter, true);
+				sql = query.toSQL(type, this, true);
 			} finally {
 				nameConverterLock.readLock().unlock();
 			}

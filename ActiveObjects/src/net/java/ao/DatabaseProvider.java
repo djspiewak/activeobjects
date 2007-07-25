@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 
 import net.java.ao.db.SupportedDBProvider;
 import net.java.ao.db.SupportedPoolProvider;
+import net.java.ao.schema.PluggableNameConverter;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
@@ -120,6 +121,124 @@ public abstract class DatabaseProvider {
 		}
 		
 		return back.toArray(new String[back.size()]);
+	}
+	
+	public String renderQuery(Query query, PluggableNameConverter converter, boolean count) {
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append(renderQuerySelect(query, converter, count));
+		sql.append(renderQueryJoins(query, converter));
+		sql.append(renderQueryWhere(query));
+		sql.append(renderQueryGroupBy(query));
+		sql.append(renderQueryOrderBy(query));
+		sql.append(renderQueryLimit(query));
+		
+		return sql.toString();
+	}
+	
+	protected String renderQuerySelect(Query query, PluggableNameConverter converter, boolean count) {
+		StringBuilder sql = new StringBuilder();
+		String tableName = query.getTable();
+		
+		if (tableName == null) {
+			tableName = converter.getName(query.getTableType());
+		}
+		
+		switch (query.getType()) {
+			case SELECT:
+				sql.append("SELECT ");
+				
+				if (query.isDistinct()) {
+					sql.append("DISTINCT ");
+				}
+				
+				if (count) {
+					sql.append("COUNT(*)");
+				} else {
+					StringBuilder fields = new StringBuilder();
+					for (String field : query.getFields()) {
+						fields.append(field).append(',');
+					}
+					if (query.getFields().length > 0) {
+						fields.setLength(fields.length() - 1);
+					}
+					
+					sql.append(fields);
+				}
+				sql.append(" FROM ");
+				
+				sql.append(tableName);
+			break;
+		}
+		
+		return sql.toString();
+	}
+	
+	protected String renderQueryJoins(Query query, PluggableNameConverter converter) {
+		StringBuilder sql = new StringBuilder();
+
+		if (query.getJoins().size() > 0) {
+			for (Class<? extends Entity> join : query.getJoins().keySet()) {
+				sql.append(" JOIN ");
+				sql.append(converter.getName(join));
+				
+				String on = query.getJoins().get(join);
+				if (on != null) {
+					sql.append(" ON ");
+					sql.append(on);
+				}
+			}
+		}
+		
+		return sql.toString();
+	}
+	
+	protected String renderQueryWhere(Query query) {
+		StringBuilder sql = new StringBuilder();
+		
+		String whereClause = query.getWhereClause();
+		if (whereClause != null) {
+			sql.append(" WHERE ");
+			sql.append(whereClause);
+		}
+		
+		return sql.toString();
+	}
+	
+	protected String renderQueryGroupBy(Query query) {
+		StringBuilder sql = new StringBuilder();
+		
+		String groupClause = query.getGroupClause();
+		if (groupClause != null) {
+			sql.append(" GROUP BY ");
+			sql.append(groupClause);
+		}
+		
+		return sql.toString();
+	}
+	
+	protected String renderQueryOrderBy(Query query) {
+		StringBuilder sql = new StringBuilder();
+		
+		String orderClause = query.getOrderClause();
+		if (orderClause != null) {
+			sql.append(" ORDER BY ");
+			sql.append(orderClause);
+		}
+		
+		return sql.toString();
+	}
+	
+	protected String renderQueryLimit(Query query) {
+		StringBuilder sql = new StringBuilder();
+		
+		int limit = query.getLimit();
+		if (limit >= 0) {
+			sql.append(" LIMIT ");
+			sql.append(limit);
+		}
+		
+		return sql.toString();
 	}
 	
 	public String getURI() {
