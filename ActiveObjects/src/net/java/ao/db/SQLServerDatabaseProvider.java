@@ -20,6 +20,8 @@ import java.sql.Types;
 
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLTable;
 
 /**
  * FIXME	UNTESTED!!!!!
@@ -43,15 +45,26 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	protected String renderAutoIncrement() {
 		return "IDENTITY(1,1)";
 	}
+	
+	@Override
+	protected String renderOnUpdate(DDLField field) {
+		return "";
+	}
 
 	@Override
 	protected String convertTypeToString(int type) {
 		switch (type) {
+			case Types.BOOLEAN:
+				return "INTEGER";
+			
 			case Types.TIMESTAMP:
 				return "DATETIME";
 				
 			case Types.DATE:
 				return "SMALLDATETIME";
+				
+			case Types.CLOB:
+				return "NTEXT";
 		}
 		
 		return super.convertTypeToString(type);
@@ -68,5 +81,22 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 		}
 		
 		return super.renderFunction(func);
+	}
+	
+	@Override
+	protected String renderTriggerForField(DDLTable table, DDLField field) {
+		Object onUpdate = field.getOnUpdate();
+		if (onUpdate != null) {
+			StringBuilder back = new StringBuilder();
+			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\r\n");
+			back.append("ON ").append(table.getName()).append("\r\n");
+			back.append("FOR UPDATE\r\nAS\r\n");
+			back.append("    UPDATE ").append(table.getName()).append(" SET ").append(field.getName());
+			back.append(" = ").append(renderValue(onUpdate)).append(" WHERE id = (SELECT id FROM inserted)");
+			
+			return back.toString();
+		}
+		
+		return super.renderTriggerForField(table, field);
 	}
 }
