@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -134,6 +135,83 @@ public abstract class DatabaseProvider {
 		sql.append(renderQueryLimit(query));
 		
 		return sql.toString();
+	}
+	
+	public Object parseValue(int type, String value) {
+		if (value.equals("NULL")) {
+			return null;
+		}
+		
+		for (DatabaseFunction func : DatabaseFunction.values()) {
+			if (renderFunction(func).equals(value)) {
+				return func;
+			}
+		}
+		
+		switch (type) {
+			
+			case Types.BIGINT:
+				return Long.parseLong(value);
+				
+			case Types.BIT:
+				return Byte.parseByte(value);
+				
+			case Types.BOOLEAN:
+				int intValue = -1;
+				try {
+					intValue = Integer.parseInt(value);
+				} catch (Throwable t) {
+					return Boolean.parseBoolean(value);
+				}
+				
+				return intValue == 0;
+				
+			case Types.CHAR:
+				value.charAt(0);
+				
+			case Types.DATE:
+				try {
+					return new SimpleDateFormat(getDateFormat()).parse(value);
+				} catch (ParseException e) {
+					return null;
+				}
+			
+			case Types.DECIMAL:
+				return Double.parseDouble(value);
+				
+			case Types.DOUBLE:
+				return Double.parseDouble(value);
+				
+			case Types.FLOAT:
+				return Float.parseFloat(value);
+				
+			case Types.INTEGER:
+				return Integer.parseInt(value);
+				
+			case Types.NUMERIC:
+				return Integer.parseInt(value);
+				
+			case Types.REAL:
+				return Double.parseDouble(value);
+				
+			case Types.SMALLINT:
+				return Short.parseShort(value);
+				
+			case Types.TIMESTAMP:
+				try {
+					return new SimpleDateFormat(getDateFormat()).parse(value);
+				} catch (ParseException e) {
+					return null;
+				}
+				
+			case Types.TINYINT:
+				return Short.parseShort(value);
+			
+			case Types.VARCHAR:
+				return value.substring(1, value.length() - 1);
+		}
+		
+		return null;
 	}
 	
 	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
@@ -433,7 +511,11 @@ public abstract class DatabaseProvider {
 	}
 	
 	protected String renderCalendar(Calendar calendar) {
-		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(calendar.getTime());
+		return new SimpleDateFormat(getDateFormat()).format(calendar.getTime());
+	}
+	
+	protected String getDateFormat() {
+		return "yyyy-MM-dd HH:mm:ss.SSS";
 	}
 	
 	protected String renderFieldType(DDLField field) {
