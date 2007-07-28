@@ -46,9 +46,11 @@ import java.util.logging.Logger;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
+import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.schema.ddl.SchemaReader;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -64,7 +66,7 @@ import org.apache.commons.cli.PosixParser;
 public final class Generator {
 	private static final String CL_INVOCATION = "java -jar activeobjects-*.jar <options> class1 class2 ...";
 	
-	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException {
+	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException, SQLException {
 		Options options = new Options();
 		
 		Option classpathOption = new Option("C", "classpath", true, "(required) The path from which to load the " +
@@ -99,12 +101,12 @@ public final class Generator {
 				cl.getOptionValue(nameConverterOption.getOpt()), cl.getArgs()));
 	}
 	
-	public static String generate(String classpath, String uri, String... classes) throws ClassNotFoundException, MalformedURLException, IOException {
+	public static String generate(String classpath, String uri, String... classes) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
 		return generate(classpath, uri, null, classes);
 	}
 	
 	public static String generate(String classpath, String uri, String nameConverterClassname, 
-			String... classes) throws ClassNotFoundException, MalformedURLException, IOException {
+			String... classes) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
 		ClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpath).getCanonicalPath() + "/")});
 		
 		String sql = "";
@@ -211,7 +213,7 @@ public final class Generator {
 		return nameConverter;
 	}
 	
-	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, ClassLoader classloader, String... classes) throws ClassNotFoundException {
+	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, ClassLoader classloader, String... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
 			new HashMap<Class<? extends Entity>, Set<Class<? extends Entity>>>();
@@ -221,12 +223,15 @@ public final class Generator {
 			parseDependencies(deps, roots, (Class<? extends Entity>) Class.forName(cls, true, classloader));
 		}
 		
+		List<DDLTable> parsedTables = new ArrayList<DDLTable>();
+		DDLTable[] readTables = SchemaReader.readSchema(provider);
+		
 		while (!roots.isEmpty()) {
 			Class<? extends Entity>[] rootsArray = roots.toArray(new Class[roots.size()]);
 			roots.remove(rootsArray[0]);
 			
 			Class<? extends Entity> clazz = rootsArray[0];
-			parseInterface(provider, nameConverter, clazz, back);
+			parsedTables.add(parseInterface(provider, nameConverter, clazz));
 			
 			List<Class<? extends Entity>> toRemove = new LinkedList<Class<? extends Entity>>();
 			Iterator<Class<? extends Entity>> depIterator = deps.keySet().iterator();
@@ -245,6 +250,11 @@ public final class Generator {
 			for (Class<? extends Entity> remove : toRemove) {
 				deps.remove(remove);
 			}
+		}
+		
+		DDLAction[] actions = SchemaReader.diffSchema(parsedTables.toArray(new DDLTable[parsedTables.size()]), readTables);
+		for (DDLAction action : actions) {
+			back.addAll(Arrays.asList(provider.renderAction(action)));
 		}
 		
 		return back.toArray(new String[back.size()]);
@@ -280,7 +290,7 @@ public final class Generator {
 		}
 	}
 	
-	private static void parseInterface(DatabaseProvider provider, PluggableNameConverter nameConverter, Class<? extends Entity> clazz, List<String> back) {
+	private static DDLTable parseInterface(DatabaseProvider provider, PluggableNameConverter nameConverter, Class<? extends Entity> clazz) {
 		String sqlName = nameConverter.getName(clazz);
 		
 		DDLTable table = new DDLTable();
@@ -289,15 +299,7 @@ public final class Generator {
 		table.setFields(parseFields(clazz));
 		table.setForeignKeys(parseForeignKeys(nameConverter, clazz));
 		
-		back.add(provider.render(table));
-		
-		for (String function : provider.renderFunctions(table)) {
-			back.add(function);
-		}
-		
-		for (String trigger : provider.renderTriggers(table)) {
-			back.add(trigger);
-		}
+		return table;
 	}
 	
 	private static DDLField[] parseFields(Class<? extends Entity> clazz) {

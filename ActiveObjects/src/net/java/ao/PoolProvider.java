@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import net.java.ao.schema.PluggableNameConverter;
-import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.schema.ddl.DDLAction;
 
 /**
  * @author Daniel Spiewak
@@ -45,18 +45,8 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	public String render(DDLTable table) {
-		return delegate.render(table);
-	}
-	
-	@Override
-	public String[] renderFunctions(DDLTable table) {
-		return delegate.renderFunctions(table);
-	}
-	
-	@Override
-	public String[] renderTriggers(DDLTable table) {
-		return delegate.renderTriggers(table);
+	public String[] renderAction(DDLAction action) {
+		return delegate.renderAction(action);
 	}
 	
 	@Override
@@ -81,7 +71,7 @@ public abstract class PoolProvider extends DatabaseProvider {
 	
 	@Override
 	protected String renderAutoIncrement() {
-		return delegate.renderAutoIncrement();
+		return "";
 	}
 	
 	@Override

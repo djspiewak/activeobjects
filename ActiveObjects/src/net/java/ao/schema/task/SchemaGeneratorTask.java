@@ -17,6 +17,7 @@ package net.java.ao.schema.task;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class SchemaGeneratorTask extends Task {
 	
 	private List<String> entities = new ArrayList<String>();
 	
+	// TODO	migrate task should actually execute the migration
 	public void execute() {
 		System.out.println("Generating SQL schema from entities...");
 		
@@ -46,6 +48,8 @@ public class SchemaGeneratorTask extends Task {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			try {
