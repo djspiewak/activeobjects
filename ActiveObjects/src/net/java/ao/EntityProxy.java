@@ -49,6 +49,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.schema.OnUpdate;
+
 /**
  * @author Daniel Spiewak
  */
@@ -129,12 +131,13 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
+		OnUpdate onUpdateAnnotation = method.getAnnotation(OnUpdate.class);
 
 		if (mutatorAnnotation != null) {
-			invokeSetter((T) proxy, id, tableName, mutatorAnnotation.value(), args[0]);
+			invokeSetter((T) proxy, id, tableName, mutatorAnnotation.value(), args[0], onUpdateAnnotation != null);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
-			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType());
+			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType(), onUpdateAnnotation != null);
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() && interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(type);
@@ -152,20 +155,20 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				name += "ID";
 			}
 
-			return invokeGetter(getID(), tableName, name, method.getReturnType());
+			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation != null);
 		} else if (method.getName().startsWith("is")) {
 			String name = convertDowncaseName(method.getName().substring(2));
 			if (interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
 				name += "ID";
 			}
 
-			return invokeGetter(getID(), tableName, name, method.getReturnType());
+			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation != null);
 		} else if (method.getName().startsWith("set")) {
 			String name = convertDowncaseName(method.getName().substring(3));
 			if (interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
 				name += "ID";
 			}
-			invokeSetter((T) proxy, id, tableName, name, args[0]);
+			invokeSetter((T) proxy, id, tableName, name, args[0], onUpdateAnnotation != null);
 
 			return Void.TYPE;
 		}
@@ -322,12 +325,14 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		DBEncapsulator.getInstance(getManager().getProvider()).closeConnection(conn);
 	}
 
-	private <V> V invokeGetter(int id, String table, String name, Class<V> type) throws Throwable {
+	private <V> V invokeGetter(int id, String table, String name, Class<V> type, boolean shouldCache) throws Throwable {
 		V back = null;
 
-		cacheLock.writeLock().lock();
+		if (shouldCache) {
+			cacheLock.writeLock().lock();
+		}
 		try {
-			if (cache.containsKey(name)) {
+			if (shouldCache && cache.containsKey(name)) {
 				Object value = cache.get(name);
 
 				if (instanceOf(value, type)) {
@@ -361,26 +366,29 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				closeConnectionImpl(conn);
 			}
 
-			if (back != null) {
+			if (shouldCache && back != null) {
 				cache.put(name, back);
 			}
 		} finally {
-			cacheLock.writeLock().unlock();
+			if (shouldCache) {
+				cacheLock.writeLock().unlock();
+			}
 		}
 
 		return back;
 	}
 
-	private void invokeSetter(T entity, int id, String table, String name, Object value) throws Throwable {
+	// TODO	uncacheable fields will still be cached regardless of status
+	private void invokeSetter(T entity, int id, String table, String name, Object value, boolean shouldCache) throws Throwable {
 		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
 
 		Object oldValue = null;
 
 		if (value != null) {
-			oldValue = invokeGetter(id, table, name, value.getClass());
+			oldValue = invokeGetter(id, table, name, value.getClass(), shouldCache);
 		}
 
-		invokeSetterImpl(name, value, saveable);
+		invokeSetterImpl(name, value);
 
 		PropertyChangeEvent evt = new PropertyChangeEvent(entity, name, oldValue, value);
 		for (PropertyChangeListener l : listeners) {
@@ -399,7 +407,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 	}
 
-	private void invokeSetterImpl(String name, Object value, boolean saveable) throws Throwable {
+	private void invokeSetterImpl(String name, Object value) throws Throwable {
 		cacheLock.writeLock().lock();
 		try {
 			cache.put(name, value);
