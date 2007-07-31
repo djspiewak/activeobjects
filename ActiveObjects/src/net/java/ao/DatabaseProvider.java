@@ -80,7 +80,7 @@ public abstract class DatabaseProvider {
 			break;
 			
 			case ALTER_CHANGE_COLUMN:
-				back.addAll(Arrays.asList(renderAlterTableChangeColumn(action.getTable(), action.getField())));
+				back.addAll(Arrays.asList(renderAlterTableChangeColumn(action.getTable(), action.getOldField(), action.getField())));
 			break;
 			
 			case ALTER_DROP_COLUMN:
@@ -328,16 +328,24 @@ public abstract class DatabaseProvider {
 	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
 	
-	protected void parseForeignKeys(StringBuilder append, DDLTable table) {
+	protected String renderConstraintsForTable(DDLTable table) {
+		StringBuilder back = new StringBuilder();
+		
 		for (DDLForeignKey key : table.getForeignKeys()) {
-			append.append("    FOREIGN KEY (");
-			append.append(key.getField());
-			append.append(") REFERENCES ");
-			append.append(key.getTable());
-			append.append('(');
-			append.append(key.getForeignField());
-			append.append("),\n");
+			back.append("    ").append(renderForeignKey(key)).append(",\n");
 		}
+		
+		return back.toString();
+	}
+	
+	protected String renderForeignKey(DDLForeignKey key) {
+		StringBuilder back = new StringBuilder();
+		
+		back.append("CONSTRAINT ").append(key.getFKName());
+		back.append(" FOREIGN KEY (").append(key.getField()).append(") REFERENCES ");
+		back.append(key.getTable()).append('(').append(key.getForeignField()).append(")");
+		
+		return back.toString();
 	}
 	
 	protected int sanitizeType(int type) {
@@ -432,14 +440,14 @@ public abstract class DatabaseProvider {
 		List<String> primaryKeys = new LinkedList<String>();
 		StringBuilder append = new StringBuilder();
 		for (DDLField field : table.getFields()) {
-			back.append("    ").append(renderField(field));
+			back.append("    ").append(renderField(field)).append(",\n");
 			
 			if (field.isPrimaryKey()) {
 				primaryKeys.add(field.getName());
 			}
 		}
 		
-		parseForeignKeys(append, table);
+		append.append(renderConstraintsForTable(table));
 		
 		back.append(append);
 		
@@ -489,7 +497,7 @@ public abstract class DatabaseProvider {
 		
 		return back.toArray(new String[back.size()]);
 	}
-
+	
 	protected String[] renderTriggers(DDLTable table) {
 		List<String> back = new ArrayList<String>();
 		
@@ -521,20 +529,75 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
-	protected String[] renderAlterTableChangeColumn(DDLTable table, DDLField field) {
-		return null;		// TODO	implement
+	protected String[] renderAlterTableChangeColumn(DDLTable table, DDLField oldField, DDLField field) {
+		List<String> back = new ArrayList<String>();
+		StringBuilder current = new StringBuilder();
+		
+		String trigger = getTriggerNameForField(table, oldField);
+		if (trigger != null) {
+			current.setLength(0);
+			current.append("DROP TRIGGER ").append(trigger);
+			
+			back.add(current.toString());
+		}
+		
+		String function = getFunctionNameForField(table, oldField);
+		if (function != null) {
+			current.setLength(0);
+			current.append("DROP FUNCTION ").append(function);
+			
+			back.add(current.toString());
+		}
+		
+		current.setLength(0);
+		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ");
+		current.append(renderField(field));
+		back.add(current.toString());
+		
+		back.add(renderFunctionForField(table, field));
+		back.add(renderTriggerForField(table, field));
+		
+		return back.toArray(new String[back.size()]);
 	}
 	
 	protected String[] renderAlterTableDropColumn(DDLTable table, DDLField field) {
-		return null;		// TODO	implement
+		List<String> back = new ArrayList<String>();
+		StringBuilder current = new StringBuilder();
+		
+		String trigger = getTriggerNameForField(table, field);
+		if (trigger != null) {
+			current.setLength(0);
+			current.append("DROP TRIGGER ").append(trigger);
+			
+			back.add(current.toString());
+		}
+		
+		String function = getFunctionNameForField(table, field);
+		if (function != null) {
+			current.setLength(0);
+			current.append("DROP FUNCTION ").append(function);
+			
+			back.add(current.toString());
+		}
+		
+		current.setLength(0);
+		current.append("ALTER TABLE ").append(table.getName()).append(" DROP COLUMN ").append(field.getName());
+		back.add(current.toString());
+		
+		return back.toArray(new String[back.size()]);
 	}
 	
 	protected String renderAlterTableAddKey(DDLForeignKey key) {
-		return null;		// TODO	implement
+		StringBuilder back = new StringBuilder();
+		
+		back.append("ALTER TABLE ").append(key.getDomesticTable()).append(" ADD ");
+		back.append(renderForeignKey(key));
+		
+		return back.toString();
 	}
 	
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
-		return null;		// TODO	implement
+		return "ALTER TABLE " + key.getDomesticTable() + " DROP FOREIGN KEY " + key.getFKName();
 	}
 
 	protected String renderAppend() {
@@ -579,7 +642,6 @@ public abstract class DatabaseProvider {
 			back.append(" UNIQUE");
 		}
 		
-		back.append(",\n");
 		return back.toString();
 	}
 	
@@ -633,8 +695,16 @@ public abstract class DatabaseProvider {
 	protected boolean considerPrecision(DDLField field) {
 		return true;
 	}
+
+	protected String getTriggerNameForField(DDLTable table, DDLField field) {
+		return null;
+	}
 	
 	protected String renderTriggerForField(DDLTable table, DDLField field) {
+		return null;
+	}
+	
+	protected String getFunctionNameForField(DDLTable table, DDLField field) {
 		return null;
 	}
 	

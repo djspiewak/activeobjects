@@ -107,6 +107,7 @@ public final class SchemaReader {
 				key.setForeignField("id");		// TODO	major hack here!!
 				key.setField(res.getString("FKCOLUMN_NAME"));
 				key.setTable(res.getString("FKTABLE_NAME"));
+				key.setDomesticTable(table.getName());
 				
 				foreignKeys.add(key);
 			}
@@ -218,19 +219,19 @@ public final class SchemaReader {
 				DDLField ontoField = ontoFields.get(fromField.getName());
 				
 				if (!fromField.getDefaultValue().equals(ontoField.getDefaultValue())) {
-					actions.add(createColumnAlterAction(fromTable, fromField));
+					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} /*else if (!fromField.getOnUpdate().equals(ontoField.getOnUpdate())) {
 					actions.add(createColumnAlterAction(fromTable, fromField));
 				}*/ else if (fromField.getPrecision() != ontoField.getPrecision()) {
-					actions.add(createColumnAlterAction(fromTable, fromField));
+					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.getScale() != ontoField.getScale()) {
-					actions.add(createColumnAlterAction(fromTable, fromField));
+					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.getType() != ontoField.getType()) {
-					actions.add(createColumnAlterAction(fromTable, fromField));
+					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.isAutoIncrement() != ontoField.isAutoIncrement()) {
-					actions.add(createColumnAlterAction(fromTable, fromField));
+					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.isNotNull() != ontoField.isNotNull()) {
-					actions.add(createColumnAlterAction(fromTable, fromField));
+					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} /*else if (fromField.isUnique() != ontoField.isUnique()) {
 					actions.add(createColumnAlterAction(fromTable, fromField));
 				}*/
@@ -243,7 +244,8 @@ public final class SchemaReader {
 			for (DDLForeignKey fromKey : fromTable.getForeignKeys()) {
 				for (DDLForeignKey ontoKey : ontoTable.getForeignKeys()) {
 					if (!(fromKey.getTable().equals(ontoKey.getTable()) && fromKey.getField().equals(ontoKey.getField())
-							&& fromKey.getForeignField().equals(ontoKey.getForeignField()))) {
+							&& fromKey.getForeignField().equals(ontoKey.getForeignField())
+							&& fromKey.getDomesticTable().equals(ontoKey.getDomesticTable()))) {
 						addKeys.add(fromKey);
 					}
 				}
@@ -252,7 +254,8 @@ public final class SchemaReader {
 			for (DDLForeignKey ontoKey : ontoTable.getForeignKeys()) {
 				for (DDLForeignKey fromKey : fromTable.getForeignKeys()) {
 					if (!(ontoKey.getTable().equals(fromKey.getTable()) && ontoKey.getField().equals(fromKey.getField())
-							&& ontoKey.getForeignField().equals(fromKey.getForeignField()))) {
+							&& ontoKey.getForeignField().equals(fromKey.getForeignField())
+							 && ontoKey.getDomesticTable().equals(fromKey.getDomesticTable()))) {
 						dropKeys.add(ontoKey);
 					}
 				}
@@ -274,10 +277,11 @@ public final class SchemaReader {
 		return actions.toArray(new DDLAction[actions.size()]);
 	}
 	
-	private static DDLAction createColumnAlterAction(DDLTable table, DDLField field) {
-		DDLAction action = new DDLAction(DDLActionType.ALTER_ADD_COLUMN);
+	private static DDLAction createColumnAlterAction(DDLTable table, DDLField oldField, DDLField field) {
+		DDLAction action = new DDLAction(DDLActionType.ALTER_CHANGE_COLUMN);
 		action.setTable(table);
 		action.setField(field);
+		action.setOldField(oldField);
 		return action;
 	}
 }

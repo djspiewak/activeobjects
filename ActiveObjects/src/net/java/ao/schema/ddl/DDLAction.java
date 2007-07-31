@@ -22,7 +22,7 @@ public class DDLAction {
 	private DDLActionType actionType;
 	
 	private DDLTable table;
-	private DDLField field;
+	private DDLField oldField, field;
 	private DDLForeignKey key;
 	
 	public DDLAction(DDLActionType actionType) {
@@ -55,5 +55,14 @@ public class DDLAction {
 
 	public DDLActionType getActionType() {
 		return actionType;
+	}
+	
+
+	public DDLField getOldField() {
+		return oldField;
+	}
+
+	public void setOldField(DDLField oldField) {
+		this.oldField = oldField;
 	}
 }

@@ -21,6 +21,7 @@ package net.java.ao.schema.ddl;
 public class DDLForeignKey {
 	private String field = "";
 	
+	private String domesticTable = "";
 	private String table = "";
 	private String foreignField = "";
 
@@ -46,6 +47,18 @@ public class DDLForeignKey {
 
 	public void setForeignField(String foreignField) {
 		this.foreignField = foreignField;
+	}
+	
+	public String getFKName() {
+		return "fk_" + getTable() + "_" + getField() + "_" + getForeignField();
+	}
+
+	public String getDomesticTable() {
+		return domesticTable;
+	}
+
+	public void setDomesticTable(String domesticTable) {
+		this.domesticTable = domesticTable;
 	}
 	
 	public boolean equals(Object obj) {

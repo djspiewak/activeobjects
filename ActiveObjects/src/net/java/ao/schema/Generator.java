@@ -397,6 +397,7 @@ public final class Generator {
 				key.setField(attributeName);
 				key.setTable(nameConverter.getName((Class<? extends Entity>) type));
 				key.setForeignField("id");
+				key.setDomesticTable(nameConverter.getName(clazz));
 				
 				back.add(key);
 			}
