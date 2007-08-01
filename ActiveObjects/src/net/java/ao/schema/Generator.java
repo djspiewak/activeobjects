@@ -213,7 +213,8 @@ public final class Generator {
 		return nameConverter;
 	}
 	
-	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, ClassLoader classloader, String... classes) throws ClassNotFoundException, SQLException {
+	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, 
+			ClassLoader classloader, String... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
 			new HashMap<Class<? extends Entity>, Set<Class<? extends Entity>>>();
