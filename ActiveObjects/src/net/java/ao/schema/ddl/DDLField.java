@@ -117,4 +117,34 @@ public class DDLField {
 	public String toString() {
 		return getName() + "(" + getPrecision() + "," + getScale() + ")";
 	}
+	
+	@Override
+	public int hashCode() {
+		int back = Math.abs(type);
+		
+		if (name != null) {
+			back += name.hashCode();
+		}
+		
+		return back;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DDLField) {
+			DDLField field = (DDLField) obj;
+			if (field == this) {
+				return true;
+			}
+			
+			if ((field.getName() == null || field.getName().equals(name))
+					&& field.getType() == type) {
+				return true;
+			}
+			
+			return false;
+		}
+		
+		return super.equals(obj);
+	}
 }

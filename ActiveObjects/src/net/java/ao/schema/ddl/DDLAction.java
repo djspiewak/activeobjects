@@ -65,4 +65,49 @@ public class DDLAction {
 	public void setOldField(DDLField oldField) {
 		this.oldField = oldField;
 	}
+	
+	@Override
+	public int hashCode() {
+		int back = 0;
+		
+		if (actionType != null) {
+			back += actionType.hashCode();
+		}
+		if (table != null) {
+			back += table.hashCode();
+		}
+		if (oldField != null) {
+			back += oldField.hashCode();
+		}
+		if (field != null) {
+			back += field.hashCode();
+		}
+		if (key != null) {
+			back += key.hashCode();
+		}
+		
+		return back;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DDLAction) {
+			DDLAction action = (DDLAction) obj;
+			if (action == this) {
+				return true;
+			}
+			
+			if ((action.getTable() == null || action.getTable().equals(table))
+					&& (action.getActionType() == actionType)
+					&& (action.getOldField() == null || action.getOldField().equals(oldField))
+					&& (action.getField() == null || action.getField().equals(field))
+					&& (action.getKey() == null || action.getKey().equals(key))) {
+				return true;
+			}
+			
+			return false;
+		}
+		
+		return super.equals(obj);
+	}
 }

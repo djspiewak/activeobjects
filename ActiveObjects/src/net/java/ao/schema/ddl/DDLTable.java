@@ -52,4 +52,33 @@ public class DDLTable {
 	public String toString() {
 		return getName();
 	}
+	
+	@Override
+	public int hashCode() {
+		int back = 0;
+		
+		if (name != null) {
+			back += name.hashCode();
+		}
+		
+		return back;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DDLTable) {
+			DDLTable table = (DDLTable) obj;
+			if (table == this) {
+				return true;
+			}
+			
+			if (table.getName() != null && table.getName().equals(name)) {
+				return true;
+			}
+			
+			return false;
+		}
+		
+		return super.equals(obj);
+	}
 }

@@ -23,8 +23,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
@@ -130,7 +132,7 @@ public final class SchemaReader {
 	 * statement will be generated.
 	 */
 	public static DDLAction[] diffSchema(DDLTable[] fromArray, DDLTable[] ontoArray) {
-		List<DDLAction> actions = new ArrayList<DDLAction>();
+		Set<DDLAction> actions = new HashSet<DDLAction>();
 		
 		List<DDLTable> createTables = new ArrayList<DDLTable>();
 		List<DDLTable> dropTables = new ArrayList<DDLTable>();
