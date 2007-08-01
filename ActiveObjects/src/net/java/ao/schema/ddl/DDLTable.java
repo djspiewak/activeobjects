@@ -47,4 +47,9 @@ public class DDLTable {
 	public void setForeignKeys(DDLForeignKey[] foreignKeys) {
 		this.foreignKeys = foreignKeys;
 	}
+	
+	@Override
+	public String toString() {
+		return getName();
+	}
 }

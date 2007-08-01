@@ -16,6 +16,7 @@
 package net.java.ao;
 
 import java.lang.reflect.Method;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -195,5 +196,58 @@ public final class Common {
 		}
 		
 		return back;
+	}
+	
+	public static boolean fuzzyCompare(Object a, Object b) {
+		if (a instanceof Number) {
+			if (b instanceof Boolean) {
+				return (((Number) a).intValue() == 1) == ((Boolean) b).booleanValue();
+			}
+		} else if (a instanceof Boolean) {
+			if (b instanceof Number) {
+				return (((Number) b).intValue() == 1) == ((Boolean) a).booleanValue();
+			}
+		}
+		
+		return a.equals(b);
+	}
+	
+	public static boolean fuzzyTypeCompare(int typeA, int typeB) {
+		if (typeA == Types.BOOLEAN) {
+			switch (typeB) {
+				case Types.BIGINT:
+					return true;
+					
+				case Types.BIT:
+					return true;
+					
+				case Types.INTEGER:
+					return true;
+					
+				case Types.NUMERIC:
+					return true;
+					
+				case Types.SMALLINT:
+					return true;
+					
+				case Types.TINYINT:
+					return true;
+			}
+		} else if (typeA == Types.BIGINT || typeA == Types.BIT || typeA == Types.INTEGER || typeA == Types.NUMERIC
+				|| typeA == Types.SMALLINT || typeA == Types.TINYINT) {
+			if (typeB == Types.BOOLEAN) {
+				return true;
+			}
+		} else if (typeA == Types.CLOB) {
+			if (typeB == Types.LONGVARCHAR) {
+				return true;
+			}
+		} else if (typeA == Types.LONGVARCHAR) {
+			if (typeB == Types.CLOB) {
+				return true;
+			}
+		}
+		
+		return typeA == typeB;
 	}
 }

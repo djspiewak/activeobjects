@@ -113,7 +113,7 @@ public abstract class DatabaseProvider {
 	}
 	
 	public Object parseValue(int type, String value) {
-		if (value.equals("NULL")) {
+		if (value == null || value.equals("") || value.equals("NULL")) {
 			return null;
 		}
 		
@@ -146,7 +146,9 @@ public abstract class DatabaseProvider {
 				
 			case Types.DATE:
 				try {
-					return new SimpleDateFormat(getDateFormat()).parse(value);
+					Calendar back = Calendar.getInstance();
+					back.setTime(new SimpleDateFormat(getDateFormat()).parse(value));
+					return back;
 				} catch (ParseException e) {
 					return null;
 				}
@@ -174,7 +176,9 @@ public abstract class DatabaseProvider {
 				
 			case Types.TIMESTAMP:
 				try {
-					return new SimpleDateFormat(getDateFormat()).parse(value);
+					Calendar back = Calendar.getInstance();
+					back.setTime(new SimpleDateFormat(getDateFormat()).parse(value));
+					return back;
 				} catch (ParseException e) {
 					return null;
 				}
@@ -664,7 +668,7 @@ public abstract class DatabaseProvider {
 	}
 	
 	protected String getDateFormat() {
-		return "yyyy-MM-dd HH:mm:ss.SSS";
+		return "yyyy-MM-dd HH:mm:ss";
 	}
 	
 	protected String renderFieldType(DDLField field) {

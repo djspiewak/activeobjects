@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
 
@@ -60,7 +61,7 @@ public final class SchemaReader {
 			Query query = Query.select("*").from(table.getName()).limit(1);
 			String sql = provider.renderQuery(query, null, false);
 			
-			PreparedStatement stmt = conn.prepareCall(sql);
+			PreparedStatement stmt = conn.prepareStatement(sql);
 			provider.setQueryStatementProperties(stmt, query);
 			
 			res = stmt.executeQuery();
@@ -88,6 +89,7 @@ public final class SchemaReader {
 				DDLField field = fields.get(res.getString("COLUMN_NAME"));
 				
 				field.setDefaultValue(provider.parseValue(field.getType(), res.getString("COLUMN_DEF")));
+				field.setNotNull(res.getString("IS_NULLABLE").equals("NO"));
 			}
 			res.close();
 			
@@ -218,21 +220,24 @@ public final class SchemaReader {
 			for (DDLField fromField : alterFields) {
 				DDLField ontoField = ontoFields.get(fromField.getName());
 				
-				if (!fromField.getDefaultValue().equals(ontoField.getDefaultValue())) {
+				if (fromField.getDefaultValue() == null && ontoField.getDefaultValue() != null) {
+					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
+				} else if (fromField.getDefaultValue() != null 
+						&& !Common.fuzzyCompare(fromField.getDefaultValue(), ontoField.getDefaultValue())) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} /*else if (!fromField.getOnUpdate().equals(ontoField.getOnUpdate())) {
 					actions.add(createColumnAlterAction(fromTable, fromField));
-				}*/ else if (fromField.getPrecision() != ontoField.getPrecision()) {
+				} else if (fromField.getPrecision() != ontoField.getPrecision()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.getScale() != ontoField.getScale()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
-				} else if (fromField.getType() != ontoField.getType()) {
+				}*/ else if (!Common.fuzzyTypeCompare(fromField.getType(), ontoField.getType())) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.isAutoIncrement() != ontoField.isAutoIncrement()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
-				} else if (fromField.isNotNull() != ontoField.isNotNull()) {
+				} /*else if (fromField.isNotNull() != ontoField.isNotNull()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
-				} /*else if (fromField.isUnique() != ontoField.isUnique()) {
+				} else if (fromField.isUnique() != ontoField.isUnique()) {
 					actions.add(createColumnAlterAction(fromTable, fromField));
 				}*/
 			}

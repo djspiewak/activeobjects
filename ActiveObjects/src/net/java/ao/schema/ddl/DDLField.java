@@ -112,4 +112,9 @@ public class DDLField {
 	public void setOnUpdate(Object onUpdate) {
 		this.onUpdate = onUpdate;
 	}
+	
+	@Override
+	public String toString() {
+		return getName() + "(" + getPrecision() + "," + getScale() + ")";
+	}
 }

@@ -81,4 +81,9 @@ public class DDLForeignKey {
 	public int hashCode() {
 		return field.hashCode() + table.hashCode() + foreignField.hashCode();
 	}
+	
+	@Override
+	public String toString() {
+		return getDomesticTable() + "." + getField() + " => " + getTable() + "." + getForeignField();
+	}
 }
