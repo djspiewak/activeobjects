@@ -106,9 +106,9 @@ public final class SchemaReader {
 			while (res.next()) {
 				DDLForeignKey key = new DDLForeignKey();
 				
-				key.setForeignField("id");		// TODO	major hack here!!
+				key.setForeignField(res.getString("PKCOLUMN_NAME"));
 				key.setField(res.getString("FKCOLUMN_NAME"));
-				key.setTable(res.getString("FKTABLE_NAME"));
+				key.setTable(res.getString("PKTABLE_NAME"));
 				key.setDomesticTable(table.getName());
 				
 				foreignKeys.add(key);
