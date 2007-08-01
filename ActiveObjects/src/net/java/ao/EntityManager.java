@@ -170,6 +170,29 @@ public class EntityManager {
 		return !hasSchema;
 	}
 	
+	public void flushAll() {
+		proxyLock.readLock().lock();
+		try {
+			for (EntityProxy<? extends Entity> proxy : proxies.values()) {
+				proxy.flushCache();
+			}
+		} finally {
+			proxyLock.readLock().unlock();
+		}
+	}
+	
+	public void flush(Entity... entities) {
+		proxyLock.readLock().lock();
+		try {
+			for (Entity entity : entities) {
+				proxies.get(entity).flushCache();
+			}
+		} finally {
+			proxyLock.readLock().unlock();
+		}
+	
+	}
+	
 	/**
 	 * <p>Returns an array of entities of the specified type corresponding to the
 	 * varargs ids.  If an in-memory reference already exists to a corresponding

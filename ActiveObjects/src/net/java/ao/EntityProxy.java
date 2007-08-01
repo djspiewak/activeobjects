@@ -313,6 +313,22 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		return type;
 	}
 
+	// any dirty fields are kept in the cache, since they have yet to be saved
+	void flushCache() {
+		cacheLock.writeLock().lock();
+		dirtyFieldsLock.readLock().lock();
+		try {
+			for (String fieldName : cache.keySet()) {
+				if (!dirtyFields.contains(fieldName)) {
+					cache.remove(fieldName);
+				}
+			}
+		} finally {
+			dirtyFieldsLock.readLock().unlock();
+			cacheLock.writeLock().unlock();
+		}
+	}
+	
 	private EntityManager getManager() {
 		return manager;
 	}
