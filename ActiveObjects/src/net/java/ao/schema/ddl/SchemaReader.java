@@ -252,9 +252,9 @@ public final class SchemaReader {
 			
 			for (DDLForeignKey fromKey : fromTable.getForeignKeys()) {
 				for (DDLForeignKey ontoKey : ontoTable.getForeignKeys()) {
-					if (!(fromKey.getTable().equals(ontoKey.getTable()) && fromKey.getField().equals(ontoKey.getField())
-							&& fromKey.getForeignField().equals(ontoKey.getForeignField())
-							&& fromKey.getDomesticTable().equals(ontoKey.getDomesticTable()))) {
+					if (!(fromKey.getTable().equals(ontoKey.getTable()) && fromKey.getForeignField().equals(ontoKey.getForeignField()))
+							&& fromKey.getField().equals(ontoKey.getField())
+							&& fromKey.getDomesticTable().equals(ontoKey.getDomesticTable())) {
 						addKeys.add(fromKey);
 					}
 				}
@@ -262,9 +262,9 @@ public final class SchemaReader {
 			
 			for (DDLForeignKey ontoKey : ontoTable.getForeignKeys()) {
 				for (DDLForeignKey fromKey : fromTable.getForeignKeys()) {
-					if (!(ontoKey.getTable().equals(fromKey.getTable()) && ontoKey.getField().equals(fromKey.getField())
-							&& ontoKey.getForeignField().equals(fromKey.getForeignField())
-							 && ontoKey.getDomesticTable().equals(fromKey.getDomesticTable()))) {
+					if (!(ontoKey.getTable().equals(fromKey.getTable()) && ontoKey.getForeignField().equals(fromKey.getForeignField()))
+							&& ontoKey.getField().equals(fromKey.getField())
+							 && ontoKey.getDomesticTable().equals(fromKey.getDomesticTable())) {
 						dropKeys.add(ontoKey);
 					}
 				}
@@ -448,7 +448,37 @@ public final class SchemaReader {
 			}
 		}
 		
-		roots.addAll(creates);
+		for (DDLAction action : creates) {
+			Set<DDLAction> dependencies = new HashSet<DDLAction>();
+			
+			for (DDLForeignKey key : action.getTable().getForeignKeys()) {
+				for (DDLAction depAction : creates) {
+					if (depAction != action && depAction.getTable().getName().equals(key.getTable())) {
+						dependencies.add(depAction);
+					}
+				}
+				
+				for (DDLAction depAction : addColumns) {
+					if (depAction.getTable().getName().equals(key.getTable())
+							&& depAction.getField().getName().equals(key.getForeignField())) {
+						dependencies.add(depAction);
+					}
+				}
+				
+				for (DDLAction depAction : changeColumns) {
+					if (depAction.getTable().getName().equals(key.getTable())
+							&& depAction.getField().getName().equals(key.getForeignField())) {
+						dependencies.add(depAction);
+					}
+				}
+			}
+			
+			if (dependencies.size() == 0) {
+				roots.add(action);
+			} else {
+				deps.put(action, dependencies);
+			}
+		}
 		
 		for (DDLAction action : addColumns) {
 			Set<DDLAction> dependencies = new HashSet<DDLAction>();

@@ -482,7 +482,7 @@ public final class Generator {
 	private static Calendar parseCalendar(String ts) {
 		try {
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(ts));
+			cal.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(ts));
 			
 			return cal;
 		} catch (java.text.ParseException e) {
