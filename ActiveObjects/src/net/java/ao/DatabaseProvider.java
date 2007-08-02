@@ -554,12 +554,19 @@ public abstract class DatabaseProvider {
 		}
 		
 		current.setLength(0);
-		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ");
+		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ").append(field.getName()).append(' ');
 		current.append(renderField(field));
 		back.add(current.toString());
 		
-		back.add(renderFunctionForField(table, field));
-		back.add(renderTriggerForField(table, field));
+		String toRender = renderFunctionForField(table, field);
+		if (toRender != null) {
+			back.add(toRender);
+		}
+		
+		toRender = renderTriggerForField(table, field);
+		if (toRender != null) {
+			back.add(toRender);
+		}
 		
 		return back.toArray(new String[back.size()]);
 	}
