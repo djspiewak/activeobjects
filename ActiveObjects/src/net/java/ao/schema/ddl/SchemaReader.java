@@ -24,6 +24,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -282,6 +284,219 @@ public final class SchemaReader {
 		}
 		
 		return actions.toArray(new DDLAction[actions.size()]);
+	}
+	
+	public static DDLAction[] sortTopologically(DDLAction[] actions) {
+		List<DDLAction> back = new LinkedList<DDLAction>();
+		Map<DDLAction, Set<DDLAction>> deps = new HashMap<DDLAction, Set<DDLAction>>();
+		Set<DDLAction> roots = new HashSet<DDLAction>();
+		
+		performSort(actions, deps, roots);
+		
+		while (!roots.isEmpty()) {
+			DDLAction[] rootsArray = roots.toArray(new DDLAction[roots.size()]);
+			roots.remove(rootsArray[0]);
+			
+			back.add(rootsArray[0]);
+			
+			List<DDLAction> toRemove = new LinkedList<DDLAction>();
+			Iterator<DDLAction> depIterator = deps.keySet().iterator();
+			while (depIterator.hasNext()) {
+				DDLAction depAction = depIterator.next();
+				
+				Set<DDLAction> individualDeps = deps.get(depAction);
+				individualDeps.remove(rootsArray[0]);
+
+				if (individualDeps.isEmpty()) {
+					roots.add(depAction);
+					toRemove.add(depAction);
+				}
+			}
+			
+			for (DDLAction action : toRemove) {
+				deps.remove(action);
+			}
+		}
+		
+		return back.toArray(new DDLAction[back.size()]);
+	}
+	
+	/*
+	 * DROP_KEY
+	 * DROP_COLUMN
+	 * CHANGE_COLUMN
+	 * DROP
+	 * CREATE
+	 * ADD_COLUMN
+	 * ADD_KEY
+	 */
+	private static void performSort(DDLAction[] actions, Map<DDLAction, Set<DDLAction>> deps, Set<DDLAction> roots) {
+		List<DDLAction> dropKeys = new LinkedList<DDLAction>();
+		List<DDLAction> dropColumns = new LinkedList<DDLAction>();
+		List<DDLAction> changeColumns = new LinkedList<DDLAction>();
+		List<DDLAction> drops = new LinkedList<DDLAction>();
+		List<DDLAction> creates = new LinkedList<DDLAction>();
+		List<DDLAction> addColumns = new LinkedList<DDLAction>();
+		List<DDLAction> addKeys = new LinkedList<DDLAction>();
+		
+		for (DDLAction action : actions) {
+			switch (action.getActionType()) {
+				case ALTER_DROP_KEY:
+					dropKeys.add(action);
+				break;
+				
+				case ALTER_DROP_COLUMN:
+					dropColumns.add(action);
+				break;
+				
+				case ALTER_CHANGE_COLUMN:
+					changeColumns.add(action);
+				break;
+				
+				case DROP:
+					drops.add(action);
+				break;
+				
+				case CREATE:
+					creates.add(action);
+				break;
+				
+				case ALTER_ADD_COLUMN:
+					addColumns.add(action);
+				break;
+				
+				case ALTER_ADD_KEY:
+					addKeys.add(action);
+				break;
+			}
+		}
+		
+		roots.addAll(dropKeys);
+		
+		for (DDLAction action : dropColumns) {
+			Set<DDLAction> dependencies = new HashSet<DDLAction>();
+			
+			for (DDLAction depAction : dropKeys) {
+				DDLForeignKey key = depAction.getKey();
+				
+				if ((key.getTable().equals(action.getTable().getName()) && key.getForeignField().equals(action.getField().getName()))
+						|| (key.getDomesticTable().equals(action.getTable().getName()) && key.getField().equals(action.getField().getName()))) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			if (dependencies.size() == 0) {
+				roots.add(action);
+			} else {
+				deps.put(action, dependencies);
+			}
+		}
+		
+		for (DDLAction action : changeColumns) {
+			Set<DDLAction> dependencies = new HashSet<DDLAction>();
+			
+			for (DDLAction depAction : dropKeys) {
+				DDLForeignKey key = depAction.getKey();
+				
+				if ((key.getTable().equals(action.getTable().getName()) && key.getForeignField().equals(action.getField().getName()))
+						|| (key.getDomesticTable().equals(action.getTable().getName()) && key.getField().equals(action.getField().getName()))) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			for (DDLAction depAction : dropColumns) {
+				if ((depAction.getTable().equals(action.getTable()) && depAction.getField().equals(action.getField()))
+						|| (depAction.getTable().equals(action.getTable()) && depAction.getField().equals(action.getOldField()))) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			if (dependencies.size() == 0) {
+				roots.add(action);
+			} else {
+				deps.put(action, dependencies);
+			}
+		}
+		
+		for (DDLAction action : drops) {
+			Set<DDLAction> dependencies = new HashSet<DDLAction>();
+			
+			for (DDLAction depAction : dropKeys) {
+				DDLForeignKey key = depAction.getKey();
+				
+				if (key.getTable().equals(action.getTable().getName()) || key.getDomesticTable().equals(action.getTable().getName())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			for (DDLAction depAction : dropColumns) {
+				if (depAction.getTable().equals(action.getTable())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			for (DDLAction depAction : changeColumns) {
+				if (depAction.getTable().equals(action.getTable())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			if (dependencies.size() == 0) {
+				roots.add(action);
+			} else {
+				deps.put(action, dependencies);
+			}
+		}
+		
+		roots.addAll(creates);
+		
+		for (DDLAction action : addColumns) {
+			Set<DDLAction> dependencies = new HashSet<DDLAction>();
+			
+			for (DDLAction depAction : creates) {
+				if (depAction.getTable().equals(action.getTable())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			if (dependencies.size() == 0) {
+				roots.add(action);
+			} else {
+				deps.put(action, dependencies);
+			}
+		}
+		
+		for (DDLAction action : addKeys) {
+			Set<DDLAction> dependencies = new HashSet<DDLAction>();
+			DDLForeignKey key = action.getKey();
+			
+			for (DDLAction depAction : creates) {
+				if (depAction.getTable().getName().equals(key.getTable()) 
+						|| depAction.getTable().getName().equals(key.getDomesticTable())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			for (DDLAction depAction : addColumns) {
+				if ((depAction.getTable().getName().equals(key.getTable()) && depAction.getField().getName().equals(key.getForeignField())) 
+						|| (depAction.getTable().getName().equals(key.getDomesticTable())) && depAction.getField().getName().equals(key.getField())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			for (DDLAction depAction : changeColumns) {
+				if ((depAction.getTable().getName().equals(key.getTable()) && depAction.getField().getName().equals(key.getForeignField())) 
+						|| (depAction.getTable().getName().equals(key.getDomesticTable())) && depAction.getField().getName().equals(key.getField())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			if (dependencies.size() == 0) {
+				roots.add(action);
+			} else {
+				deps.put(action, dependencies);
+			}
+		}
 	}
 	
 	private static DDLAction createColumnAlterAction(DDLTable table, DDLField oldField, DDLField field) {

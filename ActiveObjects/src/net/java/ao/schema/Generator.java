@@ -253,7 +253,8 @@ public final class Generator {
 			}
 		}
 		
-		DDLAction[] actions = SchemaReader.diffSchema(parsedTables.toArray(new DDLTable[parsedTables.size()]), readTables);
+		DDLAction[] actions = SchemaReader.sortTopologically(
+				SchemaReader.diffSchema(parsedTables.toArray(new DDLTable[parsedTables.size()]), readTables));
 		for (DDLAction action : actions) {
 			back.addAll(Arrays.asList(provider.renderAction(action)));
 		}
