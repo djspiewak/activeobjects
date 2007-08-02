@@ -554,7 +554,7 @@ public abstract class DatabaseProvider {
 		}
 		
 		current.setLength(0);
-		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ").append(field.getName()).append(' ');
+		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ").append(oldField.getName()).append(' ');
 		current.append(renderField(field));
 		back.add(current.toString());
 		
