@@ -24,7 +24,14 @@
 	</target>
 	
 	<target name="build" depends="init">
-		<javac srcdir="${activeobjects.dir}/src" destdir="${activeobjects.dir}/bin" classpath="${build.classpath}" source="1.5" target="1.5" debug="${build.debug}"/>
+		<javac srcdir="${activeobjects.dir}/src" destdir="${activeobjects.dir}/bin" classpath="${build.classpath}" 
+				source="1.5" target="1.5" debug="${build.debug}"/>
+		
+		<copy todir="${activeobjects.dir}/bin">
+			<fileset dir="${activeobjects.dir}/src">
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="assign-doc-dir" unless="javadoc.intern.path">
