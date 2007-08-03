@@ -17,89 +17,128 @@ package net.java.ao.schema.task;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import net.java.ao.EntityManager;
-import net.java.ao.schema.CamelCaseNameConverter;
-import net.java.ao.schema.PluggableNameConverter;
+import java.util.regex.Pattern;
 
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.Path;
 
 /**
  * @author Daniel Spiewak
  */
 public class MigrateTask extends Task {
-	private String classpath;
+	private String[] classpath;
 	private String uri, username, password;
 	private String nameConverter;
 	
-	private List<String> entities = new ArrayList<String>();
+	private List<Entity> entities = new ArrayList<Entity>();
 	
 	public void execute() {
-		System.out.println("Migrating schema to match entity definition...");
-		
-		EntityManager manager = new EntityManager(uri, username, password);
-		manager.setNameConverter(loadNameConverter());
-		
-		Logger.getLogger("net.java.ao").setLevel(Level.FINE);
-		
 		try {
-			manager.migrate(loadClasses());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			System.out.println("Migrating schema to match entity definition...");
+			
+			URL[] urls = new URL[classpath.length];
+			
+			for (int i = 0; i < classpath.length; i++) {
+				String cp = classpath[i];
+				cp = cp.replace('\\', '/');
+				
+				if (Pattern.compile("^[A-Z]:").matcher(cp).find()) {
+					cp = "/" + cp;
+				}
+				
+				urls[i] = new URL("file://" + cp);
+			}
+			
+			URLClassLoader classloader = new URLClassLoader(urls);
+			
+			Class<?> emClass = Class.forName("net.java.ao.EntityManager", true, classloader);
+			Object manager = emClass.getConstructor(String.class, String.class, String.class).newInstance(uri, username, password);
+			
+			emClass.getMethod("setNameConverter", Class.forName("net.java.ao.schema.PluggableNameConverter", true, classloader)).invoke(
+					manager, loadNameConverter(classloader));
+			
+			emClass.getMethod("migrate", Class[].class).invoke(manager, (Object) loadClasses(classloader));
+			
+			Object provider = emClass.getMethod("getProvider").invoke(manager);
+			provider.getClass().getMethod("dispose").invoke(provider);
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
-		
-		manager.getProvider().dispose();
 	}
 	
-	private PluggableNameConverter loadNameConverter() {
-		PluggableNameConverter back = new CamelCaseNameConverter();
+	private Object loadNameConverter(ClassLoader classloader) {
+		if (nameConverter != null && nameConverter.split(".").length == 0) {
+			nameConverter = "net.java.ao.schema." + nameConverter;
+		}
 		
-		if (nameConverter != null) {
+		Class<?> converterClass = null;
+		try {
+			converterClass = Class.forName(nameConverter, true, classloader);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		Object back = null;
+		try {
+			back = converterClass.newInstance();
+		} catch (Throwable t) {
+//			System.err.println("Unable to load \"" + nameConverter + '\"');
+//			System.err.println("Using default name converter...");
+			t.printStackTrace();
+			
 			try {
-				back = (PluggableNameConverter) Class.forName(nameConverter).newInstance();
+				back = Class.forName("net.java.ao.schema.CamelCaseNameConverter", true, classloader).newInstance();
 			} catch (InstantiationException e) {
+				e.printStackTrace();
 			} catch (IllegalAccessException e) {
+				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
-				try {
-					back = (PluggableNameConverter) Class.forName("net.java.ao.schema." + nameConverter).newInstance();
-				} catch (InstantiationException e1) {
-				} catch (IllegalAccessException e1) {
-				} catch (ClassNotFoundException e1) {
-				}
+				e.printStackTrace();
 			}
 		}
 		
 		return back;
 	}
 	
-	private Class<? extends net.java.ao.Entity>[] loadClasses() throws MalformedURLException, ClassNotFoundException {
-		Class<? extends net.java.ao.Entity>[] back = new Class[entities.size()];
-		URLClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + classpath)});
+	private Class<?>[] loadClasses(ClassLoader classloader) throws MalformedURLException, 
+			ClassNotFoundException {
+		Class<?>[] back = new Class[entities.size()];
 		
 		for (int i = 0; i < back.length; i++) {
-			back[i] = (Class<? extends net.java.ao.Entity>) Class.forName(entities.get(i), true, classloader);
+			back[i] = Class.forName(entities.get(i).getText(), true, classloader);
 		}
 		
 		return back;
 	}
 	
-	public void setClasspath(String classpath) throws IOException {
-		this.classpath = new File(classpath).getCanonicalPath();
+	public void setClasspath(String path) throws IOException {
+		String[] paths = path.split(File.pathSeparator);
+		classpath = new String[paths.length];
 		
-		if (!this.classpath.startsWith("/")) {
-			this.classpath = '/' + this.classpath;
+		for (int i = 0; i < paths.length; i++) {
+			File file = new File(paths[i]);
+			
+			classpath[i] = file.getCanonicalPath().replace('\\', '/');
+			if (file.isDirectory()) {
+				classpath[i] += '/';
+			}
+		}
+	}
+	
+	public void setClasspathRef(String reference) {
+		Path path = (Path) getProject().getReference(reference);
+		
+		classpath = path.list();
+		for (int i = 0; i < classpath.length; i++) {
+			if (new File(classpath[i]).isDirectory()) {
+				classpath[i] += '/';
+			}
 		}
 	}
 	
@@ -119,7 +158,31 @@ public class MigrateTask extends Task {
 		this.nameConverter = nameConverter;
 	}
 	
-	public void add(Entity entity) {
-		entities.add(entity.getText());
+	public void addEntity(Entity entity) {
+		entities.add(entity);
+	}
+	
+	private class MigrationClassLoader extends URLClassLoader {
+		public MigrationClassLoader(URL[] urls) {
+			super(urls);
+		}
+		
+		@Override
+		public InputStream getResourceAsStream(String name) {
+			for (URL url : getURLs()) {
+				if (url.toString().endsWith("/")) {
+					try {
+						InputStream back = new URL(url.toString() + name).openStream();
+						return back;
+					} catch (MalformedURLException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+			return null;
+		}
 	}
 }

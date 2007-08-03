@@ -15,10 +15,12 @@
  */
 package net.java.ao.schema.task;
 
+import org.apache.tools.ant.types.DataType;
+
 /**
  * @author Daniel Spiewak
  */
-class Entity {
+public class Entity extends DataType {
 	private String text = "";
 	
 	public void addText(String text) {

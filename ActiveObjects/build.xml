@@ -41,13 +41,10 @@
 	</target>
 	
 	<target name="jar" depends="build">
-		<copy file="${commons-cli.path}" todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/lib"/>
-		
 		<jar basedir="${activeobjects.dir}/bin" compress="${jar.compress}" 
 				destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar">
 			<manifest>
 				<attribute name="Class-Path" value="lib/commons-cli-1.0.jar"/>
-				<attribute name="Main-Class" value="net.java.ao.schema.Generator"/>
 			</manifest>
 		</jar>
 	</target>

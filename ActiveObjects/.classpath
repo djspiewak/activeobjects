@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry including="**/*" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="commons-cli"/>
 	<classpathentry kind="var" path="ant"/>
 	<classpathentry kind="var" path="commons-dbcp"/>
 	<classpathentry kind="var" path="commons-pool"/>

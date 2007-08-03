@@ -27,6 +27,7 @@ public class PluralizedNameConverter extends CamelCaseNameConverter {
 	@SuppressWarnings("unchecked")
 	public PluralizedNameConverter() {
 		OrderedProperties rules = new OrderedProperties();
+		
 		InputStream is = PluralizedNameConverter.class.getResourceAsStream("/net/java/ao/schema/englishPluralRules.properties");
 		
 		try {

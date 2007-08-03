@@ -19,12 +19,7 @@ import static net.java.ao.Common.getAttributeNameFromMethod;
 import static net.java.ao.Common.getAttributeTypeFromMethod;
 import static net.java.ao.Common.interfaceInheritsFrom;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,73 +47,10 @@ import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.schema.ddl.SchemaReader;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-
 /**
  * @author Daniel Spiewak
  */
 public final class Generator {
-	private static final String CL_INVOCATION = "java -jar activeobjects-*.jar <options> class1 class2 ...";
-	
-	public static void main(String... args) throws ParseException, IOException, ClassNotFoundException, SQLException {
-		Options options = new Options();
-		
-		Option classpathOption = new Option("C", "classpath", true, "(required) The path from which to load the " +
-				"specified entity classes");
-		classpathOption.setRequired(true);
-		options.addOption(classpathOption);
-		
-		Option nameConverterOption = new Option("N", "converter", true, "A qualified Java class-name specifying which " +
-				"name converter to use");
-		options.addOption(nameConverterOption);
-		
-		Option uriOption = new Option("U", "uri", true, "(required) The JDBC URI used to access the database against " +
-				"which the schema will be created");
-		uriOption.setRequired(true);
-		options.addOption(uriOption);
-		
-		CommandLineParser parser = new PosixParser();
-		CommandLine cl = null;
-		try {
-			cl = parser.parse(options, args);
-		} catch (ParseException e) {
-			new HelpFormatter().printHelp(CL_INVOCATION, options);
-			System.exit(-1);
-		}
-		
-		if (cl.getOptionValue(classpathOption.getOpt()) == null || cl.getArgs().length == 0) {
-			new HelpFormatter().printHelp(CL_INVOCATION, options);
-			System.exit(-1);
-		}
-		
-		System.out.println(generate(cl.getOptionValue(classpathOption.getOpt()), cl.getOptionValue(uriOption.getOpt()), 
-				cl.getOptionValue(nameConverterOption.getOpt()), cl.getArgs()));
-	}
-	
-	public static String generate(String classpath, String uri, String... classes) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
-		return generate(classpath, uri, null, classes);
-	}
-	
-	public static String generate(String classpath, String uri, String nameConverterClassname, 
-			String... classes) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
-		ClassLoader classloader = new URLClassLoader(new URL[] {new URL("file://" + new File(classpath).getCanonicalPath() + "/")});
-		
-		String sql = "";
-		DatabaseProvider provider = DatabaseProvider.getInstance(uri, null, null, false);
-		
-		String[] statements = generateImpl(provider, loadConverter(classloader, nameConverterClassname), classloader, classes);
-		for (String statement : statements) {
-			sql += statement + ";\n";
-		}
-		
-		return sql;
-	}
 	
 	public static void migrate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
 		migrate(provider, new CamelCaseNameConverter(), classes);
@@ -126,15 +58,9 @@ public final class Generator {
 	
 	public static void migrate(DatabaseProvider provider, PluggableNameConverter nameConverter,
 			Class<? extends Entity>... classes) throws SQLException {
-		List<String> classNames = new ArrayList<String>();
-		
-		for (Class<? extends Entity> clazz : classes) {
-			classNames.add(clazz.getCanonicalName());
-		}
-		
 		String[] statements = null;
 		try {
-			statements = generateImpl(provider, nameConverter, Generator.class.getClassLoader(), classNames.toArray(new String[classNames.size()]));
+			statements = generateImpl(provider, nameConverter, Generator.class.getClassLoader(), classes);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return;
@@ -182,46 +108,15 @@ public final class Generator {
 		return true;
 	}
 	
-	private static PluggableNameConverter loadConverter(ClassLoader classloader, String name) {
-		if (name != null && name.split(".").length == 0) {
-			name = "net.java.ao.schema." + name;
-		}
-		
-		Class<? extends PluggableNameConverter> converterClass = null;
-		try {
-			converterClass = (Class<? extends PluggableNameConverter>) Class.forName(name);
-		} catch (Throwable t) {
-		}
-		
-		if (converterClass == null) {
-			try {
-				converterClass = (Class<? extends PluggableNameConverter>) Class.forName(name, true, classloader);
-			} catch (Throwable t) {
-			}
-		}
-		
-		PluggableNameConverter nameConverter = null;
-		try {
-			nameConverter = converterClass.newInstance();
-		} catch (Throwable t) {
-			System.err.println("Unable to load " + name);
-			System.err.println("Using default name converter...");
-			
-			nameConverter = new CamelCaseNameConverter();
-		}
-		
-		return nameConverter;
-	}
-	
 	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, 
-			ClassLoader classloader, String... classes) throws ClassNotFoundException, SQLException {
+			ClassLoader classloader, Class<? extends Entity>... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
 			new HashMap<Class<? extends Entity>, Set<Class<? extends Entity>>>();
 		Set<Class<? extends Entity>> roots = new LinkedHashSet<Class<? extends Entity>>();
 		
-		for (String cls : classes) {
-			parseDependencies(deps, roots, (Class<? extends Entity>) Class.forName(cls, true, classloader));
+		for (Class<? extends Entity> cls : classes) {
+			parseDependencies(deps, roots, cls);
 		}
 		
 		List<DDLTable> parsedTables = new ArrayList<DDLTable>();
@@ -341,7 +236,9 @@ public final class Generator {
 				} else if (type.isArray()) {
 					continue;
 				} else {
-					sqlType = SQLTypeEnum.getType(type).getSQLType();
+					SQLTypeEnum intType = SQLTypeEnum.getType(type);
+					
+					sqlType = intType.getSQLType();
 					precision = SQLTypeEnum.getType(type).getPrecision();
 				}
 				
