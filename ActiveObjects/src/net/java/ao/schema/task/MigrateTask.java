@@ -17,7 +17,6 @@ package net.java.ao.schema.task;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -88,9 +87,8 @@ public class MigrateTask extends Task {
 		try {
 			back = converterClass.newInstance();
 		} catch (Throwable t) {
-//			System.err.println("Unable to load \"" + nameConverter + '\"');
-//			System.err.println("Using default name converter...");
-			t.printStackTrace();
+			System.err.println("Unable to load \"" + nameConverter + '\"');
+			System.err.println("Using default name converter...");
 			
 			try {
 				back = Class.forName("net.java.ao.schema.CamelCaseNameConverter", true, classloader).newInstance();
@@ -160,29 +158,5 @@ public class MigrateTask extends Task {
 	
 	public void addEntity(Entity entity) {
 		entities.add(entity);
-	}
-	
-	private class MigrationClassLoader extends URLClassLoader {
-		public MigrationClassLoader(URL[] urls) {
-			super(urls);
-		}
-		
-		@Override
-		public InputStream getResourceAsStream(String name) {
-			for (URL url : getURLs()) {
-				if (url.toString().endsWith("/")) {
-					try {
-						InputStream back = new URL(url.toString() + name).openStream();
-						return back;
-					} catch (MalformedURLException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			
-			return null;
-		}
 	}
 }
