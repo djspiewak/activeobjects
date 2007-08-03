@@ -35,7 +35,7 @@ public class MigrateTask extends Task {
 	private String uri, username, password;
 	private String nameConverter;
 	
-	private List<Entity> entities = new ArrayList<Entity>();
+	private List<EntityType> entities = new ArrayList<EntityType>();
 	
 	public void execute() {
 		try {
@@ -156,7 +156,7 @@ public class MigrateTask extends Task {
 		this.nameConverter = nameConverter;
 	}
 	
-	public void addEntity(Entity entity) {
+	public void addEntity(EntityType entity) {
 		entities.add(entity);
 	}
 }
