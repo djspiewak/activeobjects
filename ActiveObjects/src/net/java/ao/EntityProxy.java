@@ -394,14 +394,18 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		return back;
 	}
 
-	// TODO	uncacheable fields will still be cached regardless of status
 	private void invokeSetter(T entity, int id, String table, String name, Object value, boolean shouldCache) throws Throwable {
 		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
 
 		Object oldValue = null;
 
 		if (value != null) {
-			oldValue = invokeGetter(id, table, name, value.getClass(), shouldCache);
+			Class<?> type = value.getClass();
+			if (value instanceof Entity) {
+				type = ((Entity) value).getEntityType();
+			}
+			
+			oldValue = invokeGetter(id, table, name, type, shouldCache);
 		}
 
 		invokeSetterImpl(name, value);
