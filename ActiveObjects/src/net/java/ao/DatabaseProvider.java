@@ -117,83 +117,92 @@ public abstract class DatabaseProvider {
 			return null;
 		}
 		
+		List<DatabaseFunction> posFuncs = new ArrayList<DatabaseFunction>();
 		for (DatabaseFunction func : DatabaseFunction.values()) {
-			if (renderFunction(func).equals(value)) {
-				return func;
+			if (renderFunction(func).equalsIgnoreCase(value)) {
+				posFuncs.add(func);
 			}
 		}
-		
-		switch (type) {
-			
-			case Types.BIGINT:
-				return Long.parseLong(value);
-				
-			case Types.BIT:
-				return Byte.parseByte(value);
-				
-			case Types.BOOLEAN:
-				int intValue = -1;
-				try {
-					intValue = Integer.parseInt(value);
-				} catch (Throwable t) {
-					return Boolean.parseBoolean(value);
-				}
-				
-				return intValue == 0;
-				
-			case Types.CHAR:
-				value.charAt(0);
-				
-			case Types.DATE:
-				try {
-					Calendar back = Calendar.getInstance();
-					back.setTime(new SimpleDateFormat(getDateFormat()).parse(value));
-					return back;
-				} catch (ParseException e) {
-					return null;
-				}
-			
-			case Types.DECIMAL:
-				return Double.parseDouble(value);
-				
-			case Types.DOUBLE:
-				return Double.parseDouble(value);
-				
-			case Types.FLOAT:
-				return Float.parseFloat(value);
-				
-			case Types.INTEGER:
-				return Integer.parseInt(value);
-				
-			case Types.NUMERIC:
-				return Integer.parseInt(value);
-				
-			case Types.REAL:
-				return Double.parseDouble(value);
-				
-			case Types.SMALLINT:
-				return Short.parseShort(value);
-				
-			case Types.TIMESTAMP:
-				try {
-					Calendar back = Calendar.getInstance();
-					back.setTime(new SimpleDateFormat(getDateFormat()).parse(value));
-					return back;
-				} catch (ParseException e) {
-					return null;
-				}
-				
-			case Types.TINYINT:
-				return Short.parseShort(value);
-			
-			case Types.VARCHAR:
-				return value.substring(1, value.length() - 1);
+		if (posFuncs.size() > 0) {
+			return posFuncs.toArray(new DatabaseFunction[posFuncs.size()]);
 		}
+		
+		try {
+			switch (type) {
+				case Types.BIGINT:
+					return Long.parseLong(value);
+
+				case Types.BIT:
+					return Byte.parseByte(value);
+
+				case Types.BOOLEAN:
+					int intValue = -1;
+					try {
+						intValue = Integer.parseInt(value);
+					} catch (Throwable t) {
+						return Boolean.parseBoolean(value);
+					}
+
+					return intValue == 0;
+
+				case Types.CHAR:
+					value.charAt(0);
+
+				case Types.DATE:
+					try {
+						Calendar back = Calendar.getInstance();
+						back.setTime(new SimpleDateFormat(getDateFormat()).parse(value));
+						return back;
+					} catch (ParseException e) {
+						return null;
+					}
+
+				case Types.DECIMAL:
+					return Double.parseDouble(value);
+
+				case Types.DOUBLE:
+					return Double.parseDouble(value);
+
+				case Types.FLOAT:
+					return Float.parseFloat(value);
+
+				case Types.INTEGER:
+					return Integer.parseInt(value);
+
+				case Types.NUMERIC:
+					return Integer.parseInt(value);
+
+				case Types.REAL:
+					return Double.parseDouble(value);
+
+				case Types.SMALLINT:
+					return Short.parseShort(value);
+
+				case Types.TIMESTAMP:
+					try {
+						Calendar back = Calendar.getInstance();
+						back.setTime(new SimpleDateFormat(getDateFormat()).parse(value));
+						return back;
+					} catch (ParseException e) {
+						return null;
+					}
+
+				case Types.TINYINT:
+					return Short.parseShort(value);
+
+				case Types.VARCHAR:
+					return value.substring(1, value.length() - 1);
+			}
+		} catch (Throwable t) {}
 		
 		return null;
 	}
 	
 	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
+	}
+	
+	public ResultSet getTables(Connection conn) throws SQLException {
+		return conn.getMetaData().getTables(null, null, "", null);
 	}
 	
 	protected String renderQuerySelect(Query query, PluggableNameConverter converter, boolean count) {

@@ -50,7 +50,7 @@ public class DDLForeignKey {
 	}
 	
 	public String getFKName() {
-		return "fk_" + getDomesticTable() + '_' + getField();
+		return "fk_" + getDomesticTable().toLowerCase() + '_' + getField().toLowerCase();
 	}
 
 	public String getDomesticTable() {

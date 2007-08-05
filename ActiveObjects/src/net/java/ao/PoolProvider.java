@@ -17,6 +17,7 @@ package net.java.ao;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -45,6 +46,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	public Object parseValue(int type, String value) {
+		return delegate.parseValue(type, value);
+	}
+	
+	@Override
 	public String[] renderAction(DDLAction action) {
 		return delegate.renderAction(action);
 	}
@@ -57,6 +63,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 	@Override
 	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
 		delegate.setQueryStatementProperties(stmt, query);
+	}
+	
+	@Override
+	public ResultSet getTables(Connection conn) throws SQLException {
+		return delegate.getTables(conn);
 	}
 	
 	@Override

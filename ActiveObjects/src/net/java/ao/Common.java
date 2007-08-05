@@ -15,6 +15,7 @@
  */
 package net.java.ao;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -199,6 +200,25 @@ public final class Common {
 	}
 	
 	public static boolean fuzzyCompare(Object a, Object b) {
+		Object array = null;
+		Object other = null;
+		
+		if (a != null && a.getClass().isArray()) {
+			array = a;
+			other = b;
+		} else if (b != null && b.getClass().isArray()) {
+			array = b;
+			other = a;
+		}
+		
+		if (array != null) {
+			for (int i = 0; i < Array.getLength(array); i++) {
+				if (fuzzyCompare(Array.get(array, i), other)) {
+					return true;
+				}
+			}
+		}
+		
 		if (a instanceof Number) {
 			if (b instanceof Boolean) {
 				return (((Number) a).intValue() == 1) == ((Boolean) b).booleanValue();
@@ -239,10 +259,10 @@ public final class Common {
 				return true;
 			}
 		} else if (typeA == Types.CLOB) {
-			if (typeB == Types.LONGVARCHAR) {
+			if (typeB == Types.LONGVARCHAR || typeB == Types.VARCHAR) {
 				return true;
 			}
-		} else if (typeA == Types.LONGVARCHAR) {
+		} else if (typeA == Types.LONGVARCHAR || typeA == Types.VARCHAR) {
 			if (typeB == Types.CLOB) {
 				return true;
 			}

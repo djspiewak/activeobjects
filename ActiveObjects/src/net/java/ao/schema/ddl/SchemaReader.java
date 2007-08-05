@@ -50,7 +50,7 @@ public final class SchemaReader {
 	public static DDLTable[] readSchema(DatabaseProvider provider) throws SQLException {
 		Connection conn = provider.getConnection();
 		DatabaseMetaData dbmd = conn.getMetaData();
-		ResultSet res = dbmd.getTables(null, null, "", null);
+		ResultSet res = provider.getTables(conn);
 		
 		List<DDLTable> tables = new ArrayList<DDLTable>();
 		
@@ -144,14 +144,14 @@ public final class SchemaReader {
 		Map<String, DDLTable> onto = new HashMap<String, DDLTable>();
 		
 		for (DDLTable table : fromArray) {
-			from.put(table.getName(), table);
+			from.put(table.getName().toLowerCase(), table);
 		}
 		for (DDLTable table : ontoArray) {
-			onto.put(table.getName(), table);
+			onto.put(table.getName().toLowerCase(), table);
 		}
 		
 		for (DDLTable table : fromArray) {
-			if (onto.containsKey(table.getName())) {
+			if (onto.containsKey(table.getName().toLowerCase())) {
 				alterTables.add(table);
 			} else {
 				createTables.add(table);
@@ -159,7 +159,7 @@ public final class SchemaReader {
 		}
 		
 		for (DDLTable table : ontoArray) {
-			if (!from.containsKey(table.getName())) {
+			if (!from.containsKey(table.getName().toLowerCase())) {
 				dropTables.add(table);
 			}
 		}
@@ -177,7 +177,7 @@ public final class SchemaReader {
 		}
 		
 		for (DDLTable fromTable : alterTables) {
-			DDLTable ontoTable = onto.get(fromTable.getName());
+			DDLTable ontoTable = onto.get(fromTable.getName().toLowerCase());
 			
 			List<DDLField> createFields = new ArrayList<DDLField>();
 			List<DDLField> dropFields = new ArrayList<DDLField>();
@@ -187,14 +187,14 @@ public final class SchemaReader {
 			Map<String, DDLField> ontoFields = new HashMap<String, DDLField>();
 			
 			for (DDLField field : fromTable.getFields()) {
-				fromFields.put(field.getName(), field);
+				fromFields.put(field.getName().toLowerCase(), field);
 			}
 			for (DDLField field : ontoTable.getFields()) {
-				ontoFields.put(field.getName(), field);
+				ontoFields.put(field.getName().toLowerCase(), field);
 			}
 			
 			for (DDLField field : fromTable.getFields()) {
-				if (ontoFields.containsKey(field.getName())) {
+				if (ontoFields.containsKey(field.getName().toLowerCase())) {
 					alterFields.add(field);
 				} else {
 					createFields.add(field);
@@ -202,7 +202,7 @@ public final class SchemaReader {
 			}
 			
 			for (DDLField field : ontoTable.getFields()) {
-				if (!fromFields.containsKey(field.getName())) {
+				if (!fromFields.containsKey(field.getName().toLowerCase())) {
 					dropFields.add(field);
 				}
 			}
@@ -222,7 +222,7 @@ public final class SchemaReader {
 			}
 			
 			for (DDLField fromField : alterFields) {
-				DDLField ontoField = ontoFields.get(fromField.getName());
+				DDLField ontoField = ontoFields.get(fromField.getName().toLowerCase());
 				
 				if (fromField.getDefaultValue() == null && ontoField.getDefaultValue() != null) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
@@ -252,9 +252,10 @@ public final class SchemaReader {
 			
 			for (DDLForeignKey fromKey : fromTable.getForeignKeys()) {
 				for (DDLForeignKey ontoKey : ontoTable.getForeignKeys()) {
-					if (!(fromKey.getTable().equals(ontoKey.getTable()) && fromKey.getForeignField().equals(ontoKey.getForeignField()))
-							&& fromKey.getField().equals(ontoKey.getField())
-							&& fromKey.getDomesticTable().equals(ontoKey.getDomesticTable())) {
+					if (!(fromKey.getTable().equalsIgnoreCase(ontoKey.getTable()) 
+							&& fromKey.getForeignField().equalsIgnoreCase(ontoKey.getForeignField()))
+							&& fromKey.getField().equalsIgnoreCase(ontoKey.getField())
+							&& fromKey.getDomesticTable().equalsIgnoreCase(ontoKey.getDomesticTable())) {
 						addKeys.add(fromKey);
 					}
 				}
@@ -262,9 +263,10 @@ public final class SchemaReader {
 			
 			for (DDLForeignKey ontoKey : ontoTable.getForeignKeys()) {
 				for (DDLForeignKey fromKey : fromTable.getForeignKeys()) {
-					if (!(ontoKey.getTable().equals(fromKey.getTable()) && ontoKey.getForeignField().equals(fromKey.getForeignField()))
-							&& ontoKey.getField().equals(fromKey.getField())
-							 && ontoKey.getDomesticTable().equals(fromKey.getDomesticTable())) {
+					if (!(ontoKey.getTable().equalsIgnoreCase(fromKey.getTable()) 
+							&& ontoKey.getForeignField().equalsIgnoreCase(fromKey.getForeignField()))
+							&& ontoKey.getField().equalsIgnoreCase(fromKey.getField())
+							 && ontoKey.getDomesticTable().equalsIgnoreCase(fromKey.getDomesticTable())) {
 						dropKeys.add(ontoKey);
 					}
 				}

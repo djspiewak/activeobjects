@@ -26,8 +26,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.java.ao.DBParam;
+import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.schema.ddl.DDLField;
@@ -45,6 +48,36 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("org.postgresql.Driver");
+	}
+	
+	@Override
+	public Object parseValue(int type, String value) {
+		switch (type) {
+			case Types.TIMESTAMP:
+				Matcher matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+			
+			case Types.BIT:
+				try {
+					return Byte.parseByte(value);
+				} catch (Throwable t) {
+					try {
+						return Boolean.parseBoolean(value);
+					} catch (Throwable t1) {
+						return null;
+					}
+				}
+		}
+		
+		return super.parseValue(type, value);
+	}
+	
+	@Override
+	public ResultSet getTables(Connection conn) throws SQLException {
+		return conn.getMetaData().getTables("public", null, null, new String[] {"TABLE"});
 	}
 
 	@Override
@@ -81,6 +114,19 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		return super.renderValue(value);
+	}
+	
+	@Override
+	protected String renderFunction(DatabaseFunction func) {
+		switch (func) {
+			case CURRENT_DATE:
+				return "now()";
+				
+			case CURRENT_TIMESTAMP:
+				return "now()";
+		}
+		
+		return super.renderFunction(func);
 	}
 	
 	@Override
