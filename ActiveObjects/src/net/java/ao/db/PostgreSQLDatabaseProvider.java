@@ -165,6 +165,88 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderOnUpdate(DDLField field) {
 		return "";
 	}
+	
+	@Override
+	protected String[] renderAlterTableChangeColumn(DDLTable table, DDLField oldField, DDLField field) {
+		List<String> back = new ArrayList<String>();
+		
+		String trigger = getTriggerNameForField(table, oldField);
+		if (trigger != null) {
+			StringBuilder str = new StringBuilder();
+			str.append("DROP TRIGGER ").append(trigger);
+			back.add(str.toString());
+		}
+		
+		String function = getFunctionNameForField(table, oldField);
+		if (function != null) {
+			StringBuilder str = new StringBuilder();
+			str.append("DROP FUNCTION ").append(function);
+			back.add(str.toString());
+		}
+		
+		if (!field.getName().equalsIgnoreCase(oldField.getName())) {
+			StringBuilder str = new StringBuilder();
+			str.append("ALTER TABLE ").append(table.getName()).append(" RENAME COLUMN ");
+			str.append(oldField.getName()).append(" TO ").append(field.getName());
+			back.add(str.toString());
+		}
+		
+		if (field.getDefaultValue() == null && oldField.getDefaultValue() != null) {
+			StringBuilder str = new StringBuilder();
+			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+			str.append(field.getName()).append(" DROP DEFAULT");
+			back.add(str.toString());
+		} else if (!field.getDefaultValue().equals(oldField.getDefaultValue())) {
+			StringBuilder str = new StringBuilder();
+			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+			str.append(field.getName()).append(" SET DEFAULT ").append(renderValue(field.getDefaultValue()));
+			back.add(str.toString());
+		}
+		
+		if (field.isNotNull() != oldField.isNotNull()) {
+			if (field.isNotNull()) {
+				StringBuilder str = new StringBuilder();
+				str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+				str.append(field.getName()).append(" SET NOT NULL");
+				back.add(str.toString());
+			} else {
+				StringBuilder str = new StringBuilder();
+				str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+				str.append(field.getName()).append(" DROP NOT NULL");
+				back.add(str.toString());
+			}
+		}
+		
+		String toRender = renderFunctionForField(table, field);
+		if (toRender != null) {
+			back.add(toRender);
+		}
+		
+		toRender = renderTriggerForField(table, field);
+		if (toRender != null) {
+			back.add(toRender);
+		}
+		
+		return back.toArray(new String[back.size()]);
+	}
+	
+	@Override
+	protected String getFunctionNameForField(DDLTable table, DDLField field) {
+		if (field.getOnUpdate() != null) {
+			return table.getName() + '_' + field.getName() + "_onupdate()";
+		}
+		
+		return super.getFunctionNameForField(table, field);
+	}
+	
+	@Override
+	protected String getTriggerNameForField(DDLTable table, DDLField field) {
+		if (field.getOnUpdate() != null) {
+			return table.getName() + '_' + field.getName() + "_onupdate";
+		}
+		
+		return super.getTriggerNameForField(table, field);
+	}
 
 	@Override
 	public synchronized int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
