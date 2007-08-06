@@ -198,7 +198,10 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			back.add(str.toString());
 		}
 		
+		boolean foundChange = false;
 		if (!field.getName().equalsIgnoreCase(oldField.getName())) {
+			foundChange = true;
+			
 			StringBuilder str = new StringBuilder();
 			str.append("ALTER TABLE ").append(table.getName()).append(" RENAME COLUMN ");
 			str.append(oldField.getName()).append(" TO ").append(field.getName());
@@ -206,11 +209,15 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		if (field.getDefaultValue() == null && oldField.getDefaultValue() != null) {
+			foundChange = true;
+			
 			StringBuilder str = new StringBuilder();
 			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
 			str.append(field.getName()).append(" DROP DEFAULT");
 			back.add(str.toString());
 		} else if (!field.getDefaultValue().equals(oldField.getDefaultValue())) {
+			foundChange = true;
+			
 			StringBuilder str = new StringBuilder();
 			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
 			str.append(field.getName()).append(" SET DEFAULT ").append(renderValue(field.getDefaultValue()));
@@ -218,6 +225,8 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		if (field.isNotNull() != oldField.isNotNull()) {
+			foundChange = true;
+			
 			if (field.isNotNull()) {
 				StringBuilder str = new StringBuilder();
 				str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
@@ -229,6 +238,14 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 				str.append(field.getName()).append(" DROP NOT NULL");
 				back.add(str.toString());
 			}
+		}
+		
+		if (!foundChange) {
+			System.err.println("WARNING: PostgreSQL doesn't fully support CHANGE TABLE statements");
+			System.err.println("WARNING: Data contained in column '" + table.getName() + "." + oldField.getName() + "' will be lost");
+			
+			back.addAll(Arrays.asList(renderAlterTableDropColumn(table, oldField)));
+			back.addAll(Arrays.asList(renderAlterTableAddColumn(table, field)));
 		}
 		
 		String toRender = renderFunctionForField(table, field);
