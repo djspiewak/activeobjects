@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 
 /**
@@ -49,14 +48,6 @@ public class EmbeddedDerbyDatabaseProvider extends DerbyDatabaseProvider {
 		}
 		
 		return DriverManager.getConnection(getURI(), dbProperties);
-	}
-	
-	@Override
-	protected void setPostConnectionProperties(Connection conn) throws SQLException {
-		Statement stmt = conn.createStatement();
-		
-		stmt.executeUpdate("SET SCHEMA app");
-		stmt.close();
 	}
 	
 	@Override

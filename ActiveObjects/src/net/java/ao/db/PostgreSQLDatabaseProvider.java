@@ -59,6 +59,20 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 					value = matcher.group(1);
 				}
 			break;
+
+			case Types.DATE:
+				matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+			
+			case Types.TIME:
+				matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
 			
 			case Types.BIT:
 				try {

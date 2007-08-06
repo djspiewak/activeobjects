@@ -15,9 +15,13 @@
  */
 package net.java.ao.db;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
@@ -39,6 +43,47 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 			stmt.setFetchSize(query.getLimit());
 			stmt.setMaxRows(query.getLimit());
 		}
+	}
+	
+	@Override
+	public ResultSet getTables(Connection conn) throws SQLException {
+		return conn.getMetaData().getTables("APP", null, null, new String[] {"TABLE"});
+	}
+	
+	@Override
+	public Object parseValue(int type, String value) {
+		switch (type) {
+			case Types.TIMESTAMP:
+				Matcher matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+
+			case Types.DATE:
+				matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+			
+			case Types.TIME:
+				matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+		}
+		
+		return super.parseValue(type, value);
+	}
+	
+	@Override
+	protected void setPostConnectionProperties(Connection conn) throws SQLException {
+		Statement stmt = conn.createStatement();
+		
+		stmt.executeUpdate("SET SCHEMA app");
+		stmt.close();
 	}
 	
 	@Override
