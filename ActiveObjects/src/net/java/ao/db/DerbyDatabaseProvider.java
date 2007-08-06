@@ -136,6 +136,11 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	protected String getTriggerNameForField(DDLTable table, DDLField field) {
+		return table.getName() + '_' + field.getName() + "_onupdate";
+	}
+	
+	@Override
 	protected boolean considerPrecision(DDLField field) {
 		boolean considerPrecision = true;
 		switch (field.getType()) {
