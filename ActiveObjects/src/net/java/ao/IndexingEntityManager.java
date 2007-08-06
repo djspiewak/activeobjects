@@ -124,10 +124,13 @@ public class IndexingEntityManager extends EntityManager {
 			Document doc = new Document();
 			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
 
+			boolean shouldAdd = false;
 			for (Method m : entity.getEntityType().getMethods()) {
 				Index indexAnno = m.getAnnotation(Index.class);
 
 				if (indexAnno != null) {
+					shouldAdd = true;
+					
 					if (m.getName().startsWith("get") || m.getName().startsWith("is") || m.getAnnotation(Accessor.class) != null) {
 						String attribute = Common.getAttributeNameFromMethod(m);
 						Object value = m.invoke(entity);
@@ -139,7 +142,9 @@ public class IndexingEntityManager extends EntityManager {
 				}
 			}
 
-			writer.addDocument(doc);
+			if (shouldAdd) {
+				writer.addDocument(doc);
+			}
 		} catch (IllegalArgumentException e) {
 			throw (IOException) new IOException().initCause(e);
 		} catch (IllegalAccessException e) {
