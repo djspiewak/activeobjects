@@ -15,7 +15,10 @@
  */
 package net.java.ao.db;
 
+import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.DatabaseFunction;
@@ -35,6 +38,15 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("oracle.jdbc.OracleDriver");
+	}
+	
+	@Override
+	public ResultSet getTables(Connection conn) throws SQLException {
+		System.err.println("WARNING: Due to a bug in Oracle's JDBC Driver,");
+		System.err.println("WARNING: table retrieval will fail with an error");
+		System.err.println("WARNING: in native code.");
+		
+		return super.getTables(conn);
 	}
 	
 	@Override
