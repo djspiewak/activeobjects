@@ -15,11 +15,10 @@
  */
 package net.java.ao;
 
-import java.sql.SQLException;
 
 /**
  * @author Daniel Spiewak
  */
 public interface SaveableEntity extends Entity {
-	public void save() throws SQLException;
+	public void save();
 }
