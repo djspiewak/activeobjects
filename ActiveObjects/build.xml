@@ -56,7 +56,7 @@
 		</jar>
 	</target>
 	
-	<target name="dist" depends="jar">
+	<target name="dist" depends="init-dist,jar">
 		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
 		<property name="supress-doc-deletion" value="yes"/>
 		<antcall target="doc"/>
