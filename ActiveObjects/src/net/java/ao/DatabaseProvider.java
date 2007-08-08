@@ -788,6 +788,23 @@ public abstract class DatabaseProvider {
 		return back;
 	}
 	
+	protected boolean isNumericType(int type) {
+		switch (type) {
+			case Types.BIGINT: return true;
+			case Types.BIT: return true;
+			case Types.DECIMAL: return true;
+			case Types.DOUBLE: return true;
+			case Types.FLOAT: return true;
+			case Types.INTEGER: return true;
+			case Types.NUMERIC: return true;
+			case Types.REAL: return true;
+			case Types.SMALLINT: return true;
+			case Types.TINYINT: return true;
+		}
+		
+		return false;
+	}
+	
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
 		return getInstance(uri, username, password, true);		// enable pooling by default (if available)
 	}

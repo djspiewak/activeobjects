@@ -17,8 +17,11 @@ package net.java.ao.db;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.java.ao.DBParam;
 import net.java.ao.DatabaseFunction;
@@ -40,6 +43,60 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+	}
+	
+	@Override
+	public ResultSet getTables(Connection conn) throws SQLException {
+		return conn.getMetaData().getTables(null, "dbo", null, new String[] {"TABLE"});
+	}
+	
+	@Override
+	public Object parseValue(int type, String value) {
+		if (value == null) {
+			return null;
+		}
+		
+		value = value.substring(1, value.length() - 1);
+		
+		if (isNumericType(type)) {
+			value = value.substring(1, value.length() - 1);
+		}
+		
+		switch (type) {
+			case Types.TIMESTAMP:
+				Matcher matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+
+			case Types.DATE:
+				matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+			
+			case Types.TIME:
+				matcher = Pattern.compile("'(.+)'.*").matcher(value);
+				if (matcher.find()) {
+					value = matcher.group(1);
+				}
+			break;
+			
+			case Types.BIT:
+				try {
+					return Byte.parseByte(value);
+				} catch (Throwable t) {
+					try {
+						return Boolean.parseBoolean(value);
+					} catch (Throwable t1) {
+						return null;
+					}
+				}
+		}
+		
+		return super.parseValue(type, value);
 	}
 	
 	@Override
