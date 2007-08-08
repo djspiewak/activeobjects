@@ -142,13 +142,14 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(type);
 
-			return retrieveRelations(otherTableName, new String[] { "id" }, getID(), (Class<? extends Entity>) type);
+			return retrieveRelations(otherTableName, oneToManyAnnotation.value(), 
+					new String[] { "id" }, getID(), (Class<? extends Entity>) type);
 		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() && interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> throughType = manyToManyAnnotation.value();
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(throughType);
 
-			return retrieveRelations(otherTableName, getMappingFields(throughType, type), getID(), throughType, type);
+			return retrieveRelations(otherTableName, null, getMappingFields(throughType, type), getID(), throughType, type);
 		} else if (method.getName().startsWith("get")) {
 			String name = convertDowncaseName(method.getName().substring(3));
 			if (interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
@@ -436,15 +437,17 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 	}
 
-	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<V> type) throws SQLException {
-		return retrieveRelations(table, outMapFields, id, type, type);
+	private <V extends Entity> V[] retrieveRelations(String table, String[] inMapFields, String[] outMapFields, int id, Class<V> type) throws SQLException {
+		return retrieveRelations(table, inMapFields, outMapFields, id, type, type);
 	}
 
-	private <V extends Entity> V[] retrieveRelations(String table, String[] outMapFields, int id, Class<? extends Entity> type, Class<V> finalType) throws SQLException {
+	private <V extends Entity> V[] retrieveRelations(String table, String[] inMapFields, String[] outMapFields, int id, Class<? extends Entity> type, Class<V> finalType) throws SQLException {
 		List<V> back = new ArrayList<V>();
 		Connection conn = getConnectionImpl();
 
-		String[] inMapFields = getMappingFields(type, this.type);
+		if (inMapFields == null || inMapFields.length == 0) {
+			inMapFields = getMappingFields(type, this.type);
+		}
 
 		try {
 			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.outMap AS outMap FROM (");
