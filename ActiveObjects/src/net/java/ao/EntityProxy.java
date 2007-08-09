@@ -15,10 +15,6 @@
  */
 package net.java.ao;
 
-import static net.java.ao.Common.convertDowncaseName;
-import static net.java.ao.Common.getMappingFields;
-import static net.java.ao.Common.interfaceInheritsFrom;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -138,35 +134,37 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType(), onUpdateAnnotation != null);
-		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() && interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
+		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
+				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(type);
 
 			return retrieveRelations(otherTableName, oneToManyAnnotation.value(), 
 					new String[] { "id" }, getID(), (Class<? extends Entity>) type);
-		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() && interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
+		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
+				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> throughType = manyToManyAnnotation.value();
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(throughType);
 
-			return retrieveRelations(otherTableName, null, getMappingFields(throughType, type), getID(), throughType, type);
+			return retrieveRelations(otherTableName, null, Common.getMappingFields(throughType, type), getID(), throughType, type);
 		} else if (method.getName().startsWith("get")) {
-			String name = convertDowncaseName(method.getName().substring(3));
-			if (interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
+			String name = Common.convertDowncaseName(method.getName().substring(3));
+			if (Common.interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
 				name += "ID";
 			}
 
 			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation != null);
 		} else if (method.getName().startsWith("is")) {
-			String name = convertDowncaseName(method.getName().substring(2));
-			if (interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
+			String name = Common.convertDowncaseName(method.getName().substring(2));
+			if (Common.interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
 				name += "ID";
 			}
 
 			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation != null);
 		} else if (method.getName().startsWith("set")) {
-			String name = convertDowncaseName(method.getName().substring(3));
-			if (interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
+			String name = Common.convertDowncaseName(method.getName().substring(3));
+			if (Common.interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
 				name += "ID";
 			}
 			invokeSetter((T) proxy, id, tableName, name, args[0], onUpdateAnnotation != null);
@@ -354,7 +352,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 				if (instanceOf(value, type)) {
 					return (V) value;
-				} else if (interfaceInheritsFrom(type, Entity.class) && value instanceof Integer) {
+				} else if (Common.interfaceInheritsFrom(type, Entity.class) && value instanceof Integer) {
 					value = getManager().get((Class<? extends Entity>) type, (Integer) value);
 
 					cache.put(name, value);
@@ -396,7 +394,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 
 	private void invokeSetter(T entity, int id, String table, String name, Object value, boolean shouldCache) throws Throwable {
-		boolean saveable = interfaceInheritsFrom(type, SaveableEntity.class);
+		boolean saveable = Common.interfaceInheritsFrom(type, SaveableEntity.class);
 
 		Object oldValue = null;
 
@@ -446,7 +444,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		Connection conn = getConnectionImpl();
 
 		if (inMapFields == null || inMapFields.length == 0) {
-			inMapFields = getMappingFields(type, this.type);
+			inMapFields = Common.getMappingFields(type, this.type);
 		}
 
 		try {
@@ -534,7 +532,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return (V) res.getURL(field);
 		} else if (type.equals(InputStream.class)) {
 			return (V) res.getBlob(field).getBinaryStream();
-		} else if (interfaceInheritsFrom(type, Entity.class)) {
+		} else if (Common.interfaceInheritsFrom(type, Entity.class)) {
 			return (V) getManager().get((Class<? extends Entity>) type, res.getInt(field));
 		} else {
 			throw new RuntimeException("Unrecognized type: " + type.toString());
