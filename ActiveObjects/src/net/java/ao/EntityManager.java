@@ -445,6 +445,12 @@ public class EntityManager {
 					}
 				}
 				
+				for (String oldField : oldFields) {
+					if (!newFields.contains(oldField)) {
+						newFields.add(oldField);
+					}
+				}
+				
 				query.setFields(newFields.toArray(new String[newFields.size()]));
 			}
 		}
