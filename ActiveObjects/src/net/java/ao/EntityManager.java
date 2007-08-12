@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -427,6 +428,26 @@ public class EntityManager {
 	 */
 	public <T extends Entity> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
+		
+		Preload preloadAnnotation = type.getAnnotation(Preload.class);
+		if (preloadAnnotation != null) {
+			if (!query.getFields()[0].equals("*")) {
+				String[] oldFields = query.getFields();
+				List<String> newFields = new ArrayList<String>();
+				
+				for (String newField : preloadAnnotation.value()) {
+					int fieldLoc = Arrays.binarySearch(oldFields, newField);
+					
+					if (fieldLoc < 0) {
+						newFields.add(newField);
+					} else {
+						newFields.add(oldFields[fieldLoc]);
+					}
+				}
+				
+				query.setFields(newFields.toArray(new String[newFields.size()]));
+			}
+		}
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {

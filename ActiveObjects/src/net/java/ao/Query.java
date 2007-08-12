@@ -30,7 +30,7 @@ public class Query {
 	}
 	
 	private final QueryType type;
-	private final String fields;
+	private String fields;
 	
 	private boolean distinct = false;
 	
@@ -55,6 +55,22 @@ public class Query {
 	
 	public String[] getFields() {
 		return fields.split(",");
+	}
+	
+	void setFields(String[] fields) {
+		if (fields.length == 0) {
+			return;
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		for (String field : fields) {
+			builder.append(field).append(',');
+		}
+		if (fields.length > 1) {
+			builder.setLength(builder.length() - 1);
+		}
+		
+		this.fields = builder.toString();
 	}
 	
 	public Query distinct() {
