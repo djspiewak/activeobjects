@@ -154,20 +154,20 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				name += "ID";
 			}
 
-			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation != null);
+			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation == null);
 		} else if (method.getName().startsWith("is")) {
 			String name = Common.convertDowncaseName(method.getName().substring(2));
 			if (Common.interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
 				name += "ID";
 			}
 
-			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation != null);
+			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation == null);
 		} else if (method.getName().startsWith("set")) {
 			String name = Common.convertDowncaseName(method.getName().substring(3));
 			if (Common.interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
 				name += "ID";
 			}
-			invokeSetter((T) proxy, id, tableName, name, args[0], onUpdateAnnotation != null);
+			invokeSetter((T) proxy, id, tableName, name, args[0], onUpdateAnnotation == null);
 
 			return Void.TYPE;
 		}
