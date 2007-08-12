@@ -54,7 +54,14 @@ public class Query {
 	}
 	
 	public String[] getFields() {
-		return fields.split(",");
+		String[] fieldsArray = fields.split(",");
+		String[] back = new String[fieldsArray.length];
+		
+		for (int i = 0; i < fieldsArray.length; i++) {
+			back[i] = fieldsArray[i].trim();
+		}
+		
+		return back;
 	}
 	
 	void setFields(String[] fields) {

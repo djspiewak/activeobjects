@@ -431,11 +431,13 @@ public class EntityManager {
 		
 		Preload preloadAnnotation = type.getAnnotation(Preload.class);
 		if (preloadAnnotation != null) {
-			if (!query.getFields()[0].equals("*")) {
+			if (!query.getFields()[0].equals("*") && query.getJoins().isEmpty()) {
 				String[] oldFields = query.getFields();
 				List<String> newFields = new ArrayList<String>();
 				
 				for (String newField : preloadAnnotation.value()) {
+					newField = newField.trim();
+					
 					int fieldLoc = Arrays.binarySearch(oldFields, newField);
 					
 					if (fieldLoc < 0) {
@@ -445,9 +447,11 @@ public class EntityManager {
 					}
 				}
 				
-				for (String oldField : oldFields) {
-					if (!newFields.contains(oldField)) {
-						newFields.add(oldField);
+				if (!newFields.contains("*")) {
+					for (String oldField : oldFields) {
+						if (!newFields.contains(oldField)) {
+							newFields.add(oldField);
+						}
 					}
 				}
 				
