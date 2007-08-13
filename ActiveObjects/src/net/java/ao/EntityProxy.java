@@ -394,8 +394,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 
 	private void invokeSetter(T entity, int id, String table, String name, Object value, boolean shouldCache) throws Throwable {
-		boolean saveable = Common.interfaceInheritsFrom(type, SaveableEntity.class);
-
 		Object oldValue = null;
 
 		if (value != null) {
@@ -419,10 +417,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			dirtyFields.add(name);
 		} finally {
 			dirtyFieldsLock.writeLock().unlock();
-		}
-
-		if (!saveable) {
-			save();
 		}
 	}
 

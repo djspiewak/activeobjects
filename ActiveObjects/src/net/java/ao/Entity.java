@@ -28,11 +28,13 @@ public interface Entity {
 	
 	@Ignore public int getID();
 	@Ignore public void setID(int id);
+	
+	@Ignore public void save();
 
 	@Ignore public String getTableName();
 	@Ignore public EntityManager getEntityManager();
 	@Ignore public Class<? extends Entity> getEntityType();
 	
-	public void addPropertyChangeListener(PropertyChangeListener listener);
-	public void removePropertyChangeListener(PropertyChangeListener listener);
+	@Ignore public void addPropertyChangeListener(PropertyChangeListener listener);
+	@Ignore public void removePropertyChangeListener(PropertyChangeListener listener);
 }

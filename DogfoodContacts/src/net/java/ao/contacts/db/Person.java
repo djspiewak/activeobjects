@@ -32,12 +32,12 @@ package net.java.ao.contacts.db;
 
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
-import net.java.ao.SaveableEntity;
+import net.java.ao.Entity;
 
 /**
  * @author Daniel Spiewak
  */
-public interface Person extends SaveableEntity {
+public interface Person extends Entity {
 	
 	public String getFirstName();
 	public void setFirstName(String firstName);
