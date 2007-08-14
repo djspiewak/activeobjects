@@ -10,7 +10,7 @@
 	<name>ActiveObjects</name>
 	<inceptionYear>2007</inceptionYear>
 	<packaging>jar</packaging>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.5-SNAPSHOT</version>
 	<scm>
 		<connection>
 			scm:svn:https://activeobjects.dev.java.net/svn/activeobjects/trunk/ActiveObjects
