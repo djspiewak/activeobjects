@@ -1,4 +1,6 @@
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.java.ao.EntityManager;
 import net.java.ao.benchmarks.schema.Person;
@@ -14,12 +16,12 @@ import net.java.ao.schema.PluralizedNameConverter;
  * @author Daniel Spiewak
  */
 @SuppressWarnings("unused")
-public class Driver {
+public class ActiveObjectsDriver {
 	private long time = 0;
 	
 	private EntityManager manager;
 	
-	public Driver(EntityManager manager) throws SQLException {
+	public ActiveObjectsDriver(EntityManager manager) throws SQLException {
 		this.manager = manager;
 		
 		Person[] people = testQueries();
@@ -125,10 +127,12 @@ public class Driver {
 	
 	public static void main(String... args) throws SQLException {
 		EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "root", "mysqlroot");
+		Logger.getLogger("net.java.ao").setLevel(Level.FINE);
+		
 		manager.setNameConverter(new PluralizedNameConverter());
 		manager.migrate(Professional.class);
 		
-		new Driver(manager);
+		new ActiveObjectsDriver(manager);
 		manager.getProvider().dispose();
 	}
 }
