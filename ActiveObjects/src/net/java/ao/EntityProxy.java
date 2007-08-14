@@ -451,27 +451,39 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 
 		try {
-			StringBuilder sql = new StringBuilder("SELECT DISTINCT a.outMap AS outMap FROM (");
-
+			StringBuilder sql = new StringBuilder();
+			String returnField;
 			int numParams = 0;
-			for (String outMap : outMapFields) {
-				for (String inMap : inMapFields) {
-					sql.append("SELECT ");
-					sql.append(outMap);
-					sql.append(" AS outMap,");
-					sql.append(inMap);
-					sql.append(" AS inMap FROM ");
-					sql.append(table);
-					sql.append(" WHERE ");
-					sql.append(inMap);
-					sql.append(" = ? UNION ");
+			
+			if (inMapFields.length == 1 && outMapFields.length == 1) {
+				sql.append("SELECT ").append(outMapFields[0]).append(" FROM ").append(table);
+				sql.append(" WHERE ").append(inMapFields[0]).append(" = ?");
+				
+				numParams++;
+				returnField = outMapFields[0];
+			} else {
+				sql.append("SELECT DISTINCT a.outMap AS outMap FROM (");
+				returnField = "outMap";
+				
+				for (String outMap : outMapFields) {
+					for (String inMap : inMapFields) {
+						sql.append("SELECT ");
+						sql.append(outMap);
+						sql.append(" AS outMap,");
+						sql.append(inMap);
+						sql.append(" AS inMap FROM ");
+						sql.append(table);
+						sql.append(" WHERE ");
+						sql.append(inMap);
+						sql.append(" = ? UNION ");
 
-					numParams++;
+						numParams++;
+					}
 				}
-			}
 
-			sql.setLength(sql.length() - " UNION ".length());
-			sql.append(") a");
+				sql.setLength(sql.length() - " UNION ".length());
+				sql.append(") a");
+			}
 
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
@@ -482,11 +494,13 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				if (finalType.equals(this.type) && res.getInt("outMap") == id) {
+				int returnValue = res.getInt(returnField);
+				
+				if (finalType.equals(this.type) && returnValue == id) {
 					continue;
 				}
 
-				back.add(getManager().get(finalType, res.getInt("outMap")));
+				back.add(getManager().get(finalType, returnValue));
 			}
 			res.close();
 			stmt.close();
