@@ -395,16 +395,21 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 	private void invokeSetter(T entity, int id, String table, String name, Object value, boolean shouldCache) throws Throwable {
 		Object oldValue = null;
-
-		if (value != null) {
-			Class<?> type = value.getClass();
-			if (value instanceof Entity) {
-				type = ((Entity) value).getEntityType();
+		
+		cacheLock.readLock().lock();
+		try {
+			if (cache.containsKey(name) && value != null) {
+				Class<?> type = value.getClass();
+				if (value instanceof Entity) {
+					type = ((Entity) value).getEntityType();
+				}
+		
+				oldValue = invokeGetter(id, table, name, type, shouldCache);
 			}
-			
-			oldValue = invokeGetter(id, table, name, type, shouldCache);
+		} finally {
+			cacheLock.readLock().unlock();
 		}
-
+		
 		invokeSetterImpl(name, value);
 
 		PropertyChangeEvent evt = new PropertyChangeEvent(entity, name, oldValue, value);
