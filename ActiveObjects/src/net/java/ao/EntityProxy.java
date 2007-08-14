@@ -399,6 +399,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		cacheLock.readLock().lock();
 		try {
 			if (cache.containsKey(name) && value != null) {
+				cacheLock.readLock().unlock();
+				
 				Class<?> type = value.getClass();
 				if (value instanceof Entity) {
 					type = ((Entity) value).getEntityType();
@@ -407,7 +409,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				oldValue = invokeGetter(id, table, name, type, shouldCache);
 			}
 		} finally {
-			cacheLock.readLock().unlock();
+			if (oldValue == null) {
+				cacheLock.readLock().unlock();
+			}
 		}
 		
 		invokeSetterImpl(name, value);
