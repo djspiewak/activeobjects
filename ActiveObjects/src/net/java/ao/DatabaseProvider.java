@@ -432,6 +432,9 @@ public abstract class DatabaseProvider {
 			case Types.TIME:
 				return "TIME";
 				
+			case Types.TINYINT:
+				return "TINYINT";
+				
 			case Types.TIMESTAMP:
 				return "TIMESTAMP";
 				
