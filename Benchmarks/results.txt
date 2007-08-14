@@ -1,0 +1,13 @@
+ActiveObjects
+==============
+Queries test: 55 ms
+Retrieval test: 68 ms
+Persistence test: 55 ms
+Relations test: 154 ms
+
+ActiveRecord
+=============
+Queries test: 154 ms
+Retrieval test: 6 ms
+Persistence test: 76 ms
+Relations test: 75 ms

@@ -47,5 +47,5 @@ ActiveRecord::Base.establish_connection(
 	:password => 'mysqlroot',   
 	:host     => 'localhost')
 	
-ActiveRecord::Base.logger = Logger.new(STDERR)
+
 ActiveRecord::Base.colorize_logging = false

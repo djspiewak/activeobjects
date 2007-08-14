@@ -1,0 +1,61 @@
+SELECT firstName,lastName,id FROM people WHERE age < 18
+SELECT firstName,lastName,id FROM people WHERE age >= 18
+SELECT name,id FROM professions
+SELECT id FROM professionals
+SELECT firstName,lastName,id FROM people
+SELECT age FROM people WHERE id = ?
+SELECT alive FROM people WHERE id = ?
+SELECT bio FROM people WHERE id = ?
+SELECT age FROM people WHERE id = ?
+SELECT alive FROM people WHERE id = ?
+SELECT bio FROM people WHERE id = ?
+SELECT age FROM people WHERE id = ?
+SELECT alive FROM people WHERE id = ?
+SELECT bio FROM people WHERE id = ?
+SELECT age FROM people WHERE id = ?
+SELECT alive FROM people WHERE id = ?
+SELECT bio FROM people WHERE id = ?
+SELECT age FROM people WHERE id = ?
+SELECT alive FROM people WHERE id = ?
+SELECT bio FROM people WHERE id = ?
+SELECT age FROM people WHERE id = ?
+SELECT alive FROM people WHERE id = ?
+SELECT bio FROM people WHERE id = ?
+SELECT age FROM people WHERE id = ?
+SELECT alive FROM people WHERE id = ?
+SELECT bio FROM people WHERE id = ?
+UPDATE people SET firstName = ?,lastName = ? WHERE id = ?
+UPDATE people SET firstName = ?,lastName = ? WHERE id = ?
+UPDATE people SET firstName = ?,lastName = ? WHERE id = ?
+UPDATE people SET firstName = ?,lastName = ? WHERE id = ?
+UPDATE people SET firstName = ?,lastName = ? WHERE id = ?
+UPDATE people SET firstName = ?,lastName = ? WHERE id = ?
+UPDATE people SET firstName = ?,lastName = ? WHERE id = ?
+UPDATE people SET age = ?,alive = ?,bio = ? WHERE id = ?
+UPDATE people SET age = ?,alive = ?,bio = ? WHERE id = ?
+UPDATE people SET age = ?,alive = ?,bio = ? WHERE id = ?
+UPDATE people SET age = ?,alive = ?,bio = ? WHERE id = ?
+UPDATE people SET age = ?,alive = ?,bio = ? WHERE id = ?
+UPDATE people SET age = ?,alive = ?,bio = ? WHERE id = ?
+UPDATE people SET age = ?,alive = ?,bio = ? WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT professionID AS outMap,personID AS inMap FROM professionals WHERE personID = ?) a
+SELECT workplaceID FROM people WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT id AS outMap,workplaceID AS inMap FROM people WHERE workplaceID = ?) a
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT professionID AS outMap,personID AS inMap FROM professionals WHERE personID = ?) a
+SELECT workplaceID FROM people WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT id AS outMap,workplaceID AS inMap FROM people WHERE workplaceID = ?) a
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT professionID AS outMap,personID AS inMap FROM professionals WHERE personID = ?) a
+SELECT workplaceID FROM people WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT id AS outMap,workplaceID AS inMap FROM people WHERE workplaceID = ?) a
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT professionID AS outMap,personID AS inMap FROM professionals WHERE personID = ?) a
+SELECT workplaceID FROM people WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT id AS outMap,workplaceID AS inMap FROM people WHERE workplaceID = ?) a
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT professionID AS outMap,personID AS inMap FROM professionals WHERE personID = ?) a
+SELECT workplaceID FROM people WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT id AS outMap,workplaceID AS inMap FROM people WHERE workplaceID = ?) a
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT professionID AS outMap,personID AS inMap FROM professionals WHERE personID = ?) a
+SELECT workplaceID FROM people WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT id AS outMap,workplaceID AS inMap FROM people WHERE workplaceID = ?) a
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT professionID AS outMap,personID AS inMap FROM professionals WHERE personID = ?) a
+SELECT workplaceID FROM people WHERE id = ?
+SELECT DISTINCT a.outMap AS outMap FROM (SELECT id AS outMap,workplaceID AS inMap FROM people WHERE workplaceID = ?) a
