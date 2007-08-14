@@ -28,11 +28,14 @@ import net.java.ao.blog.pages.Index;
 import net.java.ao.blog.pages.ViewPost;
 import net.java.ao.schema.Generator;
 
+import org.apache.wicket.Application;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
 import org.apache.wicket.Session;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.protocol.http.HttpSessionStore;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.session.ISessionStore;
 
 /**
  * @author Daniel Spiewak
@@ -43,6 +46,10 @@ public class BlogApplication extends WebApplication {
 
 	public EntityManager getEntityManager() {
 		return manager;
+	}
+
+	public static BlogApplication get() {
+		return (BlogApplication) Application.get();
 	}
 
 	@Override
@@ -113,5 +120,12 @@ public class BlogApplication extends WebApplication {
 	protected void onDestroy() {
 		super.onDestroy();
 		manager.getProvider().dispose();
+	}
+
+	@Override
+	// TODO look for a solution for the serializable problem we have 
+	// currently and revert this to the default
+	protected ISessionStore newSessionStore() {
+		return new HttpSessionStore(this);
 	}
 }

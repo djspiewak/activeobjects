@@ -37,15 +37,16 @@ import org.apache.wicket.model.PropertyModel;
  */
 public class EditPost extends WebPage {
 	private String pageHeader = "Edit Post";
+
 	private String submitButton = "Edit";
 
 	public EditPost(Page returnPage, final Blog blog) {
 		this(returnPage, blog, new PostBean());
-		
+
 		pageHeader = "Create Post";
 		submitButton = "Create";
 	}
-	
+
 	public EditPost(final Page returnPage, final Blog blog, final Object bean) {
 		add(new Label("pageTitle", new PropertyModel(blog, "name")));
 		add(new Label("pageHeader", new PropertyModel(this, "pageHeader")));
@@ -54,7 +55,7 @@ public class EditPost extends WebPage {
 			{
 				add(new TextField("postTitle", new PropertyModel(bean, "title")));
 				add(new TextArea("postText", new PropertyModel(bean, "text")));
-				
+
 				add(new Button("submitButton", new PropertyModel(this, "submitButton")));
 			}
 
@@ -63,26 +64,17 @@ public class EditPost extends WebPage {
 				if (!(bean instanceof Post)) {
 					Post post = null;
 					PostBean postBean = (PostBean) bean;
-					
+
 					try {
 						post = ((BlogApplication) getApplication()).getEntityManager().create(Post.class, new DBParam("blogID", blog));
 					} catch (SQLException e) {
 						throw new RuntimeException(e);
 					}
-					
+
 					post.setTitle(postBean.getTitle());
 					post.setText(postBean.getText());
 					post.setPublished(Calendar.getInstance());
 				}
-				
-				if (returnPage instanceof Index) {
-					try {
-						((Index) returnPage).refreshList(((BlogApplication) getApplication()).getEntityManager());
-					} catch (SQLException e) {
-					}
-				}
-				
-				setRedirect(false);
 				setResponsePage(returnPage);
 			}
 		});
@@ -106,20 +98,21 @@ public class EditPost extends WebPage {
 
 	private static class PostBean implements Serializable {
 		private String title;
+
 		private String text;
-	
+
 		public String getTitle() {
 			return title;
 		}
-	
+
 		public void setTitle(String title) {
 			this.title = title;
 		}
-	
+
 		public String getText() {
 			return text;
 		}
-	
+
 		public void setText(String text) {
 			this.text = text;
 		}
