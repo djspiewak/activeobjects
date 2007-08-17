@@ -1,6 +1,4 @@
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.java.ao.EntityManager;
 import net.java.ao.benchmarks.schema.Person;
@@ -99,7 +97,7 @@ public class ActiveObjectsDriver {
 				String subLname = subPerson.getLastName();
 			}
 		}
-
+		
 		System.out.println("Relations test: " + stopTimer() + " ms");	
 	}
 	
@@ -127,7 +125,7 @@ public class ActiveObjectsDriver {
 	
 	public static void main(String... args) throws SQLException {
 		EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "root", "mysqlroot");
-		Logger.getLogger("net.java.ao").setLevel(Level.FINE);
+		/*Logger.getLogger("net.java.ao").setLevel(Level.FINE);*/
 		
 		manager.setNameConverter(new PluralizedNameConverter());
 		manager.migrate(Professional.class);

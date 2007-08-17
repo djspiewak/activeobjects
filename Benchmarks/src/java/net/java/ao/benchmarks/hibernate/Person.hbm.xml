@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+        
+<hibernate-mapping>
+	<class name="net.java.ao.benchmarks.hibernate.Person" table="people">
+		<id name="id" column="id">
+			<generator class="native"/>
+		</id>
+		
+		<property name="firstName" type="VARCHAR(45)" column="firstName"/>
+		<property name="lastName" type="VARCHAR(45)" column="lastName"/>
+		<property name="age" type="INTEGER" column="age"/>
+		<property name="alive" type="BOOLEAN" column="alive"/>
+		<property name="workspace" type="INTEGER" column="workspaceID"/>
+	</class>
+</hibernate-mapping>
