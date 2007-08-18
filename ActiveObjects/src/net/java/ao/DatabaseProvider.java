@@ -311,7 +311,7 @@ public abstract class DatabaseProvider {
 		}
 		
 		int offset = query.getOffset();
-		if (offset >= 0) {
+		if (offset > 0) {
 			sql.append(" OFFSET ").append(offset);
 		}
 		

@@ -45,7 +45,7 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 		int limit = query.getLimit();
 		
 		if (limit >= 0) {
-			if (query.getOffset() >= 0) {
+			if (query.getOffset() > 0) {
 				limit += query.getOffset();
 			}
 			
@@ -56,8 +56,8 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	public void setQueryResultSetProperties(ResultSet res, Query query) throws SQLException {
-		if (query.getOffset() >= 0) {
-			res.absolute(query.getOffset());
+		if (query.getOffset() > 0) {
+			res.absolute(query.getOffset() + 1);
 		}
 	}
 	

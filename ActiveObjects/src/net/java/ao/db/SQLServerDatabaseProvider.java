@@ -125,7 +125,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 				
 				int limit = query.getLimit();
 				if (limit >= 0) {
-					if (query.getOffset() >= 0) {
+					if (query.getOffset() > 0) {
 						limit += query.getOffset();
 					}
 					
