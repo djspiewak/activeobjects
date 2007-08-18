@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +61,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private ImplementationWrapper<T> implementation;
 
 	private final Map<String, Object> cache;
+	private final Set<String> nullSet;
 
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 
@@ -74,6 +76,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		this.manager = manager;
 
 		cache = new HashMap<String, Object>();
+		nullSet = new HashSet<String>();
 		dirtyFields = new LinkedHashSet<String>();
 
 		listeners = new LinkedList<PropertyChangeListener>();
@@ -225,6 +228,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 					if (cache.containsKey(field)) {
 						convertValue(stmt, index++, cache.get(field));
 					}
+					
+					if (nullSet.contains(field)) {
+						stmt.setString(index++, null);
+					}
 				}
 				stmt.setInt(index++, id);
 
@@ -300,7 +307,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 		cacheLock.writeLock().lock();
 		try {
-			if (!cache.containsKey(key)) {
+			if (value == null) {
+				nullSet.add(key);
+			} else if (!cache.containsKey(key)) {
 				cache.put(key, value);
 			}
 		} finally {
@@ -320,6 +329,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			for (String fieldName : cache.keySet()) {
 				if (!dirtyFields.contains(fieldName)) {
 					cache.remove(fieldName);
+					nullSet.remove(fieldName);
 				}
 			}
 		} finally {
@@ -360,6 +370,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				} else {
 					cache.remove(name); // invalid cached value
 				}
+			} else if (shouldCache && nullSet.contains(name)) {
+				return null;
 			}
 
 			Connection conn = getConnectionImpl();
@@ -381,8 +393,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				closeConnectionImpl(conn);
 			}
 
-			if (shouldCache && back != null) {
+			if (shouldCache) {
 				cache.put(name, back);
+				
+				if (back == null) {
+					nullSet.add(name);
+				}
 			}
 		} finally {
 			if (shouldCache) {
@@ -398,20 +414,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		cacheLock.readLock().lock();
 		try {
-			if (cache.containsKey(name) && value != null) {
-				cacheLock.readLock().unlock();
-				
-				Class<?> type = value.getClass();
-				if (value instanceof Entity) {
-					type = ((Entity) value).getEntityType();
-				}
-		
-				oldValue = invokeGetter(id, table, name, type, shouldCache);
+			if (cache.containsKey(name)) {
+				oldValue = cache.get(name);
 			}
 		} finally {
-			if (oldValue == null) {
-				cacheLock.readLock().unlock();
-			}
+			cacheLock.readLock().unlock();
 		}
 		
 		invokeSetterImpl(name, value);
@@ -433,6 +440,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		cacheLock.writeLock().lock();
 		try {
 			cache.put(name, value);
+			
+			if (value != null) {
+				nullSet.remove(name);
+			} else {
+				nullSet.add(name);
+			}
 		} finally {
 			cacheLock.writeLock().unlock();
 		}
