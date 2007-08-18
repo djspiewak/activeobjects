@@ -66,6 +66,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	public void setQueryResultSetProperties(ResultSet res, Query query) throws SQLException {
+		delegate.setQueryResultSetProperties(res, query);
+	}
+	
+	@Override
 	public ResultSet getTables(Connection conn) throws SQLException {
 		return delegate.getTables(conn);
 	}

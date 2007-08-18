@@ -46,6 +46,13 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	public void setQueryResultSetProperties(ResultSet res, Query query) throws SQLException {
+		if (query.getOffset() >= 0) {
+			res.absolute(query.getOffset());
+		}
+	}
+	
+	@Override
 	public ResultSet getTables(Connection conn) throws SQLException {
 		return conn.getMetaData().getTables(null, "dbo", null, new String[] {"TABLE"});
 	}
@@ -118,6 +125,10 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 				
 				int limit = query.getLimit();
 				if (limit >= 0) {
+					if (query.getOffset() >= 0) {
+						limit += query.getOffset();
+					}
+					
 					sql.append("TOP ").append(limit).append(' ');
 				}
 				

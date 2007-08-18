@@ -42,9 +42,22 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
-		if (query.getLimit() >= 0) {
-			stmt.setFetchSize(query.getLimit());
-			stmt.setMaxRows(query.getLimit());
+		int limit = query.getLimit();
+		
+		if (limit >= 0) {
+			if (query.getOffset() >= 0) {
+				limit += query.getOffset();
+			}
+			
+			stmt.setFetchSize(limit);
+			stmt.setMaxRows(limit);
+		}
+	}
+	
+	@Override
+	public void setQueryResultSetProperties(ResultSet res, Query query) throws SQLException {
+		if (query.getOffset() >= 0) {
+			res.absolute(query.getOffset());
 		}
 	}
 	

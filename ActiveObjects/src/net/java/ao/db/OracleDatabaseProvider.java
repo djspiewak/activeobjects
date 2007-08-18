@@ -23,6 +23,7 @@ import java.sql.Types;
 
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.Query;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 
@@ -38,6 +39,13 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("oracle.jdbc.OracleDriver");
+	}
+	
+	@Override
+	public void setQueryResultSetProperties(ResultSet res, Query query) throws SQLException {
+		if (query.getOffset() >= 0) {
+			res.absolute(query.getOffset());
+		}
 	}
 	
 	@Override
@@ -81,6 +89,20 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 		}
 		
 		return super.convertTypeToString(type);
+	}
+	
+	@Override
+	protected String renderQueryLimit(Query query) {
+		StringBuilder sql = new StringBuilder();
+		
+		int limit = query.getLimit();
+		int offset = query.getOffset();
+		if (limit >= 0) {
+			sql.append(" LIMIT ");
+			sql.append(limit + offset);
+		}
+		
+		return sql.toString();
 	}
 	
 	@Override

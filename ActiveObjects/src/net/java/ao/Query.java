@@ -43,6 +43,7 @@ public class Query {
 	private String orderClause;
 	private String groupClause;
 	private int limit = -1;
+	private int offset = -1;
 	
 	private Map<Class<? extends Entity>, String> joins;
 	
@@ -125,6 +126,12 @@ public class Query {
 		return this;
 	}
 	
+	public Query offset(int offset) {
+		this.offset = offset;
+		
+		return this;
+	}
+	
 	public Query join(Class<? extends Entity> join, String on) {
 		joins.put(join, on);
 		
@@ -199,6 +206,14 @@ public class Query {
 
 	public void setLimit(int limit) {
 		this.limit = limit;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+	
+	public void setOffset(int offset) {
+		this.offset = offset;
 	}
 
 	public Map<Class<? extends Entity>, String> getJoins() {

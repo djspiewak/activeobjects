@@ -476,6 +476,8 @@ public class EntityManager {
 			query.setParameters(stmt);
 
 			ResultSet res = stmt.executeQuery();
+			provider.setQueryResultSetProperties(res, query);
+			
 			while (res.next()) {
 				T entity = get(type, res.getInt(field));
 				

@@ -201,6 +201,9 @@ public abstract class DatabaseProvider {
 	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
 	}
 	
+	public void setQueryResultSetProperties(ResultSet res, Query query) throws SQLException {
+	}
+	
 	public ResultSet getTables(Connection conn) throws SQLException {
 		return conn.getMetaData().getTables(null, null, "", null);
 	}
@@ -305,6 +308,11 @@ public abstract class DatabaseProvider {
 		if (limit >= 0) {
 			sql.append(" LIMIT ");
 			sql.append(limit);
+		}
+		
+		int offset = query.getOffset();
+		if (offset >= 0) {
+			sql.append(" OFFSET ").append(offset);
 		}
 		
 		return sql.toString();
