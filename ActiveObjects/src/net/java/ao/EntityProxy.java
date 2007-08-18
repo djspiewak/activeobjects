@@ -227,9 +227,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				for (String field : dirtyFields) {
 					if (cache.containsKey(field)) {
 						convertValue(stmt, index++, cache.get(field));
-					}
-					
-					if (nullSet.contains(field)) {
+					} else if (nullSet.contains(field)) {
 						stmt.setString(index++, null);
 					}
 				}
@@ -357,7 +355,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			cacheLock.writeLock().lock();
 		}
 		try {
-			if (shouldCache && cache.containsKey(name)) {
+			if (shouldCache && nullSet.contains(name)) {
+				return null;
+			} else if (shouldCache && cache.containsKey(name)) {
 				Object value = cache.get(name);
 
 				if (instanceOf(value, type)) {
@@ -370,8 +370,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				} else {
 					cache.remove(name); // invalid cached value
 				}
-			} else if (shouldCache && nullSet.contains(name)) {
-				return null;
 			}
 
 			Connection conn = getConnectionImpl();
