@@ -64,6 +64,10 @@ class RelatedEntityImpl {
 			if (docs.next()) {
 				docID = docs.doc();
 			}
+			
+			if (docID < 0) {
+				return (RelatedEntity<?>[]) Array.newInstance(type, 0);
+			}
 
 			org.apache.lucene.search.Query query = more.like(docID);
 			Hits hits = searcher.search(query);
@@ -78,7 +82,7 @@ class RelatedEntityImpl {
 				back.add((RelatedEntity<?>) entity.getEntityManager().get(type, entityID));
 			}
 
-			return back.toArray((RelatedEntity<?>[]) Array.newInstance(type, hits.length()));
+			return back.toArray((RelatedEntity<?>[]) Array.newInstance(type, back.size()));
 		} finally {
 			try {
 				reader.close();
