@@ -52,9 +52,11 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	public ResultSet getTables(Connection conn) throws SQLException {
 		System.err.println("WARNING: Due to a bug in Oracle's JDBC Driver,");
 		System.err.println("WARNING: table retrieval will fail with an error");
-		System.err.println("WARNING: in native code.");
+		System.err.println("WARNING: in native code.  Thus, an empty array");
+		System.err.println("WARNING: will be returned (effectively making the");
+		System.err.println("WARNING: schema recreate each time).");
 		
-		return super.getTables(conn);
+		return null;
 	}
 	
 	@Override

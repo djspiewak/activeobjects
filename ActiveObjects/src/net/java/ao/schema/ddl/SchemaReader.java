@@ -52,6 +52,10 @@ public final class SchemaReader {
 		DatabaseMetaData dbmd = conn.getMetaData();
 		ResultSet res = provider.getTables(conn);
 		
+		if (res == null) {
+			return new DDLTable[0];
+		}
+		
 		List<DDLTable> tables = new ArrayList<DDLTable>();
 		
 		while (res.next()) {
