@@ -27,4 +27,19 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface ManyToMany {
 	Class<? extends Entity> value();
+
+	/**
+	 * <p>A String clause allowing developer-specified additional
+	 * conditions to be imposed on the relationship.  The String 
+	 * must be a proper SQL WHERE clause:</p>
+	 * 
+	 * <code>"deleted = FALSE"</code>
+	 * 
+	 * <p>One must be extremely careful with this sort of thing though
+	 * because sometimes (as is the case with the above sample), the 
+	 * unparameterized code may not execute as expected against every
+	 * database (due to differences in typing and value handling).  Thus,
+	 * in all but non-trivial cases, defined implementations should be used.</p>
+	 */
+	String where() default "";
 }
