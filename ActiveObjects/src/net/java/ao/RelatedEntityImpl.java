@@ -17,6 +17,7 @@ package net.java.ao;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.index.IndexReader;
@@ -66,13 +67,18 @@ class RelatedEntityImpl {
 
 			org.apache.lucene.search.Query query = more.like(docID);
 			Hits hits = searcher.search(query);
-			RelatedEntity<?>[] back = (RelatedEntity<?>[]) Array.newInstance(type, hits.length());
+			List<RelatedEntity<?>> back = new ArrayList<RelatedEntity<?>>();
 
-			for (int i = 0; i < back.length; i++) {
-				back[i] = (RelatedEntity<?>) entity.getEntityManager().get(type, Integer.parseInt(hits.doc(i).get(table + ".id")));
+			for (int i = 0; i < hits.length(); i++) {
+				int entityID = Integer.parseInt(hits.doc(i).get(table + ".id"));
+				if (entityID == entity.getID()) {
+					continue;
+				}
+				
+				back.add((RelatedEntity<?>) entity.getEntityManager().get(type, entityID));
 			}
 
-			return back;
+			return back.toArray((RelatedEntity<?>[]) Array.newInstance(type, hits.length()));
 		} finally {
 			try {
 				reader.close();
