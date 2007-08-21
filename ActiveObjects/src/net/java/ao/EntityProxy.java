@@ -142,7 +142,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 			String otherTableName = getManager().getNameConverter().getName(type);
 
-			return retrieveRelations(otherTableName, oneToManyAnnotation.value(), 
+			return retrieveRelations(otherTableName, oneToManyAnnotation.fields(), 
 					new String[] { "id" }, getID(), (Class<? extends Entity>) type, oneToManyAnnotation.where());
 		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {

@@ -26,7 +26,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface OneToMany {
-	String[] value() default {};
+	
+	String[] fields() default {};
 
 	/**
 	 * <p>A String clause allowing developer-specified additional
