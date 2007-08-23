@@ -79,6 +79,8 @@ public class EntityManager {
 	private RSCachingStrategy rsStrategy;
 	private final ReadWriteLock rsStrategyLock = new ReentrantReadWriteLock();
 	
+	private final RelationsCache relationsCache = new RelationsCache();
+	
 	/**
 	 * Creates a new instance of <code>EntityManager</code> using the specified
 	 * {@link DatabaseProvider}.  This constructor intializes the entity cache, as well
@@ -642,6 +644,10 @@ public class EntityManager {
 		} finally {
 			rsStrategyLock.readLock().unlock();
 		}
+	}
+
+	public RelationsCache getRelationsCache() {
+		return relationsCache;
 	}
 
 	public DatabaseProvider getProvider() {

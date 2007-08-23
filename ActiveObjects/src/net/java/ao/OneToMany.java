@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface OneToMany {
 	
-	String[] fields() default {};
+//	String[] fields() default {};
 
 	/**
 	 * <p>A String clause allowing developer-specified additional
