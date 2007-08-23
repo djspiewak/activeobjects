@@ -646,10 +646,6 @@ public class EntityManager {
 		}
 	}
 
-	public RelationsCache getRelationsCache() {
-		return relationsCache;
-	}
-
 	public DatabaseProvider getProvider() {
 		return provider;
 	}
@@ -662,7 +658,11 @@ public class EntityManager {
 			proxyLock.readLock().unlock();
 		}
 	}
-	
+
+	RelationsCache getRelationsCache() {
+		return relationsCache;
+	}
+
 	private static class CacheKey {
 		private int id;
 		private Class<? extends Entity> type;

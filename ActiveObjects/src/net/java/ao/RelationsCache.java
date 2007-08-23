@@ -15,7 +15,6 @@
  */
 package net.java.ao;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -28,7 +27,7 @@ class RelationsCache {
 	private final ReadWriteLock lock;
 
 	public RelationsCache() {
-		cache = new HashMap<CacheKey, Entity[]>();
+		cache = new SoftHashMap<CacheKey, Entity[]>();
 		lock = new ReentrantReadWriteLock();
 	}
 
@@ -46,10 +45,10 @@ class RelationsCache {
 		}
 	}
 
-	public Entity[] get(Entity from, Class<? extends Entity> toType) {
+	public <T extends Entity> T[] get(Entity from, Class<T> toType) {
 		lock.readLock().lock();
 		try {
-			return cache.get(new CacheKey(from, toType));
+			return (T[]) cache.get(new CacheKey(from, toType));
 		} finally {
 			lock.readLock().unlock();
 		}
