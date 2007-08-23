@@ -553,7 +553,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		cached = back.toArray((V[]) Array.newInstance(finalType, back.size()));
 		
-		if (type.equals(finalType)) {		// only cache one-to-many
+		if (type.equals(finalType) && where.trim().equals("")) {		// only cache one-to-many
 			getManager().getRelationsCache().put(entity, cached);
 		}
 		
