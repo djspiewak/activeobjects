@@ -15,7 +15,10 @@
  */
 package net.java.ao;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -24,10 +27,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 class RelationsCache {
 	private final Map<CacheKey, Entity[]> cache;
+	private final Map<Class<? extends Entity>, Set<CacheKey>> typeMap;
 	private final ReadWriteLock lock;
 
 	public RelationsCache() {
 		cache = new SoftHashMap<CacheKey, Entity[]>();
+		typeMap = new HashMap<Class<? extends Entity>, Set<CacheKey>>();
+		
 		lock = new ReentrantReadWriteLock();
 	}
 
@@ -40,6 +46,14 @@ class RelationsCache {
 		lock.writeLock().lock();
 		try {
 			cache.put(key, to);
+			
+			Set<CacheKey> keys = typeMap.get(key.getToType());
+			if (keys == null) {
+				keys = new HashSet<CacheKey>();
+				keys.add(key);
+				
+				typeMap.put(key.getToType(), keys);
+			}
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -52,6 +66,58 @@ class RelationsCache {
 		} finally {
 			lock.readLock().unlock();
 		}
+	}
+	
+	/**
+	 * The ReadWriteLock used internally to lock the caches.  This lock must be
+	 * 	released manually using  {@link #unlock()}
+	 */
+	public void remove(Class<? extends Entity> type) {
+		lock.writeLock().lock();
+		
+		Set<CacheKey> keys = typeMap.get(type);
+		if (keys != null) {
+			for (CacheKey key : keys) {
+				cache.remove(key);
+			}
+
+			typeMap.remove(type);
+		}
+	}
+
+	/**
+	 * The ReadWriteLock used internally to lock the caches.  This lock must be
+	 * 	released manually using  {@link #unlock()}
+	 */
+	public void remove(Class<? extends Entity>[] types) {
+		lock.writeLock().lock();
+		
+		for (Class<? extends Entity> type : types) {
+			Set<CacheKey> keys = typeMap.get(type);
+			if (keys != null) {
+				for (CacheKey key : keys) {
+					cache.remove(key);
+				}
+	
+				typeMap.remove(type);
+			}
+		}
+	}
+
+	/**
+	 * The ReadWriteLock used internally to lock the caches.  This lock must be
+	 * 	released manually using  {@link #unlock()}
+	 */
+	public void remove(Entity from, Class<? extends Entity> toType) {
+		lock.writeLock().lock();
+		
+		cache.remove(new CacheKey(from, toType));
+		typeMap.remove(toType);
+	}
+	
+	void unlock() {
+		lock.writeLock().tryLock();
+		lock.writeLock().unlock();
 	}
 
 	private static class CacheKey {

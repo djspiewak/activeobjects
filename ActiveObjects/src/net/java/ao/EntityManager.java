@@ -283,8 +283,10 @@ public class EntityManager {
 		
 		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
 		try {
+			relationsCache.remove(type);
 			back = get(type, provider.insertReturningKeys(conn, table, params));
 		} finally {
+			relationsCache.unlock();
 			DBEncapsulator.getInstance(provider).closeConnection(conn);
 		}
 		
@@ -359,10 +361,12 @@ public class EntityManager {
 						stmt.setInt(index++, entity.getID());
 					}
 					
+					relationsCache.remove(type);
 					stmt.executeUpdate();
 					stmt.close();
 				}
 			} finally {
+				relationsCache.unlock();
 				DBEncapsulator.getInstance(provider).closeConnection(conn);
 			}
 			

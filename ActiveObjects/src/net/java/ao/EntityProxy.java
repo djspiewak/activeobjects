@@ -53,7 +53,6 @@ import net.java.ao.schema.OnUpdate;
  */
 class EntityProxy<T extends Entity> implements InvocationHandler {
 	private int id;
-
 	private Class<T> type;
 
 	private EntityManager manager;
@@ -62,12 +61,13 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 	private final Map<String, Object> cache;
 	private final Set<String> nullSet;
-
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 
 	private final Set<String> dirtyFields;
-
 	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
+	
+	private final Set<Class<? extends Entity>> toFlushRelations = new HashSet<Class<? extends Entity>>();
+	private final ReadWriteLock toFlushLock = new ReentrantReadWriteLock();
 
 	private List<PropertyChangeListener> listeners;
 
@@ -133,7 +133,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		OnUpdate onUpdateAnnotation = method.getAnnotation(OnUpdate.class);
 
 		if (mutatorAnnotation != null) {
-			invokeSetter((T) proxy, id, tableName, mutatorAnnotation.value(), args[0], onUpdateAnnotation != null);
+			invokeSetter((T) proxy, mutatorAnnotation.value(), args[0], onUpdateAnnotation != null);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType(), onUpdateAnnotation != null);
@@ -167,7 +167,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			if (Common.interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
 				name += "ID";
 			}
-			invokeSetter((T) proxy, id, tableName, name, args[0], onUpdateAnnotation == null);
+			invokeSetter((T) proxy, name, args[0], onUpdateAnnotation == null);
 
 			return Void.TYPE;
 		}
@@ -229,13 +229,22 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 					}
 				}
 				stmt.setInt(index++, id);
-
+				
+				toFlushLock.writeLock().lock();
+				try {
+					getManager().getRelationsCache().remove(toFlushRelations.toArray(new Class[toFlushRelations.size()]));
+					toFlushRelations.clear();
+				} finally {
+					toFlushLock.writeLock().unlock();
+				}
+				
 				stmt.executeUpdate();
 
 				dirtyFields.removeAll(dirtyFields);
 
 				stmt.close();
 			} finally {
+				getManager().getRelationsCache().unlock();
 				cacheLock.readLock().unlock();
 
 				closeConnectionImpl(conn);
@@ -404,7 +413,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		return back;
 	}
 
-	private void invokeSetter(T entity, int id, String table, String name, Object value, boolean shouldCache) throws Throwable {
+	private void invokeSetter(T entity, String name, Object value, boolean shouldCache) throws Throwable {
 		Object oldValue = null;
 		
 		cacheLock.readLock().lock();
@@ -414,6 +423,15 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			}
 		} finally {
 			cacheLock.readLock().unlock();
+		}
+		
+		if (value instanceof Entity) {
+			toFlushLock.writeLock().lock();
+			try {
+				toFlushRelations.add(((Entity) value).getEntityType());
+			} finally {
+				toFlushLock.writeLock().unlock();
+			}
 		}
 		
 		invokeSetterImpl(name, value);
@@ -534,7 +552,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 		
 		cached = back.toArray((V[]) Array.newInstance(finalType, back.size()));
-		getManager().getRelationsCache().put(entity, cached);
+		
+		if (type.equals(finalType)) {		// only cache one-to-many
+			getManager().getRelationsCache().put(entity, cached);
+		}
 		
 		return cached;
 	}
