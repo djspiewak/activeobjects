@@ -471,7 +471,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private <V extends Entity> V[] retrieveRelations(Entity entity, String[] inMapFields, String[] outMapFields, Class<? extends Entity> type, 
 			Class<V> finalType, String where) throws SQLException {
 		V[] cached = getManager().getRelationsCache().get(entity, finalType);
-		if (cached != null) {
+		if (cached != null && where.trim().equals("")) {
 			return cached;
 		}
 		
