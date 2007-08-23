@@ -140,18 +140,14 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
-			String otherTableName = getManager().getNameConverter().getName(type);
 
-			return retrieveRelations(otherTableName, new String[0], 
-					new String[] { "id" }, getID(), (Class<? extends Entity>) type, oneToManyAnnotation.where());
+			return retrieveRelations(new String[0], new String[] { "id" }, (Class<? extends Entity>) type, oneToManyAnnotation.where());
 		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> throughType = manyToManyAnnotation.value();
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
-			String otherTableName = getManager().getNameConverter().getName(throughType);
 
-			return retrieveRelations(otherTableName, null, Common.getMappingFields(throughType, type), getID(), 
-					throughType, type, manyToManyAnnotation.where());
+			return retrieveRelations(null, Common.getMappingFields(throughType, type), throughType, type, manyToManyAnnotation.where());
 		} else if (method.getName().startsWith("get")) {
 			String name = Common.convertDowncaseName(method.getName().substring(3));
 			if (Common.interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
@@ -450,14 +446,15 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 	}
 
-	private <V extends Entity> V[] retrieveRelations(String table, String[] inMapFields, String[] outMapFields, int id, 
-			Class<V> type, String where) throws SQLException {
-		return retrieveRelations(table, inMapFields, outMapFields, id, type, type, where);
+	private <V extends Entity> V[] retrieveRelations(String[] inMapFields, String[] outMapFields, Class<V> type, String where) throws SQLException {
+		return retrieveRelations(inMapFields, outMapFields, type, type, where);
 	}
 
-	private <V extends Entity> V[] retrieveRelations(String table, String[] inMapFields, String[] outMapFields, int id, 
-			Class<? extends Entity> type, Class<V> finalType, String where) throws SQLException {
+	private <V extends Entity> V[] retrieveRelations(String[] inMapFields, String[] outMapFields, Class<? extends Entity> type, 
+			Class<V> finalType, String where) throws SQLException {
 		List<V> back = new ArrayList<V>();
+		String table = getManager().getNameConverter().getName(type);
+		
 		Connection conn = getConnectionImpl();
 
 		if (inMapFields == null || inMapFields.length == 0) {
