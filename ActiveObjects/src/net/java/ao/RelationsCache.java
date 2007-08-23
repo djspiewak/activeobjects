@@ -55,15 +55,6 @@ class RelationsCache {
 		}
 	}
 
-	public boolean contains(Entity from, Class<? extends Entity> toType) {
-		lock.readLock().lock();
-		try {
-			return cache.containsKey(new CacheKey(from, toType));
-		} finally {
-			lock.readLock().unlock();
-		}
-	}
-
 	private static class CacheKey {
 		private Entity from;
 		private Class<? extends Entity> toType;
