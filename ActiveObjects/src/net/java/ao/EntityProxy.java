@@ -45,6 +45,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import net.java.ao.schema.OnUpdate;
 
@@ -52,6 +53,8 @@ import net.java.ao.schema.OnUpdate;
  * @author Daniel Spiewak
  */
 class EntityProxy<T extends Entity> implements InvocationHandler {
+	private static final Pattern WHERE_PATTERN = Pattern.compile("([\\d\\w]+)\\s*(=|>|<|LIKE|IS)");
+	
 	private int id;
 	private Class<T> type;
 
