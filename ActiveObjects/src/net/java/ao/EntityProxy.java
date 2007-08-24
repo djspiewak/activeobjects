@@ -249,7 +249,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 				stmt.close();
 			} finally {
-				getManager().getRelationsCache().unlock();
 				cacheLock.readLock().unlock();
 
 				closeConnectionImpl(conn);
@@ -478,7 +477,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		String[] fields = getFields(outMapFields, where);
 		V[] cached = getManager().getRelationsCache().get(entity, finalType, fields);
 		
-		if (cached != null && where.trim().equals("")) {
+		if (cached != null) {
 			return cached;
 		}
 		

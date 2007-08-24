@@ -33,7 +33,7 @@ class RelationsCache {
 	private final ReadWriteLock lock;
 
 	public RelationsCache() {
-		cache = new SoftHashMap<CacheKey, Entity[]>();
+		cache = new HashMap<CacheKey, Entity[]>();
 		typeMap = new HashMap<Class<? extends Entity>, Set<CacheKey>>();
 		fieldMap = new HashMap<MetaCacheKey, Set<CacheKey>>();
 		
@@ -87,14 +87,17 @@ class RelationsCache {
 	 */
 	public void remove(Class<? extends Entity> type) {
 		lock.writeLock().lock();
-		
-		Set<CacheKey> keys = typeMap.get(type);
-		if (keys != null) {
-			for (CacheKey key : keys) {
-				cache.remove(key);
+		try {
+			Set<CacheKey> keys = typeMap.get(type);
+			if (keys != null) {
+				for (CacheKey key : keys) {
+					cache.remove(key);
+				}
+	
+				typeMap.remove(type);
 			}
-
-			typeMap.remove(type);
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 
@@ -104,16 +107,19 @@ class RelationsCache {
 	 */
 	public void remove(Class<? extends Entity>[] types) {
 		lock.writeLock().lock();
+		try {
+			for (Class<? extends Entity> type : types) {
+				Set<CacheKey> keys = typeMap.get(type);
+				if (keys != null) {
+					for (CacheKey key : keys) {
+						cache.remove(key);
+					}
 		
-		for (Class<? extends Entity> type : types) {
-			Set<CacheKey> keys = typeMap.get(type);
-			if (keys != null) {
-				for (CacheKey key : keys) {
-					cache.remove(key);
+					typeMap.remove(type);
 				}
-	
-				typeMap.remove(type);
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
 	}
 
@@ -123,20 +129,18 @@ class RelationsCache {
 	 */
 	void remove(Entity from, Class<? extends Entity> toType, String[] fields) {
 		lock.writeLock().tryLock();
-		
-		for (String field : fields) {
-			Set<CacheKey> keys = fieldMap.get(new MetaCacheKey(from, toType, field));
-			if (keys != null) {
-				for (CacheKey key : keys) {
-					cache.remove(key);
+		try {
+			for (String field : fields) {
+				Set<CacheKey> keys = fieldMap.get(new MetaCacheKey(from, toType, field));
+				if (keys != null) {
+					for (CacheKey key : keys) {
+						cache.remove(key);
+					}
 				}
 			}
+		} finally {
+			lock.writeLock().unlock();
 		}
-	}
-	
-	void unlock() {
-		lock.writeLock().tryLock();
-		lock.writeLock().unlock();
 	}
 
 	private static class CacheKey {
@@ -179,6 +183,11 @@ class RelationsCache {
 		}
 		
 		@Override
+		public String toString() {
+			return from.toString() + "; " + toType.getName() + "; " + Arrays.toString(fields);
+		}
+		
+		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof CacheKey) {
 				CacheKey key = (CacheKey) obj;
@@ -189,12 +198,12 @@ class RelationsCache {
 					}
 				}
 				if (key.getToType() != null) {
-					if (!key.getToType().equals(toType)) {
+					if (!key.getToType().getName().equals(toType.getName())) {
 						return false;
 					}
 				}
 				if (key.getFields() != null) {
-					if (!key.getFields().equals(fields)) {
+					if (!Arrays.equals(key.getFields(), fields)) {
 						return false;
 					}
 				}
@@ -213,10 +222,12 @@ class RelationsCache {
 				hashCode += from.hashCode();
 			}
 			if (toType != null) {
-				hashCode += toType.hashCode();
+				hashCode += toType.getName().hashCode();
 			}
 			if (fields != null) {
-				hashCode += fields.hashCode();
+				for (String field : fields) {
+					hashCode += field.hashCode();
+				}
 			}
 			
 			return hashCode;
@@ -259,6 +270,11 @@ class RelationsCache {
 		}
 		
 		@Override
+		public String toString() {
+			return from.toString() + "; " + toType.getName() + "; " + field;
+		}
+		
+		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof MetaCacheKey) {
 				MetaCacheKey key = (MetaCacheKey) obj;
@@ -269,7 +285,7 @@ class RelationsCache {
 					}
 				}
 				if (key.getToType() != null) {
-					if (!key.getToType().equals(toType)) {
+					if (!key.getToType().getName().equals(toType.getName())) {
 						return false;
 					}
 				}

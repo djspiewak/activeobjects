@@ -286,7 +286,6 @@ public class EntityManager {
 			relationsCache.remove(type);
 			back = get(type, provider.insertReturningKeys(conn, table, params));
 		} finally {
-			relationsCache.unlock();
 			DBEncapsulator.getInstance(provider).closeConnection(conn);
 		}
 		
@@ -366,7 +365,6 @@ public class EntityManager {
 					stmt.close();
 				}
 			} finally {
-				relationsCache.unlock();
 				DBEncapsulator.getInstance(provider).closeConnection(conn);
 			}
 			
