@@ -17,9 +17,7 @@ package net.java.ao;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -31,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,6 +44,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.java.ao.schema.OnUpdate;
@@ -108,7 +108,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} else if (method.getName().equals("getID")) {
 			return getID();
 		} else if (method.getName().equals("save")) {
-			save();
+			save((Entity) proxy);
 
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
@@ -190,7 +190,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		this.id = id;
 	}
 
-	public void save() throws SQLException {
+	public void save(Entity entity) throws SQLException {
 		dirtyFieldsLock.writeLock().lock();
 		try {
 			if (dirtyFields.isEmpty()) {
@@ -240,6 +240,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				} finally {
 					toFlushLock.writeLock().unlock();
 				}
+				
+				getManager().getRelationsCache().remove(entity, type, dirtyFields.toArray(new String[dirtyFields.size()]));
 				
 				stmt.executeUpdate();
 
@@ -473,7 +475,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 	private <V extends Entity> V[] retrieveRelations(Entity entity, String[] inMapFields, String[] outMapFields, Class<? extends Entity> type, 
 			Class<V> finalType, String where) throws SQLException {
-		V[] cached = getManager().getRelationsCache().get(entity, finalType);
+		String[] fields = getFields(outMapFields, where);
+		V[] cached = getManager().getRelationsCache().get(entity, finalType, fields);
+		
 		if (cached != null && where.trim().equals("")) {
 			return cached;
 		}
@@ -556,11 +560,23 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		cached = back.toArray((V[]) Array.newInstance(finalType, back.size()));
 		
-		if (type.equals(finalType) && where.trim().equals("")) {		// only cache one-to-many
-			getManager().getRelationsCache().put(entity, cached);
+		if (type.equals(finalType)) {		// only cache one-to-many
+			getManager().getRelationsCache().put(entity, cached, fields);
 		}
 		
 		return cached;
+	}
+	
+	private String[] getFields(String[] mapFields, String where) {
+		List<String> back = new ArrayList<String>();
+		back.addAll(Arrays.asList(mapFields));
+		
+		Matcher matcher = WHERE_PATTERN.matcher(where);
+		while (matcher.find()) {
+			back.add(matcher.group(1));
+		}
+		
+		return back.toArray(new String[back.size()]);
 	}
 
 	private <V> V convertValue(ResultSet res, String field, Class<V> type) throws SQLException {
@@ -664,16 +680,5 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 
 		return false;
-	}
-
-	// special call from ObjectOutputStream
-	private void writeObject(ObjectOutputStream oos) throws IOException {
-		try {
-			save();
-		} catch (SQLException e) {
-			throw (IOException) new IOException().initCause(e);
-		}
-
-		oos.defaultWriteObject();
 	}
 }

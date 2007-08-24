@@ -15,6 +15,7 @@
  */
 package net.java.ao;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,21 +29,23 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 class RelationsCache {
 	private final Map<CacheKey, Entity[]> cache;
 	private final Map<Class<? extends Entity>, Set<CacheKey>> typeMap;
+	private final Map<MetaCacheKey, Set<CacheKey>> fieldMap;
 	private final ReadWriteLock lock;
 
 	public RelationsCache() {
 		cache = new SoftHashMap<CacheKey, Entity[]>();
 		typeMap = new HashMap<Class<? extends Entity>, Set<CacheKey>>();
+		fieldMap = new HashMap<MetaCacheKey, Set<CacheKey>>();
 		
 		lock = new ReentrantReadWriteLock();
 	}
 
-	public void put(Entity from, Entity[] to) {
+	public void put(Entity from, Entity[] to, String[] fields) {
 		if (to.length == 0) {
 			return;
 		}
 		
-		CacheKey key = new CacheKey(from, to[0].getEntityType());
+		CacheKey key = new CacheKey(from, to[0].getEntityType(), fields);
 		lock.writeLock().lock();
 		try {
 			cache.put(key, to);
@@ -50,19 +53,29 @@ class RelationsCache {
 			Set<CacheKey> keys = typeMap.get(key.getToType());
 			if (keys == null) {
 				keys = new HashSet<CacheKey>();
-				keys.add(key);
-				
 				typeMap.put(key.getToType(), keys);
+			}
+			keys.add(key);
+			
+			for (String field : fields) {
+				MetaCacheKey metaKey = new MetaCacheKey(from, key.getToType(), field);
+				
+				keys = fieldMap.get(metaKey);
+				if (keys == null) {
+					keys = new HashSet<CacheKey>();
+					fieldMap.put(metaKey, keys);
+				}
+				keys.add(key);
 			}
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
 
-	public <T extends Entity> T[] get(Entity from, Class<T> toType) {
+	public <T extends Entity> T[] get(Entity from, Class<T> toType, String[] fields) {
 		lock.readLock().lock();
 		try {
-			return (T[]) cache.get(new CacheKey(from, toType));
+			return (T[]) cache.get(new CacheKey(from, toType, fields));
 		} finally {
 			lock.readLock().unlock();
 		}
@@ -108,11 +121,17 @@ class RelationsCache {
 	 * The ReadWriteLock used internally to lock the caches.  This lock must be
 	 * 	released manually using  {@link #unlock()}
 	 */
-	public void remove(Entity from, Class<? extends Entity> toType) {
-		lock.writeLock().lock();
+	void remove(Entity from, Class<? extends Entity> toType, String[] fields) {
+		lock.writeLock().tryLock();
 		
-		cache.remove(new CacheKey(from, toType));
-		typeMap.remove(toType);
+		for (String field : fields) {
+			Set<CacheKey> keys = fieldMap.get(new MetaCacheKey(from, toType, field));
+			if (keys != null) {
+				for (CacheKey key : keys) {
+					cache.remove(key);
+				}
+			}
+		}
 	}
 	
 	void unlock() {
@@ -124,9 +143,13 @@ class RelationsCache {
 		private Entity from;
 		private Class<? extends Entity> toType;
 		
-		public CacheKey(Entity from, Class<? extends Entity> toType) {
+		private String[] fields;
+		
+		public CacheKey(Entity from, Class<? extends Entity> toType, String[] fields) {
 			this.from = from;
 			this.toType = toType;
+			
+			setFields(fields);
 		}
 
 		public Entity getFrom() {
@@ -144,6 +167,16 @@ class RelationsCache {
 		public void setToType(Class<? extends Entity> toType) {
 			this.toType = toType;
 		}
+
+		public String[] getFields() {
+			return fields;
+		}
+
+		public void setFields(String[] fields) {
+			Arrays.sort(fields);
+			
+			this.fields = fields;
+		}
 		
 		@Override
 		public boolean equals(Object obj) {
@@ -157,6 +190,11 @@ class RelationsCache {
 				}
 				if (key.getToType() != null) {
 					if (!key.getToType().equals(toType)) {
+						return false;
+					}
+				}
+				if (key.getFields() != null) {
+					if (!key.getFields().equals(fields)) {
 						return false;
 					}
 				}
@@ -176,6 +214,89 @@ class RelationsCache {
 			}
 			if (toType != null) {
 				hashCode += toType.hashCode();
+			}
+			if (fields != null) {
+				hashCode += fields.hashCode();
+			}
+			
+			return hashCode;
+		}
+	}
+	
+	private static class MetaCacheKey {
+		private Entity from;
+		private Class<? extends Entity> toType;
+		private String field;
+		
+		public MetaCacheKey(Entity entity, Class<? extends Entity> toType, String field) {
+			this.from = entity;
+			this.toType = toType;
+			this.field = field;
+		}
+
+		public Entity getFrom() {
+			return from;
+		}
+
+		public void setFrom(Entity entity) {
+			this.from = entity;
+		}
+
+		public Class<? extends Entity> getToType() {
+			return toType;
+		}
+
+		public void setToType(Class<? extends Entity> toType) {
+			this.toType = toType;
+		}
+
+		public String getField() {
+			return field;
+		}
+
+		public void setField(String field) {
+			this.field = field;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof MetaCacheKey) {
+				MetaCacheKey key = (MetaCacheKey) obj;
+				
+				if (key.getFrom() != null) {
+					if (!key.getFrom().equals(from)) {
+						return false;
+					}
+				}
+				if (key.getToType() != null) {
+					if (!key.getToType().equals(toType)) {
+						return false;
+					}
+				}
+				if (key.getField() != null) {
+					if (!key.getField().equals(field)) {
+						return false;
+					}
+				}
+				
+				return true;
+			}
+			
+			return super.equals(obj);
+		}
+		
+		@Override
+		public int hashCode() {
+			int hashCode = 0;
+			
+			if (from != null) {
+				hashCode += from.hashCode();
+			}
+			if (toType != null) {
+				hashCode += toType.hashCode();
+			}
+			if (field != null) {
+				hashCode += field.hashCode();
 			}
 			
 			return hashCode;
