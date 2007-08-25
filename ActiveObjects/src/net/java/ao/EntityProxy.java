@@ -504,7 +504,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				
 				sql.append(finalTable).append(".id,");
 				for (String field : preloadAnnotation.value()) {
-					sql.append(finalTable).append('.').append(field);
+					sql.append(finalTable).append('.').append(field).append(',');
 				}
 				sql.setLength(sql.length() - 1);
 				
