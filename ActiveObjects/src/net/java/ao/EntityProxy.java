@@ -484,7 +484,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		List<V> back = new ArrayList<V>();
 		String table = getManager().getNameConverter().getName(type);
-		boolean oneToMany = inMapFields == null || inMapFields.length == 0;
 		Preload preloadAnnotation = finalType.getAnnotation(Preload.class);
 		
 		Connection conn = getConnectionImpl();
@@ -498,7 +497,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			String returnField;
 			int numParams = 0;
 			
-			if (oneToMany && preloadAnnotation != null) {
+			if (inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
 				String finalTable = getManager().getNameConverter().getName(finalType);
 				
 				sql.append("SELECT ");
@@ -514,7 +513,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				sql.append(table).append('.').append(inMapFields[0]);
 				sql.append(" = ").append(finalTable).append(".id");
 				
-				sql.append(" WHERE ").append(table).append(".id = ?");
+				sql.append(" WHERE ").append(table).append('.').append(inMapFields[0]).append(" = ?");
 				
 				if (!where.trim().equals("")) {
 					sql.append(" AND (").append(where).append(")");
