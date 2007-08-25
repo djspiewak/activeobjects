@@ -26,6 +26,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -483,6 +484,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		List<V> back = new ArrayList<V>();
 		String table = getManager().getNameConverter().getName(type);
+		boolean oneToMany = inMapFields == null || inMapFields.length == 0;
+		Preload preloadAnnotation = finalType.getAnnotation(Preload.class);
 		
 		Connection conn = getConnectionImpl();
 
@@ -495,7 +498,31 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			String returnField;
 			int numParams = 0;
 			
-			if (inMapFields.length == 1 && outMapFields.length == 1) {
+			if (oneToMany && preloadAnnotation != null) {
+				String finalTable = getManager().getNameConverter().getName(finalType);
+				
+				sql.append("SELECT ");
+				
+				sql.append(finalTable).append(".id,");
+				for (String field : preloadAnnotation.value()) {
+					sql.append(finalTable).append('.').append(field);
+				}
+				sql.setLength(sql.length() - 1);
+				
+				sql.append(" FROM ").append(table).append(" INNER JOIN ");
+				sql.append(finalTable).append(" ON ");
+				sql.append(table).append('.').append(inMapFields[0]);
+				sql.append(" = ").append(finalTable).append(".id");
+				
+				sql.append(" WHERE ").append(table).append(".id = ?");
+				
+				if (!where.trim().equals("")) {
+					sql.append(" AND (").append(where).append(")");
+				}
+				
+				numParams++;
+				returnField = "id";
+			} else if (inMapFields.length == 1 && outMapFields.length == 1) {
 				sql.append("SELECT ").append(outMapFields[0]).append(" FROM ").append(table);
 				sql.append(" WHERE ").append(inMapFields[0]).append(" = ?");
 				
@@ -549,7 +576,13 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 					continue;
 				}
 
-				back.add(getManager().get(finalType, returnValue));
+				V returnValueEntity = getManager().get(finalType, returnValue);
+				ResultSetMetaData md = res.getMetaData();
+				for (int i = 0; i < md.getColumnCount(); i++) {
+					getManager().getProxyForEntity(returnValueEntity).addToCache(md.getColumnName(i + 1), res.getObject(i + 1));
+				}
+
+				back.add(returnValueEntity);
 			}
 			res.close();
 			stmt.close();
