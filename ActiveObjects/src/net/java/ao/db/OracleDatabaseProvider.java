@@ -26,6 +26,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.types.DatabaseType;
 
 /**
  * @author Daniel Spiewak
@@ -60,8 +61,8 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	protected String convertTypeToString(int type) {
-		switch (type) {
+	protected String convertTypeToString(DatabaseType<?> type) {
+		switch (type.getType()) {
 			case Types.BIGINT:
 				return "NUMBER";
 				

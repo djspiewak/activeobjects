@@ -30,6 +30,7 @@ import net.java.ao.Query;
 import net.java.ao.schema.PluggableNameConverter;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.types.DatabaseType;
 
 /**
  * @author Daniel Spiewak
@@ -170,8 +171,8 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	}
 
 	@Override
-	protected String convertTypeToString(int type) {
-		switch (type) {
+	protected String convertTypeToString(DatabaseType<?> type) {
+		switch (type.getType()) {
 			case Types.BOOLEAN:
 				return "INTEGER";
 			

@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Arrays;
 
 import net.java.ao.EntityManager;
 
@@ -28,13 +29,13 @@ import net.java.ao.EntityManager;
  * @author Daniel Spiewak
  */
 public abstract class DatabaseType<T> {
-	private final int type, precision;
+	private final int type, defaultPrecision;
 	
 	private final Class<?>[] handledTypes;
 	
-	protected DatabaseType(int type, int precision, Class<?>... handledTypes) {
+	protected DatabaseType(int type, int defaultPrecision, Class<?>... handledTypes) {
 		this.type = type;
-		this.precision = precision;
+		this.defaultPrecision = defaultPrecision;
 		this.handledTypes = handledTypes;
 	}
 	
@@ -42,8 +43,8 @@ public abstract class DatabaseType<T> {
 		return type;
 	}
 	
-	public int getPrecision() {
-		return precision;
+	public int getDefaultPrecision() {
+		return defaultPrecision;
 	}
 	
 	public boolean isHandlerFor(int type) {
@@ -71,6 +72,30 @@ public abstract class DatabaseType<T> {
 	public abstract T convert(EntityManager manager, ResultSet res, Class<? extends T> type, String field) throws SQLException;
 	
 	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DatabaseType) {
+			DatabaseType<?> type = (DatabaseType<?>) obj;
+			
+			if (type.type == this.type && type.defaultPrecision == defaultPrecision && Arrays.equals(type.handledTypes, handledTypes)) {
+				return true;
+			}
+		}
+		
+		return super.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		int hashCode = type + defaultPrecision;
+		
+		for (Class<?> type : handledTypes) {
+			hashCode += type.hashCode();
+		}
+		
+		return hashCode;
+	}
+	
+	@Override
 	public String toString() {
 		String back = "GENERIC";
 		
@@ -87,8 +112,8 @@ public abstract class DatabaseType<T> {
 			}
 		}
 		
-		if (precision > 0) {
-			back += "(" + precision + ")";
+		if (defaultPrecision > 0) {
+			back += "(" + defaultPrecision + ")";
 		}
 		
 		return back;

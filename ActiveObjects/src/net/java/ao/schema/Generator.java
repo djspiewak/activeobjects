@@ -41,11 +41,14 @@ import java.util.logging.Logger;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
+import net.java.ao.ManyToMany;
+import net.java.ao.OneToMany;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.schema.ddl.SchemaReader;
+import net.java.ao.types.TypeManager;
 
 /**
  * @author Daniel Spiewak
@@ -202,19 +205,22 @@ public final class Generator {
 	private static DDLField[] parseFields(Class<? extends Entity> clazz) {
 		List<DDLField> fields = new ArrayList<DDLField>();
 		List<String> attributes = new LinkedList<String>();
+		TypeManager manager = TypeManager.getInstance();
 		
 		DDLField field = new DDLField();
 		
 		field.setName("id");
 		field.setAutoIncrement(true);
 		field.setNotNull(true);
-		field.setType(Types.INTEGER);
+		field.setType(manager.getType(Types.INTEGER));
 		field.setPrimaryKey(true);
 		
 		fields.add(field);
 		
 		for (Method method : clazz.getMethods()) {
-			if (method.getAnnotation(Ignore.class) != null) {
+			if (method.getAnnotation(Ignore.class) != null
+					|| method.getAnnotation(OneToMany.class) != null
+					|| method.getAnnotation(ManyToMany.class) != null) {
 				continue;
 			}
 			
@@ -233,8 +239,6 @@ public final class Generator {
 				
 				if (interfaceInheritsFrom(type, Entity.class)) {
 					sqlType = Types.INTEGER;
-				} else if (type.isArray()) {
-					continue;
 				} else {
 					SQLTypeEnum intType = SQLTypeEnum.getType(type);
 					
@@ -254,7 +258,7 @@ public final class Generator {
 				field = new DDLField();
 				
 				field.setName(attributeName);
-				field.setType(sqlType);
+				field.setType(manager.getType(sqlType));
 				field.setPrecision(precision);
 				field.setScale(scale);
 				

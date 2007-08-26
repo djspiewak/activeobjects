@@ -33,6 +33,7 @@ import java.util.Set;
 import net.java.ao.Common;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
+import net.java.ao.types.TypeManager;
 
 /**
  * @author Daniel Spiewak
@@ -51,6 +52,7 @@ public final class SchemaReader {
 		Connection conn = provider.getConnection();
 		DatabaseMetaData dbmd = conn.getMetaData();
 		ResultSet res = provider.getTables(conn);
+		TypeManager manager = TypeManager.getInstance();
 		
 		if (res == null) {
 			return new DDLTable[0];
@@ -80,7 +82,7 @@ public final class SchemaReader {
 				DDLField field = new DDLField();
 				
 				field.setName(rsmd.getColumnName(i));
-				field.setType(rsmd.getColumnType(i));
+				field.setType(manager.getType(rsmd.getColumnType(i)));
 				
 				field.setPrecision(rsmd.getPrecision(i));
 				field.setScale(rsmd.getScale(i));
@@ -96,7 +98,7 @@ public final class SchemaReader {
 			while (res.next()) {
 				DDLField field = fields.get(res.getString("COLUMN_NAME"));
 				
-				field.setDefaultValue(provider.parseValue(field.getType(), res.getString("COLUMN_DEF")));
+				field.setDefaultValue(provider.parseValue(field.getType().getType(), res.getString("COLUMN_DEF")));
 				field.setNotNull(res.getString("IS_NULLABLE").equals("NO"));
 			}
 			res.close();
@@ -239,7 +241,7 @@ public final class SchemaReader {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.getScale() != ontoField.getScale()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
-				}*/ else if (!Common.fuzzyTypeCompare(fromField.getType(), ontoField.getType())) {
+				}*/ else if (!Common.fuzzyTypeCompare(fromField.getType().getType(), ontoField.getType().getType())) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.isAutoIncrement() != ontoField.isAutoIncrement()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));

@@ -35,6 +35,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.types.DatabaseType;
 
 /**
  * @author Daniel Spiewak
@@ -109,8 +110,8 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	protected String convertTypeToString(int type) {
-		if (type == Types.CLOB) {
+	protected String convertTypeToString(DatabaseType<?> type) {
+		if (type.getType() == Types.CLOB) {
 			return "TEXT";
 		}
 		

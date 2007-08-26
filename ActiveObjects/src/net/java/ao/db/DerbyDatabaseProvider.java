@@ -30,6 +30,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.types.DatabaseType;
 
 /**
  * @author Daniel Spiewak
@@ -106,21 +107,21 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	protected String renderQueryLimit(Query query) {
 		return "";
 	}
-
+	
 	@Override
-	protected int sanitizeType(int type) {
-		switch (type) {
+	protected String convertTypeToString(DatabaseType<?> type) {
+		switch (type.getType()) {
 			case Types.TINYINT:
-				return Types.SMALLINT;
+				return "SMALLINT";
 				
 			case Types.BOOLEAN:
-				return Types.SMALLINT;
-			
+				return "SMALLINT";
+				
 			case Types.BIT:
-				return Types.SMALLINT;
+				return "SMALLINT";
 		}
 		
-		return super.sanitizeType(type);
+		return super.convertTypeToString(type);
 	}
 	
 	@Override
@@ -159,7 +160,7 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	@Override
 	protected boolean considerPrecision(DDLField field) {
 		boolean considerPrecision = true;
-		switch (field.getType()) {
+		switch (field.getType().getType()) {
 			case Types.BIGINT:
 				considerPrecision = false;
 			break;

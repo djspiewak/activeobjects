@@ -15,13 +15,15 @@
  */
 package net.java.ao.schema.ddl;
 
+import net.java.ao.types.DatabaseType;
+
 /**
  * @author Daniel Spiewak
  */
 public class DDLField {
 	private String name;
 	
-	private int type;		// java.sql.Types
+	private DatabaseType<?> type;
 	private int precision;
 	private int scale;
 	
@@ -41,11 +43,11 @@ public class DDLField {
 		this.name = name;
 	}
 
-	public int getType() {
+	public DatabaseType<?> getType() {
 		return type;
 	}
 
-	public void setType(int type) {
+	public void setType(DatabaseType<?> type) {
 		this.type = type;
 	}
 
@@ -120,7 +122,7 @@ public class DDLField {
 	
 	@Override
 	public int hashCode() {
-		int back = Math.abs(type);
+		int back = type.hashCode();
 		
 		if (name != null) {
 			back += name.hashCode();

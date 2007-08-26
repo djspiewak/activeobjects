@@ -19,6 +19,7 @@ import java.sql.Driver;
 import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.types.DatabaseType;
 
 /**
  * @author Daniel Spiewak
@@ -34,8 +35,8 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	protected String convertTypeToString(int type) {
-		switch (type) {
+	protected String convertTypeToString(DatabaseType<?> type) {
+		switch (type.getType()) {
 			case Types.CLOB:
 				return "TEXT";
 		}
