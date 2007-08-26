@@ -314,7 +314,7 @@ public final class Generator {
 	private static Object convertStringValue(String value, int type) {
 		if (value == null) {
 			return null;
-		} else if (value.trim().equals("NULL")) {
+		} else if (value.trim().equalsIgnoreCase("NULL")) {
 			return value.trim();
 		}
 		
