@@ -20,6 +20,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Date;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -34,7 +36,7 @@ public class TimestampDateType extends DatabaseType<Date> {
 	}
 	
 	@Override
-	public Date convert(ResultSet res, String field) throws SQLException {
+	public Date convert(EntityManager manager, ResultSet res, Class<? extends Date> type, String field) throws SQLException {
 		return res.getTimestamp(field);
 	}
 }

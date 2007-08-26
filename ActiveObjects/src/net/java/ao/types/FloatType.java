@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -33,7 +35,7 @@ public class FloatType extends DatabaseType<Float> {
 	}
 	
 	@Override
-	public Float convert(ResultSet res, String field) throws SQLException {
+	public Float convert(EntityManager manager, ResultSet res, Class<? extends Float> type, String field) throws SQLException {
 		return res.getFloat(field);
 	}
 }

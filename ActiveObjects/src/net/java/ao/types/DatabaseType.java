@@ -17,9 +17,12 @@ package net.java.ao.types;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+
+import net.java.ao.EntityManager;
 
 /**
  * @author Daniel Spiewak
@@ -49,17 +52,23 @@ public abstract class DatabaseType<T> {
 	
 	public boolean isHandlerFor(Class<?> type) {
 		for (Class<?> handled : handledTypes) {
-			if (handled.equals(type)) {
+			try {
+				handled.asSubclass(type);
+				
 				return true;
-			}
+			} catch (Throwable t) {}
 		}
 		
 		return false;
 	}
 	
+	public void putToDatabase(int index, PreparedStatement stmt, T value) throws SQLException {
+		stmt.setObject(index, stmt);
+	}
+	
 	public abstract String getDefaultName();
 	
-	public abstract T convert(ResultSet res, String field) throws SQLException;
+	public abstract T convert(EntityManager manager, ResultSet res, Class<? extends T> type, String field) throws SQLException;
 	
 	@Override
 	public String toString() {

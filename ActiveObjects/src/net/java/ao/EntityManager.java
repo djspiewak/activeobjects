@@ -17,7 +17,6 @@ package net.java.ao;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Proxy;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,6 +36,7 @@ import java.util.logging.Logger;
 import net.java.ao.schema.CamelCaseNameConverter;
 import net.java.ao.schema.Generator;
 import net.java.ao.schema.PluggableNameConverter;
+import net.java.ao.types.TypeManager;
 
 /**
  * <p>The root control class for the entire ActiveObjects API.  <code>EntityManager</code>
@@ -508,6 +508,7 @@ public class EntityManager {
 	 * row into a instance of the specified type.  The SQL itself is executed as 
 	 * a PreparedStatement with the given parameters. 
 	 */
+	@SuppressWarnings("unchecked")
 	public <T extends Entity> T[] findWithSQL(Class<T> type, String idField, String sql, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		
@@ -516,14 +517,15 @@ public class EntityManager {
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
+			TypeManager manager = TypeManager.getInstance();
 			for (int i = 0; i < parameters.length; i++) {
+				Class javaType = parameters[i].getClass();
+				
 				if (parameters[i] instanceof Entity) {
-					parameters[i] = ((Entity) parameters[i]).getID();
-				} else if (parameters[i] instanceof URL) {
-					parameters[i] = parameters[i].toString();
+					javaType = ((Entity) parameters[i]).getEntityType();
 				}
 				
-				stmt.setObject(i + 1, parameters[i]);
+				manager.getType(javaType).putToDatabase(i + 1, stmt, javaType);
 			}
 
 			ResultSet res = stmt.executeQuery();

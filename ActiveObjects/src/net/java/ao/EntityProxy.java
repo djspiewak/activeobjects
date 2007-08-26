@@ -17,12 +17,9 @@ package net.java.ao;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,8 +27,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -48,6 +43,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.java.ao.schema.OnUpdate;
+import net.java.ao.types.DatabaseType;
+import net.java.ao.types.TypeManager;
 
 /**
  * @author Daniel Spiewak
@@ -190,6 +187,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		this.id = id;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void save(Entity entity) throws SQLException {
 		dirtyFieldsLock.writeLock().lock();
 		try {
@@ -198,6 +196,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			}
 
 			String table = getTableName();
+			TypeManager manager = TypeManager.getInstance();
 			Connection conn = getConnectionImpl();
 
 			cacheLock.readLock().lock();
@@ -227,11 +226,13 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				for (String field : dirtyFields) {
 					if (cache.containsKey(field)) {
 						Object obj = cache.get(field);
+						Class javaType = obj.getClass();
+						
 						if (obj instanceof Entity) {
-							obj = ((Entity) obj).getID();
+							javaType = ((Entity) obj).getEntityType();
 						}
 						
-						stmt.setObject(index++, obj);
+						manager.getType(javaType).putToDatabase(index++, stmt, obj);
 					} else if (nullSet.contains(field)) {
 						stmt.setString(index++, null);
 					}
@@ -638,45 +639,15 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		if (res.getString(field) == null) {
 			return null;
 		}
-
-		if (type.equals(Integer.class) || type.equals(int.class)) {
-			return (V) new Integer(res.getInt(field));
-		} else if (type.equals(Long.class) || type.equals(long.class)) {
-			return (V) new Long(res.getLong(field));
-		} else if (type.equals(Short.class) || type.equals(short.class)) {
-			return (V) new Short(res.getShort(field));
-		} else if (type.equals(Float.class) || type.equals(float.class)) {
-			return (V) new Float(res.getFloat(field));
-		} else if (type.equals(Double.class) || type.equals(double.class)) {
-			return (V) new Double(res.getDouble(field));
-		} else if (type.equals(Byte.class) || type.equals(byte.class)) {
-			return (V) new Byte(res.getByte(field));
-		} else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-			return (V) new Boolean(res.getBoolean(field));
-		} else if (type.equals(String.class)) {
-			return (V) res.getString(field);
-		} else if (type.equals(URL.class)) {
-			try {
-				return (V) new URL(res.getString(field));
-			} catch (MalformedURLException e) {
-				throw (SQLException) new SQLException().initCause(e);
-			}
-		} else if (Common.typeInstanceOf(type, Calendar.class)) {
-			Calendar back = Calendar.getInstance();
-			back.setTimeInMillis(res.getTimestamp(field).getTime());
-
-			return (V) back;
-		} else if (Common.typeInstanceOf(type, Date.class)) {
-			return (V) new Date(res.getTimestamp(field).getTime());
-		} else if (type.equals(URL.class)) {
-			return (V) res.getURL(field);
-		} else if (type.equals(InputStream.class)) {
-			return (V) res.getBlob(field).getBinaryStream();
-		} else if (Common.interfaceInheritsFrom(type, Entity.class)) {
-			return (V) getManager().get((Class<? extends Entity>) type, res.getInt(field));
-		} else {
-			throw new RuntimeException("Unrecognized type: " + type.toString());
+		
+		TypeManager manager = TypeManager.getInstance();
+		DatabaseType<V> databaseType = manager.getType(type);
+		
+		if (databaseType == null) {
+			throw new RuntimeException("UnrecognizedType: " + type.toString());
 		}
+		
+		return databaseType.convert(getManager(), res, type, field);
 	}
 
 	private boolean instanceOf(Object value, Class<?> type) {

@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -33,7 +35,7 @@ public class DoubleType extends DatabaseType<Double> {
 	}
 		
 	@Override
-	public Double convert(ResultSet res, String field) throws SQLException {
+	public Double convert(EntityManager manager, ResultSet res, Class<? extends Double> type, String field) throws SQLException {
 		return res.getDouble(field);
 	}
 }

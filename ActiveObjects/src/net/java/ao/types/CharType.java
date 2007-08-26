@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -33,7 +35,7 @@ public class CharType extends DatabaseType<Character> {
 	}
 		
 	@Override
-	public Character convert(ResultSet res, String field) throws SQLException {
+	public Character convert(EntityManager manager, ResultSet res, Class<? extends Character> type, String field) throws SQLException {
 		return res.getString(field).charAt(0);
 	}
 }

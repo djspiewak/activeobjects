@@ -15,31 +15,35 @@
  */
 package net.java.ao.types;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Calendar;
 
+import net.java.ao.Entity;
 import net.java.ao.EntityManager;
 
 /**
  * @author Daniel Spiewak
  */
-public class TimestampType extends DatabaseType<Calendar> {
-	
-	public TimestampType() {
-		super(Types.TIMESTAMP, -1, Calendar.class);
-	}
+public class EntityType extends DatabaseType<Entity> {
 
-	public String getDefaultName() {
-		return "TIMESTAMP";
+	public EntityType() {
+		super(Types.INTEGER, -1, Entity.class);
 	}
 	
 	@Override
-	public Calendar convert(EntityManager manager, ResultSet res, Class<? extends Calendar> type, String field) throws SQLException {
-		Calendar back = Calendar.getInstance();
-		back.setTime(res.getTimestamp(field));
-		
-		return back;
+	public void putToDatabase(int index, PreparedStatement stmt, Entity value) throws SQLException {
+		stmt.setInt(index, value.getID());
+	}
+	
+	@Override
+	public Entity convert(EntityManager manager, ResultSet res, Class<? extends Entity> type, String field) throws SQLException {
+		return manager.get(type, res.getInt(field));
+	}
+
+	@Override
+	public String getDefaultName() {
+		return "INTEGER";
 	}
 }

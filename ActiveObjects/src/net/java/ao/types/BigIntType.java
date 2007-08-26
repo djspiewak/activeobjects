@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -33,7 +35,7 @@ public class BigIntType extends DatabaseType<Long> {
 	}
 	
 	@Override
-	public Long convert(ResultSet res, String field) throws SQLException {
+	public Long convert(EntityManager manager, ResultSet res, Class<? extends Long> type, String field) throws SQLException {
 		return res.getLong(field);
 	}
 }

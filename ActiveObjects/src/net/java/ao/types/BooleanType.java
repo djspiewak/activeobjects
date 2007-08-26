@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -33,7 +35,7 @@ public class BooleanType extends DatabaseType<Boolean> {
 	}
 	
 	@Override
-	public Boolean convert(ResultSet res, String field) throws SQLException {
+	public Boolean convert(EntityManager manager, ResultSet res, Class<? extends Boolean> type, String field) throws SQLException {
 		return res.getBoolean(field);
 	}
 }

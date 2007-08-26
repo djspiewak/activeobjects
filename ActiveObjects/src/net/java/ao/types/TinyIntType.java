@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -33,7 +35,7 @@ public class TinyIntType extends DatabaseType<Short> {
 	}
 	
 	@Override
-	public Short convert(ResultSet res, String field) throws SQLException {
+	public Short convert(EntityManager manager, ResultSet res, Class<? extends Short> type, String field) throws SQLException {
 		return res.getShort(field);
 	}
 }

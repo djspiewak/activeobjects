@@ -17,9 +17,12 @@ package net.java.ao.types;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+
+import net.java.ao.EntityManager;
 
 /**
  * @author Daniel Spiewak
@@ -35,7 +38,12 @@ public class URLType extends DatabaseType<URL> {
 	}
 	
 	@Override
-	public URL convert(ResultSet res, String field) throws SQLException {
+	public void putToDatabase(int index, PreparedStatement stmt, URL value) throws SQLException {
+		stmt.setString(index, value.toString());
+	}
+	
+	@Override
+	public URL convert(EntityManager manager, ResultSet res, Class<? extends URL> type, String field) throws SQLException {
 		try {
 			return new URL(res.getString(field));
 		} catch (MalformedURLException e) {

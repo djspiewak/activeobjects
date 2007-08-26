@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.EntityManager;
+
 /**
  * @author Daniel Spiewak
  */
@@ -33,7 +35,7 @@ public class IntegerType extends DatabaseType<Integer> {
 	}
 	
 	@Override
-	public Integer convert(ResultSet res, String field) throws SQLException {
+	public Integer convert(EntityManager manager, ResultSet res, Class<? extends Integer> type, String field) throws SQLException {
 		return res.getInt(field);
 	}
 }

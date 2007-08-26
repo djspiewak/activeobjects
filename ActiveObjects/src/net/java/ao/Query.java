@@ -15,11 +15,12 @@
  */
 package net.java.ao;
 
-import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.java.ao.types.TypeManager;
 
 /**
  * @author Daniel Spiewak
@@ -236,16 +237,19 @@ public class Query {
 		return manager.getProvider().renderQuery(this, manager.getNameConverter(), count);
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void setParameters(PreparedStatement stmt) throws SQLException {
 		if (whereParams != null) {
+			TypeManager manager = TypeManager.getInstance();
+			
 			for (int i = 0; i < whereParams.length; i++) {
+				Class javaType = whereParams[i].getClass();
+				
 				if (whereParams[i] instanceof Entity) {
-					whereParams[i] = ((Entity) whereParams[i]).getID();
-				} else if (whereParams[i] instanceof URL) {
-					whereParams[i] = whereParams[i].toString();
+					javaType = ((Entity) whereParams[i]).getEntityType();
 				}
 				
-				stmt.setObject(i + 1, whereParams[i]);
+				manager.getType(javaType).putToDatabase(i + 1, stmt, javaType);
 			}
 		}
 	}
