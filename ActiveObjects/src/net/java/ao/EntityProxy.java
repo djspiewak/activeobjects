@@ -28,7 +28,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -227,7 +226,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				int index = 1;
 				for (String field : dirtyFields) {
 					if (cache.containsKey(field)) {
-						convertValue(stmt, index++, cache.get(field));
+						Object obj = cache.get(field);
+						if (obj instanceof Entity) {
+							obj = ((Entity) obj).getID();
+						}
+						
+						stmt.setObject(index++, obj);
 					} else if (nullSet.contains(field)) {
 						stmt.setString(index++, null);
 					}
@@ -672,38 +676,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return (V) getManager().get((Class<? extends Entity>) type, res.getInt(field));
 		} else {
 			throw new RuntimeException("Unrecognized type: " + type.toString());
-		}
-	}
-
-	private void convertValue(PreparedStatement stmt, int index, Object value) throws SQLException {
-		if (value instanceof Integer) {
-			stmt.setInt(index, (Integer) value);
-		} else if (value instanceof Long) {
-			stmt.setLong(index, (Long) value);
-		} else if (value instanceof Short) {
-			stmt.setShort(index, (Short) value);
-		} else if (value instanceof Float) {
-			stmt.setFloat(index, (Float) value);
-		} else if (value instanceof Double) {
-			stmt.setDouble(index, (Double) value);
-		} else if (value instanceof Byte) {
-			stmt.setByte(index, (Byte) value);
-		} else if (value instanceof Boolean) {
-			stmt.setBoolean(index, (Boolean) value);
-		} else if (value instanceof String) {
-			stmt.setString(index, (String) value);
-		} else if (value instanceof URL) {
-			stmt.setString(index, value.toString());
-		} else if (value instanceof Calendar) {
-			stmt.setTimestamp(index, new Timestamp(((Calendar) value).getTimeInMillis()));
-		} else if (value instanceof Date) {
-			stmt.setTimestamp(index, new Timestamp(((Date) value).getTime()));
-		} else if (value instanceof Entity) {
-			stmt.setInt(index, ((Entity) value).getID());
-		} else if (value == null) {
-			stmt.setString(index, null);
-		} else {
-			throw new RuntimeException("Unrecognized type: " + value.getClass().toString());
 		}
 	}
 
