@@ -15,6 +15,8 @@
  */
 package net.java.ao.types;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -24,18 +26,35 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-class CharType extends DatabaseType<Character> {
+class GenericType extends DatabaseType<Object> {
 
-	public CharType() {
-		super(Types.CHAR, -1, char.class, Character.class);
+	protected GenericType(int type) {
+		super(type, -1);
 	}
+	
 
-	public String getDefaultName() {
-		return "CHAR";
-	}
-		
 	@Override
-	public Character convert(EntityManager manager, ResultSet res, Class<? extends Character> type, String field) throws SQLException {
-		return res.getString(field).charAt(0);
+	public Object convert(EntityManager manager, ResultSet res, Class<? extends Object> type, String field) throws SQLException {
+		return res.getObject(field);
+	}
+
+	@Override
+	public String getDefaultName() {
+		String back = "GENERIC";
+		
+		Class<Types> clazz = Types.class;
+		for (Field field : clazz.getFields()) {
+			if (Modifier.isStatic(field.getModifiers())) {
+				try {
+					if (field.get(null).equals(getType())) {
+						back = field.getName();
+					}
+				} catch (IllegalArgumentException e) {
+				} catch (IllegalAccessException e) {
+				}
+			}
+		}
+		
+		return back;
 	}
 }

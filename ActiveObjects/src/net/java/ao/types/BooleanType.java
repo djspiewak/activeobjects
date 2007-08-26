@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class BooleanType extends DatabaseType<Boolean> {
+class BooleanType extends DatabaseType<Boolean> {
 
 	protected BooleanType() {
 		super(Types.BOOLEAN, -1, boolean.class, Boolean.class);

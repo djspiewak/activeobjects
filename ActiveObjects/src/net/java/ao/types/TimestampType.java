@@ -25,7 +25,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class TimestampType extends DatabaseType<Calendar> {
+class TimestampType extends DatabaseType<Calendar> {
 	
 	public TimestampType() {
 		super(Types.TIMESTAMP, -1, Calendar.class);

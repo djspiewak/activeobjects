@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class IntegerType extends DatabaseType<Integer> {
+class IntegerType extends DatabaseType<Integer> {
 	
 	public IntegerType() {
 		super(Types.INTEGER, -1, int.class, Integer.class);

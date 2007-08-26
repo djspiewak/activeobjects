@@ -105,9 +105,11 @@ public class TypeManager {
 				}
 			}
 			
-			if (back != null) {
-				intIndex.put(sqlType, back);
+			if (back == null) {
+				back = new GenericType(sqlType);
 			}
+			
+			intIndex.put(sqlType, back);
 		} finally {
 			intIndexLock.writeLock().unlock();
 		}

@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class TinyIntType extends DatabaseType<Short> {
+class TinyIntType extends DatabaseType<Short> {
 
 	protected TinyIntType() {
 		super(Types.TINYINT, -1, short.class, Short.class);

@@ -26,7 +26,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class EntityType extends DatabaseType<Entity> {
+class EntityType extends DatabaseType<Entity> {
 
 	public EntityType() {
 		super(Types.INTEGER, -1, Entity.class);

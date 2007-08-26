@@ -25,7 +25,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class TimestampDateType extends DatabaseType<Date> {
+class TimestampDateType extends DatabaseType<Date> {
 	
 	public TimestampDateType() {
 		super(Types.TIMESTAMP, -1, Date.class);

@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class VarcharType extends DatabaseType<String> {
+class VarcharType extends DatabaseType<String> {
 
 	public VarcharType() {
 		super(Types.VARCHAR, 45, String.class);

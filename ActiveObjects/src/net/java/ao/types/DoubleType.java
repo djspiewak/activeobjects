@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class DoubleType extends DatabaseType<Double> {
+class DoubleType extends DatabaseType<Double> {
 
 	public DoubleType() {
 		super(Types.DOUBLE, -1, double.class, Double.class);

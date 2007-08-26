@@ -27,7 +27,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class URLType extends DatabaseType<URL> {
+class URLType extends DatabaseType<URL> {
 
 	public URLType() {
 		super(Types.VARCHAR, 255, URL.class);

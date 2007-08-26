@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class FloatType extends DatabaseType<Float> {
+class FloatType extends DatabaseType<Float> {
 	
 	public FloatType() {
 		super(Types.FLOAT, -1, float.class, Float.class);
