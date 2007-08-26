@@ -484,11 +484,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		List<V> back = new ArrayList<V>();
 		String table = getManager().getNameConverter().getName(type);
+		boolean oneToMany = inMapFields == null || inMapFields.length == 0;
 		Preload preloadAnnotation = finalType.getAnnotation(Preload.class);
 		
 		Connection conn = getConnectionImpl();
 
-		if (inMapFields == null || inMapFields.length == 0) {
+		if (oneToMany) {
 			inMapFields = Common.getMappingFields(type, this.type);
 		}
 
@@ -497,7 +498,26 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			String returnField;
 			int numParams = 0;
 			
-			if (inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
+			if (oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
+				sql.append("SELECT ");
+				
+				sql.append(inMapFields[0]).append(',');
+				for (String field : preloadAnnotation.value()) {
+					sql.append(field).append(',');
+				}
+				sql.setLength(sql.length() - 1);
+				
+				sql.append(" FROM ").append(table);
+				
+				sql.append(" WHERE ").append(inMapFields[0]).append(" = ?");
+				
+				if (!where.trim().equals("")) {
+					sql.append(" AND (").append(where).append(")");
+				}
+				
+				numParams++;
+				returnField = inMapFields[0];
+			} else if (!oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
 				String finalTable = getManager().getNameConverter().getName(finalType);
 				
 				sql.append("SELECT ");
