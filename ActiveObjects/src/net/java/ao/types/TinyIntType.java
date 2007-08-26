@@ -27,8 +27,11 @@ public class TinyIntType extends DatabaseType<Short> {
 	protected TinyIntType() {
 		super(Types.TINYINT, -1, short.class, Short.class);
 	}
-	
 
+	public String getDefaultName() {
+		return "TINYINT";
+	}
+	
 	@Override
 	public Short convert(ResultSet res, String field) throws SQLException {
 		return res.getShort(field);

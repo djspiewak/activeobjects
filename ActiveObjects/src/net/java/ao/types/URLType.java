@@ -29,6 +29,10 @@ public class URLType extends DatabaseType<URL> {
 	public URLType() {
 		super(Types.VARCHAR, 255, URL.class);
 	}
+
+	public String getDefaultName() {
+		return "VARCHAR";
+	}
 	
 	@Override
 	public URL convert(ResultSet res, String field) throws SQLException {

@@ -28,6 +28,10 @@ public class FloatType extends DatabaseType<Float> {
 		super(Types.FLOAT, -1, float.class, Float.class);
 	}
 
+	public String getDefaultName() {
+		return "FLOAT";
+	}
+	
 	@Override
 	public Float convert(ResultSet res, String field) throws SQLException {
 		return res.getFloat(field);

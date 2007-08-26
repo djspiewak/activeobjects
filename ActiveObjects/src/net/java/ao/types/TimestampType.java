@@ -29,6 +29,10 @@ public class TimestampType extends DatabaseType<Calendar> {
 		super(Types.TIMESTAMP, -1, Calendar.class);
 	}
 
+	public String getDefaultName() {
+		return "TIMESTAMP";
+	}
+	
 	@Override
 	public Calendar convert(ResultSet res, String field) throws SQLException {
 		Calendar back = Calendar.getInstance();

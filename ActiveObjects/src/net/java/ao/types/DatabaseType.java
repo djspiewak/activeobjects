@@ -57,6 +57,8 @@ public abstract class DatabaseType<T> {
 		return false;
 	}
 	
+	public abstract String getDefaultName();
+	
 	public abstract T convert(ResultSet res, String field) throws SQLException;
 	
 	@Override

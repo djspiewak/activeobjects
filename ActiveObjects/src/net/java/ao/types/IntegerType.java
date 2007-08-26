@@ -28,6 +28,10 @@ public class IntegerType extends DatabaseType<Integer> {
 		super(Types.INTEGER, -1, int.class, Integer.class);
 	}
 
+	public String getDefaultName() {
+		return "INTEGER";
+	}
+	
 	@Override
 	public Integer convert(ResultSet res, String field) throws SQLException {
 		return res.getInt(field);

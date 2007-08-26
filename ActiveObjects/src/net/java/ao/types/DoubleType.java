@@ -27,7 +27,11 @@ public class DoubleType extends DatabaseType<Double> {
 	public DoubleType() {
 		super(Types.DOUBLE, -1, double.class, Double.class);
 	}
-	
+
+	public String getDefaultName() {
+		return "DOUBLE";
+	}
+		
 	@Override
 	public Double convert(ResultSet res, String field) throws SQLException {
 		return res.getDouble(field);

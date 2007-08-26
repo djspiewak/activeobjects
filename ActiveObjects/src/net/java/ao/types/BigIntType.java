@@ -28,6 +28,10 @@ public class BigIntType extends DatabaseType<Long> {
 		super(Types.BIGINT, -1, long.class, Long.class);
 	}
 
+	public String getDefaultName() {
+		return "BIGINT";
+	}
+	
 	@Override
 	public Long convert(ResultSet res, String field) throws SQLException {
 		return res.getLong(field);

@@ -29,6 +29,10 @@ public class TimestampDateType extends DatabaseType<Date> {
 		super(Types.TIMESTAMP, -1, Date.class);
 	}
 
+	public String getDefaultName() {
+		return "TIMESTAMP";
+	}
+	
 	@Override
 	public Date convert(ResultSet res, String field) throws SQLException {
 		return res.getTimestamp(field);

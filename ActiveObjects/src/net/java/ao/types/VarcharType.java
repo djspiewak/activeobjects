@@ -28,6 +28,10 @@ public class VarcharType extends DatabaseType<String> {
 		super(Types.VARCHAR, 45, String.class);
 	}
 	
+	public String getDefaultName() {
+		return "VARCHAR";
+	}
+	
 	@Override
 	public String convert(ResultSet res, String field) throws SQLException {
 		return res.getString(field);

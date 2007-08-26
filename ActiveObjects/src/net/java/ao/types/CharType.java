@@ -27,7 +27,11 @@ public class CharType extends DatabaseType<Character> {
 	public CharType() {
 		super(Types.CHAR, -1, char.class, Character.class);
 	}
-	
+
+	public String getDefaultName() {
+		return "CHAR";
+	}
+		
 	@Override
 	public Character convert(ResultSet res, String field) throws SQLException {
 		return res.getString(field).charAt(0);

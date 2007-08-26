@@ -28,6 +28,10 @@ public class BooleanType extends DatabaseType<Boolean> {
 		super(Types.BOOLEAN, -1, boolean.class, Boolean.class);
 	}
 
+	public String getDefaultName() {
+		return "BOOLEAN";
+	}
+	
 	@Override
 	public Boolean convert(ResultSet res, String field) throws SQLException {
 		return res.getBoolean(field);
