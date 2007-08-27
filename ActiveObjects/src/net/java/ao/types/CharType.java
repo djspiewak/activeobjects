@@ -38,4 +38,9 @@ class CharType extends DatabaseType<Character> {
 	public Character convert(EntityManager manager, ResultSet res, Class<? extends Character> type, String field) throws SQLException {
 		return res.getString(field).charAt(0);
 	}
+
+	@Override
+	public Character defaultParseValue(String value) {
+		return value.charAt(0);
+	}
 }

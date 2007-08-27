@@ -57,6 +57,7 @@ public class TypeManager {
 		types.add(new TinyIntType());
 		types.add(new URLType());
 		types.add(new VarcharType());
+		types.add(new EntityType());
 	}
 	
 	public void addType(DatabaseType<?> type) {
@@ -81,6 +82,8 @@ public class TypeManager {
 			
 			if (back != null) {
 				classIndex.put(javaType, back);
+			} else {
+				System.out.println(javaType.getSimpleName());
 			}
 		} finally {
 			classIndexLock.writeLock().unlock();

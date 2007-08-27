@@ -525,7 +525,7 @@ public class EntityManager {
 					javaType = ((Entity) parameters[i]).getEntityType();
 				}
 				
-				manager.getType(javaType).putToDatabase(i + 1, stmt, javaType);
+				manager.getType(javaType).putToDatabase(i + 1, stmt, parameters[i]);
 			}
 
 			ResultSet res = stmt.executeQuery();

@@ -46,4 +46,9 @@ class EntityType extends DatabaseType<Entity> {
 	public String getDefaultName() {
 		return "INTEGER";
 	}
+
+	@Override
+	public Object defaultParseValue(String value) {
+		return Integer.parseInt(value);
+	}
 }

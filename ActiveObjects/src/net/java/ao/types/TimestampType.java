@@ -15,9 +15,12 @@
  */
 package net.java.ao.types;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import net.java.ao.EntityManager;
@@ -36,10 +39,28 @@ class TimestampType extends DatabaseType<Calendar> {
 	}
 	
 	@Override
+	public void putToDatabase(int index, PreparedStatement stmt, Calendar value) throws SQLException {
+		stmt.setTimestamp(index, new Timestamp(value.getTimeInMillis()));
+	}
+	
+	@Override
 	public Calendar convert(EntityManager manager, ResultSet res, Class<? extends Calendar> type, String field) throws SQLException {
 		Calendar back = Calendar.getInstance();
 		back.setTime(res.getTimestamp(field));
 		
 		return back;
+	}
+
+	@Override
+	public Calendar defaultParseValue(String value) {
+		try {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value));
+			
+			return cal;
+		} catch (java.text.ParseException e) {
+		}
+
+		return Calendar.getInstance();
 	}
 }

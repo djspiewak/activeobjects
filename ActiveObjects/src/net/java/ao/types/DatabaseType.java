@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import net.java.ao.EntityManager;
 
@@ -53,23 +55,47 @@ public abstract class DatabaseType<T> {
 	
 	public boolean isHandlerFor(Class<?> type) {
 		for (Class<?> handled : handledTypes) {
-			try {
-				handled.asSubclass(type);
-				
+			if (isSubclass(handled, type)) {
 				return true;
-			} catch (Throwable t) {}
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean isSubclass(Class<?> sup, Class<?> sub) {
+		if (sub.equals(sup)) {
+			return true;
+		} else if (sub.equals(Object.class)) {
+			return false;
+		}
+		
+		Class<?> superclass = sub.getSuperclass();
+		List<Class<?>> superclasses = new LinkedList<Class<?>>();
+		superclasses.addAll(Arrays.asList(sub.getInterfaces()));
+		
+		if (superclass != null) {
+			superclasses.add(superclass);
+		}
+		
+		for (Class<?> parent : superclasses) {
+			if (isSubclass(sup, parent)) {
+				return true;
+			}
 		}
 		
 		return false;
 	}
 	
 	public void putToDatabase(int index, PreparedStatement stmt, T value) throws SQLException {
-		stmt.setObject(index, stmt);
+		stmt.setObject(index, value, getType());
 	}
 	
 	public abstract String getDefaultName();
 	
 	public abstract T convert(EntityManager manager, ResultSet res, Class<? extends T> type, String field) throws SQLException;
+	
+	public abstract Object defaultParseValue(String value);
 	
 	@Override
 	public boolean equals(Object obj) {

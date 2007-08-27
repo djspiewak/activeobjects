@@ -57,4 +57,9 @@ class GenericType extends DatabaseType<Object> {
 		
 		return back;
 	}
+
+	@Override
+	public Object defaultParseValue(String value) {
+		return null;
+	}
 }

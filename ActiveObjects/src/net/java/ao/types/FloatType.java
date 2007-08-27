@@ -38,4 +38,9 @@ class FloatType extends DatabaseType<Float> {
 	public Float convert(EntityManager manager, ResultSet res, Class<? extends Float> type, String field) throws SQLException {
 		return res.getFloat(field);
 	}
+
+	@Override
+	public Float defaultParseValue(String value) {
+		return Float.parseFloat(value);
+	}
 }

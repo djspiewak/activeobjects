@@ -249,7 +249,7 @@ public class Query {
 					javaType = ((Entity) whereParams[i]).getEntityType();
 				}
 				
-				manager.getType(javaType).putToDatabase(i + 1, stmt, javaType);
+				manager.getType(javaType).putToDatabase(i + 1, stmt, whereParams[i]);
 			}
 		}
 	}

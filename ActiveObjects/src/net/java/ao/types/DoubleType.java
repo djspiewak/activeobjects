@@ -38,4 +38,9 @@ class DoubleType extends DatabaseType<Double> {
 	public Double convert(EntityManager manager, ResultSet res, Class<? extends Double> type, String field) throws SQLException {
 		return res.getDouble(field);
 	}
+
+	@Override
+	public Double defaultParseValue(String value) {
+		return Double.parseDouble(value);
+	}
 }

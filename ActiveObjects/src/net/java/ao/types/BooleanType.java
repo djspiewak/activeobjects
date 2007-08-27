@@ -38,4 +38,9 @@ class BooleanType extends DatabaseType<Boolean> {
 	public Boolean convert(EntityManager manager, ResultSet res, Class<? extends Boolean> type, String field) throws SQLException {
 		return res.getBoolean(field);
 	}
+
+	@Override
+	public Boolean defaultParseValue(String value) {
+		return Boolean.parseBoolean(value.trim());
+	}
 }

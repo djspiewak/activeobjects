@@ -38,4 +38,9 @@ class VarcharType extends DatabaseType<String> {
 	public String convert(EntityManager manager, ResultSet res, Class<? extends String> type, String field) throws SQLException {
 		return res.getString(field);
 	}
+
+	@Override
+	public String defaultParseValue(String value) {
+		return value;
+	}
 }

@@ -15,9 +15,13 @@
  */
 package net.java.ao.types;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import net.java.ao.EntityManager;
@@ -36,7 +40,22 @@ class TimestampDateType extends DatabaseType<Date> {
 	}
 	
 	@Override
+	public void putToDatabase(int index, PreparedStatement stmt, Date value) throws SQLException {
+		stmt.setTimestamp(index, new Timestamp(value.getTime()));
+	}
+	
+	@Override
 	public Date convert(EntityManager manager, ResultSet res, Class<? extends Date> type, String field) throws SQLException {
 		return res.getTimestamp(field);
+	}
+
+	@Override
+	public Date defaultParseValue(String value) {
+		try {
+			return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value);
+		} catch (ParseException e) {
+		}
+		
+		return new Date();
 	}
 }

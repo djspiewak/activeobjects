@@ -38,4 +38,9 @@ class IntegerType extends DatabaseType<Integer> {
 	public Integer convert(EntityManager manager, ResultSet res, Class<? extends Integer> type, String field) throws SQLException {
 		return res.getInt(field);
 	}
+
+	@Override
+	public Integer defaultParseValue(String value) {
+		return Integer.parseInt(value);
+	}
 }

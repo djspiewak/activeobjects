@@ -24,10 +24,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -48,6 +46,7 @@ import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.schema.ddl.SchemaReader;
+import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
 
 /**
@@ -233,23 +232,17 @@ public final class Generator {
 				}
 				attributes.add(attributeName);
 				
-				int sqlType = -1;
+				DatabaseType<?> sqlType = null;
 				int precision = -1;
 				int scale = -1;
 				
-				if (interfaceInheritsFrom(type, Entity.class)) {
-					sqlType = Types.INTEGER;
-				} else {
-					SQLTypeEnum intType = SQLTypeEnum.getType(type);
-					
-					sqlType = intType.getSQLType();
-					precision = SQLTypeEnum.getType(type).getPrecision();
-				}
+				sqlType = manager.getType(type);
+				precision = sqlType.getDefaultPrecision();
 				
 				SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
 				if (sqlTypeAnnotation != null) {
 					if (sqlTypeAnnotation.value() > 0) {
-						sqlType = sqlTypeAnnotation.value();
+						sqlType = manager.getType(sqlTypeAnnotation.value());
 					}
 					precision = sqlTypeAnnotation.precision();
 					scale = sqlTypeAnnotation.scale();
@@ -258,7 +251,7 @@ public final class Generator {
 				field = new DDLField();
 				
 				field.setName(attributeName);
-				field.setType(manager.getType(sqlType));
+				field.setType(sqlType);
 				field.setPrecision(precision);
 				field.setScale(scale);
 				
@@ -315,7 +308,7 @@ public final class Generator {
 		return back.toArray(new DDLForeignKey[back.size()]);
 	}
 	
-	private static Object convertStringValue(String value, int type) {
+	private static Object convertStringValue(String value, DatabaseType<?> type) {
 		if (value == null) {
 			return null;
 		} else if (value.trim().equalsIgnoreCase("NULL")) {
@@ -327,67 +320,6 @@ public final class Generator {
 			return func;
 		}
 		
-		switch (type) {
-			case Types.BIGINT:
-				return Long.parseLong(value.trim());
-				
-			case Types.BIT:
-				return Byte.parseByte(value.trim());
-				
-			case Types.BOOLEAN:
-				return Boolean.parseBoolean(value.trim());
-				
-			case Types.CHAR:
-				return value.charAt(0);
-				
-			case Types.DATE:
-				return parseCalendar(value.trim());
-				
-			case Types.DECIMAL:
-				return Double.parseDouble(value.trim());
-				
-			case Types.DOUBLE:
-				return Double.parseDouble(value.trim());
-				
-			case Types.FLOAT:
-				return Float.parseFloat(value.trim());
-				
-			case Types.INTEGER:
-				return Integer.parseInt(value.trim());
-				
-			case Types.NUMERIC:
-				return Integer.parseInt(value.trim());
-				
-			case Types.REAL:
-				return Double.parseDouble(value.trim());
-				
-			case Types.SMALLINT:
-				return Short.parseShort(value.trim());
-				
-			case Types.TIME:
-				return parseCalendar(value.trim());
-				
-			case Types.TIMESTAMP:
-				return parseCalendar(value.trim());
-				
-			case Types.TINYINT:
-				return Short.parseShort(value.trim());
-				
-			case Types.VARCHAR:
-				return "'" + value + "'";
-		}
-		
-		return null;
-	}
-	
-	private static Calendar parseCalendar(String ts) {
-		try {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(ts));
-			
-			return cal;
-		} catch (java.text.ParseException e) {
-			return Calendar.getInstance();
-		}
+		return type.defaultParseValue(value);
 	}
 }

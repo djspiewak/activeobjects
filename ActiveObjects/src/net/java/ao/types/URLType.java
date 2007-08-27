@@ -50,4 +50,14 @@ class URLType extends DatabaseType<URL> {
 			throw new SQLException(e.getMessage());
 		}
 	}
+
+	@Override
+	public URL defaultParseValue(String value) {
+		try {
+			return new URL(value);
+		} catch (MalformedURLException e) {
+		}
+		
+		return null;
+	}
 }

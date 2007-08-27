@@ -38,4 +38,9 @@ public class BigIntType extends DatabaseType<Long> {
 	public Long convert(EntityManager manager, ResultSet res, Class<? extends Long> type, String field) throws SQLException {
 		return res.getLong(field);
 	}
+
+	@Override
+	public Long defaultParseValue(String value) {
+		return Long.parseLong(value);
+	}
 }
