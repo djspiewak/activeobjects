@@ -223,10 +223,9 @@ public class EntityManager {
 	
 	// assumes cache doesn't contain object
 	protected <T extends Entity> T getAndInstantiate(Class<T> type, int id) {
-		EntityProxy<T> proxy = new EntityProxy<T>(this, type);
+		EntityProxy<T> proxy = new EntityProxy<T>(this, type, id);
 		
 		T entity = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
-		entity.setID(id);
 
 		proxyLock.writeLock().lock();
 		try {

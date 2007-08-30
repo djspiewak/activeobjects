@@ -27,7 +27,6 @@ public interface Entity {
 	@Ignore public void init();
 	
 	@Ignore public int getID();
-	@Ignore public void setID(int id);
 	
 	@Ignore public void save();
 

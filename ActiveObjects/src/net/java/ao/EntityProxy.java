@@ -71,7 +71,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 	private List<PropertyChangeListener> listeners;
 
-	public EntityProxy(EntityManager manager, Class<T> type) {
+	public EntityProxy(EntityManager manager, Class<T> type, int id) {
+		this.id = id;
 		this.type = type;
 		this.manager = manager;
 
@@ -98,11 +99,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			}
 		}
 
-		if (method.getName().equals("setID")) {
-			setID((Integer) args[0]);
-
-			return Void.TYPE;
-		} else if (method.getName().equals("getID")) {
+		if (method.getName().equals("getID")) {
 			return getID();
 		} else if (method.getName().equals("save")) {
 			save((Entity) proxy);
@@ -181,10 +178,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 	public String getTableName() {
 		return getManager().getNameConverter().getName(type);
-	}
-
-	public void setID(int id) {
-		this.id = id;
 	}
 
 	@SuppressWarnings("unchecked")
