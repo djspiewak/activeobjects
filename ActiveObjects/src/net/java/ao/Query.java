@@ -243,13 +243,17 @@ public class Query {
 			TypeManager manager = TypeManager.getInstance();
 			
 			for (int i = 0; i < whereParams.length; i++) {
-				Class javaType = whereParams[i].getClass();
-				
-				if (whereParams[i] instanceof Entity) {
-					javaType = ((Entity) whereParams[i]).getEntityType();
+				if (whereParams[i] == null) {
+					stmt.setString(i + 1, null);
+				} else {
+					Class javaType = whereParams[i].getClass();
+					
+					if (whereParams[i] instanceof Entity) {
+						javaType = ((Entity) whereParams[i]).getEntityType();
+					}
+					
+					manager.getType(javaType).putToDatabase(i + 1, stmt, whereParams[i]);
 				}
-				
-				manager.getType(javaType).putToDatabase(i + 1, stmt, whereParams[i]);
 			}
 		}
 	}
