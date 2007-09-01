@@ -341,14 +341,9 @@ public abstract class DatabaseProvider {
 	}
 	
 	public final Connection getConnection() throws SQLException {
-		boolean write = true;
 		connectionsLock.writeLock().lock();
 		try {
 			if (connections.containsKey(Thread.currentThread())) {
-				connectionsLock.readLock().lock();
-				connectionsLock.writeLock().unlock();
-				write = false;
-				
 				return connections.get(Thread.currentThread());
 			}
 			
@@ -357,11 +352,7 @@ public abstract class DatabaseProvider {
 			
 			return conn;
 		} finally {
-			if (write) {
-				connectionsLock.writeLock().unlock();
-			} else {
-				connectionsLock.readLock().unlock();
-			}
+			connectionsLock.writeLock().unlock();
 		}
 	}
 	
