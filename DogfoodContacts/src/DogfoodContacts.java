@@ -43,7 +43,7 @@ public class DogfoodContacts {
 		UIManager.init();
 		
 		try {
-			UIManager.getManager().conditionallyMigrate(EmailAddress.class, Friendship.class);
+			UIManager.getManager().migrate(EmailAddress.class, Friendship.class);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(-1);

@@ -149,20 +149,6 @@ public class EntityManager {
 		}
 	}
 	
-	/**
-	 * First checks to see if the schema for the specified entities pre-exists in
-	 * the database abstracted by the current settings.  If the schema does not
-	 * exist, then the {@link #migrate(Class...)} method is invoked.
-	 * 
-	 * @see net.java.ao.schema.Generator#hasSchema(DatabaseProvider, PluggableNameConverter, Class...)
-	 */
-	@Deprecated
-	public boolean conditionallyMigrate(Class<? extends Entity>... entities) throws SQLException {
-		migrate(entities);		// TODO	remove
-		
-		return false;
-	}
-	
 	public void flushAll() {
 		proxyLock.readLock().lock();
 		try {

@@ -368,13 +368,7 @@ public class EditPersonDialog extends JDialog {
 						
 						editPerson.setFirstName(firstName.getText());
 						editPerson.setLastName(lastName.getText());
-						
-						try {
-							editPerson.save();
-						} catch (SQLException e) {
-							e.printStackTrace();
-							return;
-						}
+						editPerson.save();
 						
 						EmailAddress[] existingEmails = editPerson.getEmailAddresses();
 						
