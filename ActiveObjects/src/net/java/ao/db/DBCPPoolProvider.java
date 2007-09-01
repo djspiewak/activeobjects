@@ -43,7 +43,7 @@ public class DBCPPoolProvider extends PoolProvider {
 	}
 	
 	@Override
-	public Connection getConnection() throws SQLException {
+	protected Connection getConnectionImpl() throws SQLException {
 		Connection conn = ds.getConnection();
 		setPostConnectionProperties(conn);
 		

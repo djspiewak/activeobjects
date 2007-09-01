@@ -40,7 +40,7 @@ public class EmbeddedDerbyDatabaseProvider extends DerbyDatabaseProvider {
 	}
 	
 	@Override
-	public Connection getConnection() throws SQLException {
+	protected Connection getConnectionImpl() throws SQLException {
 		try {
 			getDriverClass();
 		} catch (ClassNotFoundException e) {

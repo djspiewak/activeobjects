@@ -266,12 +266,12 @@ public class EntityManager {
 			nameConverterLock.readLock().unlock();
 		}
 		
-		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+		Connection conn = getProvider().getConnection();
 		try {
 			relationsCache.remove(type);
 			back = get(type, provider.insertReturningKeys(conn, table, params));
 		} finally {
-			DBEncapsulator.getInstance(provider).closeConnection(conn);
+			conn.close();
 		}
 		
 		back.init();
@@ -316,7 +316,7 @@ public class EntityManager {
 		
 		cacheLock.writeLock().lock();
 		try {
-			Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+			Connection conn = getProvider().getConnection();
 			try {
 				for (Class<? extends Entity> type : organizedEntities.keySet()) {
 					List<Entity> entityList = organizedEntities.get(type);
@@ -350,7 +350,7 @@ public class EntityManager {
 					stmt.close();
 				}
 			} finally {
-				DBEncapsulator.getInstance(provider).closeConnection(conn);
+				conn.close();
 			}
 			
 			for (Entity entity : entities) {
@@ -448,7 +448,7 @@ public class EntityManager {
 			}
 		}
 		
-		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+		Connection conn = getProvider().getConnection();
 		try {
 			String sql = null;
 			nameConverterLock.readLock().lock();
@@ -482,7 +482,7 @@ public class EntityManager {
 			res.close();
 			stmt.close();
 		} finally {
-			DBEncapsulator.getInstance(provider).closeConnection(conn);
+			conn.close();
 		}
 		
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
@@ -497,7 +497,7 @@ public class EntityManager {
 	public <T extends Entity> T[] findWithSQL(Class<T> type, String idField, String sql, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		
-		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+		Connection conn = getProvider().getConnection();
 		try {
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
@@ -520,7 +520,7 @@ public class EntityManager {
 			res.close();
 			stmt.close();
 		} finally {
-			DBEncapsulator.getInstance(provider).closeConnection(conn);
+			conn.close();
 		}
 		
 		return back.toArray((T[]) Array.newInstance(type, back.size()));
@@ -553,7 +553,7 @@ public class EntityManager {
 	public int count(Class<? extends Entity> type, Query query) throws SQLException {
 		int back = -1;
 		
-		Connection conn = DBEncapsulator.getInstance(provider).getConnection();
+		Connection conn = getProvider().getConnection();
 		try {
 			String sql = null;
 			nameConverterLock.readLock().lock();
@@ -576,7 +576,7 @@ public class EntityManager {
 			res.close();
 			stmt.close();
 		} finally {
-			DBEncapsulator.getInstance(provider).closeConnection(conn);
+			conn.close();
 		}
 		
 		return back;

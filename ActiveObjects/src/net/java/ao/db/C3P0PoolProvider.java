@@ -49,7 +49,7 @@ public class C3P0PoolProvider extends PoolProvider {
 	}
 	
 	@Override
-	public Connection getConnection() throws SQLException {
+	protected Connection getConnectionImpl() throws SQLException {
 		return cpds.getConnection();
 	}
 	

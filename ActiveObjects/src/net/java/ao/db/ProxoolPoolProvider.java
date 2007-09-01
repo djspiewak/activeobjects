@@ -39,7 +39,7 @@ public class ProxoolPoolProvider extends PoolProvider {
 	}
 	
 	@Override
-	public Connection getConnection() throws SQLException {
+	protected Connection getConnectionImpl() throws SQLException {
 		try {
 			return DriverManager.getConnection("proxool.example:" + getDelegate().getDriverClass().getCanonicalName() 
 					+ ":" + getDelegate().getURI());

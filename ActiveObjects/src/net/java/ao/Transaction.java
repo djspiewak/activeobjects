@@ -49,12 +49,11 @@ public abstract class Transaction {
 		Connection conn = null;
 		
 		try {
-			conn = DBEncapsulator.getInstance(manager.getProvider()).getConnection();
+			conn = manager.getProvider().getConnection();
+			((DelegateConnection) conn).setCloseable(false);
 			
 			conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			conn.setAutoCommit(false);
-			
-			DBEncapsulator.getInstance().setConnection(conn);
 			
 			Transaction.this.run();
 			
@@ -67,9 +66,9 @@ public abstract class Transaction {
 			
 			try {
 				conn.setAutoCommit(true);
+				((DelegateConnection) conn).setCloseable(true);
 				
 				conn.close();
-				DBEncapsulator.getInstance().setConnection(null);
 			} catch (SQLException e) {
 			}
 		}

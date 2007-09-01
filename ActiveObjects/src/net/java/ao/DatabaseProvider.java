@@ -29,8 +29,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,11 +53,16 @@ import net.java.ao.types.DatabaseType;
 public abstract class DatabaseProvider {
 	private String uri, username, password;
 	
+	private Map<Thread, Connection> connections;
+	private final ReadWriteLock connectionsLock = new ReentrantReadWriteLock();
+	
 	protected DatabaseProvider(String uri, String username, String password) {
 		this.uri = uri;
 		
 		this.username = username;
 		this.password = password;
+		
+		connections = new HashMap<Thread, Connection>();
 	}
 	
 	public abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
@@ -331,7 +340,32 @@ public abstract class DatabaseProvider {
 		return password;
 	}
 	
-	public Connection getConnection() throws SQLException {
+	public final Connection getConnection() throws SQLException {
+		boolean write = true;
+		connectionsLock.writeLock().lock();
+		try {
+			if (connections.containsKey(Thread.currentThread())) {
+				connectionsLock.readLock().lock();
+				connectionsLock.writeLock().unlock();
+				write = false;
+				
+				return connections.get(Thread.currentThread());
+			}
+			
+			Connection conn = new DelegateConnection(getConnectionImpl());
+			connections.put(Thread.currentThread(), conn);
+			
+			return conn;
+		} finally {
+			if (write) {
+				connectionsLock.writeLock().unlock();
+			} else {
+				connectionsLock.readLock().unlock();
+			}
+		}
+	}
+	
+	protected Connection getConnectionImpl() throws SQLException {
 		try {
 			getDriverClass();
 		} catch (ClassNotFoundException e) {
