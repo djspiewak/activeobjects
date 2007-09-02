@@ -38,7 +38,7 @@ import java.util.Properties;
  */
 class DelegateConnection implements Connection {
 	private Connection delegate;
-	private boolean closeable;
+	private boolean closeable = true;
 	
 	public DelegateConnection(Connection delegate) {
 		this.delegate = delegate;

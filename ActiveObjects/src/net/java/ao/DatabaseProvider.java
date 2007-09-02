@@ -343,11 +343,12 @@ public abstract class DatabaseProvider {
 	public final Connection getConnection() throws SQLException {
 		connectionsLock.writeLock().lock();
 		try {
-			if (connections.containsKey(Thread.currentThread())) {
-				return connections.get(Thread.currentThread());
+			Connection conn = connections.get(Thread.currentThread());
+			if (conn != null && !conn.isClosed()) {
+				return conn;
 			}
 			
-			Connection conn = new DelegateConnection(getConnectionImpl());
+			conn = new DelegateConnection(getConnectionImpl());
 			connections.put(Thread.currentThread(), conn);
 			
 			return conn;
