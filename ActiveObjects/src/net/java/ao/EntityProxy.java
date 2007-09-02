@@ -499,7 +499,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			if (oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
 				sql.append("SELECT ");
 				
-				sql.append(inMapFields[0]).append(',');
+				sql.append(outMapFields[0]).append(',');
 				for (String field : preloadAnnotation.value()) {
 					sql.append(field).append(',');
 				}
@@ -514,7 +514,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				}
 				
 				numParams++;
-				returnField = inMapFields[0];
+				returnField = outMapFields[0];
 			} else if (!oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
 				String finalTable = getManager().getNameConverter().getName(finalType);
 				
