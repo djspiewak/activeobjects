@@ -63,6 +63,11 @@ public abstract class AbstractNameConverter implements PluggableNameConverter {
 	}
 
 	public String getName(Class<? extends Entity> entity) {
+		Table tableAnnotation = entity.getAnnotation(Table.class);
+		if (tableAnnotation != null) {
+			return tableAnnotation.value();
+		}
+		
 		if (classMappings.containsKey(entity)) {
 			return classMappings.get(entity);
 		}
