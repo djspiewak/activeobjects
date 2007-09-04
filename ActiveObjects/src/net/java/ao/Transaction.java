@@ -45,8 +45,9 @@ public abstract class Transaction {
 		return manager;
 	}
 	
-	public void execute() {
+	public void execute() throws SQLException {
 		Connection conn = null;
+		SQLException toThrow = null;
 		
 		try {
 			conn = manager.getProvider().getConnection();
@@ -59,6 +60,12 @@ public abstract class Transaction {
 			
 			conn.commit();
 		} catch (SQLException e) {
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+			}
+			
+			toThrow = e;
 		} finally {
 			if (conn == null) {
 				return;
@@ -72,18 +79,10 @@ public abstract class Transaction {
 			} catch (SQLException e) {
 			}
 		}
-	}
-	
-	public Thread executeConcurrently() {
-		Thread back = new Thread() {
-			@Override
-			public void run() {
-				execute();
-			}
-		};
-		back.start();
 		
-		return back;
+		if (toThrow != null) {
+			throw toThrow;
+		}
 	}
 	
 	public abstract void run() throws SQLException;
