@@ -50,13 +50,13 @@ public abstract class AbstractNameConverter implements PluggableNameConverter {
 	}
 
 	public void addPatternMapping(String pattern, String result) {
-		patterns.add(pattern);
+		patterns.add(0, pattern);
 		patternMappings.put(pattern, result);
 	}
 
 	public void addPatternMappings(Map<String, String> mappings, Iterator<String> keys) {
 		while (keys.hasNext()) {
-			patterns.add(keys.next());
+			patterns.add(0, keys.next());
 		}
 		
 		patternMappings.putAll(mappings);
