@@ -473,8 +473,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 	private <V extends Entity> V[] retrieveRelations(Entity entity, String[] inMapFields, String[] outMapFields, Class<? extends Entity> type, 
 			Class<V> finalType, String where) throws SQLException {
-		String[] fields = getFields(outMapFields, where);
-		V[] cached = getManager().getRelationsCache().get(entity, finalType, fields);
+		String[] fields = getFields(inMapFields, outMapFields, where);
+		V[] cached = getManager().getRelationsCache().get(entity, finalType, type, fields);
 		
 		if (cached != null) {
 			return cached;
@@ -608,17 +608,20 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 		
 		cached = back.toArray((V[]) Array.newInstance(finalType, back.size()));
-		
-		if (type.equals(finalType)) {		// only cache one-to-many
-			getManager().getRelationsCache().put(entity, cached, fields);
-		}
+		getManager().getRelationsCache().put(entity, cached, fields, type);
 		
 		return cached;
 	}
 	
-	private String[] getFields(String[] mapFields, String where) {
+	private String[] getFields(String[] inMapFields, String[] outMapFields, String where) {
 		List<String> back = new ArrayList<String>();
-		back.addAll(Arrays.asList(mapFields));
+		back.addAll(Arrays.asList(outMapFields));
+		
+		if (inMapFields != null && inMapFields.length > 0) {
+			if (!inMapFields[0].trim().equalsIgnoreCase("id")) {
+				back.addAll(Arrays.asList(inMapFields));
+			}
+		}
 		
 		Matcher matcher = WHERE_PATTERN.matcher(where);
 		while (matcher.find()) {

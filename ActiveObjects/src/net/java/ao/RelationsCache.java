@@ -40,20 +40,20 @@ class RelationsCache {
 		lock = new ReentrantReadWriteLock();
 	}
 
-	public void put(Entity from, Entity[] to, String[] fields) {
+	public void put(Entity from, Entity[] to, String[] fields, Class<? extends Entity> throughType) {
 		if (to.length == 0) {
 			return;
 		}
 		
-		CacheKey key = new CacheKey(from, to[0].getEntityType(), fields);
+		CacheKey key = new CacheKey(from, to[0].getEntityType(), throughType, fields);
 		lock.writeLock().lock();
 		try {
 			cache.put(key, to);
 			
-			Set<CacheKey> keys = typeMap.get(key.getToType());
+			Set<CacheKey> keys = typeMap.get(key.getThroughType());
 			if (keys == null) {
 				keys = new HashSet<CacheKey>();
-				typeMap.put(key.getToType(), keys);
+				typeMap.put(key.getThroughType(), keys);
 			}
 			keys.add(key);
 			
@@ -72,10 +72,10 @@ class RelationsCache {
 		}
 	}
 
-	public <T extends Entity> T[] get(Entity from, Class<T> toType, String[] fields) {
+	public <T extends Entity> T[] get(Entity from, Class<T> toType, Class<? extends Entity> throughType, String[] fields) {
 		lock.readLock().lock();
 		try {
-			return (T[]) cache.get(new CacheKey(from, toType, fields));
+			return (T[]) cache.get(new CacheKey(from, toType, throughType, fields));
 		} finally {
 			lock.readLock().unlock();
 		}
@@ -146,12 +146,14 @@ class RelationsCache {
 	private static class CacheKey {
 		private Entity from;
 		private Class<? extends Entity> toType;
+		private Class<? extends Entity> throughType;
 		
 		private String[] fields;
 		
-		public CacheKey(Entity from, Class<? extends Entity> toType, String[] fields) {
+		public CacheKey(Entity from, Class<? extends Entity> toType, Class<? extends Entity> throughType, String[] fields) {
 			this.from = from;
 			this.toType = toType;
+			this.throughType = throughType;
 			
 			setFields(fields);
 		}
@@ -182,9 +184,17 @@ class RelationsCache {
 			this.fields = fields;
 		}
 		
+		public Class<? extends Entity> getThroughType() {
+			return throughType;
+		}
+		
+		public void setThroughType(Class<? extends Entity> throughType) {
+			this.throughType = throughType;
+		}
+		
 		@Override
 		public String toString() {
-			return from.toString() + "; " + toType.getName() + "; " + Arrays.toString(fields);
+			return '(' + from.toString() + "; to=" + toType.getName() + "; through=" + throughType.getName() + "; " + Arrays.toString(fields) + ')';
 		}
 		
 		@Override
@@ -199,6 +209,11 @@ class RelationsCache {
 				}
 				if (key.getToType() != null) {
 					if (!key.getToType().getName().equals(toType.getName())) {
+						return false;
+					}
+				}
+				if (key.getThroughType() != null) {
+					if (!key.getThroughType().getName().equals(throughType.getName())) {
 						return false;
 					}
 				}
@@ -223,6 +238,9 @@ class RelationsCache {
 			}
 			if (toType != null) {
 				hashCode += toType.getName().hashCode();
+			}
+			if (throughType != null) {
+				hashCode += throughType.getName().hashCode();
 			}
 			if (fields != null) {
 				for (String field : fields) {
