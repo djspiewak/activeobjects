@@ -55,8 +55,9 @@ public abstract class AbstractNameConverter implements PluggableNameConverter {
 	}
 
 	public void addPatternMappings(Map<String, String> mappings, Iterator<String> keys) {
+		int i = 0;
 		while (keys.hasNext()) {
-			patterns.add(0, keys.next());
+			patterns.add(i++, keys.next());
 		}
 		
 		patternMappings.putAll(mappings);
