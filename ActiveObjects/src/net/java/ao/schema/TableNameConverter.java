@@ -15,9 +15,6 @@
  */
 package net.java.ao.schema;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import net.java.ao.Entity;
 
 /**
@@ -25,20 +22,4 @@ import net.java.ao.Entity;
  */
 public interface TableNameConverter {
 	public String getName(Class<? extends Entity> clazz);
-	
-	/**
-	 * pattern example: "(.+)y"
-	 * result example: "{1}ies"
-	 * 
-	 * Would map "company" to "companies"
-	 * 
-	 * Pattern mappings are applied after Class to String
-	 * mapping and is bypassed by any explicit class mappings.
-	 */
-	public void addPatternMapping(String pattern, String result);
-	
-	public void addPatternMappings(Map<String, String> mappings, Iterator<String> keys);
-	
-	public void addClassMapping(Class<? extends Entity> clazz, String name);
-	public void addClassMappings(Map<Class<? extends Entity>, String> mappings);
 }
