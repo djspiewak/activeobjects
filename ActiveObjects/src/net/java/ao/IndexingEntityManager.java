@@ -72,7 +72,7 @@ public class IndexingEntityManager extends EntityManager {
 	}
 
 	public <T extends Entity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
-		String table = getNameConverter().getName(type);
+		String table = getTableNameConverter().getName(type);
 		List<String> indexFields = Common.getIndexFields(type);
 		String[] searchFields = new String[indexFields.size()];
 
@@ -115,14 +115,14 @@ public class IndexingEntityManager extends EntityManager {
 	}
 
 	public void addToIndex(Entity entity) throws IOException {
-		String table = getNameConverter().getName(entity.getEntityType());
+		String table = getTableNameConverter().getName(entity.getEntityType());
 
 		IndexWriter writer = null;
 		try {
 			writer = new IndexWriter(indexDir, analyzer, false);
 
 			Document doc = new Document();
-			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
+			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
 
 			boolean shouldAdd = false;
 			for (Method m : entity.getEntityType().getMethods()) {
@@ -173,7 +173,7 @@ public class IndexingEntityManager extends EntityManager {
 	}
 
 	private void removeFromIndexImpl(Entity entity, IndexReader reader) throws IOException {
-		reader.deleteDocuments(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
+		reader.deleteDocuments(new Term(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
 	}
 
 	public void optimize() throws IOException {
@@ -216,7 +216,7 @@ public class IndexingEntityManager extends EntityManager {
 			indexFields = Common.getIndexFields(entity.getEntityType());
 
 			doc = new Document();
-			doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
+			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
 		}
 
 		public void propertyChange(final PropertyChangeEvent evt) {
@@ -229,12 +229,12 @@ public class IndexingEntityManager extends EntityManager {
 					public void run() {
 						T entity = (T) evt.getSource();
 
-						doc.add(new Field(getNameConverter().getName(entity.getEntityType()) + '.' + evt.getPropertyName(), evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
+						doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + '.' + evt.getPropertyName(), evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
 
 						IndexWriter writer = null;
 						try {
 							writer = new IndexWriter(getIndexDir(), getAnalyzer(), false);
-							writer.updateDocument(new Term(getNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()), doc);
+							writer.updateDocument(new Term(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()), doc);
 						} catch (IOException e) {
 						} finally {
 							try {

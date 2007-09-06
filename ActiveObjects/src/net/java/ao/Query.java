@@ -234,7 +234,7 @@ public class Query {
 			this.tableType = tableType;
 		}
 		
-		return manager.getProvider().renderQuery(this, manager.getNameConverter(), count);
+		return manager.getProvider().renderQuery(this, manager.getTableNameConverter(), count);
 	}
 
 	@SuppressWarnings("unchecked")

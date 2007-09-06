@@ -40,7 +40,7 @@ class RelatedEntityImpl {
 	
 	public RelatedEntity<?>[] getRelated() throws IOException {
 		Class<? extends Entity> type = entity.getEntityType();
-		String table = entity.getEntityManager().getNameConverter().getName(type);
+		String table = entity.getEntityManager().getTableNameConverter().getName(type);
 		List<String> indexFields = Common.getIndexFields(type);
 		String[] searchFields = new String[indexFields.size()];
 		

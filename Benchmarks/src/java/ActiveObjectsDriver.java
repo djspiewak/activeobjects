@@ -127,7 +127,7 @@ public class ActiveObjectsDriver {
 		EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "root", "mysqlroot");
 		/*Logger.getLogger("net.java.ao").setLevel(Level.FINE);*/
 		
-		manager.setNameConverter(new PluralizedNameConverter());
+		manager.setTableNameConverter(new PluralizedNameConverter());
 		manager.migrate(Professional.class);
 		
 		new ActiveObjectsDriver(manager);

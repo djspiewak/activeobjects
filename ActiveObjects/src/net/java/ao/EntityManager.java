@@ -73,8 +73,8 @@ public class EntityManager {
 	private Map<CacheKey, Entity> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
-	private PluggableNameConverter nameConverter;
-	private final ReadWriteLock nameConverterLock = new ReentrantReadWriteLock();
+	private PluggableNameConverter tableNameConverter;
+	private final ReadWriteLock tableNameConverterLock = new ReentrantReadWriteLock();
 	
 	private RSCachingStrategy rsStrategy;
 	private final ReadWriteLock rsStrategyLock = new ReentrantReadWriteLock();
@@ -117,7 +117,7 @@ public class EntityManager {
 			cache = new SoftHashMap<CacheKey, Entity>();
 		}
 		
-		nameConverter = new CamelCaseNameConverter();
+		tableNameConverter = new CamelCaseNameConverter();
 		rsStrategy = RSCachingStrategy.AGGRESSIVE;
 	}
 	
@@ -141,11 +141,11 @@ public class EntityManager {
 	 *  @see net.java.ao.schema.Generator#migrate(DatabaseProvider, PluggableNameConverter, Class...)
 	 */
 	public void migrate(Class<? extends Entity>... entities) throws SQLException {
-		nameConverterLock.readLock().lock();
+		tableNameConverterLock.readLock().lock();
 		try {
-			Generator.migrate(provider, nameConverter, entities);
+			Generator.migrate(provider, tableNameConverter, entities);
 		} finally {
-			nameConverterLock.readLock().unlock();
+			tableNameConverterLock.readLock().unlock();
 		}
 	}
 	
@@ -259,11 +259,11 @@ public class EntityManager {
 		T back = null;
 		String table = null;
 		
-		nameConverterLock.readLock().lock();
+		tableNameConverterLock.readLock().lock();
 		try {
-			table = nameConverter.getName(type);
+			table = tableNameConverter.getName(type);
 		} finally {
-			nameConverterLock.readLock().unlock();
+			tableNameConverterLock.readLock().unlock();
 		}
 		
 		Connection conn = getProvider().getConnection();
@@ -323,11 +323,11 @@ public class EntityManager {
 					
 					StringBuilder sql = new StringBuilder("DELETE FROM ");
 					
-					nameConverterLock.readLock().lock();
+					tableNameConverterLock.readLock().lock();
 					try {
-						sql.append(nameConverter.getName(type));
+						sql.append(tableNameConverter.getName(type));
 					} finally {
-						nameConverterLock.readLock().unlock();
+						tableNameConverterLock.readLock().unlock();
 					}
 					
 					sql.append(" WHERE id IN (?");
@@ -451,11 +451,11 @@ public class EntityManager {
 		Connection conn = getProvider().getConnection();
 		try {
 			String sql = null;
-			nameConverterLock.readLock().lock();
+			tableNameConverterLock.readLock().lock();
 			try {
 				sql = query.toSQL(type, this, false);
 			} finally {
-				nameConverterLock.readLock().unlock();
+				tableNameConverterLock.readLock().unlock();
 			}
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
@@ -556,11 +556,11 @@ public class EntityManager {
 		Connection conn = getProvider().getConnection();
 		try {
 			String sql = null;
-			nameConverterLock.readLock().lock();
+			tableNameConverterLock.readLock().lock();
 			try {
 				sql = query.toSQL(type, this, true);
 			} finally {
-				nameConverterLock.readLock().unlock();
+				tableNameConverterLock.readLock().unlock();
 			}
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
@@ -590,12 +590,12 @@ public class EntityManager {
 	 * 
 	 * <p>The default nameConverter is {@link CamelCaseNameConverter}.</p>
 	 */
-	public void setNameConverter(PluggableNameConverter nameConverter) {
-		nameConverterLock.writeLock().lock();
+	public void setTableNameConverter(PluggableNameConverter tableNameConverter) {
+		tableNameConverterLock.writeLock().lock();
 		try {
-			this.nameConverter = nameConverter;
+			this.tableNameConverter = tableNameConverter;
 		} finally {
-			nameConverterLock.writeLock().unlock();
+			tableNameConverterLock.writeLock().unlock();
 		}
 	}
 	
@@ -603,14 +603,14 @@ public class EntityManager {
 	 * Retrieves the {@link PluggableNameConverter} instance used for name
 	 * conversion of all entity types.
 	 * 
-	 * @see #setNameConverter(PluggableNameConverter)
+	 * @see #setTableNameConverter(PluggableNameConverter)
 	 */
-	public PluggableNameConverter getNameConverter() {
-		nameConverterLock.readLock().lock();
+	public PluggableNameConverter getTableNameConverter() {
+		tableNameConverterLock.readLock().lock();
 		try {
-			return nameConverter;
+			return tableNameConverter;
 		} finally {
-			nameConverterLock.readLock().unlock();
+			tableNameConverterLock.readLock().unlock();
 		}
 	}
 

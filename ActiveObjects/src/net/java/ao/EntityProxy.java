@@ -121,7 +121,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			return toStringImpl();
 		}
 
-		String tableName = getManager().getNameConverter().getName(type);
+		String tableName = getManager().getTableNameConverter().getName(type);
 
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
@@ -177,7 +177,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 
 	public String getTableName() {
-		return getManager().getNameConverter().getName(type);
+		return getManager().getTableNameConverter().getName(type);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -284,7 +284,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 
 	public String toStringImpl() {
-		return getManager().getNameConverter().getName(type) + " {id = " + getID() + "}";
+		return getManager().getTableNameConverter().getName(type) + " {id = " + getID() + "}";
 	}
 
 	public boolean equals(Object obj) {
@@ -481,7 +481,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 		
 		List<V> back = new ArrayList<V>();
-		String table = getManager().getNameConverter().getName(type);
+		String table = getManager().getTableNameConverter().getName(type);
 		boolean oneToMany = type.equals(finalType);
 		Preload preloadAnnotation = finalType.getAnnotation(Preload.class);
 		
@@ -516,7 +516,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				numParams++;
 				returnField = outMapFields[0];
 			} else if (!oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
-				String finalTable = getManager().getNameConverter().getName(finalType);		// many-to-many preload
+				String finalTable = getManager().getTableNameConverter().getName(finalType);		// many-to-many preload
 				
 				sql.append("SELECT ");
 				

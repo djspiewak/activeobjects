@@ -69,7 +69,7 @@ public final class UIManager {
 		
 //		Logger.getLogger("net.java.ao").setLevel(Level.FINE);
 		
-		manager.setNameConverter(new PluralizedNameConverter());
+		manager.setTableNameConverter(new PluralizedNameConverter());
 		
 		ResourceInjector.addModule("org.jdesktop.fuse.swing.SwingModule");
 		ResourceInjector.get("ui.style").load("/style.properties");
