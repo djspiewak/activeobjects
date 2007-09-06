@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import net.java.ao.schema.PluggableNameConverter;
+import net.java.ao.schema.PluggableTableNameConverter;
 import net.java.ao.schema.ddl.DDLAction;
 
 /**
@@ -56,7 +56,7 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	public String renderQuery(Query query, PluggableNameConverter converter, boolean count) {
+	public String renderQuery(Query query, PluggableTableNameConverter converter, boolean count) {
 		return delegate.renderQuery(query, converter, count);
 	}
 	

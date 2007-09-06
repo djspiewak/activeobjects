@@ -31,7 +31,7 @@ import net.java.ao.DBParam;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.Query;
-import net.java.ao.schema.PluggableNameConverter;
+import net.java.ao.schema.PluggableTableNameConverter;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.types.DatabaseType;
 
@@ -167,7 +167,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	protected String renderQuerySelect(Query query, PluggableNameConverter converter, boolean count) {
+	protected String renderQuerySelect(Query query, PluggableTableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		String tableName = query.getTable();
 		

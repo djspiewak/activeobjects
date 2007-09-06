@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 
 import net.java.ao.db.SupportedDBProvider;
 import net.java.ao.db.SupportedPoolProvider;
-import net.java.ao.schema.PluggableNameConverter;
+import net.java.ao.schema.PluggableTableNameConverter;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
@@ -109,7 +109,7 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
-	public String renderQuery(Query query, PluggableNameConverter converter, boolean count) {
+	public String renderQuery(Query query, PluggableTableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append(renderQuerySelect(query, converter, count));
@@ -218,7 +218,7 @@ public abstract class DatabaseProvider {
 		return conn.getMetaData().getTables(null, null, "", null);
 	}
 	
-	protected String renderQuerySelect(Query query, PluggableNameConverter converter, boolean count) {
+	protected String renderQuerySelect(Query query, PluggableTableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		String tableName = query.getTable();
 		
@@ -256,7 +256,7 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
-	protected String renderQueryJoins(Query query, PluggableNameConverter converter) {
+	protected String renderQueryJoins(Query query, PluggableTableNameConverter converter) {
 		StringBuilder sql = new StringBuilder();
 
 		if (query.getJoins().size() > 0) {

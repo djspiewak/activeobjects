@@ -58,7 +58,7 @@ public final class Generator {
 		migrate(provider, new CamelCaseNameConverter(), classes);
 	}
 	
-	public static void migrate(DatabaseProvider provider, PluggableNameConverter nameConverter,
+	public static void migrate(DatabaseProvider provider, PluggableTableNameConverter nameConverter,
 			Class<? extends Entity>... classes) throws SQLException {
 		String[] statements = null;
 		try {
@@ -85,7 +85,7 @@ public final class Generator {
 		}
 	}
 	
-	public static boolean hasSchema(DatabaseProvider provider, PluggableNameConverter nameConverter,
+	public static boolean hasSchema(DatabaseProvider provider, PluggableTableNameConverter nameConverter,
 			Class<? extends Entity>... classes) throws SQLException {
 		if (classes.length == 0) {
 			return true;
@@ -110,7 +110,7 @@ public final class Generator {
 		return true;
 	}
 	
-	private static String[] generateImpl(DatabaseProvider provider, PluggableNameConverter nameConverter, 
+	private static String[] generateImpl(DatabaseProvider provider, PluggableTableNameConverter nameConverter, 
 			ClassLoader classloader, Class<? extends Entity>... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
@@ -189,7 +189,7 @@ public final class Generator {
 		}
 	}
 	
-	private static DDLTable parseInterface(DatabaseProvider provider, PluggableNameConverter nameConverter, Class<? extends Entity> clazz) {
+	private static DDLTable parseInterface(DatabaseProvider provider, PluggableTableNameConverter nameConverter, Class<? extends Entity> clazz) {
 		String sqlName = nameConverter.getName(clazz);
 		
 		DDLTable table = new DDLTable();
@@ -280,7 +280,7 @@ public final class Generator {
 		return fields.toArray(new DDLField[fields.size()]);
 	}
 	
-	private static DDLForeignKey[] parseForeignKeys(PluggableNameConverter nameConverter, Class<? extends Entity> clazz) {
+	private static DDLForeignKey[] parseForeignKeys(PluggableTableNameConverter nameConverter, Class<? extends Entity> clazz) {
 		Set<DDLForeignKey> back = new LinkedHashSet<DDLForeignKey>();
 		
 		for (Method method : clazz.getMethods()) {
