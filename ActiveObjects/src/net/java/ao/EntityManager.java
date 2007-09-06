@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 
 import net.java.ao.schema.CamelCaseNameConverter;
 import net.java.ao.schema.Generator;
-import net.java.ao.schema.PluggableTableNameConverter;
+import net.java.ao.schema.TableNameConverter;
 import net.java.ao.types.TypeManager;
 
 /**
@@ -73,7 +73,7 @@ public class EntityManager {
 	private Map<CacheKey, Entity> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
-	private PluggableTableNameConverter tableNameConverter;
+	private TableNameConverter tableNameConverter;
 	private final ReadWriteLock tableNameConverterLock = new ReentrantReadWriteLock();
 	
 	private RSCachingStrategy rsStrategy;
@@ -84,7 +84,7 @@ public class EntityManager {
 	/**
 	 * Creates a new instance of <code>EntityManager</code> using the specified
 	 * {@link DatabaseProvider}.  This constructor intializes the entity cache, as well
-	 * as creates the default {@link PluggableTableNameConverter} (the default is 
+	 * as creates the default {@link TableNameConverter} (the default is 
 	 * {@link CamelCaseNameConverter}, which is non-pluralized).  The provider
 	 * instance is immutable once set using this constructor.  By default (using this
 	 * constructor), all entities are strongly cached, meaning references are held to
@@ -138,7 +138,7 @@ public class EntityManager {
 	 * Convenience method to create the schema for the specified entities
 	 * using the current settings (name converter and database provider).
 	 * 
-	 *  @see net.java.ao.schema.Generator#migrate(DatabaseProvider, PluggableTableNameConverter, Class...)
+	 *  @see net.java.ao.schema.Generator#migrate(DatabaseProvider, TableNameConverter, Class...)
 	 */
 	public void migrate(Class<? extends Entity>... entities) throws SQLException {
 		tableNameConverterLock.readLock().lock();
@@ -583,14 +583,14 @@ public class EntityManager {
 	}
 	
 	/**
-	 * <p>Specifies the {@link PluggableTableNameConverter} instance to use for
+	 * <p>Specifies the {@link TableNameConverter} instance to use for
 	 * name conversion of all entity types.  Name conversion is the process
 	 * of determining the appropriate table name from an arbitrary {@link Entity}
 	 * class.</p>
 	 * 
 	 * <p>The default nameConverter is {@link CamelCaseNameConverter}.</p>
 	 */
-	public void setTableNameConverter(PluggableTableNameConverter tableNameConverter) {
+	public void setTableNameConverter(TableNameConverter tableNameConverter) {
 		tableNameConverterLock.writeLock().lock();
 		try {
 			this.tableNameConverter = tableNameConverter;
@@ -600,12 +600,12 @@ public class EntityManager {
 	}
 	
 	/**
-	 * Retrieves the {@link PluggableTableNameConverter} instance used for name
+	 * Retrieves the {@link TableNameConverter} instance used for name
 	 * conversion of all entity types.
 	 * 
-	 * @see #setTableNameConverter(PluggableTableNameConverter)
+	 * @see #setTableNameConverter(TableNameConverter)
 	 */
-	public PluggableTableNameConverter getTableNameConverter() {
+	public TableNameConverter getTableNameConverter() {
 		tableNameConverterLock.readLock().lock();
 		try {
 			return tableNameConverter;

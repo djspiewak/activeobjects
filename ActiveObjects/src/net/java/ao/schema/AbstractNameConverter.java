@@ -28,7 +28,7 @@ import net.java.ao.Entity;
 /**
  * @author Daniel Spiewak
  */
-public abstract class AbstractNameConverter implements PluggableTableNameConverter {
+public abstract class AbstractNameConverter implements TableNameConverter {
 	private Map<Class<? extends Entity>, String> classMappings;
 	
 	private List<String> patterns;

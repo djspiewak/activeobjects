@@ -23,7 +23,7 @@ import net.java.ao.Entity;
 /**
  * @author Daniel Spiewak
  */
-public interface PluggableTableNameConverter {
+public interface TableNameConverter {
 	public String getName(Class<? extends Entity> clazz);
 	
 	/**

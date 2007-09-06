@@ -27,7 +27,7 @@ import net.java.ao.DBParam;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
-import net.java.ao.schema.PluggableTableNameConverter;
+import net.java.ao.schema.TableNameConverter;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
@@ -108,7 +108,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	protected String renderQuerySelect(Query query, PluggableTableNameConverter converter, boolean count) {
+	protected String renderQuerySelect(Query query, TableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		String tableName = query.getTable();
 		
