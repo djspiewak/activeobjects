@@ -52,7 +52,7 @@ import net.java.ao.types.TypeManager;
 public final class Generator {
 	
 	public static void migrate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
-		migrate(provider, new CamelCaseNameConverter(), new DefaultFieldNameConverter(), classes);
+		migrate(provider, new CamelCaseTableNameConverter(), new CamelCaseFieldNameConverter(), classes);
 	}
 	
 	public static void migrate(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,

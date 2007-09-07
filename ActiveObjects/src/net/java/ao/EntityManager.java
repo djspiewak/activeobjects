@@ -33,8 +33,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.java.ao.schema.CamelCaseNameConverter;
-import net.java.ao.schema.DefaultFieldNameConverter;
+import net.java.ao.schema.CamelCaseTableNameConverter;
+import net.java.ao.schema.CamelCaseFieldNameConverter;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.Generator;
 import net.java.ao.schema.TableNameConverter;
@@ -90,7 +90,7 @@ public class EntityManager {
 	 * Creates a new instance of <code>EntityManager</code> using the specified
 	 * {@link DatabaseProvider}.  This constructor intializes the entity cache, as well
 	 * as creates the default {@link TableNameConverter} (the default is 
-	 * {@link CamelCaseNameConverter}, which is non-pluralized).  The provider
+	 * {@link CamelCaseTableNameConverter}, which is non-pluralized).  The provider
 	 * instance is immutable once set using this constructor.  By default (using this
 	 * constructor), all entities are strongly cached, meaning references are held to
 	 * the instances, preventing garbage collection.
@@ -122,8 +122,8 @@ public class EntityManager {
 			cache = new SoftHashMap<CacheKey, Entity>();
 		}
 		
-		tableNameConverter = new CamelCaseNameConverter();
-		fieldNameConverter = new DefaultFieldNameConverter();
+		tableNameConverter = new CamelCaseTableNameConverter();
+		fieldNameConverter = new CamelCaseFieldNameConverter();
 		rsStrategy = RSCachingStrategy.AGGRESSIVE;
 	}
 	
@@ -594,7 +594,7 @@ public class EntityManager {
 	 * of determining the appropriate table name from an arbitrary {@link Entity}
 	 * class.</p>
 	 * 
-	 * <p>The default nameConverter is {@link CamelCaseNameConverter}.</p>
+	 * <p>The default nameConverter is {@link CamelCaseTableNameConverter}.</p>
 	 */
 	public void setTableNameConverter(TableNameConverter tableNameConverter) {
 		tableNameConverterLock.writeLock().lock();

@@ -27,7 +27,7 @@ import net.java.ao.OneToMany;
 /**
  * @author Daniel Spiewak
  */
-public class DefaultFieldNameConverter implements FieldNameConverter {
+public class CamelCaseFieldNameConverter implements FieldNameConverter {
 
 	public String getName(Class<? extends Entity> clazz, Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);

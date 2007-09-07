@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * @author Daniel Spiewak
  */
-public class PluralizedNameConverter extends CamelCaseNameConverter {
+public class PluralizedNameConverter extends CamelCaseTableNameConverter {
 	
 	@SuppressWarnings("unchecked")
 	public PluralizedNameConverter() {
