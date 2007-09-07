@@ -42,7 +42,7 @@ public class LowercaseFieldNameConverter extends AbstractFieldNameConverter {
 		for (int index : indexes) {
 			back.append(name.substring(start, index).toLowerCase()).append('_');
 			
-			start += index;
+			start = index;
 		}
 		back.setLength(back.length() - 1);
 		
