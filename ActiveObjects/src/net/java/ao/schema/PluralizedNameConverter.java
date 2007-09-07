@@ -19,13 +19,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import net.java.ao.Entity;
+
 /**
  * @author Daniel Spiewak
  */
-public class PluralizedNameConverter extends CamelCaseTableNameConverter {
+public class PluralizedNameConverter extends AbstractNameConverter {
+	private AbstractNameConverter delegate;
+	
+	public PluralizedNameConverter() {
+		this(new CamelCaseTableNameConverter());
+	}
 	
 	@SuppressWarnings("unchecked")
-	public PluralizedNameConverter() {
+	public PluralizedNameConverter(AbstractNameConverter delegateConverter) {
 		OrderedProperties rules = new OrderedProperties();
 		
 		InputStream is = PluralizedNameConverter.class.getResourceAsStream("/net/java/ao/schema/englishPluralRules.properties");
@@ -42,5 +49,12 @@ public class PluralizedNameConverter extends CamelCaseTableNameConverter {
 		}
 		
 		addPatternMappings((Map) rules, rules.iterator());
+		
+		delegate = delegateConverter;
+	}
+	
+	@Override
+	protected String getNameImpl(Class<? extends Entity> entity) {
+		return delegate.getNameImpl(entity);
 	}
 }

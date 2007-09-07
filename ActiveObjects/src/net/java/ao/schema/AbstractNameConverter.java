@@ -104,5 +104,5 @@ public abstract class AbstractNameConverter implements TableNameConverter {
 		return back;
 	}
 	
-	public abstract String getNameImpl(Class<? extends Entity> entity);
+	protected abstract String getNameImpl(Class<? extends Entity> entity);
 }
