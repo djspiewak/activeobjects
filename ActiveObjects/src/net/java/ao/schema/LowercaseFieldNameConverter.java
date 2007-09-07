@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * @author Daniel Spiewak
  */
 public class LowercaseFieldNameConverter extends AbstractFieldNameConverter {
-	private static final Pattern WORD_PATTERN = Pattern.compile("[a-z][A-Z]");
+	private static final Pattern WORD_PATTERN = Pattern.compile("[a-z\\d][A-Z\\d]");
 	
 	@Override
 	protected String convertName(String name, boolean entity) {
