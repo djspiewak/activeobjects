@@ -24,15 +24,15 @@ import net.java.ao.Entity;
 /**
  * @author Daniel Spiewak
  */
-public class PluralizedNameConverter extends AbstractNameConverter {
-	private AbstractNameConverter delegate;
+public class PluralizedNameConverter extends AbstractTableNameConverter {
+	private AbstractTableNameConverter delegate;
 	
 	public PluralizedNameConverter() {
 		this(new CamelCaseTableNameConverter());
 	}
 	
 	@SuppressWarnings("unchecked")
-	public PluralizedNameConverter(AbstractNameConverter delegateConverter) {
+	public PluralizedNameConverter(AbstractTableNameConverter delegateConverter) {
 		OrderedProperties rules = new OrderedProperties();
 		
 		InputStream is = PluralizedNameConverter.class.getResourceAsStream("/net/java/ao/schema/englishPluralRules.properties");

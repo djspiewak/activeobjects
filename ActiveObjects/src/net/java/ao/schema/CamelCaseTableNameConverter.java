@@ -21,7 +21,7 @@ import net.java.ao.Entity;
 /**
  * @author Daniel Spiewak
  */
-public class CamelCaseTableNameConverter extends AbstractNameConverter {
+public class CamelCaseTableNameConverter extends AbstractTableNameConverter {
 
 	@Override
 	protected String getNameImpl(Class<? extends Entity> type) {

@@ -15,21 +15,41 @@
  */
 package net.java.ao.schema;
 
-import net.java.ao.Common;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
  * @author Daniel Spiewak
  */
-public class CamelCaseFieldNameConverter extends AbstractFieldNameConverter {
+public class LowercaseFieldNameConverter extends AbstractFieldNameConverter {
+	private static final Pattern WORD_PATTERN = Pattern.compile("[a-z][A-Z]");
+	
 	@Override
 	protected String convertName(String name, boolean entity) {
-		name = Common.convertDowncaseName(name);
+		List<Integer> indexes = new ArrayList<Integer>();
+		Matcher matcher = WORD_PATTERN.matcher(name);
+		StringBuilder back = new StringBuilder();
+		
+		while (matcher.find()) {
+			indexes.add(matcher.start() + 1);
+		}
+		indexes.add(name.length());
+		
+		int start = 0;
+		for (int index : indexes) {
+			back.append(name.substring(start, index).toLowerCase()).append('_');
+			
+			start += index;
+		}
+		back.setLength(back.length() - 1);
 		
 		if (entity) {
-			name += "ID";
+			back.append("_id");
 		}
 		
-		return name;
+		return back.toString();
 	}
 }

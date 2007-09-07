@@ -28,13 +28,13 @@ import net.java.ao.Entity;
 /**
  * @author Daniel Spiewak
  */
-public abstract class AbstractNameConverter implements TableNameConverter {
+public abstract class AbstractTableNameConverter implements TableNameConverter {
 	private Map<Class<? extends Entity>, String> classMappings;
 	
 	private List<String> patterns;
 	private Map<String, String> patternMappings;
 	
-	protected AbstractNameConverter() {
+	protected AbstractTableNameConverter() {
 		classMappings = new HashMap<Class<? extends Entity>, String>();
 		
 		patterns = new LinkedList<String>();
