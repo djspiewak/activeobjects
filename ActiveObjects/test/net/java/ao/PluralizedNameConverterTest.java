@@ -46,7 +46,7 @@ public class PluralizedNameConverterTest {
 		assertEquals("people", converter.getName(Person.class));
 		assertEquals("companies", converter.getName(Company.class));
 		assertEquals("personSuits", converter.getName(PersonSuit.class));
-		assertEquals("personDefences", converter.getName(PersonLegalDefence.class));
+		assertEquals("personDefence", converter.getName(PersonLegalDefence.class));
 		assertEquals("companyAddressInfo", converter.getName(CompanyAddressInfo.class));
 	}
 }
