@@ -21,12 +21,17 @@ import junit.framework.TestSuite;
 /**
  * @author Daniel Spiewak
  */
-public class BaseTests extends TestUtilities {
+public class NameConverterTests extends TestUtilities {
+
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Tests for net.java.ao");
+		TestSuite suite = new TestSuite("Tests for all name converters");
 		//$JUnit-BEGIN$
-		suite.addTest(NameConverterTests.suite());
+		suite.addTest(asTest(CamelCaseFieldNameConverterTest.class));
+		suite.addTest(asTest(CamelCaseTableNameConverterTest.class));
+		suite.addTest(asTest(LowercaseFieldNameConverterTest.class));
+		suite.addTest(asTest(PluralizedNameConverterTest.class));
 		//$JUnit-END$
 		return suite;
 	}
+
 }
