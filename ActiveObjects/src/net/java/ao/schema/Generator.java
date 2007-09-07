@@ -15,10 +15,6 @@
  */
 package net.java.ao.schema;
 
-import static net.java.ao.Common.getAttributeNameFromMethod;
-import static net.java.ao.Common.getAttributeTypeFromMethod;
-import static net.java.ao.Common.interfaceInheritsFrom;
-
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -36,6 +32,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.Common;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
@@ -55,14 +52,14 @@ import net.java.ao.types.TypeManager;
 public final class Generator {
 	
 	public static void migrate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
-		migrate(provider, new CamelCaseNameConverter(), classes);
+		migrate(provider, new CamelCaseNameConverter(), new DefaultFieldNameConverter(), classes);
 	}
 	
-	public static void migrate(DatabaseProvider provider, TableNameConverter nameConverter,
+	public static void migrate(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
 			Class<? extends Entity>... classes) throws SQLException {
 		String[] statements = null;
 		try {
-			statements = generateImpl(provider, nameConverter, Generator.class.getClassLoader(), classes);
+			statements = generateImpl(provider, nameConverter, fieldConverter, Generator.class.getClassLoader(), classes);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return;
@@ -110,7 +107,7 @@ public final class Generator {
 		return true;
 	}
 	
-	private static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, 
+	private static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
 			ClassLoader classloader, Class<? extends Entity>... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
@@ -118,7 +115,7 @@ public final class Generator {
 		Set<Class<? extends Entity>> roots = new LinkedHashSet<Class<? extends Entity>>();
 		
 		for (Class<? extends Entity> cls : classes) {
-			parseDependencies(deps, roots, cls);
+			parseDependencies(fieldConverter, deps, roots, cls);
 		}
 		
 		List<DDLTable> parsedTables = new ArrayList<DDLTable>();
@@ -129,7 +126,7 @@ public final class Generator {
 			roots.remove(rootsArray[0]);
 			
 			Class<? extends Entity> clazz = rootsArray[0];
-			parsedTables.add(parseInterface(provider, nameConverter, clazz));
+			parsedTables.add(parseInterface(provider, nameConverter, fieldConverter, clazz));
 			
 			List<Class<? extends Entity>> toRemove = new LinkedList<Class<? extends Entity>>();
 			Iterator<Class<? extends Entity>> depIterator = deps.keySet().iterator();
@@ -159,7 +156,7 @@ public final class Generator {
 		return back.toArray(new String[back.size()]);
 	}
 	
-	private static void parseDependencies(Map<Class <? extends Entity>, Set<Class<? extends Entity>>> deps, 
+	private static void parseDependencies(FieldNameConverter fieldConverter, Map<Class <? extends Entity>, Set<Class<? extends Entity>>> deps, 
 			Set<Class <? extends Entity>> roots, Class<? extends Entity>... classes) {
 		for (Class<? extends Entity> clazz : classes) {
 			if (deps.containsKey(clazz)) {
@@ -169,14 +166,14 @@ public final class Generator {
 			Set<Class<? extends Entity>> individualDeps = new LinkedHashSet<Class<? extends Entity>>();
 			
 			for (Method method : clazz.getMethods()) {
-				String attributeName = getAttributeNameFromMethod(method);
-				Class<?> type = getAttributeTypeFromMethod(method);
+				String attributeName = fieldConverter.getName(clazz, method);
+				Class<?> type = Common.getAttributeTypeFromMethod(method);
 				
-				if (attributeName != null && type != null && interfaceInheritsFrom(type, Entity.class)) {
+				if (attributeName != null && type != null && Common.interfaceInheritsFrom(type, Entity.class)) {
 					if (!type.equals(clazz)) {
 						individualDeps.add((Class<? extends Entity>) type);
 					
-						parseDependencies(deps, roots, (Class<? extends Entity>) type);
+						parseDependencies(fieldConverter, deps, roots, (Class<? extends Entity>) type);
 					}
 				}
 			}
@@ -189,19 +186,20 @@ public final class Generator {
 		}
 	}
 	
-	private static DDLTable parseInterface(DatabaseProvider provider, TableNameConverter nameConverter, Class<? extends Entity> clazz) {
+	private static DDLTable parseInterface(DatabaseProvider provider, TableNameConverter nameConverter,
+			FieldNameConverter fieldConverter, Class<? extends Entity> clazz) {
 		String sqlName = nameConverter.getName(clazz);
 		
 		DDLTable table = new DDLTable();
 		table.setName(sqlName);
 		
-		table.setFields(parseFields(clazz));
-		table.setForeignKeys(parseForeignKeys(nameConverter, clazz));
+		table.setFields(parseFields(clazz, fieldConverter));
+		table.setForeignKeys(parseForeignKeys(nameConverter, fieldConverter, clazz));
 		
 		return table;
 	}
 	
-	private static DDLField[] parseFields(Class<? extends Entity> clazz) {
+	private static DDLField[] parseFields(Class<? extends Entity> clazz, FieldNameConverter fieldConverter) {
 		List<DDLField> fields = new ArrayList<DDLField>();
 		List<String> attributes = new LinkedList<String>();
 		TypeManager manager = TypeManager.getInstance();
@@ -223,8 +221,8 @@ public final class Generator {
 				continue;
 			}
 			
-			String attributeName = getAttributeNameFromMethod(method);
-			Class<?> type = getAttributeTypeFromMethod(method);
+			String attributeName = fieldConverter.getName(clazz, method);
+			Class<?> type = Common.getAttributeTypeFromMethod(method);
 			
 			if (attributeName != null && type != null) {
 				if (attributes.contains(attributeName)) {
@@ -280,14 +278,15 @@ public final class Generator {
 		return fields.toArray(new DDLField[fields.size()]);
 	}
 	
-	private static DDLForeignKey[] parseForeignKeys(TableNameConverter nameConverter, Class<? extends Entity> clazz) {
+	private static DDLForeignKey[] parseForeignKeys(TableNameConverter nameConverter, FieldNameConverter fieldConverter,
+			Class<? extends Entity> clazz) {
 		Set<DDLForeignKey> back = new LinkedHashSet<DDLForeignKey>();
 		
 		for (Method method : clazz.getMethods()) {
-			String attributeName = getAttributeNameFromMethod(method);
-			Class<?> type =  getAttributeTypeFromMethod(method);
+			String attributeName = fieldConverter.getName(clazz, method);
+			Class<?> type =  Common.getAttributeTypeFromMethod(method);
 			
-			if (type != null && attributeName != null && interfaceInheritsFrom(type, Entity.class)) {
+			if (type != null && attributeName != null && Common.interfaceInheritsFrom(type, Entity.class)) {
 				DDLForeignKey key = new DDLForeignKey();
 				
 				key.setField(attributeName);
@@ -301,7 +300,7 @@ public final class Generator {
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
 			if (!superInterface.equals(Entity.class)) {
-				back.addAll(Arrays.asList(parseForeignKeys(nameConverter, (Class<? extends Entity>) superInterface)));
+				back.addAll(Arrays.asList(parseForeignKeys(nameConverter, fieldConverter, (Class<? extends Entity>) superInterface)));
 			}
 		}
 		

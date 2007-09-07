@@ -103,44 +103,16 @@ public final class Common {
 		return back.toArray(new String[back.size()]);
 	}
 	
-	public static String getAttributeNameFromMethod(Method method) {
-		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
-		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
-		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
-		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
-		
-		String attributeName = null;
-		Class<?> type = getAttributeTypeFromMethod(method);
-		
-		if (mutatorAnnotation != null) {
-			attributeName = mutatorAnnotation.value();
-		} else if (accessorAnnotation != null) {
-			attributeName = accessorAnnotation.value();
-		} else if (oneToManyAnnotation != null) {
-			return null;
-		} else if (manyToManyAnnotation != null) {
-			return null;
-		} else if (method.getName().startsWith("get")) {
-			attributeName = convertDowncaseName(method.getName().substring(3));
-			
-			if (interfaceInheritsFrom(type, Entity.class)) {
-				attributeName += "ID";
-			}
-		} else if (method.getName().startsWith("is")) {
-			attributeName = convertDowncaseName(method.getName().substring(2));
-			
-			if (interfaceInheritsFrom(type, Entity.class)) {
-				attributeName += "ID";
-			}
-		} else if (method.getName().startsWith("set")) {
-			attributeName = convertDowncaseName(method.getName().substring(3));
-			
-			if (interfaceInheritsFrom(type, Entity.class)) {
-				attributeName += "ID";
-			}
+	public static boolean isAccessor(Method method) {
+		if (method.getAnnotation(Accessor.class) != null) {
+			return true;
 		}
 		
-		return attributeName;
+		if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
+			return method.getReturnType() != Void.TYPE;
+		}
+		
+		return false;
 	}
 	
 	public static Class<?> getAttributeTypeFromMethod(Method method) {
@@ -179,7 +151,7 @@ public final class Common {
         return null;
     }
 
-	public static List<String> getIndexFields(Class<? extends Entity> type) {
+	public static List<String> getIndexFields(EntityManager manager, Class<? extends Entity> type) {
 		List<String> back = new ArrayList<String>();
 		
 		for (Method m : type.getMethods()) {
@@ -187,7 +159,7 @@ public final class Common {
 			
 			if (annot != null) {
 				Class<?> attributeType = Common.getAttributeTypeFromMethod(m);
-				String name = Common.getAttributeNameFromMethod(m);
+				String name = manager.getFieldNameConverter().getName(type, m);
 				
 				// don't index Entity fields
 				if (name != null && !Common.interfaceInheritsFrom(attributeType, Entity.class) && !back.contains(name)) {

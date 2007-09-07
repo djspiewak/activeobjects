@@ -73,7 +73,7 @@ public class IndexingEntityManager extends EntityManager {
 
 	public <T extends Entity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
 		String table = getTableNameConverter().getName(type);
-		List<String> indexFields = Common.getIndexFields(type);
+		List<String> indexFields = Common.getIndexFields(this, type);
 		String[] searchFields = new String[indexFields.size()];
 
 		for (int i = 0; i < searchFields.length; i++) {
@@ -131,8 +131,8 @@ public class IndexingEntityManager extends EntityManager {
 				if (indexAnno != null) {
 					shouldAdd = true;
 					
-					if (m.getName().startsWith("get") || m.getName().startsWith("is") || m.getAnnotation(Accessor.class) != null) {
-						String attribute = Common.getAttributeNameFromMethod(m);
+					if (Common.isAccessor(m)) {
+						String attribute = getFieldNameConverter().getName(entity.getEntityType(), m);
 						Object value = m.invoke(entity);
 
 						if (value != null) {
@@ -213,7 +213,7 @@ public class IndexingEntityManager extends EntityManager {
 		private Document doc;
 
 		private IndexAppender(T entity) {
-			indexFields = Common.getIndexFields(entity.getEntityType());
+			indexFields = Common.getIndexFields(IndexingEntityManager.this, entity.getEntityType());
 
 			doc = new Document();
 			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));

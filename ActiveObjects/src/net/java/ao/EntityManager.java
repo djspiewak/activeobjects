@@ -34,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.java.ao.schema.CamelCaseNameConverter;
+import net.java.ao.schema.DefaultFieldNameConverter;
+import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.Generator;
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.types.TypeManager;
@@ -75,6 +77,9 @@ public class EntityManager {
 	
 	private TableNameConverter tableNameConverter;
 	private final ReadWriteLock tableNameConverterLock = new ReentrantReadWriteLock();
+	
+	private FieldNameConverter fieldNameConverter;
+	private final ReadWriteLock fieldNameConverterLock = new ReentrantReadWriteLock();
 	
 	private RSCachingStrategy rsStrategy;
 	private final ReadWriteLock rsStrategyLock = new ReentrantReadWriteLock();
@@ -118,6 +123,7 @@ public class EntityManager {
 		}
 		
 		tableNameConverter = new CamelCaseNameConverter();
+		fieldNameConverter = new DefaultFieldNameConverter();
 		rsStrategy = RSCachingStrategy.AGGRESSIVE;
 	}
 	
@@ -143,7 +149,7 @@ public class EntityManager {
 	public void migrate(Class<? extends Entity>... entities) throws SQLException {
 		tableNameConverterLock.readLock().lock();
 		try {
-			Generator.migrate(provider, tableNameConverter, entities);
+			Generator.migrate(provider, tableNameConverter, fieldNameConverter, entities);
 		} finally {
 			tableNameConverterLock.readLock().unlock();
 		}
@@ -611,6 +617,24 @@ public class EntityManager {
 			return tableNameConverter;
 		} finally {
 			tableNameConverterLock.readLock().unlock();
+		}
+	}
+	
+	public void setFieldNameConverter(FieldNameConverter fieldNameConverter) {
+		fieldNameConverterLock.writeLock().lock();
+		try {
+			this.fieldNameConverter = fieldNameConverter;
+		} finally {
+			fieldNameConverterLock.writeLock().unlock();
+		}
+	}
+	
+	public FieldNameConverter getFieldNameConverter() {
+		fieldNameConverterLock.readLock().lock();
+		try {
+			return fieldNameConverter;
+		} finally {
+			fieldNameConverterLock.readLock().unlock();
 		}
 	}
 

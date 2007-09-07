@@ -145,26 +145,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 
 			return retrieveRelations((Entity) proxy, null, Common.getMappingFields(throughType, type), throughType, type, manyToManyAnnotation.where());
-		} else if (method.getName().startsWith("get")) {
-			String name = Common.convertDowncaseName(method.getName().substring(3));
-			if (Common.interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
-				name += "ID";
-			}
-
-			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation == null);
-		} else if (method.getName().startsWith("is")) {
-			String name = Common.convertDowncaseName(method.getName().substring(2));
-			if (Common.interfaceInheritsFrom(method.getReturnType(), Entity.class)) {
-				name += "ID";
-			}
-
-			return invokeGetter(getID(), tableName, name, method.getReturnType(), onUpdateAnnotation == null);
-		} else if (method.getName().startsWith("set")) {
-			String name = Common.convertDowncaseName(method.getName().substring(3));
-			if (Common.interfaceInheritsFrom(method.getParameterTypes()[0], Entity.class)) {
-				name += "ID";
-			}
-			invokeSetter((T) proxy, name, args[0], onUpdateAnnotation == null);
+		} else if (Common.isAccessor(method)) {
+			return invokeGetter(getID(), tableName, getManager().getFieldNameConverter().getName(type, method), 
+					method.getReturnType(), onUpdateAnnotation == null);
+		} else if (Common.isAccessor(method)) {
+			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(type, method), args[0], onUpdateAnnotation == null);
 
 			return Void.TYPE;
 		}
