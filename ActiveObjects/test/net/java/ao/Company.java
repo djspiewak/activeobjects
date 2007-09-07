@@ -1,11 +1,3 @@
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import net.java.ao.BaseTests;
-import net.java.ao.TestUtilities;
-import net.java.ao.db.DBTests;
-import net.java.ao.schema.SchemaTests;
-import net.java.ao.types.TypeTests;
-
 /*
  * Copyright 2007 Daniel Spiewak
  * 
@@ -21,21 +13,16 @@ import net.java.ao.types.TypeTests;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.java.ao;
 
 /**
  * @author Daniel Spiewak
  */
-public class AllTests extends TestUtilities {
-
-	public static Test suite() {
-		TestSuite suite = new TestSuite("All tests for ActiveObjects ORM");
-		//$JUnit-BEGIN$
-		suite.addTest(BaseTests.suite());
-		suite.addTest(DBTests.suite());
-		suite.addTest(SchemaTests.suite());
-		suite.addTest(TypeTests.suite());
-		//$JUnit-END$
-		return suite;
-	}
-
+public interface Company extends Entity {
+	
+	public String getName();
+	public void setName(String name);
+	
+	@OneToMany
+	public Person[] getPeople();
 }

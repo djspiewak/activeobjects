@@ -17,11 +17,12 @@ package net.java.ao.types;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import net.java.ao.TestUtilities;
 
 /**
  * @author Daniel Spiewak
  */
-public class TypeTests {
+public class TypeTests extends TestUtilities {
 
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Tests for net.java.ao.types");

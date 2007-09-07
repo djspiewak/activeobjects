@@ -1,9 +1,5 @@
 This is a (less than comprehensive) list of things which can and should be unit tested and are not currently.
 
- * CamelCaseTableNameConverter#getName()
- * LowercaseTableNameConverter#getName()
- * PluralizedNameConverter#getName()
- 
  * Entity accessors: retrieve appropriate data
  * Entity accessors: retrieve data from cache
  * Entity mutators: properly modify cache

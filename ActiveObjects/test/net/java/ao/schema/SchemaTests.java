@@ -15,13 +15,14 @@
  */
 package net.java.ao.schema;
 
+import net.java.ao.TestUtilities;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
  * @author Daniel Spiewak
  */
-public class SchemaTests {
+public class SchemaTests extends TestUtilities {
 
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Tests for net.java.ao.schema");
