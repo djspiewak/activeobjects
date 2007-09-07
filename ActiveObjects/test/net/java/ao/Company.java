@@ -23,6 +23,9 @@ public interface Company extends Entity {
 	public String getName();
 	public void setName(String name);
 	
+	public CompanyAddressInfo getAddressInfo();
+	public void setAddressInfo(CompanyAddressInfo info);
+	
 	@OneToMany
 	public Person[] getPeople();
 }
