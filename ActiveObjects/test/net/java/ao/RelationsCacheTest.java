@@ -124,12 +124,20 @@ public class RelationsCacheTest extends DataTest {
 		person.getPersonLegalDefences();
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
+		suit.setDeleted(false);
+		suit.save();
+		person.getPersonLegalDefences();
+		
 		suit.setPerson(null);
 		suit.save();
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
 		person.getPersonLegalDefences();
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+
+		suit.setPerson(person);
+		suit.save();
+		person.getPersonLegalDefences();
 		
 		suit.setPersonLegalDefence(null);
 		suit.save();
@@ -138,9 +146,7 @@ public class RelationsCacheTest extends DataTest {
 		person.getPersonLegalDefences();
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
-		suit.setPerson(person);
 		suit.setPersonLegalDefence(defence);
-		suit.setDeleted(false);
 		suit.save();
 	}
 }
