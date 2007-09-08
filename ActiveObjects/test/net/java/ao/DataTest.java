@@ -40,9 +40,12 @@ public abstract class DataTest {
 	
 	protected static int personID;
 	protected static int companyID;
+	
 	protected static int[] penIDs;
 	protected static int[] defenceIDs;
 	protected static int[] suitIDs;
+	
+	protected static int[] coolCompanyIDs;
 
 	@BeforeClass
 	public static void setUp() throws SQLException {
@@ -76,6 +79,43 @@ public abstract class DataTest {
 				companyID = res.getInt(1);
 			}
 			res.close();
+			
+			int index = 0;
+			coolCompanyIDs = new int[3];
+
+			stmt.setString(1, "Cool Company");
+			stmt.setBoolean(2, true);
+			
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				coolCompanyIDs[index++] = res.getInt(1);
+			}
+			res.close();
+
+			stmt.setString(1, "Cool Company");
+			stmt.setBoolean(2, true);
+			
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				coolCompanyIDs[index++] = res.getInt(1);
+			}
+			res.close();
+
+			stmt.setString(1, "Cool Company");
+			stmt.setBoolean(2, true);
+			
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				coolCompanyIDs[index++] = res.getInt(1);
+			}
+			res.close();
+			
 			stmt.close();
 			
 			stmt = conn.prepareStatement("INSERT INTO person (firstName, companyID) VALUES (?, ?)", 
@@ -97,7 +137,7 @@ public abstract class DataTest {
 			stmt = conn.prepareStatement("INSERT INTO pen (width,personID) VALUES (?,?)", 
 					PreparedStatement.RETURN_GENERATED_KEYS);
 	
-			int index = 0;
+			index = 0;
 			
 			stmt.setDouble(1, 0.5);
 			stmt.setInt(2, personID);
