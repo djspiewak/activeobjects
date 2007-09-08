@@ -349,6 +349,26 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 		try {
 			if (shouldCache && nullSet.contains(name.toLowerCase())) {
+				if (type.isPrimitive()) {
+					if (type.equals(boolean.class)) {
+						return (V) new Boolean(false);
+					} else if (type.equals(char.class)) {
+						return (V) new Character(' ');
+					} else if (type.equals(int.class)) {
+						return (V) new Integer(0);
+					} else if (type.equals(short.class)) {
+						return (V) new Short("0");
+					} else if (type.equals(long.class)) {
+						return (V) new Long("0");
+					} else if (type.equals(float.class)) {
+						return (V) new Float("0");
+					} else if (type.equals(double.class)) {
+						return (V) new Double("0");
+					} else if (type.equals(byte.class)) {
+						return (V) new Byte("0");
+					}
+				}
+				
 				return null;
 			} else if (shouldCache && cache.containsKey(name.toLowerCase())) {
 				Object value = cache.get(name.toLowerCase());
