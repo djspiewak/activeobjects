@@ -25,7 +25,7 @@ import junit.framework.TestSuite;
 public class SchemaTests extends TestUtilities {
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Tests for net.java.ao.schema");
+		TestSuite suite = new TestSuite("net.java.ao.schema");
 		//$JUnit-BEGIN$
 
 		//$JUnit-END$

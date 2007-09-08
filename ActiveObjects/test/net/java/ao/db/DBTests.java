@@ -25,7 +25,7 @@ import net.java.ao.TestUtilities;
 public class DBTests extends TestUtilities {
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Tests for net.java.ao.db");
+		TestSuite suite = new TestSuite("net.java.ao.db");
 		//$JUnit-BEGIN$
 
 		//$JUnit-END$

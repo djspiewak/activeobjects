@@ -28,7 +28,7 @@ import net.java.ao.types.TypeTests;
 public class AllTests extends TestUtilities {
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("All tests for ActiveObjects ORM");
+		TestSuite suite = new TestSuite("ActiveObjects");
 		//$JUnit-BEGIN$
 		suite.addTest(BaseTests.suite());
 		suite.addTest(DBTests.suite());

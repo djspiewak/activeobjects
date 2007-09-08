@@ -25,7 +25,7 @@ import net.java.ao.TestUtilities;
 public class TypeTests extends TestUtilities {
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Tests for net.java.ao.types");
+		TestSuite suite = new TestSuite("net.java.ao.types");
 		//$JUnit-BEGIN$
 
 		//$JUnit-END$

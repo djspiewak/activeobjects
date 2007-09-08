@@ -23,7 +23,7 @@ import junit.framework.TestSuite;
  */
 public class BaseTests extends TestUtilities {
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Tests for net.java.ao");
+		TestSuite suite = new TestSuite("net.java.ao");
 		//$JUnit-BEGIN$
 		suite.addTest(NameConverterTests.suite());
 		

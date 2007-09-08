@@ -24,7 +24,7 @@ import junit.framework.TestSuite;
 public class NameConverterTests extends TestUtilities {
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Tests for all name converters");
+		TestSuite suite = new TestSuite("NameConverters");
 		//$JUnit-BEGIN$
 		suite.addTest(asTest(CamelCaseFieldNameConverterTest.class));
 		suite.addTest(asTest(CamelCaseTableNameConverterTest.class));
