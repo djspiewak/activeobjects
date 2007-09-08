@@ -58,14 +58,16 @@ class RelationsCache {
 			keys.add(key);
 			
 			for (String field : fields) {
-				MetaCacheKey metaKey = new MetaCacheKey(from, key.getToType(), field);
-				
-				keys = fieldMap.get(metaKey);
-				if (keys == null) {
-					keys = new HashSet<CacheKey>();
-					fieldMap.put(metaKey, keys);
+				for (Entity entity : to) {
+					MetaCacheKey metaKey = new MetaCacheKey(entity, field);
+					
+					keys = fieldMap.get(metaKey);
+					if (keys == null) {
+						keys = new HashSet<CacheKey>();
+						fieldMap.put(metaKey, keys);
+					}
+					keys.add(key);
 				}
-				keys.add(key);
 			}
 		} finally {
 			lock.writeLock().unlock();
@@ -127,11 +129,11 @@ class RelationsCache {
 	 * The ReadWriteLock used internally to lock the caches.  This lock must be
 	 * 	released manually using  {@link #unlock()}
 	 */
-	void remove(Entity from, Class<? extends Entity> toType, String[] fields) {
+	void remove(Entity entity, String[] fields) {
 		lock.writeLock().tryLock();
 		try {
 			for (String field : fields) {
-				Set<CacheKey> keys = fieldMap.get(new MetaCacheKey(from, toType, field));
+				Set<CacheKey> keys = fieldMap.get(new MetaCacheKey(entity, field));
 				if (keys != null) {
 					for (CacheKey key : keys) {
 						cache.remove(key);
@@ -258,31 +260,21 @@ class RelationsCache {
 	}
 	
 	private static class MetaCacheKey {
-		private Entity from;
-		private Class<? extends Entity> toType;
+		private Entity entity;
 		private String field;
 		
-		public MetaCacheKey(Entity entity, Class<? extends Entity> toType, String field) {
-			this.from = entity;
-			this.toType = toType;
+		public MetaCacheKey(Entity entity, String field) {
+			this.entity = entity;
 			
 			setField(field);
 		}
 
-		public Entity getFrom() {
-			return from;
+		public Entity getEntity() {
+			return entity;
 		}
 
-		public void setFrom(Entity entity) {
-			this.from = entity;
-		}
-
-		public Class<? extends Entity> getToType() {
-			return toType;
-		}
-
-		public void setToType(Class<? extends Entity> toType) {
-			this.toType = toType;
+		public void setEntity(Entity entity) {
+			this.entity = entity;
 		}
 
 		public String getField() {
@@ -295,7 +287,7 @@ class RelationsCache {
 		
 		@Override
 		public String toString() {
-			return from.toString() + "; " + toType.getName() + "; " + field;
+			return entity.toString() + "; " + field;
 		}
 		
 		@Override
@@ -303,13 +295,8 @@ class RelationsCache {
 			if (obj instanceof MetaCacheKey) {
 				MetaCacheKey key = (MetaCacheKey) obj;
 				
-				if (key.getFrom() != null) {
-					if (!key.getFrom().equals(from)) {
-						return false;
-					}
-				}
-				if (key.getToType() != null) {
-					if (!key.getToType().getName().equals(toType.getName())) {
+				if (key.getEntity() != null) {
+					if (!key.getEntity().equals(entity)) {
 						return false;
 					}
 				}
@@ -329,16 +316,13 @@ class RelationsCache {
 		public int hashCode() {
 			int hashCode = 0;
 			
-			if (from != null) {
-				hashCode += from.hashCode();
-			}
-			if (toType != null) {
-				hashCode += toType.hashCode();
+			if (entity != null) {
+				hashCode += entity.hashCode();
 			}
 			if (field != null) {
 				hashCode += field.hashCode();
 			}
-			hashCode %= 2 << 10;
+			hashCode %= 2 << 15;
 			
 			return hashCode;
 		}
