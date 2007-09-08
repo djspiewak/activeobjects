@@ -60,25 +60,28 @@ public class RelationsCacheTest extends DataTest {
 
 	@Test
 	public void testOneToManyFieldModification() throws SQLException {
-		Pen pen = manager.create(Pen.class);
 		Person person = manager.get(Person.class, personID);
-		person.getPens();
+		Pen pen = person.getPens()[0];
 		
 		pen.setDeleted(true);
 		pen.save();
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
-		person.getPens();
+		Pen pen2 = person.getPens()[0];
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
-		pen.setPerson(person);
-		pen.save();
+		pen2.setPerson(null);
+		pen2.save();
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
 		person.getPens();
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
-		manager.delete(pen);
+		pen2.setPerson(person);
+		pen2.save();
+		
+		pen.setDeleted(false);
+		pen.save();
 	}
 	
 	@Test
@@ -123,9 +126,9 @@ public class RelationsCacheTest extends DataTest {
 	
 	@Test
 	public void testManyToManyFieldModification() throws SQLException {
-		PersonSuit suit = manager.create(PersonSuit.class);
 		Person person = manager.get(Person.class, personID);
 		PersonLegalDefence defence = person.getPersonLegalDefences()[0];
+		PersonSuit suit = manager.get(PersonSuit.class, suitIDs[0]);
 		
 		suit.setDeleted(true);
 		suit.save();
@@ -134,20 +137,23 @@ public class RelationsCacheTest extends DataTest {
 		person.getPersonLegalDefences();
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
+		suit.setPerson(null);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		suit.setPersonLegalDefence(null);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
 		suit.setPerson(person);
-		suit.save();
-		
-		SQLLogMonitor.getInstance().markWatchSQL();
-		person.getPersonLegalDefences();
-		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
-		
 		suit.setPersonLegalDefence(defence);
+		suit.setDeleted(false);
 		suit.save();
-		
-		SQLLogMonitor.getInstance().markWatchSQL();
-		person.getPersonLegalDefences();
-		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
-		
-		manager.delete(suit);
 	}
 }

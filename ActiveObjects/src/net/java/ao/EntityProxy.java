@@ -457,7 +457,11 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 	private <V extends Entity> V[] retrieveRelations(Entity entity, String[] inMapFields, String[] outMapFields, Class<? extends Entity> type, 
 			Class<V> finalType, String where) throws SQLException {
+		if (inMapFields == null || inMapFields.length == 0) {
+			inMapFields = Common.getMappingFields(type, this.type);
+		}
 		String[] fields = getFields(inMapFields, outMapFields, where);
+		
 		V[] cached = getManager().getRelationsCache().get(entity, finalType, type, fields);
 		
 		if (cached != null) {
@@ -470,10 +474,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		Preload preloadAnnotation = finalType.getAnnotation(Preload.class);
 		
 		Connection conn = getConnectionImpl();
-
-		if (inMapFields == null || inMapFields.length == 0) {
-			inMapFields = Common.getMappingFields(type, this.type);
-		}
 
 		try {
 			StringBuilder sql = new StringBuilder();
