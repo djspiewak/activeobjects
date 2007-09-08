@@ -1,12 +1,5 @@
 This is a comprehensive list of things which can and should be unit tested and are not currently.
 
- * Entity one-to-many relations retrieval: check ids
- * Entity one-to-many relations retrieval: check preload
- * Entity many-to-many relations retrieval: check ids
- * Entity many-to-many relations retrieval: check preload
- * Entity one-to-many relations retrieval from cache: check ids
- * Entity many-to-many relations retrieval from cache: check ids
- 
  * One-to-many relations cache expiry
      * Create new entity of destination type
      * Modify relevant field
