@@ -107,7 +107,7 @@ public final class Generator {
 		return true;
 	}
 	
-	private static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
+	static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
 			ClassLoader classloader, Class<? extends Entity>... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
