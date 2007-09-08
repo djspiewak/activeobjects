@@ -23,6 +23,7 @@ import net.java.ao.Implementation;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
+import net.java.ao.schema.Unique;
 
 /**
  * @author Daniel Spiewak
@@ -35,9 +36,12 @@ public interface Person extends Entity {
 	
 	public String getLastName();
 	public void setLastName(String lastName);
-	
+
+	@Unique
 	@Accessor("url")
 	public URL getURL();
+
+	@Unique
 	@Mutator("url")
 	public void setURL(URL url);
 	

@@ -1,7 +1,5 @@
 This is a comprehensive list of things which can and should be unit tested and are not currently.
 
- * Generator generate: spot-check DDL
- 
  * SchemaReader readSchema: spot-check DDL
  * SchemaReader diffSchema: compare identical generated schemas
  * SchemaReader sortTopologically: construct unordered DDL, spot-check ordering
