@@ -1,14 +1,5 @@
 This is a comprehensive list of things which can and should be unit tested and are not currently.
 
- * One-to-many relations cache expiry
-     * Create new entity of destination type
-     * Modify relevant field
-     
- * Many-to-many relations cache expiry
-     * Create new entity of intermediate type
-     * Create new entity of destination type
-     * Modify relevant field
- 
  * EntityManager#find: check ids
  * EntityManager#find: check preload
  * EntityManager#find: check defined precache

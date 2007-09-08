@@ -16,6 +16,7 @@
 package test.schema;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.Default;
 
 /**
  * @author Daniel Spiewak
@@ -27,4 +28,9 @@ public interface PersonSuit extends Entity {
 	
 	public PersonLegalDefence getPersonLegalDefence();
 	public void setPersonLegalDefence(PersonLegalDefence defence);
+	
+	@Default("false")
+	public boolean isDeleted();
+	@Default("false")
+	public void setDeleted(boolean deleted);
 }

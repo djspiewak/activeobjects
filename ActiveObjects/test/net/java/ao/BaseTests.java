@@ -28,6 +28,7 @@ public class BaseTests extends TestUtilities {
 		suite.addTest(NameConverterTests.suite());
 		
 		suite.addTest(asTest(EntityTest.class));
+		suite.addTest(asTest(RelationsCacheTest.class));
 		//$JUnit-END$
 		return suite;
 	}

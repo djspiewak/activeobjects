@@ -44,9 +44,9 @@ public interface Person extends Entity {
 	public Company getCompany();
 	public void setCompany(Company company);
 	
-	@OneToMany
+	@OneToMany(where="deleted = 0")
 	public Pen[] getPens();
 	
-	@ManyToMany(PersonSuit.class)
+	@ManyToMany(value=PersonSuit.class, where="deleted = 0")
 	public PersonLegalDefence[] getPersonLegalDefences();
 }

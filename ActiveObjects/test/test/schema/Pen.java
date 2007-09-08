@@ -17,6 +17,7 @@ package test.schema;
 
 import net.java.ao.Entity;
 import net.java.ao.Preload;
+import net.java.ao.schema.Default;
 
 /**
  * @author Daniel Spiewak
@@ -28,4 +29,9 @@ public interface Pen extends Entity {
 	
 	public Person getPerson();
 	public void setPerson(Person person);
+	
+	@Default("false")
+	public boolean isDeleted();
+	@Default("false")
+	public void setDeleted(boolean deleted);
 }
