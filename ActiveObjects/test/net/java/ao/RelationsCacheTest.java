@@ -112,19 +112,6 @@ public class RelationsCacheTest extends DataTest {
 	}
 	
 	@Test
-	public void testManyToManyDestinationDeletion() throws SQLException {
-		PersonLegalDefence defence = manager.create(PersonLegalDefence.class);
-		Person person = manager.get(Person.class, personID);
-		person.getPersonLegalDefences();
-		
-		manager.delete(defence);
-		
-		SQLLogMonitor.getInstance().markWatchSQL();
-		person.getPersonLegalDefences();
-		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
-	}
-	
-	@Test
 	public void testManyToManyFieldModification() throws SQLException {
 		Person person = manager.get(Person.class, personID);
 		PersonLegalDefence defence = person.getPersonLegalDefences()[0];
