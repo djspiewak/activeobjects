@@ -251,6 +251,7 @@ class RelationsCache {
 					hashCode += field.hashCode();
 				}
 			}
+			hashCode %= 2 << 10;
 			
 			return hashCode;
 		}
@@ -337,6 +338,7 @@ class RelationsCache {
 			if (field != null) {
 				hashCode += field.hashCode();
 			}
+			hashCode %= 2 << 10;
 			
 			return hashCode;
 		}
