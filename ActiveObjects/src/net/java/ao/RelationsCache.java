@@ -179,6 +179,10 @@ class RelationsCache {
 		}
 
 		public void setFields(String[] fields) {
+			for (int i = 0; i < fields.length; i++) {
+				fields[i] = fields[i].toLowerCase();
+			}
+			
 			Arrays.sort(fields);
 			
 			this.fields = fields;
@@ -260,7 +264,8 @@ class RelationsCache {
 		public MetaCacheKey(Entity entity, Class<? extends Entity> toType, String field) {
 			this.from = entity;
 			this.toType = toType;
-			this.field = field;
+			
+			setField(field);
 		}
 
 		public Entity getFrom() {
@@ -284,7 +289,7 @@ class RelationsCache {
 		}
 
 		public void setField(String field) {
-			this.field = field;
+			this.field = field.toLowerCase();
 		}
 		
 		@Override

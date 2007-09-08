@@ -184,7 +184,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				for (String field : dirtyFields) {
 					sql.append(field);
 
-					if (cache.containsKey(field)) {
+					if (cache.containsKey(field.toLowerCase())) {
 						sql.append(" = ?,");
 					} else {
 						sql.append(" = NULL,");
@@ -202,8 +202,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 				int index = 1;
 				for (String field : dirtyFields) {
-					if (cache.containsKey(field)) {
-						Object obj = cache.get(field);
+					if (cache.containsKey(field.toLowerCase())) {
+						Object obj = cache.get(field.toLowerCase());
 						Class javaType = obj.getClass();
 						
 						if (obj instanceof Entity) {
@@ -211,7 +211,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 						}
 						
 						manager.getType(javaType).putToDatabase(index++, stmt, obj);
-					} else if (nullSet.contains(field)) {
+					} else if (nullSet.contains(field.toLowerCase())) {
 						stmt.setString(index++, null);
 					}
 				}
@@ -300,9 +300,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		cacheLock.writeLock().lock();
 		try {
 			if (value == null) {
-				nullSet.add(key);
-			} else if (!cache.containsKey(key)) {
-				cache.put(key, value);
+				nullSet.add(key.toLowerCase());
+			} else if (!cache.containsKey(key.toLowerCase())) {
+				cache.put(key.toLowerCase(), value);
 			}
 		} finally {
 			cacheLock.writeLock().unlock();
@@ -319,9 +319,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		dirtyFieldsLock.readLock().lock();
 		try {
 			for (String fieldName : cache.keySet()) {
-				if (!dirtyFields.contains(fieldName)) {
-					cache.remove(fieldName);
-					nullSet.remove(fieldName);
+				if (!dirtyFields.contains(fieldName.toLowerCase())) {
+					cache.remove(fieldName.toLowerCase());
+					nullSet.remove(fieldName.toLowerCase());
 				}
 			}
 		} finally {
@@ -349,20 +349,20 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			cacheLock.writeLock().lock();
 		}
 		try {
-			if (shouldCache && nullSet.contains(name)) {
+			if (shouldCache && nullSet.contains(name.toLowerCase())) {
 				return null;
-			} else if (shouldCache && cache.containsKey(name)) {
-				Object value = cache.get(name);
+			} else if (shouldCache && cache.containsKey(name.toLowerCase())) {
+				Object value = cache.get(name.toLowerCase());
 
 				if (instanceOf(value, type)) {
 					return (V) value;
 				} else if (Common.interfaceInheritsFrom(type, Entity.class) && value instanceof Integer) {
 					value = getManager().get((Class<? extends Entity>) type, (Integer) value);
 
-					cache.put(name, value);
+					cache.put(name.toLowerCase(), value);
 					return (V) value;
 				} else {
-					cache.remove(name); // invalid cached value
+					cache.remove(name.toLowerCase()); // invalid cached value
 				}
 			}
 
@@ -386,10 +386,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			}
 
 			if (shouldCache) {
-				cache.put(name, back);
+				cache.put(name.toLowerCase(), back);
 				
 				if (back == null) {
-					nullSet.add(name);
+					nullSet.add(name.toLowerCase());
 				}
 			}
 		} finally {
@@ -406,8 +406,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		
 		cacheLock.readLock().lock();
 		try {
-			if (cache.containsKey(name)) {
-				oldValue = cache.get(name);
+			if (cache.containsKey(name.toLowerCase())) {
+				oldValue = cache.get(name.toLowerCase());
 			}
 		} finally {
 			cacheLock.readLock().unlock();
@@ -431,7 +431,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 		dirtyFieldsLock.writeLock().lock();
 		try {
-			dirtyFields.add(name);
+			dirtyFields.add(name.toLowerCase());
 		} finally {
 			dirtyFieldsLock.writeLock().unlock();
 		}
@@ -440,12 +440,12 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private void invokeSetterImpl(String name, Object value) throws Throwable {
 		cacheLock.writeLock().lock();
 		try {
-			cache.put(name, value);
+			cache.put(name.toLowerCase(), value);
 			
 			if (value != null) {
-				nullSet.remove(name);
+				nullSet.remove(name.toLowerCase());
 			} else {
-				nullSet.add(name);
+				nullSet.add(name.toLowerCase());
 			}
 		} finally {
 			cacheLock.writeLock().unlock();
