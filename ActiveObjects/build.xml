@@ -5,6 +5,22 @@
 	
 	<property file="${activeobjects.dir}/build.properties"/>
 	
+	<target name="check-test">
+		<condition property="test-check-ok">
+			<and>
+				<isset property="junit4.path"/>
+				<isset property="derby.path"/>
+				
+				<not>
+					<or>
+						<equals arg1="${junit4.path}" arg2="" trim="yes"/>
+						<equals arg1="${derby.path}" arg2="" trim="yes"/>
+					</or>
+				</not>
+			</and>
+		</condition>
+	</target>
+	
 	<target name="init">
 		<mkdir dir="${activeobjects.dir}/bin"/>
 	</target>
@@ -34,6 +50,12 @@
 		</copy>
 	</target>
 	
+	<target name="build-test" depends="check-test,init,build" if="test-check-ok">
+		<javac srcdir="${activeobjects.dir}/test" destdir="${activeobjects.dir}/bin" 
+				classpath="bin${path.separator}${build.classpath}${path.separator}${junit4.path}${path.separator}${derby.path}" 
+				source="1.5" target="1.5" debug="yes"/>
+	</target>
+	
 	<target name="assign-doc-dir" unless="javadoc.intern.path">
 		<property name="javadoc.intern.path" value="${activeobjects.dir}/${javadoc.path}"/>
 	</target>
@@ -47,7 +69,11 @@
 		</javadoc>
 	</target>
 	
-	<target name="jar" depends="build">
+	<target name="jar">
+		<!-- done as a antcall(s) rather than dependencies to ensure ordering -->
+		<antcall target="clean"/>
+		<antcall target="build"/>
+		
 		<jar basedir="${activeobjects.dir}/bin" compress="${jar.compress}" 
 				destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar">
 			<manifest>
@@ -95,6 +121,27 @@
 				<include name="activeobjects-${activeobjects.version}"/>
 			</fileset>
 		</delete>
+	</target>
+	
+	<target name="test" depends="check-test,build-test" if="test-check-ok">
+		<echo level="warning" message="Currently not working"/>
+		
+        <junit printsummary="on" haltonerror="yes" haltonfailure="no">
+        	<classpath>
+        		<pathelement location="bin/"/>
+        		<pathelement location="${junit4.path}"/>
+        		<pathelement location="${derby.path}"/>
+        		<pathelement path="${build.classpath}"/>
+        	</classpath>
+        	
+        	<assertions>
+        		<enable package="net.java.ao"/>
+        	</assertions>
+        	
+        	<formatter type="plain" usefile="no"/>
+        	
+        	<test name="AllTests"/>
+		</junit>
 	</target>
 	
 	<target name="clean">
