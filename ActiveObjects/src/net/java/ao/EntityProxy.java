@@ -148,7 +148,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} else if (Common.isAccessor(method)) {
 			return invokeGetter(getID(), tableName, getManager().getFieldNameConverter().getName(type, method), 
 					method.getReturnType(), onUpdateAnnotation == null);
-		} else if (Common.isAccessor(method)) {
+		} else if (Common.isMutator(method)) {
 			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(type, method), args[0], onUpdateAnnotation == null);
 
 			return Void.TYPE;

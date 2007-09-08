@@ -115,6 +115,18 @@ public final class Common {
 		return false;
 	}
 	
+	public static boolean isMutator(Method method) {
+		if (method.getAnnotation(Mutator.class) != null) {
+			return true;
+		}
+		
+		if (method.getName().startsWith("set")) {
+			return method.getReturnType() == Void.TYPE;
+		}
+		
+		return false;
+	}
+	
 	public static Class<?> getAttributeTypeFromMethod(Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
