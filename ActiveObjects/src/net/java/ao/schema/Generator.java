@@ -107,9 +107,23 @@ public final class Generator {
 		return true;
 	}
 	
-	static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
+	private static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
 			ClassLoader classloader, Class<? extends Entity>... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
+		
+		DDLTable[] parsedTables = parseDDL(provider, nameConverter, fieldConverter, classloader, classes);
+		DDLTable[] readTables = SchemaReader.readSchema(provider);
+		
+		DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(parsedTables, readTables));
+		for (DDLAction action : actions) {
+			back.addAll(Arrays.asList(provider.renderAction(action)));
+		}
+		
+		return back.toArray(new String[back.size()]);
+	}
+	
+	static DDLTable[] parseDDL(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
+			ClassLoader classloader, Class<? extends Entity>... classes) {
 		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
 			new HashMap<Class<? extends Entity>, Set<Class<? extends Entity>>>();
 		Set<Class<? extends Entity>> roots = new LinkedHashSet<Class<? extends Entity>>();
@@ -119,7 +133,6 @@ public final class Generator {
 		}
 		
 		List<DDLTable> parsedTables = new ArrayList<DDLTable>();
-		DDLTable[] readTables = SchemaReader.readSchema(provider);
 		
 		while (!roots.isEmpty()) {
 			Class<? extends Entity>[] rootsArray = roots.toArray(new Class[roots.size()]);
@@ -147,13 +160,7 @@ public final class Generator {
 			}
 		}
 		
-		DDLAction[] actions = SchemaReader.sortTopologically(
-				SchemaReader.diffSchema(parsedTables.toArray(new DDLTable[parsedTables.size()]), readTables));
-		for (DDLAction action : actions) {
-			back.addAll(Arrays.asList(provider.renderAction(action)));
-		}
-		
-		return back.toArray(new String[back.size()]);
+		return parsedTables.toArray(new DDLTable[parsedTables.size()]);
 	}
 	
 	private static void parseDependencies(FieldNameConverter fieldConverter, Map<Class <? extends Entity>, Set<Class<? extends Entity>>> deps, 
