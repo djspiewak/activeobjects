@@ -32,7 +32,7 @@ import test.schema.PersonSuit;
 public class RelationsCacheTest extends DataTest {
 	
 	@Test
-	public void testOneToManyExpiryDestinationCreation() throws SQLException {
+	public void testOneToManyDestinationCreation() throws SQLException {
 		Person person = manager.get(Person.class, personID);
 		person.getPens();
 		
@@ -46,7 +46,7 @@ public class RelationsCacheTest extends DataTest {
 	}
 	
 	@Test
-	public void testOneToManyExpiryDestinationDeletion() throws SQLException {
+	public void testOneToManyDestinationDeletion() throws SQLException {
 		Pen pen = manager.create(Pen.class);
 		Person person = manager.get(Person.class, personID);
 		person.getPens();
@@ -59,7 +59,7 @@ public class RelationsCacheTest extends DataTest {
 	}
 
 	@Test
-	public void testOneToManyExpiryFieldModification() throws SQLException {
+	public void testOneToManyFieldModification() throws SQLException {
 		Pen pen = manager.create(Pen.class);
 		Person person = manager.get(Person.class, personID);
 		person.getPens();
@@ -71,11 +71,18 @@ public class RelationsCacheTest extends DataTest {
 		person.getPens();
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
+		pen.setPerson(person);
+		pen.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPens();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
 		manager.delete(pen);
 	}
 	
 	@Test
-	public void testManyToManyExpiryIntermediateCreation() throws SQLException {
+	public void testManyToManyIntermediateCreation() throws SQLException {
 		Person person = manager.get(Person.class, personID);
 		person.getPersonLegalDefences();
 		
@@ -89,7 +96,7 @@ public class RelationsCacheTest extends DataTest {
 	}
 	
 	@Test
-	public void testManyToManyExpiryIntermediateDeletion() throws SQLException {
+	public void testManyToManyIntermediateDeletion() throws SQLException {
 		PersonSuit suit = manager.create(PersonSuit.class);
 		Person person = manager.get(Person.class, personID);
 		person.getPersonLegalDefences();
@@ -102,7 +109,7 @@ public class RelationsCacheTest extends DataTest {
 	}
 	
 	@Test
-	public void testManyToManyExpiryDestinationDeletion() throws SQLException {
+	public void testManyToManyDestinationDeletion() throws SQLException {
 		PersonLegalDefence defence = manager.create(PersonLegalDefence.class);
 		Person person = manager.get(Person.class, personID);
 		person.getPersonLegalDefences();
@@ -115,12 +122,26 @@ public class RelationsCacheTest extends DataTest {
 	}
 	
 	@Test
-	public void testManyToManyExpiryFieldModification() throws SQLException {
+	public void testManyToManyFieldModification() throws SQLException {
 		PersonSuit suit = manager.create(PersonSuit.class);
 		Person person = manager.get(Person.class, personID);
-		person.getPersonLegalDefences();
+		PersonLegalDefence defence = person.getPersonLegalDefences()[0];
 		
 		suit.setDeleted(true);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		suit.setPerson(person);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		suit.setPersonLegalDefence(defence);
 		suit.save();
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
