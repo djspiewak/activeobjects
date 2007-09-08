@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
+
+import net.java.ao.Entity;
+import net.java.ao.OneToMany;
 
 /**
  * @author Daniel Spiewak
@@ -22,6 +25,9 @@ public interface Company extends Entity {
 	
 	public String getName();
 	public void setName(String name);
+	
+	public boolean isCool();
+	public void setCool(boolean cool);
 	
 	public CompanyAddressInfo getAddressInfo();
 	public void setAddressInfo(CompanyAddressInfo info);

@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
 
-import java.net.URL;
+import net.java.ao.Entity;
 
 /**
  * @author Daniel Spiewak
  */
-public interface Person extends Entity {
+public interface CompanyAddressInfo extends Entity {
 	
-	public String getFirstName();
-	public void setFirstName(String firstName);
-	
-	@Accessor("url")
-	public URL getURL();
-	@Mutator("url")
-	public void setURL(URL url);
-	
-	public Company getCompany();
-	public void setCompany(Company company);
-	
-	@ManyToMany(PersonSuit.class)
-	public PersonLegalDefence[] getPersonLegalDefences();
+	public String getAddressLine1();
+	public void setAddressLine1(String address);
 }

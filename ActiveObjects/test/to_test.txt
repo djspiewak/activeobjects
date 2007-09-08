@@ -1,13 +1,5 @@
-This is a (less than comprehensive) list of things which can and should be unit tested and are not currently.
+This is a comprehensive list of things which can and should be unit tested and are not currently.
 
- * Entity accessors: retrieve appropriate data
- * Entity accessors: retrieve data from cache
- * Entity mutators: properly modify cache
- * Entity save: save appropriate data
- 
- * Entity defined implementations: defined code execution
- * Entity defined implementations: recursion
- 
  * Entity one-to-many relations retrieval: check ids
  * Entity one-to-many relations retrieval: check preload
  * Entity many-to-many relations retrieval: check ids
@@ -23,8 +15,6 @@ This is a (less than comprehensive) list of things which can and should be unit 
      * Create new entity of intermediate type
      * Create new entity of destination type
      * Modify relevant field
- 
- * Query: generate SQL
  
  * EntityManager#find: check ids
  * EntityManager#find: check preload
@@ -50,6 +40,8 @@ This is a (less than comprehensive) list of things which can and should be unit 
  * DatabaseType#defaultParseValue
  
 ====Perform Against All Databases====
+ 
+ * Query: generate SQL
 
  * Database schema render
      * Multiple built-in types

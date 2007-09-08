@@ -20,6 +20,12 @@ import net.java.ao.schema.CamelCaseTableNameConverter;
 
 import org.junit.Test;
 
+import test.schema.Company;
+import test.schema.CompanyAddressInfo;
+import test.schema.Person;
+import test.schema.PersonLegalDefence;
+import test.schema.PersonSuit;
+
 /**
  * @author Daniel Spiewak
  */

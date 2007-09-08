@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import net.java.ao.Entity;
+import net.java.ao.Preload;
 
 /**
  * @author Daniel Spiewak
  */
-public class BaseTests extends TestUtilities {
-	public static Test suite() {
-		TestSuite suite = new TestSuite("Tests for net.java.ao");
-		//$JUnit-BEGIN$
-		suite.addTest(NameConverterTests.suite());
-		
-		suite.addTest(asTest(EntityTest.class));
-		//$JUnit-END$
-		return suite;
-	}
+@Preload("width")
+public interface Pen extends Entity {
+	public double getWidth();
+	public void setWidth(double width);
+	
+	public Person getPerson();
+	public void setPerson(Person person);
 }

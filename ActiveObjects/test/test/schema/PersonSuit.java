@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
+
+import net.java.ao.Entity;
 
 /**
  * @author Daniel Spiewak
  */
-public interface CompanyAddressInfo extends Entity {
+public interface PersonSuit extends Entity {
 	
-	public String getAddressLine1();
-	public void setAddressLine1(String address);
+	public Person getPerson();
+	public void setPerson(Person person);
+	
+	public PersonLegalDefence getPersonLegalDefence();
+	public void setPersonLegalDefence(PersonLegalDefence defence);
 }

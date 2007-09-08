@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
+
+import net.java.ao.Entity;
+import net.java.ao.Preload;
+import net.java.ao.schema.Table;
 
 /**
  * @author Daniel Spiewak
  */
-public interface PersonSuit extends Entity {
-	
-	public Person getPerson();
-	public void setPerson(Person person);
-	
-	public PersonLegalDefence getPersonLegalDefence();
-	public void setPersonLegalDefence(PersonLegalDefence defence);
+@Table("personDefence")
+@Preload("severity")
+public interface PersonLegalDefence extends Entity {
+	public int getSeverity();
+	public void setSeverity(int severity);
 }

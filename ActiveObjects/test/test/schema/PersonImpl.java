@@ -13,16 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
-
-import net.java.ao.schema.Table;
+package test.schema;
 
 /**
  * @author Daniel Spiewak
  */
-@Table("personDefence")
-public interface PersonLegalDefence extends Entity {
+public class PersonImpl {
+	private Person person;
 	
-	public int getSeverity();
-	public void setSeverity(int severity);
+	public PersonImpl(Person person) {
+		this.person = person;
+	}
+	
+	public String getLastName() {
+		return "Smith";
+	}
+	
+	public void setLastName(String lastName) {
+		person.setLastName(lastName);
+	}
 }
