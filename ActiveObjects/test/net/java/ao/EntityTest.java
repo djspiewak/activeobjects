@@ -17,6 +17,7 @@ package net.java.ao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -76,6 +77,9 @@ public class EntityTest extends DataTest {
 		assertEquals("Another company name", company.getName());
 		assertEquals(true, company.isCool());
 		
+		company.setName(null);
+		assertNull(company.getName());
+		
 		manager.delete(company);
 	}
 	
@@ -109,6 +113,31 @@ public class EntityTest extends DataTest {
 		}
 		
 		assertEquals("Another company name", name);
+		assertEquals(true, cool);
+		
+		company.setName(null);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		company.save();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM company WHERE id = ?");
+			stmt.setInt(1, company.getID());
+			
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				name = res.getString("name");
+				cool = res.getBoolean("cool");
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		assertNull(name);
 		assertEquals(true, cool);
 		
 		manager.delete(company);
