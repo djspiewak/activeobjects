@@ -463,12 +463,13 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		String[] fields = getFields(inMapFields, outMapFields, where);
 		
 		V[] cached = getManager().getRelationsCache().get(entity, finalType, type, fields);
-		
 		if (cached != null) {
 			return cached;
 		}
 		
 		List<V> back = new ArrayList<V>();
+		List<Entity> throughValues = new ArrayList<Entity>();
+		
 		String table = getManager().getTableNameConverter().getName(type);
 		boolean oneToMany = type.equals(finalType);
 		Preload preloadAnnotation = finalType.getAnnotation(Preload.class);
@@ -478,6 +479,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		try {
 			StringBuilder sql = new StringBuilder();
 			String returnField;
+			String throughField = null;
 			int numParams = 0;
 			
 			if (oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
@@ -502,9 +504,13 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			} else if (!oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
 				String finalTable = getManager().getTableNameConverter().getName(finalType);		// many-to-many preload
 				
+				returnField = finalTable + "__aointernal__id";
+				throughField = table + "__aointernal__id";
+				
 				sql.append("SELECT ");
 				
-				sql.append(finalTable).append(".id,");
+				sql.append(finalTable).append(".id AS ").append(returnField).append(',');
+				sql.append(table).append(".id AS ").append(throughField).append(',');
 				for (String field : preloadAnnotation.value()) {
 					sql.append(finalTable).append('.').append(field).append(',');
 				}
@@ -522,7 +528,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				}
 				
 				numParams++;
-				returnField = "id";
 			} else if (inMapFields.length == 1 && outMapFields.length == 1) {
 				sql.append("SELECT ").append(outMapFields[0]).append(" FROM ").append(table);
 				sql.append(" WHERE ").append(inMapFields[0]).append(" = ?");
@@ -576,6 +581,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 				if (finalType.equals(this.type) && returnValue == id) {
 					continue;
 				}
+				
+				if (throughField != null) {
+					throughValues.add(getManager().get(type, res.getInt(throughField)));
+				}
 
 				V returnValueEntity = getManager().get(finalType, returnValue);
 				ResultSetMetaData md = res.getMetaData();
@@ -592,7 +601,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		}
 		
 		cached = back.toArray((V[]) Array.newInstance(finalType, back.size()));
-		getManager().getRelationsCache().put(entity, cached, fields, type);
+
+		getManager().getRelationsCache().put(entity, 
+				(throughValues.size() > 0 ? throughValues.toArray(new Entity[throughValues.size()]) : cached), cached, fields);	
 		
 		return cached;
 	}

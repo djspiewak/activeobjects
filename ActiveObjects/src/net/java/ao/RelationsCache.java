@@ -40,12 +40,14 @@ class RelationsCache {
 		lock = new ReentrantReadWriteLock();
 	}
 
-	public void put(Entity from, Entity[] to, String[] fields, Class<? extends Entity> throughType) {
+	public void put(Entity from, Entity[] through, Entity[] to, String[] fields) {
 		if (to.length == 0) {
 			return;
 		}
 		
-		CacheKey key = new CacheKey(from, to[0].getEntityType(), throughType, fields);
+		assert through.length != to.length;
+		
+		CacheKey key = new CacheKey(from, to[0].getEntityType(), through[0].getEntityType(), fields);
 		lock.writeLock().lock();
 		try {
 			cache.put(key, to);
@@ -58,7 +60,7 @@ class RelationsCache {
 			keys.add(key);
 			
 			for (String field : fields) {
-				for (Entity entity : to) {
+				for (Entity entity : through) {
 					MetaCacheKey metaKey = new MetaCacheKey(entity, field);
 					
 					keys = fieldMap.get(metaKey);
