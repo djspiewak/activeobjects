@@ -15,22 +15,37 @@
  */
 package net.java.ao;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 /**
  * @author Daniel Spiewak
  */
-public class BaseTests extends TestUtilities {
-	public static Test suite() {
-		TestSuite suite = new TestSuite("net.java.ao");
-		//$JUnit-BEGIN$
-		suite.addTest(NameConverterTests.suite());
-		
-		suite.addTest(asTest(EntityTest.class));
-		suite.addTest(asTest(RelationsCacheTest.class));
-		suite.addTest(asTest(EntityManagerTest.class));
-		//$JUnit-END$
-		return suite;
+public class EntityManagerTest extends DataTest {
+	
+	@Test
+	public void testFindCheckIDs() {
+		fail("Not implemented yet");
+	}
+	
+	@Test
+	public void testFindCheckPreload() {
+		fail("Not implemented yet");
+	}
+	
+	@Test
+	public void testFindCheckDefinedPrecache() {
+		fail("Not implemented yet");
+	}
+	
+	@Test
+	public void testFindWithSQL() {
+		fail("Not implemented yet");
+	}
+	
+	@Test
+	public void testCount() {
+		fail("Not implemented yet");
 	}
 }
