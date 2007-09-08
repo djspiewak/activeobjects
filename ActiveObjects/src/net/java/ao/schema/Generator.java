@@ -268,6 +268,10 @@ public final class Generator {
 					field.setNotNull(true);
 				}
 				
+				if (method.getAnnotation(Unique.class) != null) {
+					field.setUnique(true);
+				}
+				
 				if (method.getAnnotation(AutoIncrement.class) != null) {
 					field.setAutoIncrement(true);
 				} else if (method.getAnnotation(Default.class) != null) {
