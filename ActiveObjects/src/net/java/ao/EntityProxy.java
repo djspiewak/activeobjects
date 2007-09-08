@@ -201,7 +201,9 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 				int index = 1;
 				for (String field : dirtyFields) {
-					if (cache.containsKey(field.toLowerCase())) {
+					if (nullSet.contains(field.toLowerCase())) {
+						stmt.setString(index++, null);
+					} else if (cache.containsKey(field.toLowerCase())) {
 						Object obj = cache.get(field.toLowerCase());
 						Class javaType = obj.getClass();
 						
@@ -210,8 +212,6 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 						}
 						
 						manager.getType(javaType).putToDatabase(index++, stmt, obj);
-					} else if (nullSet.contains(field.toLowerCase())) {
-						stmt.setString(index++, null);
 					}
 				}
 				stmt.setInt(index++, id);
@@ -224,7 +224,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 					toFlushLock.writeLock().unlock();
 				}
 				
-				getManager().getRelationsCache().remove(entity, type, dirtyFields.toArray(new String[dirtyFields.size()]));
+				getManager().getRelationsCache().remove(entity, dirtyFields.toArray(new String[dirtyFields.size()]));
 				
 				stmt.executeUpdate();
 
