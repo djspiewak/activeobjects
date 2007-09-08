@@ -262,6 +262,10 @@ public abstract class DataTest {
 			manager.delete(manager.get(PersonLegalDefence.class, id));
 		}
 		
+		for (int id : coolCompanyIDs) {
+			manager.delete(manager.get(Company.class, id));
+		}
+		
 		manager.delete(manager.get(Person.class, personID));
 		manager.delete(manager.get(Company.class, companyID));
 		
