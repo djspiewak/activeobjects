@@ -25,5 +25,8 @@ import net.java.ao.Entity;
 public interface FieldNameConverter {
 	public String getName(Class<? extends Entity> clazz, Method method);
 	
+	/**
+	 * WARNING: Currently unsupported in the core
+	 */
 	public String getIDField(Class<? extends Entity> clazz);
 }
