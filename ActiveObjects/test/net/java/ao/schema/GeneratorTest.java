@@ -26,6 +26,7 @@ import java.sql.Types;
 
 import net.java.ao.DataTest;
 import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 
 import org.junit.Test;
@@ -108,5 +109,38 @@ public class GeneratorTest extends DataTest {
 		
 		assertNull(idField.getOnUpdate());
 		assertNull(idField.getDefaultValue());
+		
+		DDLField cidField = null;
+		for (DDLField field : personDDL.getFields()) {
+			if (field.getName().equals("companyID")) {
+				cidField = field;
+				break;
+			}
+		}
+		
+		assertEquals(Types.INTEGER, cidField.getType().getType());
+		
+		assertFalse(cidField.isAutoIncrement());
+		assertFalse(cidField.isNotNull());
+		assertFalse(cidField.isPrimaryKey());
+		assertFalse(cidField.isUnique());
+		
+		assertNull(cidField.getOnUpdate());
+		assertNull(cidField.getDefaultValue());
+		
+		DDLForeignKey cidKey = null;
+		for (DDLForeignKey key : personDDL.getForeignKeys()) {
+			if (key.getField().equals("companyID")) {
+				cidKey = key;
+				break;
+			}
+		}
+		
+		assertNotNull(cidKey);
+		
+		assertEquals("person", cidKey.getDomesticTable());
+		assertEquals("companyID", cidKey.getField());
+		assertEquals("id", cidKey.getForeignField());
+		assertEquals("company", cidKey.getTable());
 	}
 }
