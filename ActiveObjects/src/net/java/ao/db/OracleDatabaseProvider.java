@@ -96,16 +96,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	protected String renderQueryLimit(Query query) {
-		StringBuilder sql = new StringBuilder();
-		
-		int limit = query.getLimit();
-		int offset = query.getOffset();
-		if (limit >= 0) {
-			sql.append(" LIMIT ");
-			sql.append(limit + offset);
-		}
-		
-		return sql.toString();
+		return "";
 	}
 	
 	@Override
