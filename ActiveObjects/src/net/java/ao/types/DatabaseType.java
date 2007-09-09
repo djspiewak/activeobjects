@@ -117,6 +117,7 @@ public abstract class DatabaseType<T> {
 		for (Class<?> type : handledTypes) {
 			hashCode += type.hashCode();
 		}
+		hashCode %= 2 << 7;
 		
 		return hashCode;
 	}
