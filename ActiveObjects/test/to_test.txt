@@ -1,9 +1,5 @@
 This is a comprehensive list of things which can and should be unit tested and are not currently.
 
- * SchemaReader readSchema: spot-check DDL
- * SchemaReader diffSchema: compare identical generated schemas
- * SchemaReader sortTopologically: construct unordered DDL, spot-check ordering
- 
  * TypeManager get type for class: Map<Class<?>, DatabaseType> results including custom types
  * TypeManager get type for int: Map<Class<?>, int> results
  
