@@ -15,22 +15,37 @@
  */
 package net.java.ao.types;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import net.java.ao.TestUtilities;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 /**
  * @author Daniel Spiewak
  */
-public class TypeTests extends TestUtilities {
+public class DatabaseTypeTest {
 
-	public static Test suite() {
-		TestSuite suite = new TestSuite("net.java.ao.types");
-		//$JUnit-BEGIN$
-		suite.addTest(asTest(TypeManagerTest.class));
-		suite.addTest(asTest(DatabaseTypeTest.class));
-		//$JUnit-END$
-		return suite;
+	@Test
+	public void testIsHandlerForInt() {
+		fail("Not yet implemented");
 	}
 
+	@Test
+	public void testIsHandlerForClass() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testPutToDatabase() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testConvert() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testDefaultParseValue() {
+		fail("Not yet implemented");
+	}
 }
