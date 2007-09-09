@@ -27,7 +27,7 @@ public class DBTests extends TestUtilities {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("net.java.ao.db");
 		//$JUnit-BEGIN$
-		suite.addTest(asTest(QueryTest.class));
+		
 		//$JUnit-END$
 		return suite;
 	}

@@ -2,8 +2,6 @@ This is a comprehensive list of things which can and should be unit tested and a
 
 ====Perform Against All Databases====
  
- * Query: generate SQL
-
  * Database schema render
      * Multiple built-in types
      * At least one custom type
