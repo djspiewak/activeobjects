@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.java.ao.schema.TableNameConverter;
 import net.java.ao.types.TypeManager;
 
 /**
@@ -229,12 +230,12 @@ public class Query {
 		return type;
 	}
 
-	protected String toSQL(Class<? extends Entity> tableType, EntityManager manager, boolean count) {
+	protected String toSQL(Class<? extends Entity> tableType, DatabaseProvider provider, TableNameConverter converter, boolean count) {
 		if (this.tableType == null && table == null) {
 			this.tableType = tableType;
 		}
 		
-		return manager.getProvider().renderQuery(this, manager.getTableNameConverter(), count);
+		return provider.renderQuery(this, converter, count);
 	}
 
 	@SuppressWarnings("unchecked")

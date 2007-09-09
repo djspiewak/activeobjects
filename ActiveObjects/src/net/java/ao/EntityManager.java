@@ -459,7 +459,7 @@ public class EntityManager {
 			String sql = null;
 			tableNameConverterLock.readLock().lock();
 			try {
-				sql = query.toSQL(type, this, false);
+				sql = query.toSQL(type, provider, tableNameConverter, false);
 			} finally {
 				tableNameConverterLock.readLock().unlock();
 			}
@@ -564,7 +564,7 @@ public class EntityManager {
 			String sql = null;
 			tableNameConverterLock.readLock().lock();
 			try {
-				sql = query.toSQL(type, this, true);
+				sql = query.toSQL(type, provider, tableNameConverter, true);
 			} finally {
 				tableNameConverterLock.readLock().unlock();
 			}
