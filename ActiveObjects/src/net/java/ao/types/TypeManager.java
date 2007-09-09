@@ -88,7 +88,7 @@ public class TypeManager {
 			if (back != null) {
 				classIndex.put(javaType, back);
 			} else {
-				System.out.println(javaType.getSimpleName());
+				throw new RuntimeException("Unrecognized type: " + javaType.getName());
 			}
 		} finally {
 			classIndexLock.writeLock().unlock();
