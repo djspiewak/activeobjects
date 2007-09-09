@@ -41,7 +41,7 @@ public class GeneratorTest extends DataTest {
 
 	@Test
 	public void testParseDDL() {
-		String[] expectedFields = {"id", "firstName", "lastName", "url", "companyID"};
+		String[] expectedFields = {"id", "firstName", "lastName", "age", "url", "favoriteClass", "companyID"};
 		
 		DDLTable[] parsedTables = Generator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
 				manager.getFieldNameConverter(), GeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);

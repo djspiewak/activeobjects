@@ -1,10 +1,5 @@
 This is a comprehensive list of things which can and should be unit tested and are not currently.
 
- * DatabaseType#isHandlerFor (class and int)
- * DatabaseType#putToDatabase
- * DatabaseType#convert
- * DatabaseType#defaultParseValue
- 
 ====Perform Against All Databases====
  
  * Query: generate SQL

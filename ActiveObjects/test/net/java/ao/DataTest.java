@@ -23,6 +23,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.types.ClassType;
+import net.java.ao.types.TypeManager;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -49,6 +52,8 @@ public abstract class DataTest {
 
 	@BeforeClass
 	public static void setUp() throws SQLException {
+		TypeManager.getInstance().addType(new ClassType());
+		
 		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
 		manager.migrate(PersonSuit.class, Pen.class);
 		
