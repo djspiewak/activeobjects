@@ -55,8 +55,13 @@ public class TypeManager {
 		types.add(new TimestampType());
 		types.add(new TimestampDateType());
 		types.add(new TinyIntType());
-		types.add(new URLType());
 		types.add(new VarcharType());
+
+		types.add(new DateType());
+		types.add(new DateDateType());
+		types.add(new RealType());
+		types.add(new URLType());
+		
 		types.add(new EntityType());
 	}
 	
