@@ -599,8 +599,10 @@ public abstract class DatabaseProvider {
 		}
 		
 		if (field.isAutoIncrement()) {
-			back.append(' ');
-			back.append(renderAutoIncrement());
+			String autoIncrementValue = renderAutoIncrement();
+			if (!autoIncrementValue.trim().equals("")) {
+				back.append(' ').append(autoIncrementValue);
+			}
 		} else if (field.getDefaultValue() != null) {
 			back.append(" DEFAULT ");
 			back.append(renderValue(field.getDefaultValue()));
