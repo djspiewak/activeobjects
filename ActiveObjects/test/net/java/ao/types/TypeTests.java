@@ -27,7 +27,7 @@ public class TypeTests extends TestUtilities {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("net.java.ao.types");
 		//$JUnit-BEGIN$
-
+		suite.addTest(asTest(TypeManagerTest.class));
 		//$JUnit-END$
 		return suite;
 	}

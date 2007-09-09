@@ -1,8 +1,5 @@
 This is a comprehensive list of things which can and should be unit tested and are not currently.
 
- * TypeManager get type for class: Map<Class<?>, DatabaseType> results including custom types
- * TypeManager get type for int: Map<Class<?>, int> results
- 
  * DatabaseType#getType
  * DatabaseType#getDefaultPrecision
  * DatabaseType#isHandlerFor (class and int)
