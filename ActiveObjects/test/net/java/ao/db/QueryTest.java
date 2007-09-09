@@ -15,21 +15,18 @@
  */
 package net.java.ao.db;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import net.java.ao.TestUtilities;
+import static org.junit.Assert.fail;
+import net.java.ao.DataTest;
+
+import org.junit.Test;
 
 /**
  * @author Daniel Spiewak
  */
-public class DBTests extends TestUtilities {
+public class QueryTest extends DataTest {
 
-	public static Test suite() {
-		TestSuite suite = new TestSuite("net.java.ao.db");
-		//$JUnit-BEGIN$
-		suite.addTest(asTest(QueryTest.class));
-		//$JUnit-END$
-		return suite;
+	@Test
+	public void testToSQL() {
+		fail("Not yet implemented");
 	}
-
 }
