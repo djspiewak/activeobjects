@@ -46,8 +46,35 @@ import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
+import net.java.ao.types.TypeManager;
 
 /**
+ * <p>The superclass parent of all <code>DatabaseProvider</code>
+ * implementations.  Various implementations allow for an abstraction
+ * around database-specific functionality (such as DDL).  DatabaseProvider(s)
+ * also handle the creation of new {@link Connection} instances and
+ * fully encapsulate the raw JDBC driver.  <i>Any</i> database-specific
+ * code should be placed in the database provider, rather than embedded
+ * within the API logic.</p>
+ * 
+ * <p>This superclass contains a base-line, default implementation of most 
+ * database-specific methods, thus requiring a minimum of work to implement
+ * a new database provider.  For the sake of sanity (read: mine), this
+ * base-line implementation is basically specific to MySQL.  Thus any
+ * DatabaseProvider implementations are really specifying the 
+ * <i>differences</i> between the database in question and MySQL.  To fully
+ * utilize the default implementations provided in this class, this fact should
+ * be kept in mind.</p>
+ * 
+ * <p>This class also handles the implementation details required to ensure
+ * that only one active {@link Connection} instance is available per thread.  This is
+ * in fact a very basic (and naive) form of connection pooling.  It should
+ * <i>not</i> be relied upon for performance reasons.  Instead, a third-party
+ * connection pool should be available in the classpath, enabling the use of
+ * one of the {@link PoolProvider} implementations.  The purpose of the
+ * thread-locked connection pooling in this class is to satisfy transactions
+ * with external SQL statements.</p>
+ * 
  * @author Daniel Spiewak
  */
 public abstract class DatabaseProvider {
@@ -56,6 +83,19 @@ public abstract class DatabaseProvider {
 	private Map<Thread, Connection> connections;
 	private final ReadWriteLock connectionsLock = new ReentrantReadWriteLock();
 	
+	/**
+	 * <p>The base constructor for <code>DatabaseProvider</code>.
+	 * Initializes the JDBC uri, username and password values as specified.</p>
+	 * 
+	 * <p>Subclasses should implement a public constructor of this form, however
+	 * it is not mandatory.</p>
+	 * 
+	 * @param uri	The JDBC URI which corresponds to the database being abstracted.
+	 * @param username	The database username (note: for implementations which
+	 * 	do not make use of this field, <code>null</code> is permitted).
+	 * @param password		The database password (note: for implementations which
+	 * 	do not make use of this field, <code>null</code> is permitted).
+	 */
 	protected DatabaseProvider(String uri, String username, String password) {
 		this.uri = uri;
 		
@@ -65,10 +105,68 @@ public abstract class DatabaseProvider {
 		connections = new HashMap<Thread, Connection>();
 	}
 	
+	/**
+	 * <p>Returns the JDBC Driver class which corresponds to the database being
+	 * abstracted.  This should be implemented in such a way as to initialize
+	 * and register the driver with JDBC.  For most drivers, this requires code in the
+	 * following form:</p>
+	 * 
+	 * <pre>public Class&lt;? extends Driver&gt; getDriverClass() {
+	 *     return (Class&lt;? extends Driver&gt;) Class.forName("com.mysql.jdbc.Driver");
+	 * }</pre>
+	 * 
+	 * <p>The following does <i>not</i> fire the driver's static initializer and thus
+	 * will (usually) not work:</p>
+	 * 
+	 * <pre>public Class&lt;? extends Driver&gt; getDriverClass() {
+	 *     return com.mysql.jdbc.Driver.class;
+	 * }</pre>
+	 * 
+	 * <p>If the driver is not on the classpath, a {@link ClassNotFoundException}
+	 * can and should be thrown (certain auto-magic configuration sections of
+	 * ActiveObjects depend upon this under certain circumstances).</p>
+	 * 
+	 * @returns The JDBC {@link Driver} implementation which corresponds to the
+	 * 	relevant database.
+	 */
 	public abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
 	
+	/**
+	 * <p>Generates the DDL fragment required to specify an INTEGER field as 
+	 * auto-incremented.  For databases which do not support such flags (which
+	 * is just about every database exception MySQL), <code>""</code> is an
+	 * acceptable return value.  This method should <i>never</i> return <code>null</code>
+	 * as it would cause the field rendering method to throw a {@link NullPointerException}.</p>
+	 * 
+	 * <p>This method is abstract (as opposed to the other methods which are
+	 * either defined against MySQL or simply empty) because of the vast 
+	 * differences in rendering auto-incremented fields across different
+	 * databases.  Also, it seemed like a terribly good idea at the time and I haven't
+	 * found a compelling reason to change it.</p>
+	 */
 	protected abstract String renderAutoIncrement();
 	
+	/**
+	 * Top level delegating method for the process of rendering a database-agnostic
+	 * {@link DDLAction} into the database-specific DDL statement(s).  It is
+	 * doubtful that any implementations will have to override this method as the
+	 * default implementation is database-agnostic.
+	 * 
+	 * @see #renderTable(DDLTable)
+	 * @see #renderFunctions(DDLTable)
+	 * @see #renderTriggers(DDLTable)
+	 * @see #renderDropTriggers(DDLTable)
+	 * @see #renderDropFunctions(DDLTable)
+	 * @see #renderDropTable(DDLTable)
+	 * @see #renderAlterTableAddColumn(DDLTable, DDLField)
+	 * @see #renderAlterTableChangeColumn(DDLTable, DDLField, DDLField)
+	 * @see #renderAlterTableDropColumn(DDLTable, DDLField)
+	 * @see #renderAlterTableAddKey(DDLForeignKey)
+	 * @see #renderAlterTableDropKey(DDLForeignKey)
+	 * 
+	 * @param action	The database-agnostic action to render.
+	 * @returns An array of DDL statements specific to the database in question.
+	 */
 	public String[] renderAction(DDLAction action) {
 		List<String> back = new ArrayList<String>();
 		
@@ -109,6 +207,38 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
+	/**
+	 * <p>Top level delegating method for rendering a database-agnostic
+	 * {@link Query} object into its (potentially) database-specific
+	 * query statement.  This method invokes the various <code>renderQuery*</code>
+	 * methods to construct its output, thus it is doubtful that any subclasses
+	 * will have to override it.  Rather, one of the delegate methods
+	 * should be considered.</p>
+	 * 
+	 * <p>An example of a database-specific query rendering would be the
+	 * following <code>Query</code>:</p>
+	 * 
+	 * <pre>Query.select().from(Person.class).limit(10)</pre>
+	 * 
+	 * <p>On MySQL, this would render to <code>SELECT id FROM people LIMIT 10</code>
+	 * However, on SQL Server, this same Query would render as
+	 * <code>SELECT TOP 10 id FROM people</code></p>
+	 * 
+	 * @see #renderQuerySelect(Query, TableNameConverter, boolean)
+	 * @see #renderQueryJoins(Query, TableNameConverter)
+	 * @see #renderQueryWhere(Query)
+	 * @see #renderQueryGroupBy(Query)
+	 * @see #renderQueryOrderBy(Query)
+	 * @see #renderQueryLimit(Query)
+	 * 
+	 * @param query	The database-agnostic Query object to be rendered in a
+	 * 	potentially database-specific way.
+	 * @param converter	Used to convert {@link Entity} classes into table names.
+	 * @param count	If <code>true</code>, render the Query as a <code>SELECT COUNT(*)</code>
+	 * 	rather than a standard field-data query.
+	 * @returns A syntactically complete SQL statement potentially specific to the
+	 * 	database.
+	 */
 	public String renderQuery(Query query, TableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		
@@ -122,6 +252,23 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	/**
+	 * <p>Parses the database-agnostic <code>String</code> value relevant to the specified SQL
+	 * type in <code>int</code> form (as defined by {@link Types} and returns
+	 * the Java value which corresponds.  This method is completely database-agnostic, as are
+	 * all of all of its delegate methods.</p>
+	 * 
+	 * <p><b>WARNING:</b> This method is being considered for removal to another
+	 * class (perhaps {@link TypeManager}?) as it is not a database-specific function and thus
+	 * confuses the purpose of this class.  Do not rely upon it heavily.  (better yet, don't rely on it
+	 * at all from external code.  It's not designed to be part of the public API)</p>
+	 * 
+	 * @param type		The JDBC integer type of the database field against which to parse the
+	 * 	value.
+	 * @param value	The database-agnostic String value to parse into a proper Java object
+	 * 	with respect to the specified SQL type.
+	 * @returns	A Java value which corresponds to the specified String.
+	 */
 	public Object parseValue(int type, String value) {
 		if (value == null || value.equals("") || value.equals("NULL")) {
 			return null;
