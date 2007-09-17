@@ -3,7 +3,7 @@ CREATE TABLE person (
     firstName VARCHAR NOT NULL,
     lastName TEXT,
     age INTEGER(12),
-    url VARCHAR UNIQUE,
+    url VARCHAR UNIQUE NOT NULL,
     favoriteClass VARCHAR,
     height DOUBLE(32,6) DEFAULT 62.3,
     companyID INTEGER,
