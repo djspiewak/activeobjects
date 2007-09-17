@@ -63,22 +63,23 @@ public abstract class DatabaseType<T> {
 		return false;
 	}
 	
-	private boolean isSubclass(Class<?> sup, Class<?> sub) {
+	@SuppressWarnings("unchecked") 
+	private boolean isSubclass(Class sup, Class sub) {
 		if (sub.equals(sup)) {
 			return true;
 		} else if (sub.equals(Object.class)) {
 			return false;
 		}
 		
-		Class<?> superclass = sub.getSuperclass();
-		List<Class<?>> superclasses = new LinkedList<Class<?>>();
+		Class superclass = sub.getSuperclass();
+		List<Class> superclasses = new LinkedList<Class>();
 		superclasses.addAll(Arrays.asList(sub.getInterfaces()));
 		
 		if (superclass != null) {
 			superclasses.add(superclass);
 		}
 		
-		for (Class<?> parent : superclasses) {
+		for (Class parent : superclasses) {
 			if (isSubclass(sup, parent)) {
 				return true;
 			}
