@@ -754,16 +754,17 @@ public abstract class DatabaseProvider {
 			back.append(" DEFAULT ");
 			back.append(renderValue(field.getDefaultValue()));
 		}
+		
+		if (field.isUnique()) {
+			back.append(' ').append(renderUnique());
+		}
 
-		if (field.isNotNull()) {
+		if (field.isNotNull() || field.isUnique()) {
 			back.append(" NOT NULL");
 		}
 		
 		if (field.getOnUpdate() != null) {
 			back.append(renderOnUpdate(field));
-		}
-		if (field.isUnique()) {
-			back.append(' ').append(renderUnique());
 		}
 		
 		return back.toString();
