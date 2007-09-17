@@ -85,7 +85,7 @@ public class GeneratorTest extends DataTest {
 		assertEquals(Types.VARCHAR, urlField.getType().getType());
 		
 		assertFalse(urlField.isAutoIncrement());
-		assertFalse(urlField.isNotNull());
+		assertTrue(urlField.isNotNull());
 		assertFalse(urlField.isPrimaryKey());
 		assertTrue(urlField.isUnique());
 		

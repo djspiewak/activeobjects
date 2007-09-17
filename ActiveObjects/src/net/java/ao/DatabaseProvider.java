@@ -495,7 +495,7 @@ public abstract class DatabaseProvider {
 				return conn;
 			}
 			
-			conn = new DelegateConnection(getConnectionImpl());
+			conn = DelegateConnectionHandler.newInstance(getConnectionImpl());
 			connections.put(Thread.currentThread(), conn);
 			
 			return conn;
@@ -763,7 +763,7 @@ public abstract class DatabaseProvider {
 			back.append(renderOnUpdate(field));
 		}
 		if (field.isUnique()) {
-			back.append(" UNIQUE");
+			back.append(' ').append(renderUnique());
 		}
 		
 		return back.toString();
@@ -785,6 +785,10 @@ public abstract class DatabaseProvider {
 	
 	protected String renderCalendar(Calendar calendar) {
 		return new SimpleDateFormat(getDateFormat()).format(calendar.getTime());
+	}
+	
+	protected String renderUnique() {
+		return "UNIQUE";
 	}
 	
 	protected String getDateFormat() {
