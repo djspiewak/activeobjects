@@ -841,6 +841,7 @@ public abstract class DatabaseProvider {
 		return null;
 	}
 	
+	@SuppressWarnings("unused")
 	public int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
@@ -856,7 +857,7 @@ public abstract class DatabaseProvider {
 		
 		sql.append(") VALUES (");
 		
-		for (@SuppressWarnings("unused") DBParam param : params) {
+		for (DBParam param : params) {
 			sql.append("?,");
 		}
 		if (params.length > 0) {
