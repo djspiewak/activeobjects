@@ -20,9 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -154,7 +151,11 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	protected String getTriggerNameForField(DDLTable table, DDLField field) {
-		return table.getName() + '_' + field.getName() + "_onupdate";
+		if (field.getOnUpdate() != null) {
+			return table.getName() + '_' + field.getName() + "_onupdate";
+		}
+		
+		return super.getTriggerNameForField(table, field);
 	}
 	
 	@Override
@@ -208,13 +209,15 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	@Override
 	protected String[] renderAlterTableChangeColumn(DDLTable table, DDLField oldField, DDLField field) {
 		System.err.println("WARNING: Derby doesn't support CHANGE TABLE statements");
-		System.err.println("WARNING: Data contained in column '" + table.getName() + "." + oldField.getName() + "' will be lost");
+		System.err.println("WARNING: Migration may not be entirely in sync as a result");
 		
-		List<String> back = new ArrayList<String>();
+		return new String[0];
+	}
+	
+	@Override
+	protected String[] renderAlterTableDropColumn(DDLTable table, DDLField field) {
+		System.err.println("WARNING: Derby doesn't support ALTER TABLE DROP COLUMN statements");
 		
-		back.addAll(Arrays.asList(renderAlterTableDropColumn(table, oldField)));
-		back.addAll(Arrays.asList(renderAlterTableAddColumn(table, field)));
-		
-		return back.toArray(new String[back.size()]);
+		return new String[0];
 	}
 }
