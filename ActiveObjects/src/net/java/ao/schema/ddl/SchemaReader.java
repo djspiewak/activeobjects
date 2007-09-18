@@ -289,6 +289,40 @@ public final class SchemaReader {
 				action.setKey(key);
 				actions.add(action);
 			}
+			
+			// field indexes
+			List<DDLIndex> addIndexes = new ArrayList<DDLIndex>();
+			List<DDLIndex> dropIndexes = new ArrayList<DDLIndex>();
+			
+			for (DDLIndex fromIndex : fromTable.getIndexes()) {
+				for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
+					if (!(fromIndex.getTable().equalsIgnoreCase(ontoIndex.getTable()) 
+							&& fromIndex.getField().equalsIgnoreCase(ontoIndex.getField()))) {
+						addIndexes.add(fromIndex);
+					}
+				}
+			}
+			
+			for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
+				for (DDLIndex fromIndex : fromTable.getIndexes()) {
+					if (!(ontoIndex.getTable().equalsIgnoreCase(fromIndex.getTable()) 
+							&& ontoIndex.getField().equalsIgnoreCase(fromIndex.getField()))) {
+						dropIndexes.add(ontoIndex);
+					}
+				}
+			}
+			
+			for (DDLIndex index : addIndexes) {
+				DDLAction action = new DDLAction(DDLActionType.CREATE_INDEX);
+				action.setIndex(index);
+				actions.add(action);
+			}
+
+			for (DDLIndex indedx : dropIndexes) {
+				DDLAction action = new DDLAction(DDLActionType.CREATE_INDEX);
+				action.setIndex(indedx);
+				actions.add(action);
+			}
 		}
 		
 		return actions.toArray(new DDLAction[actions.size()]);
@@ -331,26 +365,34 @@ public final class SchemaReader {
 	
 	/*
 	 * DROP_KEY
+	 * DROP_INDEX
 	 * DROP_COLUMN
 	 * CHANGE_COLUMN
 	 * DROP
 	 * CREATE
 	 * ADD_COLUMN
 	 * ADD_KEY
+	 * CREATE_INDEX
 	 */
 	private static void performSort(DDLAction[] actions, Map<DDLAction, Set<DDLAction>> deps, Set<DDLAction> roots) {
 		List<DDLAction> dropKeys = new LinkedList<DDLAction>();
+		List<DDLAction> dropIndexes = new LinkedList<DDLAction>();
 		List<DDLAction> dropColumns = new LinkedList<DDLAction>();
 		List<DDLAction> changeColumns = new LinkedList<DDLAction>();
 		List<DDLAction> drops = new LinkedList<DDLAction>();
 		List<DDLAction> creates = new LinkedList<DDLAction>();
 		List<DDLAction> addColumns = new LinkedList<DDLAction>();
 		List<DDLAction> addKeys = new LinkedList<DDLAction>();
+		List<DDLAction> createIndexes = new LinkedList<DDLAction>();
 		
 		for (DDLAction action : actions) {
 			switch (action.getActionType()) {
 				case ALTER_DROP_KEY:
 					dropKeys.add(action);
+				break;
+				
+				case DROP_INDEX:
+					dropIndexes.add(action);
 				break;
 				
 				case ALTER_DROP_COLUMN:
@@ -376,10 +418,15 @@ public final class SchemaReader {
 				case ALTER_ADD_KEY:
 					addKeys.add(action);
 				break;
+				
+				case CREATE_INDEX:
+					createIndexes.add(action);
+				break;
 			}
 		}
 		
 		roots.addAll(dropKeys);
+		roots.addAll(dropIndexes);
 		
 		for (DDLAction action : dropColumns) {
 			Set<DDLAction> dependencies = new HashSet<DDLAction>();
@@ -525,6 +572,35 @@ public final class SchemaReader {
 			for (DDLAction depAction : changeColumns) {
 				if ((depAction.getTable().getName().equals(key.getTable()) && depAction.getField().getName().equals(key.getForeignField())) 
 						|| (depAction.getTable().getName().equals(key.getDomesticTable())) && depAction.getField().getName().equals(key.getField())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			if (dependencies.size() == 0) {
+				roots.add(action);
+			} else {
+				deps.put(action, dependencies);
+			}
+		}
+		
+		for (DDLAction action : createIndexes) {
+			Set<DDLAction> dependencies = new HashSet<DDLAction>();
+			DDLIndex index = action.getIndex();
+			
+			for (DDLAction depAction : creates) {
+				if (depAction.getTable().getName().equals(index.getTable())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			for (DDLAction depAction : addColumns) {
+				if (depAction.getTable().getName().equals(index.getTable()) || depAction.getField().getName().equals(index.getField())) {
+					dependencies.add(depAction);
+				}
+			}
+			
+			for (DDLAction depAction : changeColumns) {
+				if (depAction.getTable().getName().equals(index.getTable()) || depAction.getField().getName().equals(index.getField())) {
 					dependencies.add(depAction);
 				}
 			}

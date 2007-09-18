@@ -1,0 +1,1 @@
+CREATE INDEX companyID ON person(companyID)

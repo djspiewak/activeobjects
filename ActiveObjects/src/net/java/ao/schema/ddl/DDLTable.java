@@ -23,6 +23,7 @@ public class DDLTable {
 	
 	private DDLField[] fields = {};
 	private DDLForeignKey[] foreignKeys = {};
+	private DDLIndex[] indexes = {};
 
 	public String getName() {
 		return name;
@@ -46,6 +47,14 @@ public class DDLTable {
 
 	public void setForeignKeys(DDLForeignKey[] foreignKeys) {
 		this.foreignKeys = foreignKeys;
+	}
+	
+	public DDLIndex[] getIndexes() {
+		return indexes;
+	}
+	
+	public void setIndexes(DDLIndex[] indexes) {
+		this.indexes = indexes;
 	}
 	
 	@Override

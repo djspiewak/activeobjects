@@ -55,7 +55,6 @@ public abstract class DataTest {
 		TypeManager.getInstance().addType(new ClassType());
 		
 		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
-		manager.migrate(PersonSuit.class, Pen.class);
 		
 		Logger logger = Logger.getLogger("net.java.ao");
 		Logger l = logger;
@@ -68,6 +67,12 @@ public abstract class DataTest {
 		
 		logger.setLevel(Level.FINE);
 		logger.addHandler(SQLLogMonitor.getInstance());
+		
+		try {
+			manager.migrate(PersonSuit.class, Pen.class);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {

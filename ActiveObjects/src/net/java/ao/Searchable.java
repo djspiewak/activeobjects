@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao.schema.ddl;
+package net.java.ao;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author Daniel Spiewak
  */
-public enum DDLActionType {
-	CREATE,
-	DROP,
-	ALTER_ADD_COLUMN,
-	ALTER_CHANGE_COLUMN,
-	ALTER_DROP_COLUMN,
-	ALTER_ADD_KEY,
-	ALTER_DROP_KEY,
-	CREATE_INDEX,
-	DROP_INDEX
-}
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Searchable {}

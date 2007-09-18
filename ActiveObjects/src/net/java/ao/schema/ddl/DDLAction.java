@@ -24,6 +24,7 @@ public class DDLAction {
 	private DDLTable table;
 	private DDLField oldField, field;
 	private DDLForeignKey key;
+	private DDLIndex index;
 	
 	public DDLAction(DDLActionType actionType) {
 		this.actionType = actionType;
@@ -66,6 +67,14 @@ public class DDLAction {
 		this.oldField = oldField;
 	}
 	
+	public DDLIndex getIndex() {
+		return index;
+	}
+	
+	public void setIndex(DDLIndex index) {
+		this.index = index;
+	}
+	
 	@Override
 	public int hashCode() {
 		int back = 0;
@@ -85,6 +94,10 @@ public class DDLAction {
 		if (key != null) {
 			back += key.hashCode();
 		}
+		if (key != null) {
+			back += index.hashCode();
+		}
+		back %= 2 << 15;
 		
 		return back;
 	}
@@ -101,7 +114,8 @@ public class DDLAction {
 					&& (action.getActionType() == actionType)
 					&& (action.getOldField() == null || action.getOldField().equals(oldField))
 					&& (action.getField() == null || action.getField().equals(field))
-					&& (action.getKey() == null || action.getKey().equals(key))) {
+					&& (action.getKey() == null || action.getKey().equals(key))
+					&& (action.getIndex() == null || action.getIndex().equals(index))) {
 				return true;
 			}
 			

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package net.java.ao.schema;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -25,4 +25,4 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Index {}
+public @interface Indexed {}

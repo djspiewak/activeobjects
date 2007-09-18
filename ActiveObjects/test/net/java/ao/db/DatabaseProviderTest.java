@@ -30,6 +30,7 @@ import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.ClassType;
 import net.java.ao.types.TypeManager;
@@ -45,25 +46,47 @@ public class DatabaseProviderTest {
 
 	@Test
 	public void testRenderAction() throws IOException {
+		// create table
 		DDLAction action = createAction();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readString("derby.sql"), provider.renderAction(action)[0]);
+		assertEquals(readString("derby-create-table.sql"), provider.renderAction(action)[0]);
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readString("hsqldb.sql"), provider.renderAction(action)[0]);
+		assertEquals(readString("hsqldb-create-table.sql"), provider.renderAction(action)[0]);
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readString("sqlserver.sql"), provider.renderAction(action)[0]);
+		assertEquals(readString("sqlserver-create-table.sql"), provider.renderAction(action)[0]);
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readString("mysql.sql"), provider.renderAction(action)[0]);
+		assertEquals(readString("mysql-create-table.sql"), provider.renderAction(action)[0]);
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readString("oracle.sql"), provider.renderAction(action)[0]);
+		assertEquals(readString("oracle-create-table.sql"), provider.renderAction(action)[0]);
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readString("postgres.sql"), provider.renderAction(action)[0]);
+		assertEquals(readString("postgres-create-table.sql"), provider.renderAction(action)[0]);action = createAction();
+		
+		// create index
+		action = createIndexAction();
+		
+		provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(readString("derby-create-index.sql"), provider.renderAction(action)[0]);
+		
+		provider = new HSQLDatabaseProvider("", "", "");
+		assertEquals(readString("hsqldb-create-index.sql"), provider.renderAction(action)[0]);
+		
+		provider = new JTDSSQLServerDatabaseProvider("", "", "");
+		assertEquals(readString("sqlserver-create-index.sql"), provider.renderAction(action)[0]);
+		
+		provider = new MySQLDatabaseProvider("", "", "");
+		assertEquals(readString("mysql-create-index.sql"), provider.renderAction(action)[0]);
+		
+		provider = new OracleDatabaseProvider("", "", "");
+		assertEquals(readString("oracle-create-index.sql"), provider.renderAction(action)[0]);
+		
+		provider = new PostgreSQLDatabaseProvider("", "", "");
+		assertEquals(readString("postgres-create-index.sql"), provider.renderAction(action)[0]);
 	}
 	
 	private DDLAction createAction() {
@@ -138,6 +161,17 @@ public class DatabaseProviderTest {
 		
 		DDLAction back = new DDLAction(DDLActionType.CREATE);
 		back.setTable(table);
+		
+		return back;
+	}
+	
+	private DDLAction createIndexAction() {
+		DDLAction back = new DDLAction(DDLActionType.CREATE_INDEX);
+		
+		DDLIndex index = new DDLIndex();
+		index.setField("companyID");
+		index.setTable("person");
+		back.setIndex(index);
 		
 		return back;
 	}

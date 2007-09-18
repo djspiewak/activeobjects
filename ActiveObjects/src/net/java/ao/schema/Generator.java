@@ -41,6 +41,7 @@ import net.java.ao.OneToMany;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.schema.ddl.SchemaReader;
 import net.java.ao.types.DatabaseType;
@@ -202,6 +203,7 @@ public final class Generator {
 		
 		table.setFields(parseFields(clazz, fieldConverter));
 		table.setForeignKeys(parseForeignKeys(nameConverter, fieldConverter, clazz));
+		table.setIndexes(parseIndexes(nameConverter, fieldConverter, clazz));
 		
 		return table;
 	}
@@ -316,6 +318,36 @@ public final class Generator {
 		}
 		
 		return back.toArray(new DDLForeignKey[back.size()]);
+	}
+	
+	private static DDLIndex[] parseIndexes(TableNameConverter nameConverter, FieldNameConverter fieldConverter, 
+			Class<? extends Entity> clazz) {
+		Set<DDLIndex> back = new LinkedHashSet<DDLIndex>();
+		String tableName = nameConverter.getName(clazz);
+		
+		for (Method method : clazz.getMethods()) {
+			String attributeName = fieldConverter.getName(clazz, method);
+			
+			if (Common.isAccessor(method) || Common.isMutator(method)) {
+				Indexed indexedAnno = method.getAnnotation(Indexed.class);
+				Class<?> type = Common.getAttributeTypeFromMethod(method);
+				
+				if (indexedAnno != null || (type != null && Common.interfaceInheritsFrom(type, Entity.class))) {
+					DDLIndex index = new DDLIndex();
+					index.setField(attributeName);
+					index.setTable(tableName);
+					back.add(index);
+				}
+			}
+		}
+		
+		for (Class<?> superInterface : clazz.getInterfaces()) {
+			if (!superInterface.equals(Entity.class)) {
+				back.addAll(Arrays.asList(parseIndexes(nameConverter, fieldConverter, (Class<? extends Entity>) superInterface)));
+			}
+		}
+		
+		return back.toArray(new DDLIndex[back.size()]);
 	}
 	
 	private static Object convertStringValue(String value, DatabaseType<?> type) {

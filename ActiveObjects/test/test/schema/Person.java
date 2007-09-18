@@ -23,6 +23,8 @@ import net.java.ao.Implementation;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
+import net.java.ao.schema.Default;
+import net.java.ao.schema.Indexed;
 import net.java.ao.schema.Unique;
 
 /**
@@ -37,14 +39,18 @@ public interface Person extends Entity {
 	public String getLastName();
 	public void setLastName(String lastName);
 	
+	@Indexed
 	public int getAge();
+	@Indexed
 	public void setAge(int age);
 
 	@Unique
+	@Default("http://www.google.com")
 	@Accessor("url")
 	public URL getURL();
 
 	@Unique
+	@Default("http://www.google.com")
 	@Mutator("url")
 	public void setURL(URL url);
 	

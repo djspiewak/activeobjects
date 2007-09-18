@@ -126,7 +126,7 @@ public class IndexingEntityManager extends EntityManager {
 
 			boolean shouldAdd = false;
 			for (Method m : entity.getEntityType().getMethods()) {
-				Index indexAnno = m.getAnnotation(Index.class);
+				Searchable indexAnno = m.getAnnotation(Searchable.class);
 
 				if (indexAnno != null) {
 					shouldAdd = true;

@@ -43,4 +43,9 @@ class VarcharType extends DatabaseType<String> {
 	public String defaultParseValue(String value) {
 		return value;
 	}
+	
+	@Override
+	public boolean valueEquals(Object val1, Object val2) {
+		return val1.toString().equals(val2.toString());
+	}
 }

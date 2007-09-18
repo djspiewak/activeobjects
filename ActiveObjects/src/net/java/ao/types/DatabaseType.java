@@ -92,6 +92,10 @@ public abstract class DatabaseType<T> {
 		stmt.setObject(index, value, getType());
 	}
 	
+	public boolean valueEquals(Object val1, Object val2) {
+		return val1.equals(val2);
+	}
+	
 	public abstract String getDefaultName();
 	
 	public abstract T convert(EntityManager manager, ResultSet res, Class<? extends T> type, String field) throws SQLException;

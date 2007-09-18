@@ -27,6 +27,7 @@ import java.sql.Types;
 import net.java.ao.DataTest;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.schema.ddl.DDLTable;
 
 import org.junit.Test;
@@ -42,6 +43,7 @@ public class GeneratorTest extends DataTest {
 	@Test
 	public void testParseDDL() {
 		String[] expectedFields = {"id", "firstName", "lastName", "age", "url", "favoriteClass", "companyID"};
+		String[] expectedIndexes = {"age", "companyID"};
 		
 		DDLTable[] parsedTables = Generator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
 				manager.getFieldNameConverter(), GeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
@@ -90,7 +92,7 @@ public class GeneratorTest extends DataTest {
 		assertTrue(urlField.isUnique());
 		
 		assertNull(urlField.getOnUpdate());
-		assertNull(urlField.getDefaultValue());
+		assertNotNull(urlField.getDefaultValue());
 		
 		DDLField idField = null;
 		for (DDLField field : personDDL.getFields()) {
@@ -142,5 +144,22 @@ public class GeneratorTest extends DataTest {
 		assertEquals("companyID", cidKey.getField());
 		assertEquals("id", cidKey.getForeignField());
 		assertEquals("company", cidKey.getTable());
+		
+		assertEquals(expectedIndexes.length, personDDL.getIndexes().length);
+		for (DDLIndex index : personDDL.getIndexes()) {
+			boolean found = false;
+			for (String expectedIndex : expectedIndexes) {
+				if (expectedIndex.equals(index.getField())) {
+					assertEquals("person", index.getTable());
+					
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) {
+				fail("Index for field " + index.getField() + " was unexpected");
+			}
+		}
 	}
 }

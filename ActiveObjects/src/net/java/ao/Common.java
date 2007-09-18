@@ -23,6 +23,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.java.ao.types.TypeManager;
+
 /**
  * WARNING: <i>Not</i> part of the public API.  This class is public only
  * to allow its use within other packages in the ActiveObjects library.
@@ -170,7 +172,7 @@ public final class Common {
 		List<String> back = new ArrayList<String>();
 		
 		for (Method m : type.getMethods()) {
-			Index annot = m.getAnnotation(Index.class);
+			Searchable annot = m.getAnnotation(Searchable.class);
 			
 			if (annot != null) {
 				Class<?> attributeType = Common.getAttributeTypeFromMethod(m);
@@ -206,17 +208,8 @@ public final class Common {
 			}
 		}
 		
-		if (a instanceof Number) {
-			if (b instanceof Boolean) {
-				return (((Number) a).intValue() == 1) == ((Boolean) b).booleanValue();
-			}
-		} else if (a instanceof Boolean) {
-			if (b instanceof Number) {
-				return (((Number) b).intValue() == 1) == ((Boolean) a).booleanValue();
-			}
-		}
-		
-		return a.equals(b);
+		return TypeManager.getInstance().getType(a.getClass()).valueEquals(a, b)
+			|| TypeManager.getInstance().getType(b.getClass()).valueEquals(b, a);
 	}
 	
 	public static boolean fuzzyTypeCompare(int typeA, int typeB) {

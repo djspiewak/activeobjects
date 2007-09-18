@@ -43,4 +43,19 @@ class BooleanType extends DatabaseType<Boolean> {
 	public Boolean defaultParseValue(String value) {
 		return Boolean.parseBoolean(value.trim());
 	}
+	
+	@Override
+	public boolean valueEquals(Object a, Object b) {
+		if (a instanceof Number) {
+			if (b instanceof Boolean) {
+				return (((Number) a).intValue() == 1) == ((Boolean) b).booleanValue();
+			}
+		} else if (a instanceof Boolean) {
+			if (b instanceof Number) {
+				return (((Number) b).intValue() == 1) == ((Boolean) a).booleanValue();
+			}
+		}
+		
+		return a.equals(b);
+	}
 }

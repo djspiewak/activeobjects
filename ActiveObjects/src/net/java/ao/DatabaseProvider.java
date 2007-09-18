@@ -44,6 +44,7 @@ import net.java.ao.schema.TableNameConverter;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
@@ -201,6 +202,14 @@ public abstract class DatabaseProvider {
 			
 			case ALTER_DROP_KEY:
 				back.add(renderAlterTableDropKey(action.getKey()));
+			break;
+			
+			case CREATE_INDEX:
+				back.add(renderCreateIndex(action.getIndex()));
+			break;
+			
+			case DROP_INDEX:
+				back.add(renderDropIndex(action.getIndex()));
 			break;
 		}
 		
@@ -721,6 +730,24 @@ public abstract class DatabaseProvider {
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
 		return "ALTER TABLE " + key.getDomesticTable() + " DROP FOREIGN KEY " + key.getFKName();
 	}
+	
+	protected String renderCreateIndex(DDLIndex index) {
+		StringBuilder back = new StringBuilder();
+		
+		back.append("CREATE INDEX ").append(index.getName());
+		back.append(" ON ").append(index.getTable()).append('(').append(index.getField()).append(')');
+		
+		return back.toString();
+	}
+	
+	protected String renderDropIndex(DDLIndex index) {
+		StringBuilder back = new StringBuilder();
+		
+		back.append("DROP INDEX ").append(index.getName());
+		back.append(" ON ").append(index.getTable());
+		
+		return back.toString();
+	}
 
 	protected String renderAppend() {
 		return null;
@@ -779,9 +806,11 @@ public abstract class DatabaseProvider {
 			return ((Boolean) value ? "1" : "0");
 		} else if (value instanceof DatabaseFunction) {
 			return renderFunction((DatabaseFunction) value);
+		} else if (value instanceof Number) {
+			return value.toString();
 		}
 		
-		return value.toString();
+		return "'" + value.toString() + "'";
 	}
 	
 	protected String renderCalendar(Calendar calendar) {
