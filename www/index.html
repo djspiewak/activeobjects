@@ -19,14 +19,13 @@
 		with either an existing database schema, or it can auto-generate the database schema 
 		from the user-specified entity interfaces.</p>
 		
-		<blockquote>AO also has the potential to have significantly superior performance to more traditional 
-		ORMs such as Hibernate because it is lazy-loaded with a multi-tiered caching system.</blockquote>
-		
-		<i>It's been pointed out that this statement is inaccurate, or at least misleading.  Perhaps
-		a more correct way of saying this would be that "ActiveObjects can be more
-		performant than traditional Hibernate under certain circumstances, due to its natural
-		use of lazy-loading."  The statement is being retained here on the site for legacy
-		reasons rather than a complete removal (which was my first impulse).</i>
+		<p>ActiveObjects can be more performant than traditional, mapper-style ORMs (such
+		as Hibernate) due to its natural use of lazy-loading coupled with sophisticated caching
+		mechanisms.  However, performance is not the primary design goal of the project.  Rather,
+		the intention is to create an ORM which is powerful and yet extremely natural to use
+		and integrate into your project.  This design has lead to certain performance benefits
+		(such as lazy-loading), but on the whole, mapping-style ORMs are inherantly slightly more
+		performant than ActiveObjects can be just from a theoretical standpoint.</p>
 		
 		<h3>Download</h3>
 		
