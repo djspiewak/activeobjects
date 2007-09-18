@@ -220,6 +220,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	@SuppressWarnings("unused")
 	public synchronized int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
 		boolean identityInsert = false;
 		StringBuilder sql = new StringBuilder();
@@ -244,7 +245,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			
 			sql.append(") VALUES (");
 			
-			for (@SuppressWarnings("unused") DBParam param : params) {
+			for (DBParam param : params) {
 				sql.append("?,");
 			}
 			sql.setLength(sql.length() - 1);

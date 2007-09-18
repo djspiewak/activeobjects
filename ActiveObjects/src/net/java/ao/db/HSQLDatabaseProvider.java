@@ -47,6 +47,8 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		return (Class<? extends Driver>) Class.forName("org.hsqldb.jdbcDriver");
 	}
 	
+	@Override
+	@SuppressWarnings("unused")
 	public int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
@@ -62,7 +64,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		
 		sql.append(") VALUES (");
 		
-		for (@SuppressWarnings("unused") DBParam param : params) {
+		for (DBParam param : params) {
 			sql.append("?,");
 		}
 		if (params.length > 0) {
