@@ -295,20 +295,34 @@ public final class SchemaReader {
 			List<DDLIndex> dropIndexes = new ArrayList<DDLIndex>();
 			
 			for (DDLIndex fromIndex : fromTable.getIndexes()) {
+				boolean found = false;
+				
 				for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
-					if (!(fromIndex.getTable().equalsIgnoreCase(ontoIndex.getTable()) 
-							&& fromIndex.getField().equalsIgnoreCase(ontoIndex.getField()))) {
-						addIndexes.add(fromIndex);
+					if (fromIndex.getTable().equalsIgnoreCase(ontoIndex.getTable()) 
+							&& fromIndex.getField().equalsIgnoreCase(ontoIndex.getField())) {
+						found = true;
+						break;
 					}
+				}
+				
+				if (!found) {
+					addIndexes.add(fromIndex);
 				}
 			}
 			
 			for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
+				boolean found = false;
+				
 				for (DDLIndex fromIndex : fromTable.getIndexes()) {
-					if (!(ontoIndex.getTable().equalsIgnoreCase(fromIndex.getTable()) 
-							&& ontoIndex.getField().equalsIgnoreCase(fromIndex.getField()))) {
-						dropIndexes.add(ontoIndex);
+					if (ontoIndex.getTable().equalsIgnoreCase(fromIndex.getTable()) 
+							&& ontoIndex.getField().equalsIgnoreCase(fromIndex.getField())) {
+						found = true;
+						break;
 					}
+				}
+				
+				if (!found) {
+					dropIndexes.add(ontoIndex);
 				}
 			}
 			
@@ -318,9 +332,9 @@ public final class SchemaReader {
 				actions.add(action);
 			}
 
-			for (DDLIndex indedx : dropIndexes) {
-				DDLAction action = new DDLAction(DDLActionType.CREATE_INDEX);
-				action.setIndex(indedx);
+			for (DDLIndex index : dropIndexes) {
+				DDLAction action = new DDLAction(DDLActionType.DROP_INDEX);
+				action.setIndex(index);
 				actions.add(action);
 			}
 		}

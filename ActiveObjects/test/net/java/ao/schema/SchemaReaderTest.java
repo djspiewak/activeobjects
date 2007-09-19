@@ -90,7 +90,7 @@ public class SchemaReaderTest extends DataTest {
 		assertTrue(Common.fuzzyTypeCompare(Types.VARCHAR, urlField.getType().getType()));
 		
 		assertFalse(urlField.isAutoIncrement());
-		assertNull(urlField.getDefaultValue());
+		assertNotNull(urlField.getDefaultValue());
 		
 		DDLField idField = null;
 		for (DDLField field : personDDL.getFields()) {
