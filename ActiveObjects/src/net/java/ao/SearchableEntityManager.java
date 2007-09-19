@@ -40,24 +40,24 @@ import org.apache.lucene.store.Directory;
 /**
  * @author Daniel Spiewak
  */
-public class IndexingEntityManager extends EntityManager {
+public class SearchableEntityManager extends EntityManager {
 	private Directory indexDir;
 
 	private Analyzer analyzer;
 
-	public IndexingEntityManager(DatabaseProvider provider, Directory indexDir) throws IOException {
+	public SearchableEntityManager(DatabaseProvider provider, Directory indexDir) throws IOException {
 		super(provider);
 
 		init(indexDir);
 	}
 
-	public IndexingEntityManager(DatabaseProvider provider, Directory indexDir, boolean weaklyCache) throws IOException {
+	public SearchableEntityManager(DatabaseProvider provider, Directory indexDir, boolean weaklyCache) throws IOException {
 		super(provider, weaklyCache);
 
 		init(indexDir);
 	}
 
-	public IndexingEntityManager(String uri, String username, String password, Directory indexDir) throws IOException {
+	public SearchableEntityManager(String uri, String username, String password, Directory indexDir) throws IOException {
 		super(uri, username, password);
 
 		init(indexDir);
@@ -213,7 +213,7 @@ public class IndexingEntityManager extends EntityManager {
 		private Document doc;
 
 		private IndexAppender(T entity) {
-			indexFields = Common.getIndexFields(IndexingEntityManager.this, entity.getEntityType());
+			indexFields = Common.getIndexFields(SearchableEntityManager.this, entity.getEntityType());
 
 			doc = new Document();
 			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));

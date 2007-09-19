@@ -48,7 +48,7 @@ class RelatedEntityImpl {
 			searchFields[i] = table + '.' + indexFields.get(i);
 		}
 
-		Directory indexDir = ((IndexingEntityManager) entity.getEntityManager()).getIndexDir();
+		Directory indexDir = ((SearchableEntityManager) entity.getEntityManager()).getIndexDir();
 		IndexReader reader = null;
 		
 		try {
@@ -57,7 +57,7 @@ class RelatedEntityImpl {
 
 			MoreLikeThis more = new MoreLikeThis(reader);
 			more.setFieldNames(searchFields);
-			more.setAnalyzer(((IndexingEntityManager) entity.getEntityManager()).getAnalyzer());
+			more.setAnalyzer(((SearchableEntityManager) entity.getEntityManager()).getAnalyzer());
 			
 			int docID = -1;
 			TermDocs docs = reader.termDocs(new Term(table + ".id", "" + entity.getID()));
