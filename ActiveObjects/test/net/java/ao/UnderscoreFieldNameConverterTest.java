@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNull;
 
 import java.net.URL;
 
-import net.java.ao.schema.LowercaseFieldNameConverter;
+import net.java.ao.schema.UnderscoreFieldNameConverter;
 
 import org.junit.Test;
 
@@ -33,11 +33,11 @@ import test.schema.PersonSuit;
 /**
  * @author Daniel Spiewak
  */
-public class LowercaseFieldNameConverterTest {
+public class UnderscoreFieldNameConverterTest {
 
 	@Test
-	public void testGetName() throws SecurityException, NoSuchMethodException {
-		LowercaseFieldNameConverter converter = new LowercaseFieldNameConverter();
+	public void testGetNameLowercase() throws SecurityException, NoSuchMethodException {
+		UnderscoreFieldNameConverter converter = new UnderscoreFieldNameConverter(false);
 		
 		assertEquals("first_name", converter.getName(Person.class, Person.class.getMethod("getFirstName")));
 		assertEquals("first_name", converter.getName(Person.class, Person.class.getMethod("setFirstName", String.class)));
@@ -66,8 +66,38 @@ public class LowercaseFieldNameConverterTest {
 	}
 
 	@Test
+	public void testGetNameUppercase() throws SecurityException, NoSuchMethodException {
+		UnderscoreFieldNameConverter converter = new UnderscoreFieldNameConverter(true);
+		
+		assertEquals("FIRST_NAME", converter.getName(Person.class, Person.class.getMethod("getFirstName")));
+		assertEquals("FIRST_NAME", converter.getName(Person.class, Person.class.getMethod("setFirstName", String.class)));
+		
+		assertEquals("url", converter.getName(Person.class, Person.class.getMethod("getURL")));
+		assertEquals("url", converter.getName(Person.class, Person.class.getMethod("setURL", URL.class)));
+		
+		assertEquals("COMPANY_ID", converter.getName(Person.class, Person.class.getMethod("getCompany")));
+		assertEquals("COMPANY_ID", converter.getName(Person.class, Person.class.getMethod("setCompany", Company.class)));
+		
+		assertNull(converter.getName(Person.class, Person.class.getMethod("getPersonLegalDefences")));
+
+		assertEquals("NAME", converter.getName(Company.class, Company.class.getMethod("getName")));
+		assertEquals("NAME", converter.getName(Company.class, Company.class.getMethod("setName", String.class)));
+
+		assertNull(converter.getName(Company.class, Company.class.getMethod("getPeople")));
+
+		assertEquals("PERSON_LEGAL_DEFENCE_ID", 
+				converter.getName(PersonSuit.class, PersonSuit.class.getMethod("getPersonLegalDefence")));
+		assertEquals("PERSON_LEGAL_DEFENCE_ID", 
+				converter.getName(PersonSuit.class, PersonSuit.class.getMethod("setPersonLegalDefence", PersonLegalDefence.class)));
+
+		assertEquals("ADDRESS_LINE_1", converter.getName(CompanyAddressInfo.class, CompanyAddressInfo.class.getMethod("getAddressLine1")));
+		assertEquals("ADDRESS_LINE_1", converter.getName(CompanyAddressInfo.class, CompanyAddressInfo.class.getMethod("setAddressLine1", 
+				String.class)));
+	}
+
+	@Test
 	public void testGetIDField() {
-		LowercaseFieldNameConverter converter = new LowercaseFieldNameConverter();
+		UnderscoreFieldNameConverter converter = new UnderscoreFieldNameConverter(false);
 		
 		assertEquals("id", converter.getIDField(Person.class));
 		assertEquals("id", converter.getIDField(Company.class));

@@ -28,8 +28,9 @@ public class NameConverterTests extends TestUtilities {
 		//$JUnit-BEGIN$
 		suite.addTest(asTest(CamelCaseFieldNameConverterTest.class));
 		suite.addTest(asTest(CamelCaseTableNameConverterTest.class));
-		suite.addTest(asTest(LowercaseFieldNameConverterTest.class));
+		suite.addTest(asTest(UnderscoreFieldNameConverterTest.class));
 		suite.addTest(asTest(PluralizedNameConverterTest.class));
+		suite.addTest(asTest(UnderscoreTableNameConverterTest.class));
 		//$JUnit-END$
 		return suite;
 	}

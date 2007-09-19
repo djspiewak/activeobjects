@@ -54,7 +54,7 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 	}
 	
 	@Override
-	protected String getNameImpl(Class<? extends Entity> entity) {
-		return delegate.getNameImpl(entity);
+	protected String convertName(Class<? extends Entity> entity) {
+		return delegate.convertName(entity);
 	}
 }

@@ -15,8 +15,6 @@
  */
 package net.java.ao.schema;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,30 +22,28 @@ import java.util.regex.Pattern;
 /**
  * @author Daniel Spiewak
  */
-public class LowercaseFieldNameConverter extends AbstractFieldNameConverter {
-	private static final Pattern WORD_PATTERN = Pattern.compile("[a-z\\d][A-Z\\d]");
+public class UnderscoreFieldNameConverter extends AbstractFieldNameConverter {
+	private static final Pattern WORD_PATTERN = Pattern.compile("([a-z\\d])([A-Z\\d])");
+	
+	private boolean uppercase;
+	
+	public UnderscoreFieldNameConverter(boolean uppercase) {
+		this.uppercase = uppercase;
+	}
 	
 	@Override
 	protected String convertName(String name, boolean entity) {
-		List<Integer> indexes = new ArrayList<Integer>();
 		Matcher matcher = WORD_PATTERN.matcher(name);
-		StringBuilder back = new StringBuilder();
-		
-		while (matcher.find()) {
-			indexes.add(matcher.start() + 1);
-		}
-		indexes.add(name.length());
-		
-		int start = 0;
-		for (int index : indexes) {
-			back.append(name.substring(start, index).toLowerCase()).append('_');
-			
-			start = index;
-		}
-		back.setLength(back.length() - 1);
+		String back = matcher.replaceAll("$1_$2");
 		
 		if (entity) {
-			back.append("_id");
+			back += "_id";
+		}
+		
+		if (uppercase) {
+			back = back.toUpperCase();
+		} else {
+			back = back.toLowerCase();
 		}
 		
 		return back.toString();
