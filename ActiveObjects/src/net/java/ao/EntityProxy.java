@@ -48,7 +48,7 @@ import net.java.ao.types.TypeManager;
 /**
  * @author Daniel Spiewak
  */
-class EntityProxy<T extends Entity> implements InvocationHandler {
+class EntityProxy<T extends RawEntity> implements InvocationHandler {
 	private static final Pattern WHERE_PATTERN = Pattern.compile("([\\d\\w]+)\\s*(=|>|<|LIKE|IS)");
 	
 	private int id;
@@ -65,7 +65,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	private final Set<String> dirtyFields;
 	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
 	
-	private final Set<Class<? extends Entity>> toFlushRelations = new HashSet<Class<? extends Entity>>();
+	private final Set<Class<? extends RawEntity>> toFlushRelations = new HashSet<Class<? extends RawEntity>>();
 	private final ReadWriteLock toFlushLock = new ReentrantReadWriteLock();
 
 	private List<PropertyChangeListener> listeners;
@@ -101,7 +101,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		if (method.getName().equals("getID")) {
 			return getID();
 		} else if (method.getName().equals("save")) {
-			save((Entity) proxy);
+			save((RawEntity) proxy);
 
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
@@ -134,16 +134,18 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getID(), tableName, accessorAnnotation.value(), method.getReturnType(), onUpdateAnnotation != null);
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
-				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
+				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), RawEntity.class)) {
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 
-			return retrieveRelations((Entity) proxy, new String[0], new String[] { "id" }, (Class<? extends Entity>) type, oneToManyAnnotation.where());
+			return retrieveRelations((Entity) proxy, new String[0], new String[] { "id" }, 
+					(Class<? extends Entity>) type, oneToManyAnnotation.where());
 		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), Entity.class)) {
 			Class<? extends Entity> throughType = manyToManyAnnotation.value();
 			Class<? extends Entity> type = (Class<? extends Entity>) method.getReturnType().getComponentType();
 
-			return retrieveRelations((Entity) proxy, null, Common.getMappingFields(throughType, type), throughType, type, manyToManyAnnotation.where());
+			return retrieveRelations((Entity) proxy, null, 
+					Common.getMappingFields(throughType, type), throughType, type, manyToManyAnnotation.where());
 		} else if (Common.isAccessor(method)) {
 			return invokeGetter(getID(), tableName, getManager().getFieldNameConverter().getName(type, method), 
 					method.getReturnType(), onUpdateAnnotation == null);
@@ -165,7 +167,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void save(Entity entity) throws SQLException {
+	public void save(RawEntity entity) throws SQLException {
 		dirtyFieldsLock.writeLock().lock();
 		try {
 			if (dirtyFields.isEmpty()) {
@@ -375,7 +377,7 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 
 				if (instanceOf(value, type)) {
 					return (V) value;
-				} else if (Common.interfaceInheritsFrom(type, Entity.class) && value instanceof Integer) {
+				} else if (Common.interfaceInheritsFrom(type, RawEntity.class) && value instanceof Integer) {
 					value = getManager().get((Class<? extends Entity>) type, (Integer) value);
 
 					cache.put(name.toLowerCase(), value);
@@ -432,10 +434,10 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 			cacheLock.readLock().unlock();
 		}
 		
-		if (value instanceof Entity) {
+		if (value instanceof RawEntity) {
 			toFlushLock.writeLock().lock();
 			try {
-				toFlushRelations.add(((Entity) value).getEntityType());
+				toFlushRelations.add(((RawEntity) value).getEntityType());
 			} finally {
 				toFlushLock.writeLock().unlock();
 			}
@@ -475,8 +477,8 @@ class EntityProxy<T extends Entity> implements InvocationHandler {
 		return retrieveRelations(entity, inMapFields, outMapFields, type, type, where);
 	}
 
-	private <V extends Entity> V[] retrieveRelations(Entity entity, String[] inMapFields, String[] outMapFields, Class<? extends Entity> type, 
-			Class<V> finalType, String where) throws SQLException {
+	private <V extends Entity> V[] retrieveRelations(RawEntity entity, String[] inMapFields, String[] outMapFields, 
+			Class<? extends Entity> type, Class<V> finalType, String where) throws SQLException {
 		if (inMapFields == null || inMapFields.length == 0) {
 			inMapFields = Common.getMappingFields(type, this.type);
 		}

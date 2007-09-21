@@ -16,7 +16,7 @@
 package net.java.ao.schema;
 
 import net.java.ao.Common;
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 
 /**
  * @author Daniel Spiewak
@@ -24,7 +24,7 @@ import net.java.ao.Entity;
 public class CamelCaseTableNameConverter extends AbstractTableNameConverter {
 
 	@Override
-	protected String convertName(Class<? extends Entity> type) {
+	protected String convertName(Class<? extends RawEntity> type) {
 		String tableName = Common.convertDowncaseName(Common.convertSimpleClassName(type.getCanonicalName()));
 		
 		if (type.getAnnotation(Table.class) != null) {

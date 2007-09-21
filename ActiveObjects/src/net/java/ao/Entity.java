@@ -27,5 +27,6 @@ public interface Entity extends RawEntity {
 	@PrimaryKey
 	@AutoIncrement
 	@NotNull
+	@Accessor("id")
 	public int getID();
 }

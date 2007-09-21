@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.java.ao.Common;
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 
 /**
  * @author Francis Chong
@@ -35,7 +35,7 @@ public class UnderscoreTableNameConverter extends AbstractTableNameConverter {
 	}
 
     @Override
-    protected String convertName(Class<? extends Entity> entity) {
+    protected String convertName(Class<? extends RawEntity> entity) {
     	Matcher matcher = WORD_PATTERN.matcher(Common.convertSimpleClassName(entity.getCanonicalName()));
         String back = matcher.replaceAll("$1_$2");
 		

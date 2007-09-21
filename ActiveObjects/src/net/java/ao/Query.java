@@ -36,7 +36,7 @@ public class Query {
 	
 	private boolean distinct = false;
 	
-	private Class<? extends Entity> tableType;
+	private Class<? extends RawEntity> tableType;
 	private String table;
 	
 	private String whereClause;
@@ -47,13 +47,13 @@ public class Query {
 	private int limit = -1;
 	private int offset = -1;
 	
-	private Map<Class<? extends Entity>, String> joins;
+	private Map<Class<? extends RawEntity>, String> joins;
 	
 	public Query(QueryType type, String fields) {
 		this.type = type;
 		this.fields = fields;
 		
-		joins = new HashMap<Class<? extends Entity>, String>();
+		joins = new HashMap<Class<? extends RawEntity>, String>();
 	}
 	
 	public String[] getFields() {
@@ -89,7 +89,7 @@ public class Query {
 		return this;
 	}
 	
-	public Query from(Class<? extends Entity> tableType) {
+	public Query from(Class<? extends RawEntity> tableType) {
 		table = null;
 		this.tableType = tableType;
 		
@@ -134,13 +134,13 @@ public class Query {
 		return this;
 	}
 	
-	public Query join(Class<? extends Entity> join, String on) {
+	public Query join(Class<? extends RawEntity> join, String on) {
 		joins.put(join, on);
 		
 		return this;
 	}
 	
-	public Query join(Class<? extends Entity> join) {
+	public Query join(Class<? extends RawEntity> join) {
 		joins.put(join, null);
 		
 		return this;
@@ -154,11 +154,11 @@ public class Query {
 		this.distinct = distinct;
 	}
 
-	public Class<? extends Entity> getTableType() {
+	public Class<? extends RawEntity> getTableType() {
 		return tableType;
 	}
 
-	public void setTableType(Class<? extends Entity> tableType) {
+	public void setTableType(Class<? extends RawEntity> tableType) {
 		this.tableType = tableType;
 	}
 
@@ -218,11 +218,11 @@ public class Query {
 		this.offset = offset;
 	}
 
-	public Map<Class<? extends Entity>, String> getJoins() {
+	public Map<Class<? extends RawEntity>, String> getJoins() {
 		return joins;
 	}
 
-	public void setJoins(Map<Class<? extends Entity>, String> joins) {
+	public void setJoins(Map<Class<? extends RawEntity>, String> joins) {
 		this.joins = joins;
 	}
 
@@ -230,7 +230,7 @@ public class Query {
 		return type;
 	}
 
-	protected String toSQL(Class<? extends Entity> tableType, DatabaseProvider provider, TableNameConverter converter, boolean count) {
+	protected String toSQL(Class<? extends RawEntity> tableType, DatabaseProvider provider, TableNameConverter converter, boolean count) {
 		if (this.tableType == null && table == null) {
 			this.tableType = tableType;
 		}
@@ -249,8 +249,8 @@ public class Query {
 				} else {
 					Class javaType = whereParams[i].getClass();
 					
-					if (whereParams[i] instanceof Entity) {
-						javaType = ((Entity) whereParams[i]).getEntityType();
+					if (whereParams[i] instanceof RawEntity) {
+						javaType = ((RawEntity) whereParams[i]).getEntityType();
 					}
 					
 					manager.getType(javaType).putToDatabase(i + 1, stmt, whereParams[i]);

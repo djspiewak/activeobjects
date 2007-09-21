@@ -75,7 +75,7 @@ public final class Common {
 //		return EntityNameManager.getInstance().getName(type);
 //	}
 	
-	public static String[] getMappingFields(Class<? extends Entity> from, Class<? extends Entity> to) { 
+	public static String[] getMappingFields(Class<? extends RawEntity> from, Class<? extends RawEntity> to) { 
 		Set<String> back = new LinkedHashSet<String>();
 		
 		for (Method method : from.getMethods()) {
@@ -168,7 +168,7 @@ public final class Common {
         return null;
     }
 
-	public static List<String> getIndexFields(EntityManager manager, Class<? extends Entity> type) {
+	public static List<String> getIndexFields(EntityManager manager, Class<? extends RawEntity> type) {
 		List<String> back = new ArrayList<String>();
 		
 		for (Method m : type.getMethods()) {
@@ -179,7 +179,7 @@ public final class Common {
 				String name = manager.getFieldNameConverter().getName(type, m);
 				
 				// don't index Entity fields
-				if (name != null && !Common.interfaceInheritsFrom(attributeType, Entity.class) && !back.contains(name)) {
+				if (name != null && !Common.interfaceInheritsFrom(attributeType, RawEntity.class) && !back.contains(name)) {
 					back.add(name);
 				}
 			}

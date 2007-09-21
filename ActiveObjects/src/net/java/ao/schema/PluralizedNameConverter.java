@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 
 /**
  * @author Daniel Spiewak
@@ -54,7 +54,7 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 	}
 	
 	@Override
-	protected String convertName(Class<? extends Entity> entity) {
+	protected String convertName(Class<? extends RawEntity> entity) {
 		return delegate.convertName(entity);
 	}
 }

@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * @author Daniel Spiewak
  */
-class ImplementationWrapper<T extends Entity> {
+class ImplementationWrapper<T extends RawEntity> {
 	private List<Object> implementations;
 	
 	public ImplementationWrapper(T instance) {
@@ -32,7 +32,7 @@ class ImplementationWrapper<T extends Entity> {
 		instantiateImplementation(instance, instance.getEntityType());
 	}
 	
-	private void instantiateImplementation(T instance, Class<? extends Entity> clazz) {
+	private void instantiateImplementation(T instance, Class<? extends RawEntity> clazz) {
 		Implementation implAnnotation = clazz.getAnnotation(Implementation.class);
 		
 		if (implAnnotation != null) {
@@ -49,8 +49,8 @@ class ImplementationWrapper<T extends Entity> {
 		}
 		
 		for (Class<?> sup : clazz.getInterfaces()) {
-			if (Common.interfaceInheritsFrom(sup, Entity.class)) {
-				instantiateImplementation(instance, (Class<? extends Entity>) sup);
+			if (Common.interfaceInheritsFrom(sup, RawEntity.class)) {
+				instantiateImplementation(instance, (Class<? extends RawEntity>) sup);
 			}
 		}
 	}

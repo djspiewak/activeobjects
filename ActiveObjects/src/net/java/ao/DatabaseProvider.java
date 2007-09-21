@@ -416,7 +416,7 @@ public abstract class DatabaseProvider {
 		StringBuilder sql = new StringBuilder();
 
 		if (query.getJoins().size() > 0) {
-			for (Class<? extends Entity> join : query.getJoins().keySet()) {
+			for (Class<? extends RawEntity> join : query.getJoins().keySet()) {
 				sql.append(" JOIN ");
 				sql.append(converter.getName(join));
 				

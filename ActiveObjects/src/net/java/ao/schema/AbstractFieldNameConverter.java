@@ -19,10 +19,10 @@ import java.lang.reflect.Method;
 
 import net.java.ao.Accessor;
 import net.java.ao.Common;
-import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
+import net.java.ao.RawEntity;
 
 /**
  * @author Daniel Spiewak
@@ -31,7 +31,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	
 	protected AbstractFieldNameConverter() {}
 
-	public String getName(Class<? extends Entity> clazz, Method method) {
+	public String getName(Class<? extends RawEntity> clazz, Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
@@ -56,7 +56,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 			return null;
 		}
 		
-		return convertName(attributeName, Common.interfaceInheritsFrom(type, Entity.class));
+		return convertName(attributeName, Common.interfaceInheritsFrom(type, RawEntity.class));
 	}
 	
 	protected abstract String convertName(String name, boolean entity);

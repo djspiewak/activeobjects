@@ -37,6 +37,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
+import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
@@ -51,12 +52,12 @@ import net.java.ao.types.TypeManager;
  */
 public final class SchemaGenerator {
 	
-	public static void migrate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
+	public static void migrate(DatabaseProvider provider, Class<? extends RawEntity>... classes) throws SQLException {
 		migrate(provider, new CamelCaseTableNameConverter(), new CamelCaseFieldNameConverter(), classes);
 	}
 	
 	public static void migrate(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
-			Class<? extends Entity>... classes) throws SQLException {
+			Class<? extends RawEntity>... classes) throws SQLException {
 		String[] statements = null;
 		try {
 			statements = generateImpl(provider, nameConverter, fieldConverter, SchemaGenerator.class.getClassLoader(), classes);
@@ -83,7 +84,7 @@ public final class SchemaGenerator {
 	}
 	
 	public static boolean hasSchema(DatabaseProvider provider, TableNameConverter nameConverter,
-			Class<? extends Entity>... classes) throws SQLException {
+			Class<? extends RawEntity>... classes) throws SQLException {
 		if (classes.length == 0) {
 			return true;
 		}
@@ -108,7 +109,7 @@ public final class SchemaGenerator {
 	}
 	
 	private static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
-			ClassLoader classloader, Class<? extends Entity>... classes) throws ClassNotFoundException, SQLException {
+			ClassLoader classloader, Class<? extends RawEntity>... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
 		
 		DDLTable[] parsedTables = parseDDL(provider, nameConverter, fieldConverter, classloader, classes);
@@ -123,30 +124,30 @@ public final class SchemaGenerator {
 	}
 	
 	static DDLTable[] parseDDL(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
-			ClassLoader classloader, Class<? extends Entity>... classes) {
-		Map<Class<? extends Entity>, Set<Class<? extends Entity>>> deps = 
-			new HashMap<Class<? extends Entity>, Set<Class<? extends Entity>>>();
-		Set<Class<? extends Entity>> roots = new LinkedHashSet<Class<? extends Entity>>();
+			ClassLoader classloader, Class<? extends RawEntity>... classes) {
+		Map<Class<? extends RawEntity>, Set<Class<? extends RawEntity>>> deps = 
+			new HashMap<Class<? extends RawEntity>, Set<Class<? extends RawEntity>>>();
+		Set<Class<? extends RawEntity>> roots = new LinkedHashSet<Class<? extends RawEntity>>();
 		
-		for (Class<? extends Entity> cls : classes) {
+		for (Class<? extends RawEntity> cls : classes) {
 			parseDependencies(fieldConverter, deps, roots, cls);
 		}
 		
 		List<DDLTable> parsedTables = new ArrayList<DDLTable>();
 		
 		while (!roots.isEmpty()) {
-			Class<? extends Entity>[] rootsArray = roots.toArray(new Class[roots.size()]);
+			Class<? extends RawEntity>[] rootsArray = roots.toArray(new Class[roots.size()]);
 			roots.remove(rootsArray[0]);
 			
-			Class<? extends Entity> clazz = rootsArray[0];
+			Class<? extends RawEntity> clazz = rootsArray[0];
 			parsedTables.add(parseInterface(provider, nameConverter, fieldConverter, clazz));
 			
-			List<Class<? extends Entity>> toRemove = new LinkedList<Class<? extends Entity>>();
-			Iterator<Class<? extends Entity>> depIterator = deps.keySet().iterator();
+			List<Class<? extends RawEntity>> toRemove = new LinkedList<Class<? extends RawEntity>>();
+			Iterator<Class<? extends RawEntity>> depIterator = deps.keySet().iterator();
 			while (depIterator.hasNext()) {
-				Class<? extends Entity> depClass = depIterator.next();
+				Class<? extends RawEntity> depClass = depIterator.next();
 				
-				Set<Class<? extends Entity>> individualDeps = deps.get(depClass);
+				Set<Class<? extends RawEntity>> individualDeps = deps.get(depClass);
 				individualDeps.remove(clazz);
 				
 				if (individualDeps.isEmpty()) {
@@ -155,7 +156,7 @@ public final class SchemaGenerator {
 				}
 			}
 			
-			for (Class<? extends Entity> remove : toRemove) {
+			for (Class<? extends RawEntity> remove : toRemove) {
 				deps.remove(remove);
 			}
 		}
@@ -163,14 +164,14 @@ public final class SchemaGenerator {
 		return parsedTables.toArray(new DDLTable[parsedTables.size()]);
 	}
 	
-	private static void parseDependencies(FieldNameConverter fieldConverter, Map<Class <? extends Entity>, Set<Class<? extends Entity>>> deps, 
-			Set<Class <? extends Entity>> roots, Class<? extends Entity>... classes) {
-		for (Class<? extends Entity> clazz : classes) {
+	private static void parseDependencies(FieldNameConverter fieldConverter, Map<Class <? extends RawEntity>, 
+			Set<Class<? extends RawEntity>>> deps, Set<Class <? extends RawEntity>> roots, Class<? extends RawEntity>... classes) {
+		for (Class<? extends RawEntity> clazz : classes) {
 			if (deps.containsKey(clazz)) {
 				continue;
 			}
 			
-			Set<Class<? extends Entity>> individualDeps = new LinkedHashSet<Class<? extends Entity>>();
+			Set<Class<? extends RawEntity>> individualDeps = new LinkedHashSet<Class<? extends RawEntity>>();
 			
 			for (Method method : clazz.getMethods()) {
 				String attributeName = fieldConverter.getName(clazz, method);
@@ -194,7 +195,7 @@ public final class SchemaGenerator {
 	}
 	
 	private static DDLTable parseInterface(DatabaseProvider provider, TableNameConverter nameConverter,
-			FieldNameConverter fieldConverter, Class<? extends Entity> clazz) {
+			FieldNameConverter fieldConverter, Class<? extends RawEntity> clazz) {
 		String sqlName = nameConverter.getName(clazz);
 		
 		DDLTable table = new DDLTable();
@@ -207,7 +208,7 @@ public final class SchemaGenerator {
 		return table;
 	}
 	
-	private static DDLField[] parseFields(Class<? extends Entity> clazz, FieldNameConverter fieldConverter) {
+	private static DDLField[] parseFields(Class<? extends RawEntity> clazz, FieldNameConverter fieldConverter) {
 		List<DDLField> fields = new ArrayList<DDLField>();
 		List<String> attributes = new LinkedList<String>();
 		TypeManager manager = TypeManager.getInstance();
@@ -281,7 +282,7 @@ public final class SchemaGenerator {
 	}
 	
 	private static DDLForeignKey[] parseForeignKeys(TableNameConverter nameConverter, FieldNameConverter fieldConverter,
-			Class<? extends Entity> clazz) {
+			Class<? extends RawEntity> clazz) {
 		Set<DDLForeignKey> back = new LinkedHashSet<DDLForeignKey>();
 		
 		for (Method method : clazz.getMethods()) {
@@ -310,7 +311,7 @@ public final class SchemaGenerator {
 	}
 	
 	private static DDLIndex[] parseIndexes(TableNameConverter nameConverter, FieldNameConverter fieldConverter, 
-			Class<? extends Entity> clazz) {
+			Class<? extends RawEntity> clazz) {
 		Set<DDLIndex> back = new LinkedHashSet<DDLIndex>();
 		String tableName = nameConverter.getName(clazz);
 		
@@ -332,7 +333,7 @@ public final class SchemaGenerator {
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
 			if (!superInterface.equals(Entity.class)) {
-				back.addAll(Arrays.asList(parseIndexes(nameConverter, fieldConverter, (Class<? extends Entity>) superInterface)));
+				back.addAll(Arrays.asList(parseIndexes(nameConverter, fieldConverter, (Class<? extends RawEntity>) superInterface)));
 			}
 		}
 		

@@ -72,10 +72,10 @@ public class EntityManager {
 	
 	private DatabaseProvider provider;
 	
-	private Map<Entity, EntityProxy<? extends Entity>> proxies;
+	private Map<RawEntity, EntityProxy<? extends RawEntity>> proxies;
 	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
 	
-	private Map<CacheKey, Entity> cache;
+	private Map<CacheKey, RawEntity> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private TableNameConverter tableNameConverter;
@@ -121,11 +121,11 @@ public class EntityManager {
 		this.provider = provider;
 		
 		if (weaklyCache) {
-			proxies = new WeakHashMap<Entity, EntityProxy<? extends Entity>>();
-			cache = new WeakHashMap<CacheKey, Entity>();
+			proxies = new WeakHashMap<RawEntity, EntityProxy<? extends RawEntity>>();
+			cache = new WeakHashMap<CacheKey, RawEntity>();
 		} else {
-			proxies = new SoftHashMap<Entity, EntityProxy<? extends Entity>>();
-			cache = new SoftHashMap<CacheKey, Entity>();
+			proxies = new SoftHashMap<RawEntity, EntityProxy<? extends RawEntity>>();
+			cache = new SoftHashMap<CacheKey, RawEntity>();
 		}
 		
 		valGenCache = new HashMap<Class<? extends ValueGenerator<?>>, ValueGenerator<?>>();
@@ -154,7 +154,7 @@ public class EntityManager {
 	 * 
 	 *  @see net.java.ao.schema.SchemaGenerator#migrate(DatabaseProvider, TableNameConverter, Class...)
 	 */
-	public void migrate(Class<? extends Entity>... entities) throws SQLException {
+	public void migrate(Class<? extends RawEntity>... entities) throws SQLException {
 		tableNameConverterLock.readLock().lock();
 		try {
 			SchemaGenerator.migrate(provider, tableNameConverter, fieldNameConverter, entities);
@@ -166,7 +166,7 @@ public class EntityManager {
 	public void flushAll() {
 		proxyLock.readLock().lock();
 		try {
-			for (EntityProxy<? extends Entity> proxy : proxies.values()) {
+			for (EntityProxy<? extends RawEntity> proxy : proxies.values()) {
 				proxy.flushCache();
 			}
 		} finally {
@@ -174,10 +174,10 @@ public class EntityManager {
 		}
 	}
 	
-	public void flush(Entity... entities) {
+	public void flush(RawEntity... entities) {
 		proxyLock.readLock().lock();
 		try {
-			for (Entity entity : entities) {
+			for (RawEntity entity : entities) {
 				proxies.get(entity).flushCache();
 			}
 		} finally {
@@ -552,8 +552,8 @@ public class EntityManager {
 			for (int i = 0; i < parameters.length; i++) {
 				Class javaType = parameters[i].getClass();
 				
-				if (parameters[i] instanceof Entity) {
-					javaType = ((Entity) parameters[i]).getEntityType();
+				if (parameters[i] instanceof RawEntity) {
+					javaType = ((RawEntity) parameters[i]).getEntityType();
 				}
 				
 				manager.getType(javaType).putToDatabase(i + 1, stmt, parameters[i]);
@@ -577,7 +577,7 @@ public class EntityManager {
 	 * a delegate for the <code>count(Class&lt;? extends Entity&gt;, Query)</code>
 	 * method.
 	 */
-	public int count(Class<? extends Entity> type) throws SQLException {
+	public int count(Class<? extends RawEntity> type) throws SQLException {
 		return count(type, Query.select());
 	}
 	
@@ -587,7 +587,7 @@ public class EntityManager {
 	 * 
 	 * <code>count(type, Query.select().where(criteria, parameters))</code>
 	 */
-	public int count(Class<? extends Entity> type, String criteria, Object... parameters) throws SQLException {
+	public int count(Class<? extends RawEntity> type, String criteria, Object... parameters) throws SQLException {
 		return count(type, Query.select().where(criteria, parameters));
 	}
 	
@@ -596,7 +596,7 @@ public class EntityManager {
 	 * instance.  The SQL runs as a <code>SELECT COUNT(*)</code> to
 	 * ensure maximum performance.
 	 */
-	public int count(Class<? extends Entity> type, Query query) throws SQLException {
+	public int count(Class<? extends RawEntity> type, Query query) throws SQLException {
 		int back = -1;
 		
 		Connection conn = getProvider().getConnection();
@@ -703,7 +703,7 @@ public class EntityManager {
 		return provider;
 	}
 
-	protected <T extends Entity> EntityProxy<T> getProxyForEntity(T entity) {
+	protected <T extends RawEntity> EntityProxy<T> getProxyForEntity(T entity) {
 		proxyLock.readLock().lock();
 		try {
 			return (EntityProxy<T>) proxies.get(entity);
@@ -718,9 +718,9 @@ public class EntityManager {
 
 	private static class CacheKey {
 		private int id;
-		private Class<? extends Entity> type;
+		private Class<? extends RawEntity> type;
 		
-		public CacheKey(int id, Class<? extends Entity> type) {
+		public CacheKey(int id, Class<? extends RawEntity> type) {
 			this.id = id;
 			this.type = type;
 		}

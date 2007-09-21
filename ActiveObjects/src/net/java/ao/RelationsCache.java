@@ -27,20 +27,20 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Daniel Spiewak
  */
 class RelationsCache {
-	private final Map<CacheKey, Entity[]> cache;
-	private final Map<Class<? extends Entity>, Set<CacheKey>> typeMap;
+	private final Map<CacheKey, RawEntity[]> cache;
+	private final Map<Class<? extends RawEntity>, Set<CacheKey>> typeMap;
 	private final Map<MetaCacheKey, Set<CacheKey>> fieldMap;
 	private final ReadWriteLock lock;
 
 	public RelationsCache() {
-		cache = new HashMap<CacheKey, Entity[]>();
-		typeMap = new HashMap<Class<? extends Entity>, Set<CacheKey>>();
+		cache = new HashMap<CacheKey, RawEntity[]>();
+		typeMap = new HashMap<Class<? extends RawEntity>, Set<CacheKey>>();
 		fieldMap = new HashMap<MetaCacheKey, Set<CacheKey>>();
 		
 		lock = new ReentrantReadWriteLock();
 	}
 
-	public void put(Entity from, Entity[] through, Entity[] to, String[] fields) {
+	public void put(RawEntity from, RawEntity[] through, RawEntity[] to, String[] fields) {
 		if (to.length == 0) {
 			return;
 		}
@@ -60,7 +60,7 @@ class RelationsCache {
 			keys.add(key);
 			
 			for (String field : fields) {
-				for (Entity entity : through) {
+				for (RawEntity entity : through) {
 					MetaCacheKey metaKey = new MetaCacheKey(entity, field);
 					
 					keys = fieldMap.get(metaKey);
@@ -76,7 +76,7 @@ class RelationsCache {
 		}
 	}
 
-	public <T extends Entity> T[] get(Entity from, Class<T> toType, Class<? extends Entity> throughType, String[] fields) {
+	public <T extends RawEntity> T[] get(RawEntity from, Class<T> toType, Class<? extends RawEntity> throughType, String[] fields) {
 		lock.readLock().lock();
 		try {
 			return (T[]) cache.get(new CacheKey(from, toType, throughType, fields));
@@ -89,7 +89,7 @@ class RelationsCache {
 	 * The ReadWriteLock used internally to lock the caches.  This lock must be
 	 * 	released manually using  {@link #unlock()}
 	 */
-	public void remove(Class<? extends Entity> type) {
+	public void remove(Class<? extends RawEntity> type) {
 		lock.writeLock().lock();
 		try {
 			Set<CacheKey> keys = typeMap.get(type);
@@ -109,10 +109,10 @@ class RelationsCache {
 	 * The ReadWriteLock used internally to lock the caches.  This lock must be
 	 * 	released manually using  {@link #unlock()}
 	 */
-	public void remove(Class<? extends Entity>[] types) {
+	public void remove(Class<? extends RawEntity>[] types) {
 		lock.writeLock().lock();
 		try {
-			for (Class<? extends Entity> type : types) {
+			for (Class<? extends RawEntity> type : types) {
 				Set<CacheKey> keys = typeMap.get(type);
 				if (keys != null) {
 					for (CacheKey key : keys) {
@@ -131,7 +131,7 @@ class RelationsCache {
 	 * The ReadWriteLock used internally to lock the caches.  This lock must be
 	 * 	released manually using  {@link #unlock()}
 	 */
-	void remove(Entity entity, String[] fields) {
+	void remove(RawEntity entity, String[] fields) {
 		lock.writeLock().tryLock();
 		try {
 			for (String field : fields) {
@@ -148,13 +148,13 @@ class RelationsCache {
 	}
 
 	private static class CacheKey {
-		private Entity from;
-		private Class<? extends Entity> toType;
-		private Class<? extends Entity> throughType;
+		private RawEntity from;
+		private Class<? extends RawEntity> toType;
+		private Class<? extends RawEntity> throughType;
 		
 		private String[] fields;
 		
-		public CacheKey(Entity from, Class<? extends Entity> toType, Class<? extends Entity> throughType, String[] fields) {
+		public CacheKey(RawEntity from, Class<? extends RawEntity> toType, Class<? extends RawEntity> throughType, String[] fields) {
 			this.from = from;
 			this.toType = toType;
 			this.throughType = throughType;
@@ -162,19 +162,19 @@ class RelationsCache {
 			setFields(fields);
 		}
 
-		public Entity getFrom() {
+		public RawEntity getFrom() {
 			return from;
 		}
 
-		public void setFrom(Entity from) {
+		public void setFrom(RawEntity from) {
 			this.from = from;
 		}
 
-		public Class<? extends Entity> getToType() {
+		public Class<? extends RawEntity> getToType() {
 			return toType;
 		}
 
-		public void setToType(Class<? extends Entity> toType) {
+		public void setToType(Class<? extends RawEntity> toType) {
 			this.toType = toType;
 		}
 
@@ -192,11 +192,11 @@ class RelationsCache {
 			this.fields = fields;
 		}
 		
-		public Class<? extends Entity> getThroughType() {
+		public Class<? extends RawEntity> getThroughType() {
 			return throughType;
 		}
 		
-		public void setThroughType(Class<? extends Entity> throughType) {
+		public void setThroughType(Class<? extends RawEntity> throughType) {
 			this.throughType = throughType;
 		}
 		
@@ -262,20 +262,20 @@ class RelationsCache {
 	}
 	
 	private static class MetaCacheKey {
-		private Entity entity;
+		private RawEntity entity;
 		private String field;
 		
-		public MetaCacheKey(Entity entity, String field) {
+		public MetaCacheKey(RawEntity entity, String field) {
 			this.entity = entity;
 			
 			setField(field);
 		}
 
-		public Entity getEntity() {
+		public RawEntity getEntity() {
 			return entity;
 		}
 
-		public void setEntity(Entity entity) {
+		public void setEntity(RawEntity entity) {
 			this.entity = entity;
 		}
 

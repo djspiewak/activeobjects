@@ -17,11 +17,11 @@ package net.java.ao.schema;
 
 import java.lang.reflect.Method;
 
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 
 /**
  * @author Daniel Spiewak
  */
 public interface FieldNameConverter {
-	public String getName(Class<? extends Entity> clazz, Method method);
+	public String getName(Class<? extends RawEntity> clazz, Method method);
 }

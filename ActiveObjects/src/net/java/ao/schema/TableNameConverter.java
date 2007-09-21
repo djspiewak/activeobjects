@@ -15,11 +15,11 @@
  */
 package net.java.ao.schema;
 
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 
 /**
  * @author Daniel Spiewak
  */
 public interface TableNameConverter {
-	public String getName(Class<? extends Entity> clazz);
+	public String getName(Class<? extends RawEntity> clazz);
 }
