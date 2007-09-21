@@ -16,6 +16,7 @@
 package net.java.ao;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,19 +25,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.java.ao.schema.CamelCaseTableNameConverter;
 import net.java.ao.schema.CamelCaseFieldNameConverter;
+import net.java.ao.schema.CamelCaseTableNameConverter;
 import net.java.ao.schema.FieldNameConverter;
-import net.java.ao.schema.Generator;
+import net.java.ao.schema.SchemaGenerator;
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.types.TypeManager;
 
@@ -84,6 +87,9 @@ public class EntityManager {
 	private RSCachingStrategy rsStrategy;
 	private final ReadWriteLock rsStrategyLock = new ReentrantReadWriteLock();
 	
+	private Map<Class<? extends ValueGenerator<?>>, ValueGenerator<?>> valGenCache;
+	private final ReadWriteLock valGenCacheLock = new ReentrantReadWriteLock();
+	
 	private final RelationsCache relationsCache = new RelationsCache();
 	
 	/**
@@ -122,6 +128,8 @@ public class EntityManager {
 			cache = new SoftHashMap<CacheKey, Entity>();
 		}
 		
+		valGenCache = new HashMap<Class<? extends ValueGenerator<?>>, ValueGenerator<?>>();
+		
 		tableNameConverter = new CamelCaseTableNameConverter();
 		fieldNameConverter = new CamelCaseFieldNameConverter();
 		rsStrategy = RSCachingStrategy.AGGRESSIVE;
@@ -144,12 +152,12 @@ public class EntityManager {
 	 * Convenience method to create the schema for the specified entities
 	 * using the current settings (name converter and database provider).
 	 * 
-	 *  @see net.java.ao.schema.Generator#migrate(DatabaseProvider, TableNameConverter, Class...)
+	 *  @see net.java.ao.schema.SchemaGenerator#migrate(DatabaseProvider, TableNameConverter, Class...)
 	 */
 	public void migrate(Class<? extends Entity>... entities) throws SQLException {
 		tableNameConverterLock.readLock().lock();
 		try {
-			Generator.migrate(provider, tableNameConverter, fieldNameConverter, entities);
+			SchemaGenerator.migrate(provider, tableNameConverter, fieldNameConverter, entities);
 		} finally {
 			tableNameConverterLock.readLock().unlock();
 		}
@@ -270,6 +278,38 @@ public class EntityManager {
 			table = tableNameConverter.getName(type);
 		} finally {
 			tableNameConverterLock.readLock().unlock();
+		}
+		
+		Set<DBParam> listParams = new HashSet<DBParam>();
+		listParams.addAll(Arrays.asList(params));
+		
+		fieldNameConverterLock.readLock().lock();
+		try {
+			for (Method method : MethodFinder.getInstance().findAnnotation(Generator.class, type)) {
+				Generator genAnno = method.getAnnotation(Generator.class);
+				String field = fieldNameConverter.getName(type, method);
+				ValueGenerator<?> generator;
+
+				valGenCacheLock.writeLock().lock();
+				try {
+					if (valGenCache.containsKey(genAnno.value())) {
+						generator = valGenCache.get(genAnno.value());
+					} else {
+						generator = genAnno.value().newInstance();
+						valGenCache.put(genAnno.value(), generator);
+					}
+				} catch (InstantiationException e) {
+					continue;
+				} catch (IllegalAccessException e) {
+					continue;
+				} finally {
+					valGenCacheLock.writeLock().unlock();
+				}
+				
+				listParams.add(new DBParam(field, generator.generateValue()));
+			}
+		} finally {
+			fieldNameConverterLock.readLock().unlock();
 		}
 		
 		Connection conn = getProvider().getConnection();

@@ -50,7 +50,7 @@ import net.java.ao.types.TypeManager;
 /**
  * @author Daniel Spiewak
  */
-public final class Generator {
+public final class SchemaGenerator {
 	
 	public static void migrate(DatabaseProvider provider, Class<? extends Entity>... classes) throws SQLException {
 		migrate(provider, new CamelCaseTableNameConverter(), new CamelCaseFieldNameConverter(), classes);
@@ -60,7 +60,7 @@ public final class Generator {
 			Class<? extends Entity>... classes) throws SQLException {
 		String[] statements = null;
 		try {
-			statements = generateImpl(provider, nameConverter, fieldConverter, Generator.class.getClassLoader(), classes);
+			statements = generateImpl(provider, nameConverter, fieldConverter, SchemaGenerator.class.getClassLoader(), classes);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return;

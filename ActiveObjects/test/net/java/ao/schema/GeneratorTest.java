@@ -45,7 +45,7 @@ public class GeneratorTest extends DataTest {
 		String[] expectedFields = {"id", "firstName", "lastName", "age", "url", "favoriteClass", "companyID"};
 		String[] expectedIndexes = {"age", "companyID"};
 		
-		DDLTable[] parsedTables = Generator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
+		DDLTable[] parsedTables = SchemaGenerator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
 				manager.getFieldNameConverter(), GeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
 		
 		assertEquals(6, parsedTables.length);
