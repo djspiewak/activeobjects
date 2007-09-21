@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -213,16 +212,6 @@ public final class SchemaGenerator {
 		List<String> attributes = new LinkedList<String>();
 		TypeManager manager = TypeManager.getInstance();
 		
-		DDLField field = new DDLField();
-		
-		field.setName("id");
-		field.setAutoIncrement(true);
-		field.setNotNull(true);
-		field.setType(manager.getType(Types.INTEGER));
-		field.setPrimaryKey(true);
-		
-		fields.add(field);
-		
 		for (Method method : clazz.getMethods()) {
 			if (method.getAnnotation(Ignore.class) != null
 					|| method.getAnnotation(OneToMany.class) != null
@@ -255,7 +244,7 @@ public final class SchemaGenerator {
 					scale = sqlTypeAnnotation.scale();
 				}
 				
-				field = new DDLField();
+				DDLField field = new DDLField();
 				
 				field.setName(attributeName);
 				field.setType(sqlType);

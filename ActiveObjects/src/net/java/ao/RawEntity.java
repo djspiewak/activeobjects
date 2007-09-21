@@ -15,17 +15,23 @@
  */
 package net.java.ao;
 
-import net.java.ao.schema.AutoIncrement;
-import net.java.ao.schema.NotNull;
-import net.java.ao.schema.PrimaryKey;
+import java.beans.PropertyChangeListener;
+
+import net.java.ao.schema.Ignore;
 
 /**
  * @author Daniel Spiewak
  */
-public interface Entity extends RawEntity {
+public interface RawEntity {
+	@Ignore public void init();
 	
-	@PrimaryKey
-	@AutoIncrement
-	@NotNull
-	public int getID();
+	@Ignore public void save();
+
+	@Ignore public String getTableName();
+	@Ignore public EntityManager getEntityManager();
+	@Ignore public Class<? extends Entity> getEntityType();
+	
+	@Ignore public void addPropertyChangeListener(PropertyChangeListener listener);
+	@Ignore public void removePropertyChangeListener(PropertyChangeListener listener);
+
 }

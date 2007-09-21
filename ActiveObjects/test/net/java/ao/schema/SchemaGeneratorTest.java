@@ -38,7 +38,7 @@ import test.schema.PersonSuit;
 /**
  * @author Daniel Spiewak
  */
-public class GeneratorTest extends DataTest {
+public class SchemaGeneratorTest extends DataTest {
 
 	@Test
 	public void testParseDDL() {
@@ -46,7 +46,7 @@ public class GeneratorTest extends DataTest {
 		String[] expectedIndexes = {"age", "companyID"};
 		
 		DDLTable[] parsedTables = SchemaGenerator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
-				manager.getFieldNameConverter(), GeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
+				manager.getFieldNameConverter(), SchemaGeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
 		
 		assertEquals(6, parsedTables.length);
 		

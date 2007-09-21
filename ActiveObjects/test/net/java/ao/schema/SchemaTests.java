@@ -27,7 +27,7 @@ public class SchemaTests extends TestUtilities {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("net.java.ao.schema AND net.java.ao.schema.ddl");
 		//$JUnit-BEGIN$
-		suite.addTest(asTest(GeneratorTest.class));
+		suite.addTest(asTest(SchemaGeneratorTest.class));
 		suite.addTest(asTest(SchemaReaderTest.class));
 		//$JUnit-END$
 		return suite;

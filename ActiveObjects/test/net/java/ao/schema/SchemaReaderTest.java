@@ -137,9 +137,9 @@ public class SchemaReaderTest extends DataTest {
 	@Test
 	public void testDiffSchema() {
 		DDLTable[] ddl1 = SchemaGenerator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
-				manager.getFieldNameConverter(), GeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
+				manager.getFieldNameConverter(), SchemaGeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
 		DDLTable[] ddl2 = SchemaGenerator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
-				manager.getFieldNameConverter(), GeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
+				manager.getFieldNameConverter(), SchemaGeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
 		
 		assertEquals(0, SchemaReader.diffSchema(ddl1, ddl2).length);
 	}
