@@ -94,13 +94,4 @@ public class UnderscoreFieldNameConverterTest {
 		assertEquals("ADDRESS_LINE_1", converter.getName(CompanyAddressInfo.class, CompanyAddressInfo.class.getMethod("setAddressLine1", 
 				String.class)));
 	}
-
-	@Test
-	public void testGetIDField() {
-		UnderscoreFieldNameConverter converter = new UnderscoreFieldNameConverter(false);
-		
-		assertEquals("id", converter.getIDField(Person.class));
-		assertEquals("id", converter.getIDField(Company.class));
-		assertEquals("id", converter.getIDField(PersonLegalDefence.class));
-	}
 }

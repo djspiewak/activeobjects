@@ -32,10 +32,6 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	protected AbstractFieldNameConverter() {}
 
 	public String getName(Class<? extends Entity> clazz, Method method) {
-		if (method.getName().equals("getID")) {
-			return getIDField(clazz);
-		}
-		
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
@@ -61,10 +57,6 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 		}
 		
 		return convertName(attributeName, Common.interfaceInheritsFrom(type, Entity.class));
-	}
-	
-	public String getIDField(Class<? extends Entity> type) {
-		return "id";
 	}
 	
 	protected abstract String convertName(String name, boolean entity);

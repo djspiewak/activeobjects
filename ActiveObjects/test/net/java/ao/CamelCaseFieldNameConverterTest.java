@@ -64,13 +64,4 @@ public class CamelCaseFieldNameConverterTest {
 		assertEquals("addressLine1", converter.getName(CompanyAddressInfo.class, CompanyAddressInfo.class.getMethod("setAddressLine1", 
 				String.class)));
 	}
-
-	@Test
-	public void testGetIDField() {
-		CamelCaseFieldNameConverter converter = new CamelCaseFieldNameConverter();
-		
-		assertEquals("id", converter.getIDField(Person.class));
-		assertEquals("id", converter.getIDField(Company.class));
-		assertEquals("id", converter.getIDField(PersonLegalDefence.class));
-	}
 }
