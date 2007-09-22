@@ -29,7 +29,7 @@ public interface RawEntity {
 
 	@Ignore public String getTableName();
 	@Ignore public EntityManager getEntityManager();
-	@Ignore public Class<? extends Entity> getEntityType();
+	@Ignore public Class<? extends RawEntity> getEntityType();
 	
 	@Ignore public void addPropertyChangeListener(PropertyChangeListener listener);
 	@Ignore public void removePropertyChangeListener(PropertyChangeListener listener);

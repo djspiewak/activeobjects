@@ -16,6 +16,7 @@
 package net.java.ao;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -23,6 +24,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.PrimaryKey;
+import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
 
 /**
@@ -186,6 +190,50 @@ public final class Common {
 		}
 		
 		return back;
+	}
+	
+	public static Method getPrimaryKeyAccessor(Class<? extends RawEntity> type) {
+		Method[] methods = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type);
+		
+		for (Method method : methods) {
+			if (!method.getReturnType().equals(Void.TYPE) && method.getParameterTypes().length == 0) {
+				return method;
+			}
+		}
+		
+		return null;
+	}
+	
+	public static String getPrimaryKeyField(Class<? extends RawEntity> type, FieldNameConverter converter) {
+		return converter.getName(type, MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type)[0]);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static DatabaseType getPrimaryKeyType(Class<? extends RawEntity> type) {
+		return TypeManager.getInstance().getType(getPrimaryKeyClassType(type));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Class getPrimaryKeyClassType(Class<? extends RawEntity> type) {
+		Method meth = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type)[0];
+		Class<?> keyType = meth.getReturnType();
+		if (keyType.equals(Void.TYPE)) {
+			keyType = meth.getParameterTypes()[0];
+		}
+		
+		return keyType;
+	}
+	
+	public static Object getPrimaryKeyValue(RawEntity entity) {
+		try {
+			return Common.getPrimaryKeyAccessor(entity.getEntityType()).invoke(entity);
+		} catch (IllegalArgumentException e) {
+			return null;
+		} catch (IllegalAccessException e) {
+			return null;
+		} catch (InvocationTargetException e) {
+			return null;
+		}
 	}
 	
 	public static boolean fuzzyCompare(Object a, Object b) {

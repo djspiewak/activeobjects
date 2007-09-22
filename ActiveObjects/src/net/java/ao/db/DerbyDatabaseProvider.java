@@ -137,11 +137,20 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 		if (onUpdate != null) {
 			StringBuilder back = new StringBuilder();
 			
+			DDLField pkField = null;
+			for (DDLField f : table.getFields()) {
+				if (f.isPrimaryKey()) {
+					pkField = f;
+					break;
+				}
+			}
+			
 			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
 			back.append("    AFTER UPDATE ON ").append(table.getName());
 			back.append("\n    REFERENCING NEW AS inserted\n    FOR EACH ROW MODE DB2SQL\n        ");
 			back.append("UPDATE ").append(table.getName()).append(" SET ").append(field.getName()).append(" = ").append(renderValue(onUpdate));
-			back.append("\n            WHERE id = inserted.id AND inserted.").append(field.getName()).append(" <> ").append(renderValue(onUpdate));
+			back.append("\n            WHERE " + pkField.getName() + " = inserted." + pkField.getName() + " AND inserted.");
+			back.append(field.getName()).append(" <> ").append(renderValue(onUpdate));
 			
 			return back.toString();
 		}

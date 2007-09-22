@@ -207,11 +207,21 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 		Object onUpdate = field.getOnUpdate();
 		if (onUpdate != null) {
 			StringBuilder back = new StringBuilder();
+			
+			DDLField pkField = null;
+			for (DDLField f : table.getFields()) {
+				if (f.isPrimaryKey()) {
+					pkField = f;
+					break;
+				}
+			}
+			
 			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
 			back.append("ON ").append(table.getName()).append("\n");
 			back.append("FOR UPDATE\nAS\n");
 			back.append("    UPDATE ").append(table.getName()).append(" SET ").append(field.getName());
-			back.append(" = ").append(renderValue(onUpdate)).append(" WHERE id = (SELECT id FROM inserted)");
+			back.append(" = ").append(renderValue(onUpdate));
+			back.append(" WHERE " + pkField.getName() + " = (SELECT " + pkField.getName() + " FROM inserted)");
 			
 			return back.toString();
 		}
@@ -221,12 +231,12 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public synchronized int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
+	public synchronized int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
 		boolean identityInsert = false;
 		StringBuilder sql = new StringBuilder();
 		
 		for (DBParam param : params) {
-			if (param.getField().trim().equalsIgnoreCase("id")) {
+			if (param.getField().trim().equalsIgnoreCase(pkField)) {
 				identityInsert = true;
 				sql.append("SET IDENTITY_INSERT ").append(table).append(" ON\n");
 				break;
@@ -259,7 +269,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			sql.append("\nSET IDENTITY_INSERT ").append(table).append(" OFF");
 		}
 		
-		int back = executeInsertReturningKeys(conn, sql.toString(), params);
+		int back = executeInsertReturningKeys(conn, pkField, sql.toString(), params);
 		
 		return back;
 	}

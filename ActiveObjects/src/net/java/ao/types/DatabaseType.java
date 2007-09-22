@@ -102,6 +102,10 @@ public abstract class DatabaseType<T> {
 	
 	public abstract Object defaultParseValue(String value);
 	
+	public String valueToString(Object value) {
+		return value.toString();
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof DatabaseType) {

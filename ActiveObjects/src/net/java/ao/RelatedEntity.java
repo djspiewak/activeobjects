@@ -21,7 +21,7 @@ import net.java.ao.schema.Ignore;
  * @author Daniel Spiewak
  */
 @Implementation(RelatedEntityImpl.class)
-public interface RelatedEntity<T extends RelatedEntity<T>> extends Entity {
+public interface RelatedEntity<T extends RelatedEntity<T>> extends RawEntity {
 	
 	@Ignore
 	public T[] getRelated();

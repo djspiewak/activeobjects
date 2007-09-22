@@ -53,6 +53,11 @@ public class EntityTest extends DataTest {
 	public void testCacheAccessor() {
 		Person person = manager.get(Person.class, personID);
 		
+		person.getFirstName();
+		Company c = person.getCompany();
+		c.getName();
+		c.isCool();
+		
 		SQLLogMonitor.getInstance().markWatchSQL();
 		
 		assertEquals("Daniel", person.getFirstName());

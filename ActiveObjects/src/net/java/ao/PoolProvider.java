@@ -76,8 +76,8 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	public int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
-		return delegate.insertReturningKeys(conn, table, params);
+	public int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
+		return delegate.insertReturningKeys(conn, pkField, table, params);
 	}
 	
 	@Override

@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import net.java.ao.Common;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.Entity;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
 import net.java.ao.RawEntity;
@@ -177,11 +176,11 @@ public final class SchemaGenerator {
 				String attributeName = fieldConverter.getName(clazz, method);
 				Class<?> type = Common.getAttributeTypeFromMethod(method);
 				
-				if (attributeName != null && type != null && Common.interfaceInheritsFrom(type, Entity.class)) {
+				if (attributeName != null && type != null && Common.interfaceInheritsFrom(type, RawEntity.class)) {
 					if (!type.equals(clazz)) {
-						individualDeps.add((Class<? extends Entity>) type);
+						individualDeps.add((Class<? extends RawEntity>) type);
 					
-						parseDependencies(fieldConverter, deps, roots, (Class<? extends Entity>) type);
+						parseDependencies(fieldConverter, deps, roots, (Class<? extends RawEntity>) type);
 					}
 				}
 			}
@@ -289,12 +288,12 @@ public final class SchemaGenerator {
 			String attributeName = fieldConverter.getName(clazz, method);
 			Class<?> type =  Common.getAttributeTypeFromMethod(method);
 			
-			if (type != null && attributeName != null && Common.interfaceInheritsFrom(type, Entity.class)) {
+			if (type != null && attributeName != null && Common.interfaceInheritsFrom(type, RawEntity.class)) {
 				DDLForeignKey key = new DDLForeignKey();
 				
 				key.setField(attributeName);
-				key.setTable(nameConverter.getName((Class<? extends Entity>) type));
-				key.setForeignField("id");
+				key.setTable(nameConverter.getName((Class<? extends RawEntity>) type));
+				key.setForeignField(Common.getPrimaryKeyField((Class<? extends RawEntity>) type, fieldConverter));
 				key.setDomesticTable(nameConverter.getName(clazz));
 				
 				back.add(key);
@@ -302,8 +301,8 @@ public final class SchemaGenerator {
 		}
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
-			if (!superInterface.equals(Entity.class)) {
-				back.addAll(Arrays.asList(parseForeignKeys(nameConverter, fieldConverter, (Class<? extends Entity>) superInterface)));
+			if (!superInterface.equals(RawEntity.class)) {
+				back.addAll(Arrays.asList(parseForeignKeys(nameConverter, fieldConverter, (Class<? extends RawEntity>) superInterface)));
 			}
 		}
 		
@@ -322,7 +321,7 @@ public final class SchemaGenerator {
 				Indexed indexedAnno = method.getAnnotation(Indexed.class);
 				Class<?> type = Common.getAttributeTypeFromMethod(method);
 				
-				if (indexedAnno != null || (type != null && Common.interfaceInheritsFrom(type, Entity.class))) {
+				if (indexedAnno != null || (type != null && Common.interfaceInheritsFrom(type, RawEntity.class))) {
 					DDLIndex index = new DDLIndex();
 					index.setField(attributeName);
 					index.setTable(tableName);
@@ -332,7 +331,7 @@ public final class SchemaGenerator {
 		}
 		
 		for (Class<?> superInterface : clazz.getInterfaces()) {
-			if (!superInterface.equals(Entity.class)) {
+			if (!superInterface.equals(RawEntity.class)) {
 				back.addAll(Arrays.asList(parseIndexes(nameConverter, fieldConverter, (Class<? extends RawEntity>) superInterface)));
 			}
 		}

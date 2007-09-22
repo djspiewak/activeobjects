@@ -20,26 +20,33 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import net.java.ao.Entity;
+import net.java.ao.Common;
 import net.java.ao.EntityManager;
+import net.java.ao.RawEntity;
 
 /**
  * @author Daniel Spiewak
  */
-class EntityType extends DatabaseType<Entity> {
+class EntityType extends DatabaseType<RawEntity> {
 
 	public EntityType() {
-		super(Types.INTEGER, -1, Entity.class);
+		super(Types.INTEGER, -1, RawEntity.class);
 	}
 	
 	@Override
-	public void putToDatabase(int index, PreparedStatement stmt, Entity value) throws SQLException {
-		stmt.setInt(index, value.getID());
+	@SuppressWarnings("unchecked")
+	public void putToDatabase(int index, PreparedStatement stmt, RawEntity value) throws SQLException {
+		DatabaseType dbType = Common.getPrimaryKeyType(value.getEntityType());
+		dbType.putToDatabase(index, stmt, Common.getPrimaryKeyValue(value));
 	}
 	
 	@Override
-	public Entity convert(EntityManager manager, ResultSet res, Class<? extends Entity> type, String field) throws SQLException {
-		return manager.get(type, res.getInt(field));
+	@SuppressWarnings("unchecked")
+	public RawEntity convert(EntityManager manager, ResultSet res, Class<? extends RawEntity> type, String field) throws SQLException {
+		DatabaseType dbType = Common.getPrimaryKeyType(type);
+		Class pkType = Common.getPrimaryKeyClassType(type);
+		
+		return manager.get(type, dbType.convert(manager, res, pkType, field));
 	}
 
 	@Override

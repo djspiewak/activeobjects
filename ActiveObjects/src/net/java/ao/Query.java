@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.types.TypeManager;
 
@@ -30,6 +31,8 @@ public class Query {
 	public enum QueryType {
 		SELECT
 	}
+	
+	private final static String PRIMARY_KEY_FIELD = "''''primary_key_field''''";
 	
 	private final QueryType type;
 	private String fields;
@@ -57,6 +60,10 @@ public class Query {
 	}
 	
 	public String[] getFields() {
+		if (fields.contains(PRIMARY_KEY_FIELD)) {
+			return new String[0];
+		}
+		
 		String[] fieldsArray = fields.split(",");
 		String[] back = new String[fieldsArray.length];
 		
@@ -81,6 +88,10 @@ public class Query {
 		}
 		
 		this.fields = builder.toString();
+	}
+	
+	void resolveFields(Class<? extends RawEntity> tableType, FieldNameConverter converter) {
+		fields = fields.replaceAll(PRIMARY_KEY_FIELD, Common.getPrimaryKeyField(tableType, converter));
 	}
 	
 	public Query distinct() {
@@ -230,10 +241,12 @@ public class Query {
 		return type;
 	}
 
-	protected String toSQL(Class<? extends RawEntity> tableType, DatabaseProvider provider, TableNameConverter converter, boolean count) {
+	protected String toSQL(Class<? extends RawEntity> tableType, DatabaseProvider provider, TableNameConverter converter, FieldNameConverter fieldConverter, boolean count) {
 		if (this.tableType == null && table == null) {
 			this.tableType = tableType;
 		}
+		
+		resolveFields(tableType, fieldConverter);
 		
 		return provider.renderQuery(this, converter, count);
 	}
@@ -260,7 +273,7 @@ public class Query {
 	}
 
 	public static Query select() {
-		return select("id");
+		return select(PRIMARY_KEY_FIELD);
 	}
 
 	public static Query select(String fields) {

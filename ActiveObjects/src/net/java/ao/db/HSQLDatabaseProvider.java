@@ -27,9 +27,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.java.ao.Common;
 import net.java.ao.DBParam;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.types.DatabaseType;
 
@@ -49,7 +50,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
+	public int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
@@ -59,7 +60,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		if (params.length > 0) {
 			sql.setLength(sql.length() - 1);
 		} else {
-			sql.append("id");
+			sql.append(pkField);
 		}
 		
 		sql.append(") VALUES (");
@@ -75,23 +76,25 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKeys(conn, sql.toString(), params);
+		return executeInsertReturningKeys(conn, pkField, sql.toString(), params);
 	}
 	
 	@Override
-	protected synchronized int executeInsertReturningKeys(Connection conn, String sql, DBParam... params) throws SQLException {
+	protected synchronized int executeInsertReturningKeys(Connection conn, String pkField, String sql, 
+			DBParam... params) throws SQLException {
 		int back = -1;
+		
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql);
 		
 		for (int i = 0; i < params.length; i++) {
 			Object value = params[i].getValue();
 			
-			if (value instanceof Entity) {
-				value = ((Entity) value).getID();
+			if (value instanceof RawEntity) {
+				value = Common.getPrimaryKeyValue((RawEntity) value);
 			}
 			
-			if (params[i].getField().equalsIgnoreCase("id")) {
+			if (params[i].getField().equalsIgnoreCase(pkField)) {
 				back = (Integer) value;
 			}
 			

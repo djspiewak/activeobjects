@@ -875,7 +875,7 @@ public abstract class DatabaseProvider {
 	}
 	
 	@SuppressWarnings("unused")
-	public int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
+	public int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
@@ -885,7 +885,7 @@ public abstract class DatabaseProvider {
 		if (params.length > 0) {
 			sql.setLength(sql.length() - 1);
 		} else {
-			sql.append("id");
+			sql.append(pkField);
 		}
 		
 		sql.append(") VALUES (");
@@ -901,10 +901,10 @@ public abstract class DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKeys(conn, sql.toString(), params);
+		return executeInsertReturningKeys(conn, pkField, sql.toString(), params);
 	}
 	
-	protected int executeInsertReturningKeys(Connection conn, String sql, DBParam... params) throws SQLException {
+	protected int executeInsertReturningKeys(Connection conn, String pkField, String sql, DBParam... params) throws SQLException {
 		int back = -1;
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -912,8 +912,8 @@ public abstract class DatabaseProvider {
 		for (int i = 0; i < params.length; i++) {
 			Object value = params[i].getValue();
 			
-			if (value instanceof Entity) {
-				value = ((Entity) value).getID();
+			if (value instanceof RawEntity) {
+				value = Common.getPrimaryKeyValue((RawEntity) value);
 			}
 			
 			stmt.setObject(i + 1, value);

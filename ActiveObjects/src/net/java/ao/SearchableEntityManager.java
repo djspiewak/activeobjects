@@ -23,6 +23,8 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.List;
 
+import net.java.ao.types.DatabaseType;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.document.Document;
@@ -64,17 +66,20 @@ public class SearchableEntityManager extends EntityManager {
 	}
 
 	@Override
-	protected <T extends Entity> T getAndInstantiate(Class<T> type, int id) {
-		T back = super.getAndInstantiate(type, id);
+	protected <T extends RawEntity> T getAndInstantiate(Class<T> type, Object key) {
+		T back = super.getAndInstantiate(type, key);
 		back.addPropertyChangeListener(new IndexAppender<T>(back));
 
 		return back;
 	}
 
-	public <T extends Entity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
+	@SuppressWarnings("unchecked")
+	public <T extends RawEntity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
 		String table = getTableNameConverter().getName(type);
 		List<String> indexFields = Common.getSearchableFields(this, type);
 		String[] searchFields = new String[indexFields.size()];
+		String primaryKeyField = Common.getPrimaryKeyField(type, getFieldNameConverter());
+		DatabaseType dbType = Common.getPrimaryKeyType(type);
 
 		for (int i = 0; i < searchFields.length; i++) {
 			searchFields[i] = table + '.' + indexFields.get(i);
@@ -85,23 +90,24 @@ public class SearchableEntityManager extends EntityManager {
 		org.apache.lucene.search.Query query = parser.parse(strQuery);
 
 		Hits hits = searcher.search(query);
-		int[] ids = new int[hits.length()];
+		Object[] keys = new Object[hits.length()];
+		
 		for (int i = 0; i < hits.length(); i++) {
-			ids[i] = Integer.parseInt(hits.doc(i).get(table + ".id"));
+			keys[i] = dbType.defaultParseValue(hits.doc(i).get(table + "." + primaryKeyField));
 		}
 		searcher.close();
 
-		return get(type, ids);
+		return get(type, keys);
 	}
 
 	@Override
-	public void delete(Entity... entities) throws SQLException {
+	public void delete(RawEntity... entities) throws SQLException {
 		super.delete(entities);
 
 		IndexReader reader = null;
 		try {
 			reader = IndexReader.open(indexDir);
-			for (Entity entity : entities) {
+			for (RawEntity entity : entities) {
 				removeFromIndexImpl(entity, reader);
 			}
 		} catch (IOException e) {
@@ -114,7 +120,7 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
-	public void addToIndex(Entity entity) throws IOException {
+	public void addToIndex(RawEntity entity) throws IOException {
 		String table = getTableNameConverter().getName(entity.getEntityType());
 
 		IndexWriter writer = null;
@@ -122,7 +128,10 @@ public class SearchableEntityManager extends EntityManager {
 			writer = new IndexWriter(indexDir, analyzer, false);
 
 			Document doc = new Document();
-			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
+			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + "." 
+					+ Common.getPrimaryKeyField(entity.getEntityType(), getFieldNameConverter()), 
+					Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity)), 
+					Field.Store.YES, Field.Index.UN_TOKENIZED));
 
 			boolean shouldAdd = false;
 			for (Method m : entity.getEntityType().getMethods()) {
@@ -172,8 +181,10 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
-	private void removeFromIndexImpl(Entity entity, IndexReader reader) throws IOException {
-		reader.deleteDocuments(new Term(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()));
+	private void removeFromIndexImpl(RawEntity entity, IndexReader reader) throws IOException {
+		reader.deleteDocuments(new Term(getTableNameConverter().getName(entity.getEntityType()) + "." 
+				+ Common.getPrimaryKeyField(entity.getEntityType(), getFieldNameConverter()), 
+				Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity))));
 	}
 
 	public void optimize() throws IOException {
@@ -207,7 +218,7 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
-	private class IndexAppender<T extends Entity> implements PropertyChangeListener {
+	private class IndexAppender<T extends RawEntity> implements PropertyChangeListener {
 		private List<String> indexFields;
 
 		private Document doc;
@@ -216,7 +227,10 @@ public class SearchableEntityManager extends EntityManager {
 			indexFields = Common.getSearchableFields(SearchableEntityManager.this, entity.getEntityType());
 
 			doc = new Document();
-			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
+			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + "." 
+					+ Common.getPrimaryKeyField(entity.getEntityType(), getFieldNameConverter()), 
+					Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity)), 
+					Field.Store.YES, Field.Index.UN_TOKENIZED));
 		}
 
 		public void propertyChange(final PropertyChangeEvent evt) {
@@ -229,12 +243,15 @@ public class SearchableEntityManager extends EntityManager {
 					public void run() {
 						T entity = (T) evt.getSource();
 
-						doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + '.' + evt.getPropertyName(), evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
+						doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + '.' 
+								+ evt.getPropertyName(), evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
 
 						IndexWriter writer = null;
 						try {
 							writer = new IndexWriter(getIndexDir(), getAnalyzer(), false);
-							writer.updateDocument(new Term(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID()), doc);
+							writer.updateDocument(new Term(getTableNameConverter().getName(entity.getEntityType()) + "." 
+									+ Common.getPrimaryKeyField(entity.getEntityType(), getFieldNameConverter()), 
+									Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity))), doc);
 						} catch (IOException e) {
 						} finally {
 							try {

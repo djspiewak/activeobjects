@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -29,9 +30,12 @@ import net.java.ao.EntityManager;
  * @author Daniel Spiewak
  */
 class TimestampType extends DatabaseType<Calendar> {
+	private DateFormat dateFormat;
 	
 	public TimestampType() {
 		super(Types.TIMESTAMP, -1, Calendar.class);
+		
+		dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
 
 	public String getDefaultName() {
@@ -55,12 +59,17 @@ class TimestampType extends DatabaseType<Calendar> {
 	public Calendar defaultParseValue(String value) {
 		try {
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value));
+			cal.setTime(dateFormat.parse(value));
 			
 			return cal;
 		} catch (java.text.ParseException e) {
 		}
 
 		return Calendar.getInstance();
+	}
+	
+	@Override
+	public String valueToString(Object value) {
+		return dateFormat.format(((Calendar) value).getTime());
 	}
 }

@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,9 +31,12 @@ import net.java.ao.EntityManager;
  * @author Daniel Spiewak
  */
 class TimestampDateType extends DatabaseType<Date> {
+	private DateFormat dateFormat;
 	
 	public TimestampDateType() {
 		super(Types.TIMESTAMP, -1, Date.class);
+		
+		dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
 
 	public String getDefaultName() {
@@ -52,10 +56,15 @@ class TimestampDateType extends DatabaseType<Date> {
 	@Override
 	public Date defaultParseValue(String value) {
 		try {
-			return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value);
+			return dateFormat.parse(value);
 		} catch (ParseException e) {
 		}
 		
 		return new Date();
+	}
+	
+	@Override
+	public String valueToString(Object value) {
+		return dateFormat.format((Date) value);
 	}
 }

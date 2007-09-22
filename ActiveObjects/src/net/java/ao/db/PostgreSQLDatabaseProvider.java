@@ -29,10 +29,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.java.ao.Common;
 import net.java.ao.DBParam;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
@@ -281,17 +282,17 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 
 	@Override
-	public synchronized int insertReturningKeys(Connection conn, String table, DBParam... params) throws SQLException {
+	public synchronized int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
 		int back = -1;
 		for (DBParam param : params) {
-			if (param.getField().trim().equalsIgnoreCase("id")) {
+			if (param.getField().trim().equalsIgnoreCase(pkField)) {
 				back = (Integer) param.getValue();
 				break;
 			}
 		}
 		
 		if (back < 0) {
-			String sql = "SELECT NEXTVAL('" + table + "_id_seq')";
+			String sql = "SELECT NEXTVAL('" + table + "_" + pkField + "_seq')";
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
@@ -306,25 +307,25 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			List<DBParam> newParams = new ArrayList<DBParam>();
 			newParams.addAll(Arrays.asList(params));
 			
-			newParams.add(new DBParam("id", back));
+			newParams.add(new DBParam(pkField, back));
 			params = newParams.toArray(new DBParam[newParams.size()]);
 		}
 		
-		super.insertReturningKeys(conn, table, params);
+		super.insertReturningKeys(conn, pkField, table, params);
 		
 		return back;
 	}
 	
 	@Override
-	protected int executeInsertReturningKeys(Connection conn, String sql, DBParam... params) throws SQLException {
+	protected int executeInsertReturningKeys(Connection conn, String pkField, String sql, DBParam... params) throws SQLException {
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql);
 		
 		for (int i = 0; i < params.length; i++) {
 			Object value = params[i].getValue();
 			
-			if (value instanceof Entity) {
-				value = ((Entity) value).getID();
+			if (value instanceof RawEntity) {
+				value = Common.getPrimaryKeyValue((RawEntity) value);
 			}
 			
 			stmt.setObject(i + 1, value);
