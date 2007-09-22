@@ -42,14 +42,14 @@ public class EntityManagerTest extends DataTest {
 		for (Company c : coolCompanies) {
 			boolean found = false;
 			for (int id : coolCompanyIDs) {
-				if (c.getID() == id) {
+				if (c.getCompanyID() == id) {
 					found = true;
 					break;
 				}
 			}
 			
 			if (!found) {
-				fail("Unable to find id=" + c.getID());
+				fail("Unable to find key=" + c.getCompanyID());
 			}
 		}
 		
@@ -60,18 +60,18 @@ public class EntityManagerTest extends DataTest {
 		for (Company c : companies) {
 			boolean found = false;
 			for (int id : coolCompanyIDs) {
-				if (c.getID() == id) {
+				if (c.getCompanyID() == id) {
 					found = true;
 					break;
 				}
 			}
 			
-			if (c.getID() == companyID) {
+			if (c.getCompanyID() == companyID) {
 				found = true;
 			}
 			
 			if (!found) {
-				fail("Unable to find id=" + c.getID());
+				fail("Unable to find key=" + c.getCompanyID());
 			}
 		}
 	}
@@ -114,43 +114,43 @@ public class EntityManagerTest extends DataTest {
 	
 	@Test
 	public void testFindWithSQL() throws SQLException {
-		Company[] coolCompanies = manager.findWithSQL(Company.class, "id", "SELECT id FROM company WHERE cool = ?", true);
+		Company[] coolCompanies = manager.findWithSQL(Company.class, "companyID", "SELECT companyID FROM company WHERE cool = ?", true);
 		
 		assertEquals(coolCompanyIDs.length, coolCompanies.length);
 		
 		for (Company c : coolCompanies) {
 			boolean found = false;
 			for (int id : coolCompanyIDs) {
-				if (c.getID() == id) {
+				if (c.getCompanyID() == id) {
 					found = true;
 					break;
 				}
 			}
 			
 			if (!found) {
-				fail("Unable to find id=" + c.getID());
+				fail("Unable to find key=" + c.getCompanyID());
 			}
 		}
 		
-		Company[] companies = manager.findWithSQL(Company.class, "id", "SELECT id FROM company");
+		Company[] companies = manager.findWithSQL(Company.class, "companyID", "SELECT companyID FROM company");
 		
 		assertEquals(coolCompanyIDs.length + 1, companies.length);
 		
 		for (Company c : companies) {
 			boolean found = false;
 			for (int id : coolCompanyIDs) {
-				if (c.getID() == id) {
+				if (c.getCompanyID() == id) {
 					found = true;
 					break;
 				}
 			}
 			
-			if (c.getID() == companyID) {
+			if (c.getCompanyID() == companyID) {
 				found = true;
 			}
 			
 			if (!found) {
-				fail("Unable to find id=" + c.getID());
+				fail("Unable to find key=" + c.getCompanyID());
 			}
 		}
 	}

@@ -142,7 +142,7 @@ public class SchemaGeneratorTest extends DataTest {
 		
 		assertEquals("person", cidKey.getDomesticTable());
 		assertEquals("companyID", cidKey.getField());
-		assertEquals("id", cidKey.getForeignField());
+		assertEquals("companyID", cidKey.getForeignField());
 		assertEquals("company", cidKey.getTable());
 		
 		assertEquals(expectedIndexes.length, personDDL.getIndexes().length);

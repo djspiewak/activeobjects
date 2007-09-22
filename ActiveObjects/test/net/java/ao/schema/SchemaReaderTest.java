@@ -130,7 +130,7 @@ public class SchemaReaderTest extends DataTest {
 		
 		assertTrue("person".equalsIgnoreCase(cidKey.getDomesticTable()));
 		assertTrue("companyID".equalsIgnoreCase(cidKey.getField()));
-		assertTrue("id".equalsIgnoreCase(cidKey.getForeignField()));
+		assertTrue("companyID".equalsIgnoreCase(cidKey.getForeignField()));
 		assertTrue("company".equalsIgnoreCase(cidKey.getTable()));
 	}
 

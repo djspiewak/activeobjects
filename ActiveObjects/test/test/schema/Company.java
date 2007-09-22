@@ -15,13 +15,21 @@
  */
 package test.schema;
 
-import net.java.ao.Entity;
 import net.java.ao.OneToMany;
+import net.java.ao.RawEntity;
+import net.java.ao.schema.AutoIncrement;
+import net.java.ao.schema.NotNull;
+import net.java.ao.schema.PrimaryKey;
 
 /**
  * @author Daniel Spiewak
  */
-public interface Company extends Entity {
+public interface Company extends RawEntity {
+	
+	@PrimaryKey
+	@AutoIncrement
+	@NotNull
+	public int getCompanyID();
 	
 	public String getName();
 	public void setName(String name);
