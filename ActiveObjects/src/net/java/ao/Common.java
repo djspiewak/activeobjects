@@ -168,7 +168,7 @@ public final class Common {
         return null;
     }
 
-	public static List<String> getIndexFields(EntityManager manager, Class<? extends RawEntity> type) {
+	public static List<String> getSearchableFields(EntityManager manager, Class<? extends RawEntity> type) {
 		List<String> back = new ArrayList<String>();
 		
 		for (Method m : type.getMethods()) {

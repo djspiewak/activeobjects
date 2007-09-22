@@ -73,7 +73,7 @@ public class SearchableEntityManager extends EntityManager {
 
 	public <T extends Entity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
 		String table = getTableNameConverter().getName(type);
-		List<String> indexFields = Common.getIndexFields(this, type);
+		List<String> indexFields = Common.getSearchableFields(this, type);
 		String[] searchFields = new String[indexFields.size()];
 
 		for (int i = 0; i < searchFields.length; i++) {
@@ -213,7 +213,7 @@ public class SearchableEntityManager extends EntityManager {
 		private Document doc;
 
 		private IndexAppender(T entity) {
-			indexFields = Common.getIndexFields(SearchableEntityManager.this, entity.getEntityType());
+			indexFields = Common.getSearchableFields(SearchableEntityManager.this, entity.getEntityType());
 
 			doc = new Document();
 			doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + ".id", "" + entity.getID(), Field.Store.YES, Field.Index.UN_TOKENIZED));
