@@ -34,6 +34,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	public String getName(Class<? extends RawEntity> clazz, Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
+		PrimaryKey primaryKeyAnnotation = method.getAnnotation(PrimaryKey.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		
@@ -44,6 +45,8 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 			return mutatorAnnotation.value();
 		} else if (accessorAnnotation != null) {
 			return accessorAnnotation.value();
+		} else if (primaryKeyAnnotation != null && !primaryKeyAnnotation.value().trim().equals("")) {
+			return primaryKeyAnnotation.value();
 		} else if (oneToManyAnnotation != null) {
 			return null;
 		} else if (manyToManyAnnotation != null) {
