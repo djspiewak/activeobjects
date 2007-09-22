@@ -575,6 +575,10 @@ public abstract class DatabaseProvider {
 		
 		back.append(append);
 		
+		if (primaryKeys.size() > 1) {
+			throw new RuntimeException("Entities may only have one primary key");
+		}
+		
 		if (primaryKeys.size() > 0) {
 			back.append("    PRIMARY KEY(");
 			back.append(primaryKeys.get(0));
