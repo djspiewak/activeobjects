@@ -113,7 +113,7 @@ public class SchemaReaderTest extends DataTest {
 			}
 		}
 		
-		assertTrue(Common.fuzzyTypeCompare(Types.INTEGER, cidField.getType().getType()));
+		assertTrue(Common.fuzzyTypeCompare(Types.BIGINT, cidField.getType().getType()));
 		
 		assertFalse(cidField.isAutoIncrement());
 		assertNull(cidField.getDefaultValue());

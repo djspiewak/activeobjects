@@ -120,7 +120,7 @@ public class SchemaGeneratorTest extends DataTest {
 			}
 		}
 		
-		assertEquals(Types.INTEGER, cidField.getType().getType());
+		assertEquals(Types.BIGINT, cidField.getType().getType());
 		
 		assertFalse(cidField.isAutoIncrement());
 		assertFalse(cidField.isNotNull());

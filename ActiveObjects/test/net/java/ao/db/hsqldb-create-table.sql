@@ -6,7 +6,7 @@ CREATE TABLE person (
     url VARCHAR UNIQUE NOT NULL,
     favoriteClass VARCHAR,
     height DOUBLE(32,6) DEFAULT 62.3,
-    companyID INTEGER,
+    companyID BIGINT,
     cool BOOLEAN DEFAULT TRUE,
     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_person_companyid FOREIGN KEY (companyID) REFERENCES company(id),
