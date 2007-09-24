@@ -924,7 +924,7 @@ public abstract class DatabaseProvider {
 		
 		ResultSet res = stmt.getGeneratedKeys();
 		if (res.next()) {
-			 back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, pkField);
+			 back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, 1);
 		}
 		res.close();
 		stmt.close();

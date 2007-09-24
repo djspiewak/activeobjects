@@ -100,6 +100,10 @@ public abstract class DatabaseType<T> {
 	
 	public abstract T convert(EntityManager manager, ResultSet res, Class<? extends T> type, String field) throws SQLException;
 	
+	public T convert(EntityManager manager, ResultSet res, Class<? extends T> type, int index) throws SQLException {
+		return convert(manager, res, type, res.getMetaData().getColumnName(index));
+	}
+	
 	public abstract Object defaultParseValue(String value);
 	
 	public String valueToString(Object value) {

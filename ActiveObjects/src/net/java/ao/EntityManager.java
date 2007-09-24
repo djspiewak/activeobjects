@@ -316,7 +316,7 @@ public class EntityManager {
 		
 		try {
 			relationsCache.remove(type);
-			back = get(type, provider.insertReturningKeys(conn, type, 
+			back = get(type, provider.insertReturningKeys(conn, Common.getPrimaryKeyClassType(type), 
 					Common.getPrimaryKeyField(type, getFieldNameConverter()), table, params));
 		} finally {
 			conn.close();
@@ -566,7 +566,7 @@ public class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, res.getInt(keyField)));
+				back.add(get(type, Common.getPrimaryKeyType(type).convert(this, res, type, keyField)));
 			}
 			res.close();
 			stmt.close();

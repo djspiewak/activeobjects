@@ -114,7 +114,8 @@ public class EntityManagerTest extends DataTest {
 	
 	@Test
 	public void testFindWithSQL() throws SQLException {
-		Company[] coolCompanies = manager.findWithSQL(Company.class, "companyID", "SELECT companyID FROM company WHERE cool = ?", true);
+		Company[] coolCompanies = manager.findWithSQL(Company.class, 
+				"companyID", "SELECT companyID FROM company WHERE cool = ?", true);
 		
 		assertEquals(coolCompanyIDs.length, coolCompanies.length);
 		
