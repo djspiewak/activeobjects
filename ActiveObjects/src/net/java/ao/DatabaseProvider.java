@@ -42,6 +42,7 @@ import net.java.ao.db.SupportedDBProvider;
 import net.java.ao.db.SupportedPoolProvider;
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.schema.ddl.DDLAction;
+import net.java.ao.schema.ddl.DDLActionType;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLIndex;
@@ -176,9 +177,21 @@ public abstract class DatabaseProvider {
 				back.add(renderTable(action.getTable()));
 				back.addAll(Arrays.asList(renderFunctions(action.getTable())));
 				back.addAll(Arrays.asList(renderTriggers(action.getTable())));
+				
+				for (DDLIndex index : action.getTable().getIndexes()) {
+					DDLAction newAction = new DDLAction(DDLActionType.CREATE_INDEX);
+					newAction.setIndex(index);
+					back.addAll(Arrays.asList(renderAction(newAction)));
+				}
 			break;
 			
 			case DROP:
+				for (DDLIndex index : action.getTable().getIndexes()) {
+					DDLAction newAction = new DDLAction(DDLActionType.DROP_INDEX);
+					newAction.setIndex(index);
+					back.addAll(Arrays.asList(renderAction(newAction)));
+				}
+				
 				back.addAll(Arrays.asList(renderDropTriggers(action.getTable())));
 				back.addAll(Arrays.asList(renderDropFunctions(action.getTable())));
 				back.add(renderDropTable(action.getTable()));
@@ -186,6 +199,14 @@ public abstract class DatabaseProvider {
 			
 			case ALTER_ADD_COLUMN:
 				back.addAll(Arrays.asList(renderAlterTableAddColumn(action.getTable(), action.getField())));
+				
+				for (DDLIndex index : action.getTable().getIndexes()) {
+					if (index.getField().equals(action.getField().getName())) {
+						DDLAction newAction = new DDLAction(DDLActionType.CREATE_INDEX);
+						newAction.setIndex(index);
+						back.addAll(Arrays.asList(renderAction(newAction)));
+					}
+				}
 			break;
 			
 			case ALTER_CHANGE_COLUMN:
@@ -193,6 +214,14 @@ public abstract class DatabaseProvider {
 			break;
 			
 			case ALTER_DROP_COLUMN:
+				for (DDLIndex index : action.getTable().getIndexes()) {
+					if (index.getField().equals(action.getField().getName())) {
+						DDLAction newAction = new DDLAction(DDLActionType.DROP_INDEX);
+						newAction.setIndex(index);
+						back.addAll(Arrays.asList(renderAction(newAction)));
+					}
+				}
+				
 				back.addAll(Arrays.asList(renderAlterTableDropColumn(action.getTable(), action.getField())));
 			break;
 			
