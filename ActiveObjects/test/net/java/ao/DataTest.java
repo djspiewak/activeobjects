@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,10 +30,7 @@ import net.java.ao.types.TypeManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import test.schema.Company;
 import test.schema.Pen;
-import test.schema.Person;
-import test.schema.PersonLegalDefence;
 import test.schema.PersonSuit;
 
 /**
@@ -262,22 +260,20 @@ public abstract class DataTest {
 
 	@AfterClass
 	public static void tearDown() throws SQLException {
-		for (int id : penIDs) {
-			manager.delete(manager.get(Pen.class, id));
+		Connection conn = manager.getProvider().getConnection();
+		try {
+			Statement stmt = conn.createStatement();
+			
+			stmt.executeUpdate("DELETE FROM pen");
+			stmt.executeUpdate("DELETE FROM personSuit");
+			stmt.executeUpdate("DELETE FROM personDefence");
+			stmt.executeUpdate("DELETE FROM person");
+			stmt.executeUpdate("DELETE FROM company");
+			
+			stmt.close();
+		} finally {
+			conn.close();
 		}
-		for (int id : suitIDs) {
-			manager.delete(manager.get(PersonSuit.class, id));
-		}
-		for (int id : defenceIDs) {
-			manager.delete(manager.get(PersonLegalDefence.class, id));
-		}
-		
-		for (long id : coolCompanyIDs) {
-			manager.delete(manager.get(Company.class, id));
-		}
-		
-		manager.delete(manager.get(Person.class, personID));
-		manager.delete(manager.get(Company.class, companyID));
 		
 		manager.getProvider().dispose();
 	}
