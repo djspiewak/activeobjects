@@ -199,7 +199,7 @@ public class EntityManager {
 	 * course is that one could conceivably maintain entities which reference
 	 * non-existant database rows.</p>
 	 */
-	public <T extends RawEntity> T[] get(Class<T> type, Object... keys) {
+	public <T extends RawEntity, K> T[] get(Class<T> type, K... keys) {
 		T[] back = (T[]) Array.newInstance(type, keys.length);
 		int index = 0;
 		
