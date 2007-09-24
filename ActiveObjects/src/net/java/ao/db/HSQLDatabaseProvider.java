@@ -33,6 +33,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.types.DatabaseType;
+import net.java.ao.types.TypeManager;
 
 /**
  * @author Daniel Spiewak
@@ -50,7 +51,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
+	public <T> T insertReturningKeys(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
@@ -76,13 +77,13 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKeys(conn, pkField, sql.toString(), params);
+		return executeInsertReturningKeys(conn, pkType, pkField, sql.toString(), params);
 	}
 	
 	@Override
-	protected synchronized int executeInsertReturningKeys(Connection conn, String pkField, String sql, 
+	protected synchronized <T> T executeInsertReturningKeys(Connection conn, Class<T> pkType, String pkField, String sql, 
 			DBParam... params) throws SQLException {
-		int back = -1;
+		T back = null;
 		
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql);
@@ -95,7 +96,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 			}
 			
 			if (params[i].getField().equalsIgnoreCase(pkField)) {
-				back = (Integer) value;
+				back = (T) value;
 			}
 			
 			stmt.setObject(i + 1, value);
@@ -104,12 +105,12 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		stmt.executeUpdate();
 		stmt.close();
 		
-		if (back < 0) {
+		if (back == null) {
 			stmt = conn.prepareStatement("CALL IDENTITY()");		// WARNING	potential breakage here if dealing with INSERTs outside ORM control
 			
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
-				back = res.getInt(1);
+				back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, pkField);
 			}
 			res.close();
 			stmt.close();

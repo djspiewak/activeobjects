@@ -37,6 +37,7 @@ import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
+import net.java.ao.types.TypeManager;
 
 /**
  * @author Daniel Spiewak
@@ -282,16 +283,17 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 
 	@Override
-	public synchronized int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
-		int back = -1;
+	public synchronized <T> T insertReturningKeys(Connection conn, Class<T> pkType, String pkField, String table, 
+			DBParam... params) throws SQLException {
+		T back = null;
 		for (DBParam param : params) {
 			if (param.getField().trim().equalsIgnoreCase(pkField)) {
-				back = (Integer) param.getValue();
+				back = (T) param.getValue();
 				break;
 			}
 		}
 		
-		if (back < 0) {
+		if (back == null) {
 			String sql = "SELECT NEXTVAL('" + table + "_" + pkField + "_seq')";
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
@@ -299,7 +301,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
-				back = res.getInt(1);
+				back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, pkField);
 			}
 			res.close();
 			stmt.close();
@@ -311,13 +313,14 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			params = newParams.toArray(new DBParam[newParams.size()]);
 		}
 		
-		super.insertReturningKeys(conn, pkField, table, params);
+		super.insertReturningKeys(conn, pkType, pkField, table, params);
 		
 		return back;
 	}
 	
 	@Override
-	protected int executeInsertReturningKeys(Connection conn, String pkField, String sql, DBParam... params) throws SQLException {
+	protected <T> T executeInsertReturningKeys(Connection conn, Class<T> pkType, String pkField, String sql, 
+			DBParam... params) throws SQLException {
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql);
 		
@@ -334,6 +337,6 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		stmt.executeUpdate();
 		stmt.close();
 		
-		return -1;
+		return null;
 	}
 }

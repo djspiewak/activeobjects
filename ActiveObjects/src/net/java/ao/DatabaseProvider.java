@@ -875,7 +875,7 @@ public abstract class DatabaseProvider {
 	}
 	
 	@SuppressWarnings("unused")
-	public int insertReturningKeys(Connection conn, String pkField, String table, DBParam... params) throws SQLException {
+	public <T> T insertReturningKeys(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
@@ -901,11 +901,12 @@ public abstract class DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKeys(conn, pkField, sql.toString(), params);
+		return executeInsertReturningKeys(conn, pkType, pkField, sql.toString(), params);
 	}
 	
-	protected int executeInsertReturningKeys(Connection conn, String pkField, String sql, DBParam... params) throws SQLException {
-		int back = -1;
+	protected <T> T executeInsertReturningKeys(Connection conn, Class<T> pkType, String pkField, String sql, DBParam... params) 
+				throws SQLException {
+		T back = null;
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		
@@ -923,7 +924,7 @@ public abstract class DatabaseProvider {
 		
 		ResultSet res = stmt.getGeneratedKeys();
 		if (res.next()) {
-			 back = res.getInt(1);
+			 back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, pkField);
 		}
 		res.close();
 		stmt.close();
