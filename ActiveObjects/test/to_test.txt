@@ -2,5 +2,29 @@
 
  * @Generator
  * @Searchable
- * @OnUpdate
  
+ * @PrimaryKey(String)
+ 
+ * SearchableEntityManager#search
+ * SearchableEntityManager#delete
+ * SearchableEntityManager#addToIndex
+ * SearchableEntityManager#removeFromIndex
+ * SearchableEntityManager#optimize 		(how the heck do I test this??)
+ 
+ * Transaction#execute  (need to find a way to create a transact conflict)
+ 
+ * ValueGenerator (long type)
+ * ValueGenerator (string type)
+ 
+ ==DDLAction Rendering==
+ 
+ * DROP
+ * ALTER_ADD_COLUMN
+ * ALTER_ADD_COLUMN
+ * ALTER_CHANGE_COLUMN
+ * ALTER_DROP_COLUMN
+ * ALTER_ADD_KEY
+ * ALTER_DROP_KEY
+ * DROP_INDEX
+ 
+ * @OnUpdate
