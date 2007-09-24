@@ -55,6 +55,15 @@ public class ClassType extends DatabaseType<Class<?>> {
 			return null;
 		}
 	}
+	
+	@Override
+	public String valueToString(Object value) {
+		if (value instanceof Class) {
+			return ((Class<?>) value).getCanonicalName();
+		}
+		
+		return super.valueToString(value);
+	}
 
 	@Override
 	public String getDefaultName() {

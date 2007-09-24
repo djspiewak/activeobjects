@@ -157,4 +157,26 @@ public class DatabaseTypeTest extends DataTest {
 		assertEquals(cal, new TimestampType().defaultParseValue(dateFormatter.format(cal.getTime())));
 		assertEquals(cal.getTime(), new TimestampDateType().defaultParseValue(dateFormatter.format(cal.getTime())));
 	}
+	
+	@Test
+	public void testValueToString() throws MalformedURLException {
+		assertEquals("123", new IntegerType().valueToString(123));
+		assertEquals("123.456", new DoubleType().valueToString(123.456));
+		assertEquals("123.456", new FloatType().valueToString(123.456));
+		assertEquals("My test value", new VarcharType().valueToString("My test value"));
+		assertEquals("http://www.google.com", new URLType().valueToString(new URL("http://www.google.com")));
+		assertEquals("false", new BooleanType().valueToString(false));
+		assertEquals("java.lang.String", new ClassType().valueToString(String.class));
+		assertEquals("123", new TinyIntType().valueToString(123));
+		assertEquals("c", new CharType().valueToString('c'));
+		
+
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		
+		assertEquals(dateFormatter.format(cal.getTime()), new TimestampType().valueToString(cal));
+		assertEquals(dateFormatter.format(cal.getTime()), new TimestampDateType().valueToString(cal.getTime()));
+	}
 }
