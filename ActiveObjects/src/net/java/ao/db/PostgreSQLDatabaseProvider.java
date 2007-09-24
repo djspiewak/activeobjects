@@ -328,7 +328,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			Object value = params[i].getValue();
 			
 			if (value instanceof RawEntity) {
-				value = Common.getPrimaryKeyValue((RawEntity) value);
+				value = Common.getPrimaryKeyValue((RawEntity<Object>) value);
 			}
 			
 			stmt.setObject(i + 1, value);

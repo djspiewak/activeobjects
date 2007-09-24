@@ -48,10 +48,10 @@ import net.java.ao.types.TypeManager;
 /**
  * @author Daniel Spiewak
  */
-class EntityProxy<T extends RawEntity> implements InvocationHandler {
+class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	private static final Pattern WHERE_PATTERN = Pattern.compile("([\\d\\w]+)\\s*(=|>|<|LIKE|IS)");
 	
-	private Object key;
+	private K key;
 	private Method pkAccessor;
 	private String pkFieldName;
 	
@@ -68,12 +68,12 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 	private final Set<String> dirtyFields;
 	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
 	
-	private final Set<Class<? extends RawEntity>> toFlushRelations = new HashSet<Class<? extends RawEntity>>();
+	private final Set<Class<? extends RawEntity<?>>> toFlushRelations = new HashSet<Class<? extends RawEntity<?>>>();
 	private final ReadWriteLock toFlushLock = new ReentrantReadWriteLock();
 
 	private List<PropertyChangeListener> listeners;
 
-	public EntityProxy(EntityManager manager, Class<T> type, Object key) {
+	public EntityProxy(EntityManager manager, Class<T> type, K key) {
 		this.key = key;
 		this.type = type;
 		this.manager = manager;
@@ -88,6 +88,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		listeners = new LinkedList<PropertyChangeListener>();
 	}
 
+	@SuppressWarnings("unchecked")
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		if (method.getName().equals("getEntityType")) {
 			return type;
@@ -108,7 +109,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		if (method.getName().equals(pkAccessor.getName())) {
 			return getKey();
 		} else if (method.getName().equals("save")) {
-			save((RawEntity) proxy);
+			save((RawEntity<K>) proxy);
 
 			return Void.TYPE;
 		} else if (method.getName().equals("getTableName")) {
@@ -122,7 +123,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		} else if (method.getName().equals("hashCode")) {
 			return hashCodeImpl();
 		} else if (method.getName().equals("equals")) {
-			return equalsImpl((RawEntity) proxy, args[0]);
+			return equalsImpl((RawEntity<K>) proxy, args[0]);
 		} else if (method.getName().equals("toString")) {
 			return toStringImpl();
 		}
@@ -142,18 +143,18 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 			return invokeGetter(getKey(), tableName, accessorAnnotation.value(), method.getReturnType(), onUpdateAnnotation != null);
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), RawEntity.class)) {
-			Class<? extends RawEntity> type = (Class<? extends RawEntity>) method.getReturnType().getComponentType();
+			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType().getComponentType();
 
-			return retrieveRelations((RawEntity) proxy, new String[0], 
+			return retrieveRelations((RawEntity<K>) proxy, new String[0], 
 					new String[] { Common.getPrimaryKeyField(type, getManager().getFieldNameConverter()) }, 
 					(Class<? extends RawEntity>) type, oneToManyAnnotation.where());
 		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), RawEntity.class)) {
-			Class<? extends RawEntity> throughType = manyToManyAnnotation.value();
-			Class<? extends RawEntity> type = (Class<? extends RawEntity>) method.getReturnType().getComponentType();
+			Class<? extends RawEntity<?>> throughType = (Class<? extends RawEntity<?>>) manyToManyAnnotation.value();
+			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType().getComponentType();
 
-			return retrieveRelations((RawEntity) proxy, null, 
-					Common.getMappingFields(throughType, type), throughType, type, manyToManyAnnotation.where());
+			return retrieveRelations((RawEntity<K>) proxy, null, 
+					Common.getMappingFields(throughType, type), throughType, (Class<? extends RawEntity>) type, manyToManyAnnotation.where());
 		} else if (Common.isAccessor(method)) {
 			return invokeGetter(getKey(), tableName, getManager().getFieldNameConverter().getName(type, method), 
 					method.getReturnType(), onUpdateAnnotation == null);
@@ -166,7 +167,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		return null;
 	}
 
-	public Object getKey() {
+	public K getKey() {
 		return key;
 	}
 
@@ -263,13 +264,13 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		return (key.hashCode() + type.hashCode()) % (2 << 15);
 	}
 
-	public boolean equalsImpl(RawEntity proxy, Object obj) {
+	public boolean equalsImpl(RawEntity<K> proxy, Object obj) {
 		if (proxy == obj) {
 			return true;
 		}
 
 		if (obj instanceof RawEntity) {
-			RawEntity entity = (RawEntity) obj;
+			RawEntity<?> entity = (RawEntity<?>) obj;
 
 			return Common.getPrimaryKeyValue(entity).equals(key) && entity.getTableName().equals(proxy.getTableName());
 		}
@@ -287,7 +288,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		}
 
 		if (obj instanceof EntityProxy) {
-			EntityProxy<?> proxy = (EntityProxy<?>) obj;
+			EntityProxy<?, ?> proxy = (EntityProxy<?, ?>) obj;
 
 			if (proxy.type.equals(type) && proxy.key == key) {
 				return true;
@@ -351,7 +352,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		conn.close();
 	}
 
-	private <V> V invokeGetter(Object key, String table, String name, Class<V> type, boolean shouldCache) throws Throwable {
+	private <V> V invokeGetter(K key, String table, String name, Class<V> type, boolean shouldCache) throws Throwable {
 		V back = null;
 
 		if (shouldCache) {
@@ -386,7 +387,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 				if (instanceOf(value, type)) {
 					return (V) value;
 				} else if (Common.interfaceInheritsFrom(type, RawEntity.class) && value instanceof Integer) {
-					value = getManager().get((Class<? extends RawEntity>) type, (Integer) value);
+					value = getManager().get((Class<? extends RawEntity<Object>>) type, value);
 
 					cache.put(name.toLowerCase(), value);
 					return (V) value;
@@ -445,7 +446,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		if (value instanceof RawEntity) {
 			toFlushLock.writeLock().lock();
 			try {
-				toFlushRelations.add(((RawEntity) value).getEntityType());
+				toFlushRelations.add(((RawEntity<?>) value).getEntityType());
 			} finally {
 				toFlushLock.writeLock().unlock();
 			}
@@ -481,15 +482,15 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		}
 	}
 
-	private <V extends RawEntity> V[] retrieveRelations(RawEntity entity, String[] inMapFields, String[] outMapFields, Class<V> type, String where) throws SQLException {
+	private <V extends RawEntity<K>> V[] retrieveRelations(RawEntity<K> entity, String[] inMapFields, String[] outMapFields, 
+			Class<V> type, String where) throws SQLException {
 		return retrieveRelations(entity, inMapFields, outMapFields, type, type, where);
 	}
 
-	@SuppressWarnings("unchecked")
-	private <V extends RawEntity> V[] retrieveRelations(RawEntity entity, String[] inMapFields, String[] outMapFields, 
-			Class<? extends RawEntity> type, Class<V> finalType, String where) throws SQLException {
+	private <V extends RawEntity<K>> V[] retrieveRelations(RawEntity<K> entity, String[] inMapFields, String[] outMapFields, 
+			Class<? extends RawEntity<?>> type, Class<V> finalType, String where) throws SQLException {
 		if (inMapFields == null || inMapFields.length == 0) {
-			inMapFields = Common.getMappingFields(type, this.type);
+			inMapFields = Common.getMappingFields((Class<? extends RawEntity<?>>) type, this.type);
 		}
 		String[] fields = getFields(Common.getPrimaryKeyField(finalType, getManager().getFieldNameConverter()), 
 				inMapFields, outMapFields, where);
@@ -500,7 +501,7 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 		}
 		
 		List<V> back = new ArrayList<V>();
-		List<RawEntity> throughValues = new ArrayList<RawEntity>();
+		List<RawEntity<?>> throughValues = new ArrayList<RawEntity<?>>();
 		
 		String table = getManager().getTableNameConverter().getName(type);
 		boolean oneToMany = type.equals(finalType);
@@ -606,24 +607,25 @@ class EntityProxy<T extends RawEntity> implements InvocationHandler {
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
 			
-			DatabaseType dbType = TypeManager.getInstance().getType(key.getClass());
+			DatabaseType<K> dbType = (DatabaseType<K>) TypeManager.getInstance().getType(key.getClass());
 			for (int i = 0; i < numParams; i++) {
 				dbType.putToDatabase(i + 1, stmt, key);
 			}
 
 			dbType = Common.getPrimaryKeyType(finalType);
-			DatabaseType throughDBType = Common.getPrimaryKeyType(type);
+			DatabaseType<Object> throughDBType = Common.getPrimaryKeyType((Class<? extends RawEntity<Object>>) type);
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				Object returnValue = dbType.convert(getManager(), res, type, returnField);
+				K returnValue = dbType.convert(getManager(), res, (Class<? extends K>) type, returnField);
 				
 				if (finalType.equals(this.type) && returnValue.equals(key)) {
 					continue;
 				}
 				
 				if (throughField != null) {
-					throughValues.add(getManager().get(type, throughDBType.convert(getManager(), res, type, throughField)));
+					throughValues.add(getManager().get((Class<? extends RawEntity<Object>>) type, 
+							throughDBType.convert(getManager(), res, type, throughField)));
 				}
 
 				V returnValueEntity = getManager().get(finalType, returnValue);

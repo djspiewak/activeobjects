@@ -38,7 +38,7 @@ final class MethodFinder {
 		cacheLock = new ReentrantReadWriteLock();
 	}
 	
-	public Method[] findAnnotation(Class<? extends Annotation> annotation, Class<? extends RawEntity> clazz) {
+	public Method[] findAnnotation(Class<? extends Annotation> annotation, Class<? extends RawEntity<?>> clazz) {
 		CacheKey key = new CacheKey(annotation, clazz);
 		
 		cacheLock.writeLock().lock();
@@ -73,9 +73,9 @@ final class MethodFinder {
 	
 	private static final class CacheKey {
 		private Class<? extends Annotation> annotation;
-		private Class<? extends RawEntity> type;
+		private Class<? extends RawEntity<?>> type;
 		
-		public CacheKey(Class<? extends Annotation> annotation, Class<? extends RawEntity> type) {
+		public CacheKey(Class<? extends Annotation> annotation, Class<? extends RawEntity<?>> type) {
 			this.annotation = annotation;
 			this.type = type;
 		}
@@ -88,11 +88,11 @@ final class MethodFinder {
 			this.annotation = annotation;
 		}
 
-		public Class<? extends RawEntity> getType() {
+		public Class<? extends RawEntity<?>> getType() {
 			return type;
 		}
 
-		public void setType(Class<? extends RawEntity> type) {
+		public void setType(Class<? extends RawEntity<?>> type) {
 			this.type = type;
 		}
 		

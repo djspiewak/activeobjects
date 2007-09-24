@@ -22,7 +22,7 @@ import net.java.ao.schema.PrimaryKey;
 /**
  * @author Daniel Spiewak
  */
-public interface Entity extends RawEntity {
+public interface Entity extends RawEntity<Integer> {
 	
 	@PrimaryKey
 	@AutoIncrement

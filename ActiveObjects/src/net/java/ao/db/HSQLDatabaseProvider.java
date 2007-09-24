@@ -92,7 +92,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 			Object value = params[i].getValue();
 			
 			if (value instanceof RawEntity) {
-				value = Common.getPrimaryKeyValue((RawEntity) value);
+				value = Common.getPrimaryKeyValue((RawEntity<Object>) value);
 			}
 			
 			if (params[i].getField().equalsIgnoreCase(pkField)) {

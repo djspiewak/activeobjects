@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface ManyToMany {
 	
-	Class<? extends RawEntity> value();
+	Class<? extends RawEntity<?>> value();
 
 	/**
 	 * <p>A String clause allowing developer-specified additional

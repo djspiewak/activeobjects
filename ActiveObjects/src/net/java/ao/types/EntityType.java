@@ -27,10 +27,10 @@ import net.java.ao.RawEntity;
 /**
  * @author Daniel Spiewak
  */
-class EntityType extends DatabaseType<RawEntity> {
-	private DatabaseType<?> primaryKeyType;
+class EntityType<T> extends DatabaseType<RawEntity<T>> {
+	private DatabaseType<T> primaryKeyType;
 	
-	public EntityType(Class<? extends RawEntity> type) {
+	public EntityType(Class<? extends RawEntity<T>> type) {
 		super(Types.INTEGER, -1, RawEntity.class);
 		
 		primaryKeyType = Common.getPrimaryKeyType(type);
@@ -49,10 +49,9 @@ class EntityType extends DatabaseType<RawEntity> {
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
-	public RawEntity convert(EntityManager manager, ResultSet res, Class<? extends RawEntity> type, String field) throws SQLException {
-		DatabaseType dbType = Common.getPrimaryKeyType(type);
-		Class pkType = Common.getPrimaryKeyClassType(type);
+	public RawEntity<T> convert(EntityManager manager, ResultSet res, Class<? extends RawEntity<T>> type, String field) throws SQLException {
+		DatabaseType<T> dbType = Common.getPrimaryKeyType(type);
+		Class<T> pkType = Common.getPrimaryKeyClassType(type);
 		
 		return manager.get(type, dbType.convert(manager, res, pkType, field));
 	}
@@ -76,7 +75,7 @@ class EntityType extends DatabaseType<RawEntity> {
 	public boolean equals(Object obj) {
 		if (super.equals(obj)) {
 			if (obj instanceof EntityType) {
-				if (((EntityType) obj).primaryKeyType.equals(primaryKeyType)) {
+				if (((EntityType<?>) obj).primaryKeyType.equals(primaryKeyType)) {
 					return true;
 				}
 			} else {

@@ -20,6 +20,7 @@ import net.java.ao.schema.Ignore;
 /**
  * @author Daniel Spiewak
  */
+@SuppressWarnings("unchecked")
 @Implementation(RelatedEntityImpl.class)
 public interface RelatedEntity<T extends RelatedEntity<T>> extends RawEntity {
 	

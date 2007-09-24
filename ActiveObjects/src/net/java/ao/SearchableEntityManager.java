@@ -66,15 +66,15 @@ public class SearchableEntityManager extends EntityManager {
 	}
 
 	@Override
-	protected <T extends RawEntity> T getAndInstantiate(Class<T> type, Object key) {
+	protected <T extends RawEntity<K>, K> T getAndInstantiate(Class<T> type, K key) {
 		T back = super.getAndInstantiate(type, key);
-		back.addPropertyChangeListener(new IndexAppender<T>(back));
+		back.addPropertyChangeListener(new IndexAppender<T, K>(back));
 
 		return back;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends RawEntity> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
+	public <T extends RawEntity<K>, K> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
 		String table = getTableNameConverter().getName(type);
 		List<String> indexFields = Common.getSearchableFields(this, type);
 		String[] searchFields = new String[indexFields.size()];
@@ -90,10 +90,10 @@ public class SearchableEntityManager extends EntityManager {
 		org.apache.lucene.search.Query query = parser.parse(strQuery);
 
 		Hits hits = searcher.search(query);
-		Object[] keys = new Object[hits.length()];
+		K[] keys = (K[]) new Object[hits.length()];
 		
 		for (int i = 0; i < hits.length(); i++) {
-			keys[i] = dbType.defaultParseValue(hits.doc(i).get(table + "." + primaryKeyField));
+			keys[i] = (K) dbType.defaultParseValue(hits.doc(i).get(table + "." + primaryKeyField));
 		}
 		searcher.close();
 
@@ -101,13 +101,13 @@ public class SearchableEntityManager extends EntityManager {
 	}
 
 	@Override
-	public void delete(RawEntity... entities) throws SQLException {
+	public void delete(RawEntity<?>... entities) throws SQLException {
 		super.delete(entities);
 
 		IndexReader reader = null;
 		try {
 			reader = IndexReader.open(indexDir);
-			for (RawEntity entity : entities) {
+			for (RawEntity<?> entity : entities) {
 				removeFromIndexImpl(entity, reader);
 			}
 		} catch (IOException e) {
@@ -120,7 +120,7 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
-	public void addToIndex(RawEntity entity) throws IOException {
+	public void addToIndex(RawEntity<?> entity) throws IOException {
 		String table = getTableNameConverter().getName(entity.getEntityType());
 
 		IndexWriter writer = null;
@@ -181,7 +181,7 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
-	private void removeFromIndexImpl(RawEntity entity, IndexReader reader) throws IOException {
+	private void removeFromIndexImpl(RawEntity<?> entity, IndexReader reader) throws IOException {
 		reader.deleteDocuments(new Term(getTableNameConverter().getName(entity.getEntityType()) + "." 
 				+ Common.getPrimaryKeyField(entity.getEntityType(), getFieldNameConverter()), 
 				Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity))));
@@ -218,7 +218,7 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
-	private class IndexAppender<T extends RawEntity> implements PropertyChangeListener {
+	private class IndexAppender<T extends RawEntity<K>, K> implements PropertyChangeListener {
 		private List<String> indexFields;
 
 		private Document doc;

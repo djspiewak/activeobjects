@@ -23,5 +23,5 @@ import net.java.ao.RawEntity;
  * @author Daniel Spiewak
  */
 public interface FieldNameConverter {
-	public String getName(Class<? extends RawEntity> clazz, Method method);
+	public String getName(Class<? extends RawEntity<?>> clazz, Method method);
 }

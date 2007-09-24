@@ -416,7 +416,7 @@ public abstract class DatabaseProvider {
 		StringBuilder sql = new StringBuilder();
 
 		if (query.getJoins().size() > 0) {
-			for (Class<? extends RawEntity> join : query.getJoins().keySet()) {
+			for (Class<? extends RawEntity<?>> join : query.getJoins().keySet()) {
 				sql.append(" JOIN ");
 				sql.append(converter.getName(join));
 				
@@ -914,7 +914,7 @@ public abstract class DatabaseProvider {
 			Object value = params[i].getValue();
 			
 			if (value instanceof RawEntity) {
-				value = Common.getPrimaryKeyValue((RawEntity) value);
+				value = Common.getPrimaryKeyValue((RawEntity<?>) value);
 			}
 			
 			stmt.setObject(i + 1, value);

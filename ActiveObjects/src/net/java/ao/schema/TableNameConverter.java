@@ -21,5 +21,5 @@ import net.java.ao.RawEntity;
  * @author Daniel Spiewak
  */
 public interface TableNameConverter {
-	public String getName(Class<? extends RawEntity> clazz);
+	public String getName(Class<? extends RawEntity<?>> clazz);
 }

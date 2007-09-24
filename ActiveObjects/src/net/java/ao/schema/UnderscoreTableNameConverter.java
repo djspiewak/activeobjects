@@ -35,7 +35,7 @@ public class UnderscoreTableNameConverter extends AbstractTableNameConverter {
 	}
 
     @Override
-    protected String convertName(Class<? extends RawEntity> entity) {
+    protected String convertName(Class<? extends RawEntity<?>> entity) {
     	Matcher matcher = WORD_PATTERN.matcher(Common.convertSimpleClassName(entity.getCanonicalName()));
         String back = matcher.replaceAll("$1_$2");
 		

@@ -74,7 +74,7 @@ public class TypeManager {
 		DatabaseType<T> back = null;
 		
 		if (javaType.isInterface() && Common.interfaceInheritsFrom(javaType, RawEntity.class)) {
-			return (DatabaseType<T>) new EntityType((Class<? extends RawEntity>) javaType);
+			return (DatabaseType<T>) new EntityType<Object>((Class<? extends RawEntity<Object>>) javaType);
 		}
 		
 		classIndexLock.writeLock().lock();

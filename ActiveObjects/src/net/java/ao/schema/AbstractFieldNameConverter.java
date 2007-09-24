@@ -31,7 +31,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	
 	protected AbstractFieldNameConverter() {}
 
-	public String getName(Class<? extends RawEntity> clazz, Method method) {
+	public String getName(Class<? extends RawEntity<?>> clazz, Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		PrimaryKey primaryKeyAnnotation = method.getAnnotation(PrimaryKey.class);

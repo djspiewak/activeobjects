@@ -30,11 +30,11 @@ public abstract class RSCachingStrategy {
 	protected RSCachingStrategy() {
 	}
 	
-	public abstract void cache(ResultSet res, EntityProxy<?> proxy) throws SQLException;
+	public abstract void cache(ResultSet res, EntityProxy<?, ?> proxy) throws SQLException;
 	
 	private static class AggressiveStrategy extends RSCachingStrategy {
 		@Override
-		public void cache(ResultSet res, EntityProxy<?> proxy) throws SQLException {
+		public void cache(ResultSet res, EntityProxy<?, ?> proxy) throws SQLException {
 			ResultSetMetaData md = res.getMetaData();
 			for (int i = 0; i < md.getColumnCount(); i++) {
 				proxy.addToCache(md.getColumnName(i + 1), res.getObject(i + 1));
@@ -44,14 +44,14 @@ public abstract class RSCachingStrategy {
 	
 	private static class IterativeStrategy extends RSCachingStrategy {
 		@Override
-		public void cache(ResultSet res, EntityProxy<?> proxy) {
+		public void cache(ResultSet res, EntityProxy<?, ?> proxy) {
 			throw new UnsupportedOperationException();
 		}
 	}
 	
 	private static class NullStrategy extends RSCachingStrategy {
 		@Override
-		public void cache(ResultSet res, EntityProxy<?> proxy) {
+		public void cache(ResultSet res, EntityProxy<?, ?> proxy) {
 		}
 	}
 }

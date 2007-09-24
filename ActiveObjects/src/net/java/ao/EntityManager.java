@@ -72,10 +72,10 @@ public class EntityManager {
 	
 	private DatabaseProvider provider;
 	
-	private Map<RawEntity, EntityProxy<? extends RawEntity>> proxies;
+	private Map<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>> proxies;
 	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
 	
-	private Map<CacheKey, RawEntity> cache;
+	private Map<CacheKey<?>, RawEntity<?>> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private TableNameConverter tableNameConverter;
@@ -121,11 +121,11 @@ public class EntityManager {
 		this.provider = provider;
 		
 		if (weaklyCache) {
-			proxies = new WeakHashMap<RawEntity, EntityProxy<? extends RawEntity>>();
-			cache = new WeakHashMap<CacheKey, RawEntity>();
+			proxies = new WeakHashMap<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>();
+			cache = new WeakHashMap<CacheKey<?>, RawEntity<?>>();
 		} else {
-			proxies = new SoftHashMap<RawEntity, EntityProxy<? extends RawEntity>>();
-			cache = new SoftHashMap<CacheKey, RawEntity>();
+			proxies = new SoftHashMap<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>();
+			cache = new SoftHashMap<CacheKey<?>, RawEntity<?>>();
 		}
 		
 		valGenCache = new HashMap<Class<? extends ValueGenerator<?>>, ValueGenerator<?>>();
@@ -154,7 +154,7 @@ public class EntityManager {
 	 * 
 	 *  @see net.java.ao.schema.SchemaGenerator#migrate(DatabaseProvider, TableNameConverter, Class...)
 	 */
-	public void migrate(Class<? extends RawEntity>... entities) throws SQLException {
+	public void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException {
 		tableNameConverterLock.readLock().lock();
 		try {
 			SchemaGenerator.migrate(provider, tableNameConverter, fieldNameConverter, entities);
@@ -166,7 +166,7 @@ public class EntityManager {
 	public void flushAll() {
 		proxyLock.readLock().lock();
 		try {
-			for (EntityProxy<? extends RawEntity> proxy : proxies.values()) {
+			for (EntityProxy<? extends RawEntity<?>, ?> proxy : proxies.values()) {
 				proxy.flushCache();
 			}
 		} finally {
@@ -174,10 +174,10 @@ public class EntityManager {
 		}
 	}
 	
-	public void flush(RawEntity... entities) {
+	public void flush(RawEntity<?>... entities) {
 		proxyLock.readLock().lock();
 		try {
-			for (RawEntity entity : entities) {
+			for (RawEntity<?> entity : entities) {
 				proxies.get(entity).flushCache();
 			}
 		} finally {
@@ -199,14 +199,14 @@ public class EntityManager {
 	 * course is that one could conceivably maintain entities which reference
 	 * non-existant database rows.</p>
 	 */
-	public <T extends RawEntity, K> T[] get(Class<T> type, K... keys) {
+	public <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys) {
 		T[] back = (T[]) Array.newInstance(type, keys.length);
 		int index = 0;
 		
-		for (Object key : keys) {
+		for (K key : keys) {
 			cacheLock.writeLock().lock();
 			try {
-				T entity = (T) cache.get(new CacheKey(key, type));
+				T entity = (T) cache.get(new CacheKey<K>(key, type));
 				if (entity != null) {
 					back[index++] = entity;
 					continue;
@@ -222,8 +222,8 @@ public class EntityManager {
 	}
 	
 	// assumes cache doesn't contain object
-	protected <T extends RawEntity> T getAndInstantiate(Class<T> type, Object key) {
-		EntityProxy<T> proxy = new EntityProxy<T>(this, type, key);
+	protected <T extends RawEntity<K>, K> T getAndInstantiate(Class<T> type, K key) {
+		EntityProxy<T, K> proxy = new EntityProxy<T, K>(this, type, key);
 		
 		T entity = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type}, proxy);
 
@@ -234,7 +234,7 @@ public class EntityManager {
 			proxyLock.writeLock().unlock();
 		}
 		
-		cache.put(new CacheKey(key, type), entity);
+		cache.put(new CacheKey<K>(key, type), entity);
 		return entity;
 	}
 	
@@ -246,8 +246,8 @@ public class EntityManager {
 	 * 
 	 * @see #get(Class, int...)
 	 */
-	public <T extends RawEntity> T get(Class<T> type, Object key) {
-		return get(type, new Object[] {key})[0];
+	public <T extends RawEntity<K>, K> T get(Class<T> type, K key) {
+		return get(type, (K[]) new Object[] {key})[0];
 	}
 	
 	/**
@@ -269,7 +269,7 @@ public class EntityManager {
 	 * efficient way to create large numbers of entities, however one should still
 	 * be aware of the performance implications.</p>
 	 */
-	public <T extends RawEntity> T create(Class<T> type, DBParam... params) throws SQLException {
+	public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
 		String table = null;
 		
@@ -285,7 +285,7 @@ public class EntityManager {
 		
 		fieldNameConverterLock.readLock().lock();
 		try {
-			for (Method method : MethodFinder.getInstance().findAnnotation(Generator.class, type)) {
+			for (Method method : MethodFinder.getInstance().findAnnotation(Generator.class, (Class<? extends RawEntity<?>>) type)) {
 				Generator genAnno = method.getAnnotation(Generator.class);
 				String field = fieldNameConverter.getName(type, method);
 				ValueGenerator<?> generator;
@@ -317,7 +317,7 @@ public class EntityManager {
 		try {
 			relationsCache.remove(type);
 			back = get(type, provider.insertReturningKeys(conn, Common.getPrimaryKeyClassType(type), 
-					Common.getPrimaryKeyField(type, getFieldNameConverter()), table, params));
+					Common.getPrimaryKeyField((Class<? extends RawEntity<?>>) type, getFieldNameConverter()), table, params));
 		} finally {
 			conn.close();
 		}
@@ -346,18 +346,19 @@ public class EntityManager {
 	 * into types.  However, the execution time scales linearly for each entity of
 	 * unique type.</p>
 	 */
-	public void delete(RawEntity... entities) throws SQLException {
+	public void delete(RawEntity<?>... entities) throws SQLException {
 		if (entities.length == 0) {
 			return;
 		}
 		
-		Map<Class<? extends RawEntity>, List<RawEntity>> organizedEntities = new HashMap<Class<? extends RawEntity>, List<RawEntity>>();
+		Map<Class<? extends RawEntity<?>>, List<RawEntity<?>>> organizedEntities = 
+			new HashMap<Class<? extends RawEntity<?>>, List<RawEntity<?>>>();
 		
-		for (RawEntity entity : entities) {
-			Class<? extends RawEntity> type = getProxyForEntity(entity).getType(); 
+		for (RawEntity<?> entity : entities) {
+			Class<? extends RawEntity<?>> type = getProxyForEntity(entity).getType(); 
 			
 			if (!organizedEntities.containsKey(type)) {
-				organizedEntities.put(type, new LinkedList<RawEntity>());
+				organizedEntities.put(type, new LinkedList<RawEntity<?>>());
 			}
 			organizedEntities.get(type).add(entity);
 		}
@@ -366,8 +367,8 @@ public class EntityManager {
 		try {
 			Connection conn = getProvider().getConnection();
 			try {
-				for (Class<? extends RawEntity> type : organizedEntities.keySet()) {
-					List<RawEntity> entityList = organizedEntities.get(type);
+				for (Class<? extends RawEntity<?>> type : organizedEntities.keySet()) {
+					List<RawEntity<?>> entityList = organizedEntities.get(type);
 					
 					StringBuilder sql = new StringBuilder("DELETE FROM ");
 					
@@ -389,8 +390,8 @@ public class EntityManager {
 					PreparedStatement stmt = conn.prepareStatement(sql.toString());
 					
 					int index = 1;
-					for (RawEntity entity : entityList) {
-						TypeManager.getInstance().getType((Class<RawEntity>) entity.getEntityType()).putToDatabase(index++, stmt, entity);
+					for (RawEntity<?> entity : entityList) {
+						TypeManager.getInstance().getType((Class<RawEntity<?>>) entity.getEntityType()).putToDatabase(index++, stmt, entity);
 					}
 					
 					relationsCache.remove(type);
@@ -401,13 +402,14 @@ public class EntityManager {
 				conn.close();
 			}
 			
-			for (RawEntity entity : entities) {
-				cache.remove(new CacheKey(Common.getPrimaryKeyValue(entity), entity.getEntityType()));
+			for (RawEntity<?> entity : entities) {
+				cache.remove(new CacheKey<Object>(Common.getPrimaryKeyValue(entity), 
+						(Class<? extends RawEntity<Object>>) entity.getEntityType()));
 			}
 			
 			proxyLock.writeLock().lock();
 			try {
-				for (RawEntity entity : entities) {
+				for (RawEntity<?> entity : entities) {
 					proxies.remove(entity);
 				}
 			} finally {
@@ -422,7 +424,7 @@ public class EntityManager {
 	 * Returns all entities of the given type.  This actually peers the call to
 	 * the {@link #find(Class, Query)} method.
 	 */
-	public <T extends RawEntity> T[] find(Class<T> type) throws SQLException {
+	public <T extends RawEntity<K>, K> T[] find(Class<T> type) throws SQLException {
 		return find(type, Query.select());
 	}
 	
@@ -439,11 +441,11 @@ public class EntityManager {
 	 * <p>This actually peers the call to the {@link #find(Class, Query)}
 	 * method, properly parameterizing the {@link Query} object.</p>
 	 */
-	public <T extends RawEntity> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
+	public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
 		return find(type, Query.select().where(criteria, parameters));
 	}
 	
-	public <T extends RawEntity> T[] find(Class<T> type, Query query) throws SQLException {
+	public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query) throws SQLException {
 		String selectField = Common.getPrimaryKeyField(type, getFieldNameConverter());
 		query.resolveFields(type, getFieldNameConverter());
 		
@@ -464,7 +466,7 @@ public class EntityManager {
 	 * the result set and extracts the specified field, mapping an <code>Entity</code>
 	 * of the given type to each row.  This array of entities is returned.</p>
 	 */
-	public <T extends RawEntity> T[] find(Class<T> type, String field, Query query) throws SQLException {
+	public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		
 		query.resolveFields(type, getFieldNameConverter());
@@ -545,7 +547,7 @@ public class EntityManager {
 	 * a PreparedStatement with the given parameters. 
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends RawEntity> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters) throws SQLException {
+	public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters) throws SQLException {
 		List<T> back = new ArrayList<T>();
 		
 		Connection conn = getProvider().getConnection();
@@ -558,7 +560,7 @@ public class EntityManager {
 				Class javaType = parameters[i].getClass();
 				
 				if (parameters[i] instanceof RawEntity) {
-					javaType = ((RawEntity) parameters[i]).getEntityType();
+					javaType = ((RawEntity<?>) parameters[i]).getEntityType();
 				}
 				
 				manager.getType(javaType).putToDatabase(i + 1, stmt, parameters[i]);
@@ -566,7 +568,7 @@ public class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, Common.getPrimaryKeyType(type).convert(this, res, type, keyField)));
+				back.add(get(type, Common.getPrimaryKeyType(type).convert(this, res, (Class<? extends K>) type, keyField)));
 			}
 			res.close();
 			stmt.close();
@@ -582,7 +584,7 @@ public class EntityManager {
 	 * a delegate for the <code>count(Class&lt;? extends Entity&gt;, Query)</code>
 	 * method.
 	 */
-	public int count(Class<? extends RawEntity> type) throws SQLException {
+	public <K> int count(Class<? extends RawEntity<K>> type) throws SQLException {
 		return count(type, Query.select());
 	}
 	
@@ -592,7 +594,7 @@ public class EntityManager {
 	 * 
 	 * <code>count(type, Query.select().where(criteria, parameters))</code>
 	 */
-	public int count(Class<? extends RawEntity> type, String criteria, Object... parameters) throws SQLException {
+	public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters) throws SQLException {
 		return count(type, Query.select().where(criteria, parameters));
 	}
 	
@@ -601,7 +603,7 @@ public class EntityManager {
 	 * instance.  The SQL runs as a <code>SELECT COUNT(*)</code> to
 	 * ensure maximum performance.
 	 */
-	public int count(Class<? extends RawEntity> type, Query query) throws SQLException {
+	public <K> int count(Class<? extends RawEntity<K>> type, Query query) throws SQLException {
 		int back = -1;
 		
 		Connection conn = getProvider().getConnection();
@@ -708,10 +710,10 @@ public class EntityManager {
 		return provider;
 	}
 
-	protected <T extends RawEntity> EntityProxy<T> getProxyForEntity(T entity) {
+	protected <T extends RawEntity<K>, K> EntityProxy<T, K> getProxyForEntity(T entity) {
 		proxyLock.readLock().lock();
 		try {
-			return (EntityProxy<T>) proxies.get(entity);
+			return (EntityProxy<T, K>) proxies.get(entity);
 		} finally {
 			proxyLock.readLock().unlock();
 		}
@@ -721,11 +723,11 @@ public class EntityManager {
 		return relationsCache;
 	}
 
-	private static class CacheKey {
-		private Object key;
-		private Class<? extends RawEntity> type;
+	private static class CacheKey<T> {
+		private T key;
+		private Class<? extends RawEntity<?>> type;
 		
-		public CacheKey(Object key, Class<? extends RawEntity> type) {
+		public CacheKey(T key, Class<? extends RawEntity<T>> type) {
 			this.key = key;
 			this.type = type;
 		}
@@ -740,7 +742,7 @@ public class EntityManager {
 			}
 			
 			if (obj instanceof CacheKey) {
-				CacheKey key = (CacheKey) obj;
+				CacheKey<T> key = (CacheKey<T>) obj;
 				
 				if (key == key.key && type.equals(key.type)) {
 					return true;

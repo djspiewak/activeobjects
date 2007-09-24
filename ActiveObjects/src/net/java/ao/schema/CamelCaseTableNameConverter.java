@@ -24,7 +24,7 @@ import net.java.ao.RawEntity;
 public class CamelCaseTableNameConverter extends AbstractTableNameConverter {
 
 	@Override
-	protected String convertName(Class<? extends RawEntity> type) {
+	protected String convertName(Class<? extends RawEntity<?>> type) {
 		String tableName = Common.convertDowncaseName(Common.convertSimpleClassName(type.getCanonicalName()));
 		
 		if (type.getAnnotation(Table.class) != null) {

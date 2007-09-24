@@ -29,23 +29,23 @@ import net.java.ao.RawEntity;
  * @author Daniel Spiewak
  */
 public abstract class AbstractTableNameConverter implements TableNameConverter {
-	private Map<Class<? extends RawEntity>, String> classMappings;
+	private Map<Class<? extends RawEntity<?>>, String> classMappings;
 	
 	private List<String> patterns;
 	private Map<String, String> patternMappings;
 	
 	protected AbstractTableNameConverter() {
-		classMappings = new HashMap<Class<? extends RawEntity>, String>();
+		classMappings = new HashMap<Class<? extends RawEntity<?>>, String>();
 		
 		patterns = new LinkedList<String>();
 		patternMappings = new HashMap<String, String>();
 	}
 
-	public void addClassMapping(Class<? extends RawEntity> clazz, String name) {
+	public void addClassMapping(Class<? extends RawEntity<?>> clazz, String name) {
 		classMappings.put(clazz, name);
 	}
 
-	public void addClassMappings(Map<Class<? extends RawEntity>, String> mappings) {
+	public void addClassMappings(Map<Class<? extends RawEntity<?>>, String> mappings) {
 		classMappings.putAll(mappings);
 	}
 
@@ -63,7 +63,7 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 		patternMappings.putAll(mappings);
 	}
 
-	public String getName(Class<? extends RawEntity> entity) {
+	public String getName(Class<? extends RawEntity<?>> entity) {
 		Table tableAnnotation = entity.getAnnotation(Table.class);
 		if (tableAnnotation != null) {
 			return tableAnnotation.value();
@@ -104,5 +104,5 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 		return back;
 	}
 	
-	protected abstract String convertName(Class<? extends RawEntity> entity);
+	protected abstract String convertName(Class<? extends RawEntity<?>> entity);
 }

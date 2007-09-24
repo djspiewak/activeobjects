@@ -24,7 +24,7 @@ import net.java.ao.schema.PrimaryKey;
 /**
  * @author Daniel Spiewak
  */
-public interface Company extends RawEntity {
+public interface Company extends RawEntity<Long> {
 	
 	@PrimaryKey
 	@AutoIncrement

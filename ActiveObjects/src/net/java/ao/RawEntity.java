@@ -22,14 +22,14 @@ import net.java.ao.schema.Ignore;
 /**
  * @author Daniel Spiewak
  */
-public interface RawEntity {
+public interface RawEntity<T> {
 	@Ignore public void init();
 	
 	@Ignore public void save();
 
 	@Ignore public String getTableName();
 	@Ignore public EntityManager getEntityManager();
-	@Ignore public Class<? extends RawEntity> getEntityType();
+	@Ignore public Class<? extends RawEntity<T>> getEntityType();
 	
 	@Ignore public void addPropertyChangeListener(PropertyChangeListener listener);
 	@Ignore public void removePropertyChangeListener(PropertyChangeListener listener);

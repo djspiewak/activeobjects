@@ -79,7 +79,7 @@ public final class Common {
 //		return EntityNameManager.getInstance().getName(type);
 //	}
 	
-	public static String[] getMappingFields(Class<? extends RawEntity> from, Class<? extends RawEntity> to) { 
+	public static String[] getMappingFields(Class<? extends RawEntity<?>> from, Class<? extends RawEntity<?>> to) { 
 		Set<String> back = new LinkedHashSet<String>();
 		
 		for (Method method : from.getMethods()) {
@@ -172,7 +172,7 @@ public final class Common {
         return null;
     }
 
-	public static List<String> getSearchableFields(EntityManager manager, Class<? extends RawEntity> type) {
+	public static List<String> getSearchableFields(EntityManager manager, Class<? extends RawEntity<?>> type) {
 		List<String> back = new ArrayList<String>();
 		
 		for (Method m : type.getMethods()) {
@@ -192,7 +192,7 @@ public final class Common {
 		return back;
 	}
 	
-	public static Method getPrimaryKeyAccessor(Class<? extends RawEntity> type) {
+	public static Method getPrimaryKeyAccessor(Class<? extends RawEntity<?>> type) {
 		Method[] methods = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type);
 		
 		for (Method method : methods) {
@@ -204,29 +204,28 @@ public final class Common {
 		return null;
 	}
 	
-	public static String getPrimaryKeyField(Class<? extends RawEntity> type, FieldNameConverter converter) {
+	public static String getPrimaryKeyField(Class<? extends RawEntity<?>> type, FieldNameConverter converter) {
 		return converter.getName(type, MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type)[0]);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static DatabaseType getPrimaryKeyType(Class<? extends RawEntity> type) {
+	public static <K> DatabaseType<K> getPrimaryKeyType(Class<? extends RawEntity<K>> type) {
 		return TypeManager.getInstance().getType(getPrimaryKeyClassType(type));
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static Class getPrimaryKeyClassType(Class<? extends RawEntity> type) {
+	public static <K> Class<K> getPrimaryKeyClassType(Class<? extends RawEntity<K>> type) {
 		Method meth = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type)[0];
-		Class<?> keyType = meth.getReturnType();
+		
+		Class<K> keyType = (Class<K>) meth.getReturnType();
 		if (keyType.equals(Void.TYPE)) {
-			keyType = meth.getParameterTypes()[0];
+			keyType = (Class<K>) meth.getParameterTypes()[0];
 		}
 		
 		return keyType;
 	}
 	
-	public static Object getPrimaryKeyValue(RawEntity entity) {
+	public static <K> K getPrimaryKeyValue(RawEntity<K> entity) {
 		try {
-			return Common.getPrimaryKeyAccessor(entity.getEntityType()).invoke(entity);
+			return (K) Common.getPrimaryKeyAccessor(entity.getEntityType()).invoke(entity);
 		} catch (IllegalArgumentException e) {
 			return null;
 		} catch (IllegalAccessException e) {
