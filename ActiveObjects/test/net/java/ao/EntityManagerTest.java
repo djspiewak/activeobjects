@@ -41,7 +41,7 @@ public class EntityManagerTest extends DataTest {
 		
 		for (Company c : coolCompanies) {
 			boolean found = false;
-			for (int id : coolCompanyIDs) {
+			for (long id : coolCompanyIDs) {
 				if (c.getCompanyID() == id) {
 					found = true;
 					break;
@@ -59,7 +59,7 @@ public class EntityManagerTest extends DataTest {
 		
 		for (Company c : companies) {
 			boolean found = false;
-			for (int id : coolCompanyIDs) {
+			for (long id : coolCompanyIDs) {
 				if (c.getCompanyID() == id) {
 					found = true;
 					break;
@@ -120,7 +120,7 @@ public class EntityManagerTest extends DataTest {
 		
 		for (Company c : coolCompanies) {
 			boolean found = false;
-			for (int id : coolCompanyIDs) {
+			for (long id : coolCompanyIDs) {
 				if (c.getCompanyID() == id) {
 					found = true;
 					break;
@@ -138,7 +138,7 @@ public class EntityManagerTest extends DataTest {
 		
 		for (Company c : companies) {
 			boolean found = false;
-			for (int id : coolCompanyIDs) {
+			for (long id : coolCompanyIDs) {
 				if (c.getCompanyID() == id) {
 					found = true;
 					break;

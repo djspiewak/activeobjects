@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import net.java.ao.Common;
+import net.java.ao.RawEntity;
+
 /**
  * @author Daniel Spiewak
  */
@@ -61,8 +64,6 @@ public class TypeManager {
 		types.add(new DateDateType());
 		types.add(new RealType());
 		types.add(new URLType());
-		
-		types.add(new EntityType());
 	}
 	
 	public void addType(DatabaseType<?> type) {
@@ -71,6 +72,10 @@ public class TypeManager {
 	
 	public <T> DatabaseType<T> getType(Class<T> javaType) {
 		DatabaseType<T> back = null;
+		
+		if (javaType.isInterface() && Common.interfaceInheritsFrom(javaType, RawEntity.class)) {
+			return (DatabaseType<T>) new EntityType((Class<? extends RawEntity>) javaType);
+		}
 		
 		classIndexLock.writeLock().lock();
 		try {

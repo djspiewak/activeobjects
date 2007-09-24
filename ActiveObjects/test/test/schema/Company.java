@@ -29,7 +29,7 @@ public interface Company extends RawEntity {
 	@PrimaryKey
 	@AutoIncrement
 	@NotNull
-	public int getCompanyID();
+	public long getCompanyID();
 	
 	public String getName();
 	public void setName(String name);

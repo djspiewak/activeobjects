@@ -47,7 +47,7 @@ public class TypeManagerTest {
 		assertEquals(new DoubleType(), manager.getType(double.class));
 		assertEquals(new TimestampType(), manager.getType(Calendar.class));
 		assertEquals(new TimestampDateType(), manager.getType(Date.class));
-		assertEquals(new EntityType(), manager.getType(Person.class));
+		assertEquals(new EntityType(Person.class), manager.getType(Person.class));
 		assertEquals(new URLType(), manager.getType(URL.class));
 		
 		assertEquals(new ClassType(), manager.getType(Class.class));

@@ -42,13 +42,13 @@ public abstract class DataTest {
 	protected static EntityManager manager;
 	
 	protected static int personID;
-	protected static int companyID;
+	protected static long companyID;
 	
 	protected static int[] penIDs;
 	protected static int[] defenceIDs;
 	protected static int[] suitIDs;
 	
-	protected static int[] coolCompanyIDs;
+	protected static long[] coolCompanyIDs;
 
 	@BeforeClass
 	public static void setUp() throws SQLException {
@@ -57,7 +57,7 @@ public abstract class DataTest {
 		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
 		
 		Logger logger = Logger.getLogger("net.java.ao");
-		Logger l = logger;
+		Logger l = logger;	
 		
 		while ((l = l.getParent()) != null) {
 			for (Handler h : l.getHandlers()) {
@@ -91,7 +91,7 @@ public abstract class DataTest {
 			res.close();
 			
 			int index = 0;
-			coolCompanyIDs = new int[3];
+			coolCompanyIDs = new long[3];
 
 			stmt.setString(1, "Cool Company");
 			stmt.setBoolean(2, true);
@@ -132,7 +132,7 @@ public abstract class DataTest {
 					PreparedStatement.RETURN_GENERATED_KEYS);
 			
 			stmt.setString(1, "Daniel");
-			stmt.setInt(2, companyID);
+			stmt.setLong(2, companyID);
 			
 			stmt.executeUpdate();
 			
@@ -272,7 +272,7 @@ public abstract class DataTest {
 			manager.delete(manager.get(PersonLegalDefence.class, id));
 		}
 		
-		for (int id : coolCompanyIDs) {
+		for (long id : coolCompanyIDs) {
 			manager.delete(manager.get(Company.class, id));
 		}
 		

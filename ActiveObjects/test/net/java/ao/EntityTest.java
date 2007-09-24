@@ -104,7 +104,7 @@ public class EntityTest extends DataTest {
 		Connection conn = manager.getProvider().getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM company WHERE companyID = ?");
-			stmt.setInt(1, company.getCompanyID());
+			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
@@ -129,7 +129,7 @@ public class EntityTest extends DataTest {
 		conn = manager.getProvider().getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM company WHERE companyID = ?");
-			stmt.setInt(1, company.getCompanyID());
+			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
@@ -157,7 +157,7 @@ public class EntityTest extends DataTest {
 		Connection conn = manager.getProvider().getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT companyID FROM company WHERE companyID = ?");
-			stmt.setInt(1, company.getCompanyID());
+			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
 			if (!res.next()) {
@@ -183,7 +183,7 @@ public class EntityTest extends DataTest {
 		Connection conn = manager.getProvider().getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT companyID FROM company WHERE companyID = ?");
-			stmt.setInt(1, company.getCompanyID());
+			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {

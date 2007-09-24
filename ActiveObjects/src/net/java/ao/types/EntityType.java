@@ -28,9 +28,17 @@ import net.java.ao.RawEntity;
  * @author Daniel Spiewak
  */
 class EntityType extends DatabaseType<RawEntity> {
-
-	public EntityType() {
+	private DatabaseType<?> primaryKeyType;
+	
+	public EntityType(Class<? extends RawEntity> type) {
 		super(Types.INTEGER, -1, RawEntity.class);
+		
+		primaryKeyType = Common.getPrimaryKeyType(type);
+	}
+	
+	@Override
+	public int getType() {
+		return primaryKeyType.getType();
 	}
 	
 	@Override
@@ -51,11 +59,31 @@ class EntityType extends DatabaseType<RawEntity> {
 
 	@Override
 	public String getDefaultName() {
-		return "INTEGER";
+		return primaryKeyType.getDefaultName();
 	}
 
 	@Override
 	public Object defaultParseValue(String value) {
 		return Integer.parseInt(value);
+	}
+	
+	@Override
+	public int hashCode() {
+		return (super.hashCode() + primaryKeyType.hashCode()) % (2 << 10);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (super.equals(obj)) {
+			if (obj instanceof EntityType) {
+				if (((EntityType) obj).primaryKeyType.equals(primaryKeyType)) {
+					return true;
+				}
+			} else {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }
