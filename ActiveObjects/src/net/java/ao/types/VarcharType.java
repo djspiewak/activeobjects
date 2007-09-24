@@ -27,7 +27,7 @@ import net.java.ao.EntityManager;
 class VarcharType extends DatabaseType<String> {
 
 	public VarcharType() {
-		super(Types.VARCHAR, 45, String.class);
+		super(Types.VARCHAR, 255, String.class);
 	}
 	
 	public String getDefaultName() {
