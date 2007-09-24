@@ -730,7 +730,7 @@ public class EntityManager {
 		}
 		
 		public int hashCode() {
-			return (type.hashCode() + key.hashCode()) % (2 << 15);
+			return (type.hashCode() + (key != null ? key.hashCode() : 0)) % (2 << 15);
 		}
 		
 		public boolean equals(Object obj) {
