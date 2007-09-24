@@ -174,12 +174,24 @@ public final class SchemaReader {
 			DDLAction action = new DDLAction(DDLActionType.CREATE);
 			action.setTable(table);
 			actions.add(action);
+
+			for (DDLIndex index : table.getIndexes()) {
+				DDLAction indexAction = new DDLAction(DDLActionType.CREATE_INDEX);
+				indexAction.setIndex(index);
+				actions.add(indexAction);
+			}
 		}
 		
 		for (DDLTable table : dropTables) {
 			DDLAction action = new DDLAction(DDLActionType.DROP);
 			action.setTable(table);
 			actions.add(action);
+
+			for (DDLIndex index : table.getIndexes()) {
+				DDLAction indexAction = new DDLAction(DDLActionType.DROP_INDEX);
+				indexAction.setIndex(index);
+				actions.add(indexAction);
+			}
 		}
 		
 		for (DDLTable fromTable : alterTables) {
@@ -291,52 +303,52 @@ public final class SchemaReader {
 			}
 			
 			// field indexes
-			List<DDLIndex> addIndexes = new ArrayList<DDLIndex>();
-			List<DDLIndex> dropIndexes = new ArrayList<DDLIndex>();
-			
-			for (DDLIndex fromIndex : fromTable.getIndexes()) {
-				boolean found = false;
-				
-				for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
-					if (fromIndex.getTable().equalsIgnoreCase(ontoIndex.getTable()) 
-							&& fromIndex.getField().equalsIgnoreCase(ontoIndex.getField())) {
-						found = true;
-						break;
-					}
-				}
-				
-				if (!found) {
-					addIndexes.add(fromIndex);
-				}
-			}
-			
-			for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
-				boolean found = false;
-				
-				for (DDLIndex fromIndex : fromTable.getIndexes()) {
-					if (ontoIndex.getTable().equalsIgnoreCase(fromIndex.getTable()) 
-							&& ontoIndex.getField().equalsIgnoreCase(fromIndex.getField())) {
-						found = true;
-						break;
-					}
-				}
-				
-				if (!found) {
-					dropIndexes.add(ontoIndex);
-				}
-			}
-			
-			for (DDLIndex index : addIndexes) {
-				DDLAction action = new DDLAction(DDLActionType.CREATE_INDEX);
-				action.setIndex(index);
-				actions.add(action);
-			}
-
-			for (DDLIndex index : dropIndexes) {
-				DDLAction action = new DDLAction(DDLActionType.DROP_INDEX);
-				action.setIndex(index);
-				actions.add(action);
-			}
+//			List<DDLIndex> addIndexes = new ArrayList<DDLIndex>();
+//			List<DDLIndex> dropIndexes = new ArrayList<DDLIndex>();
+//			
+//			for (DDLIndex fromIndex : fromTable.getIndexes()) {
+//				boolean found = false;
+//				
+//				for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
+//					if (fromIndex.getTable().equalsIgnoreCase(ontoIndex.getTable()) 
+//							&& fromIndex.getField().equalsIgnoreCase(ontoIndex.getField())) {
+//						found = true;
+//						break;
+//					}
+//				}
+//				
+//				if (!found) {
+//					addIndexes.add(fromIndex);
+//				}
+//			}
+//			
+//			for (DDLIndex ontoIndex : ontoTable.getIndexes()) {
+//				boolean found = false;
+//				
+//				for (DDLIndex fromIndex : fromTable.getIndexes()) {
+//					if (ontoIndex.getTable().equalsIgnoreCase(fromIndex.getTable()) 
+//							&& ontoIndex.getField().equalsIgnoreCase(fromIndex.getField())) {
+//						found = true;
+//						break;
+//					}
+//				}
+//				
+//				if (!found) {
+//					dropIndexes.add(ontoIndex);
+//				}
+//			}
+//			
+//			for (DDLIndex index : addIndexes) {
+//				DDLAction action = new DDLAction(DDLActionType.CREATE_INDEX);
+//				action.setIndex(index);
+//				actions.add(action);
+//			}
+//
+//			for (DDLIndex index : dropIndexes) {
+//				DDLAction action = new DDLAction(DDLActionType.DROP_INDEX);
+//				action.setIndex(index);
+//				actions.add(action);
+//			}
 		}
 		
 		return actions.toArray(new DDLAction[actions.size()]);
