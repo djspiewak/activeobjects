@@ -733,7 +733,7 @@ public class EntityManager {
 		}
 		
 		public int hashCode() {
-			return (type.hashCode() + (key != null ? key.hashCode() : 0)) % (2 << 15);
+			return (type.hashCode() + key.hashCode()) % (2 << 15);
 		}
 		
 		public boolean equals(Object obj) {
@@ -742,9 +742,9 @@ public class EntityManager {
 			}
 			
 			if (obj instanceof CacheKey) {
-				CacheKey<T> key = (CacheKey<T>) obj;
+				CacheKey<T> keyObj = (CacheKey<T>) obj;
 				
-				if (key == key.key && type.equals(key.type)) {
+				if (key.equals(keyObj.key) && type.equals(keyObj.type)) {
 					return true;
 				}
 			}
