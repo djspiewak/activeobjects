@@ -49,9 +49,7 @@ class ImplementationWrapper<T extends RawEntity<?>> {
 		}
 		
 		for (Class<?> sup : clazz.getInterfaces()) {
-			if (Common.interfaceInheritsFrom(sup, RawEntity.class)) {
-				instantiateImplementation(instance, (Class<? extends RawEntity<?>>) sup);
-			}
+			instantiateImplementation(instance, (Class<? extends RawEntity<?>>) sup);
 		}
 	}
 	
