@@ -255,6 +255,10 @@ public final class Common {
 			}
 		}
 		
+		if (a instanceof DatabaseFunction) {
+			return a.equals(b);
+		}
+		
 		return TypeManager.getInstance().getType(a.getClass()).valueEquals(a, b)
 			|| TypeManager.getInstance().getType(b.getClass()).valueEquals(b, a);
 	}
