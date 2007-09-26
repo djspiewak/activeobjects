@@ -57,9 +57,8 @@ public interface Entity extends RawEntity<Integer> {
 	 * 
 	 * @return The value of the primary key for the row, the "id" field.
 	 */
-	@PrimaryKey
 	@AutoIncrement
 	@NotNull
-	@Accessor("id")
+	@PrimaryKey("id")
 	public int getID();
 }
