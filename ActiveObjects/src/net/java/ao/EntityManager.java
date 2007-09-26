@@ -222,16 +222,24 @@ public class EntityManager {
 	
 	/**
 	 * <p>Returns an array of entities of the specified type corresponding to the
-	 * varargs ids.  If an in-memory reference already exists to a corresponding
-	 * entity (of the specified type and id), it is returned rather than creating
+	 * varargs primary keys.  If an in-memory reference already exists to a corresponding
+	 * entity (of the specified type and key), it is returned rather than creating
 	 * a new instance.</p>
 	 * 
-	 * <p>No checks are performed to ensure that the id actually exists in the
+	 * <p>No checks are performed to ensure that the key actually exists in the
 	 * database for the specified object.  Thus, this method is solely a Java
-	 * memory state modifying method.  There is not database access involved.
+	 * memory state modifying method.  There is no database access involved.
 	 * The upshot of this is that the method is very very fast.  The flip side of
 	 * course is that one could conceivably maintain entities which reference
 	 * non-existant database rows.</p>
+	 * 
+	 * @param type		The type of the entities to retrieve.
+	 * @param keys	The primary keys corresponding to the entities to retrieve.  All
+	 * 	keys must be typed according to the generic type parameter of the entity's
+	 * 	{@link RawEntity} inheritence (if inheriting from {@link Entity}, this is <code>Integer</code>
+	 * 	or <code>int</code>).  Thus, the <code>keys</code> array is type-checked at compile
+	 * 	time.
+	 * @returns An array of entities of the given type corresponding with the specified primary keys.
 	 */
 	public <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys) {
 		T[] back = (T[]) Array.newInstance(type, keys.length);
@@ -255,7 +263,17 @@ public class EntityManager {
 		return back;
 	}
 	
-	// assumes cache doesn't contain object
+	/**
+	 * Creates a new instance of the entity of the specified type corresponding to the
+	 * given primary key.  This is used by {@link #get(Class, Object...)} to create the entity
+	 * if the instance is not found already in the cache.  This method should not be
+	 * repurposed to perform any caching, since ActiveObjects already assumes that
+	 * the caching has been performed.
+	 * 
+	 *  @param type	The type of the entity to create.
+	 *  @param key		The primary key corresponding to the entity instance required.
+	 *  @returns An entity instance of the specified type and primary key.
+	 */
 	protected <T extends RawEntity<K>, K> T getAndInstantiate(Class<T> type, K key) {
 		EntityProxy<T, K> proxy = new EntityProxy<T, K>(this, type, key);
 		
@@ -278,7 +296,7 @@ public class EntityManager {
 	 * meerly delegates the call to the overloaded <code>get</code> method 
 	 * and functions as syntactical sugar.
 	 * 
-	 * @see #get(Class, int...)
+	 * @see #get(Class, Object...)
 	 */
 	public <T extends RawEntity<K>, K> T get(Class<T> type, K key) {
 		return get(type, (K[]) new Object[] {key})[0];
