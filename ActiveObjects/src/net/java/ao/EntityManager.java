@@ -15,6 +15,8 @@
  */
 package net.java.ao;
 
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -45,7 +47,7 @@ import net.java.ao.types.TypeManager;
 
 /**
  * <p>The root control class for the entire ActiveObjects API.  <code>EntityManager</code>
- * is the source of all {@link Entity} objects, as well as the dispatch layer between the entities,
+ * is the source of all {@link RawEntity} objects, as well as the dispatch layer between the entities,
  * the pluggable table name converters, and the database abstraction layers.  This is the
  * entry point for any use of the API.</p>
  * 
@@ -70,7 +72,7 @@ public class EntityManager {
 		Logger.getLogger("net.java.ao").setLevel(Level.OFF);
 	}
 	
-	private DatabaseProvider provider;
+	private final DatabaseProvider provider;
 	
 	private Map<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>> proxies;
 	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
@@ -96,11 +98,13 @@ public class EntityManager {
 	 * Creates a new instance of <code>EntityManager</code> using the specified
 	 * {@link DatabaseProvider}.  This constructor intializes the entity cache, as well
 	 * as creates the default {@link TableNameConverter} (the default is 
-	 * {@link CamelCaseTableNameConverter}, which is non-pluralized).  The provider
+	 * {@link CamelCaseTableNameConverter}, which is non-pluralized) and the default
+	 * {@link FieldNameConverter} ({@link CamelCaseFieldNameConverter}).  The provider
 	 * instance is immutable once set using this constructor.  By default (using this
 	 * constructor), all entities are strongly cached, meaning references are held to
 	 * the instances, preventing garbage collection.
 	 * 
+	 * @param provider	The {@link DatabaseProvider} to use in all database operations.
 	 * @see #EntityManager(DatabaseProvider, boolean)
 	 */
 	public EntityManager(DatabaseProvider provider) {
@@ -114,8 +118,12 @@ public class EntityManager {
 	 * will be weakly cached, not maintaining a reference allowing for garbage 
 	 * collection.  If <code>false</code>, then strong caching will be used, preventing
 	 * garbage collection and ensuring the cache is logically complete.  If you are
-	 * concerned about memory leaks, specify <code>true</code>.  Otherwise, for
-	 * maximum performance use <code>false</code>.  
+	 * concerned about memory, specify <code>true</code>.  Otherwise, for
+	 * maximum performance use <code>false</code> (highly recomended).
+	 * 
+	 * @param provider	The {@link DatabaseProvider} to use in all database operations.
+	 * @param weaklyCache	Whether or not to use {@link WeakReference} in the entity
+	 * 		cache.  If <code>false</code>, then {@link SoftReference} will be used.
 	 */
 	public EntityManager(DatabaseProvider provider, boolean weaklyCache) {
 		this.provider = provider;
@@ -136,11 +144,19 @@ public class EntityManager {
 	}
 	
 	/**
-	 * Creates a new instance of <code>EntityManager</code> by auto-magically
-	 * finding a {@link DatabaseProvider} instnace for the specified JDBC URI, username
+	 * <p>Creates a new instance of <code>EntityManager</code> by auto-magically
+	 * finding a {@link DatabaseProvider} instance for the specified JDBC URI, username
 	 * and password.  The auto-magically determined instance is pooled by default
-	 * (if a supported connection pooling library is available on the classpath). 
+	 * (if a supported connection pooling library is available on the classpath).</p>
 	 * 
+	 * <p>The actual auto-magical parsing code isn't contained within this method,
+	 * but in {@link DatabaseProvider#getInstance(String, String, String)}.  This way,
+	 * it is possible to use the parsing logic to get a <code>DatabaseProvider</code>
+	 * instance separate from <code>EntityManager</code> if necessary.</p>
+	 * 
+	 * @param uri	The JDBC URI to use for the database connection.
+	 * @param username	The username to use in authenticating the database connection. 
+	 * @param password		The password to use in authenticating the database connection.
 	 * @see #EntityManager(DatabaseProvider)
 	 * @see net.java.ao.DatabaseProvider#getInstance(String, String, String)
 	 */
@@ -150,35 +166,53 @@ public class EntityManager {
 	
 	/**
 	 * Convenience method to create the schema for the specified entities
-	 * using the current settings (name converter and database provider).
+	 * using the current settings (table/field name converter and database provider).
 	 * 
 	 *  @see net.java.ao.schema.SchemaGenerator#migrate(DatabaseProvider, TableNameConverter, Class...)
 	 */
 	public void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException {
 		tableNameConverterLock.readLock().lock();
+		fieldNameConverterLock.readLock().lock();
 		try {
 			SchemaGenerator.migrate(provider, tableNameConverter, fieldNameConverter, entities);
 		} finally {
+			fieldNameConverterLock.readLock().unlock();
 			tableNameConverterLock.readLock().unlock();
 		}
 	}
 	
+	/**
+	 * Flushes all value caches contained within entities controlled by this <code>EntityManager</code>
+	 * instance.  This does not actually remove the entities from the instance cache maintained
+	 * within this class.  Rather, it simply dumps all of the field values cached within the enties
+	 * themselves (with the exception of the primary key value).  This should be used in the case
+	 * of a complex process outside AO control which may have changed values in the database.  If
+	 * it is at all possible to determine precisely which rows have been changed, the {@link #flush(RawEntity...)}
+	 * method should be used instead.
+	 */
 	public void flushAll() {
 		proxyLock.readLock().lock();
 		try {
 			for (EntityProxy<? extends RawEntity<?>, ?> proxy : proxies.values()) {
-				proxy.flushCache();
+				proxy.flushCache();		// TODO	flush relations cache
 			}
 		} finally {
 			proxyLock.readLock().unlock();
 		}
 	}
 	
+	/**
+	 * Flushes the value caches of the specified entities along with all of the relevant
+	 * relations cache entries.  This should be called after a process outside of AO control
+	 * may have modified the values in the specified rows.  This does not actually remove
+	 * the entity instances themselves from the instance cache.  Rather, it just flushes all
+	 * of their internally cached values (with the exception of the primary key).
+	 */
 	public void flush(RawEntity<?>... entities) {
 		proxyLock.readLock().lock();
 		try {
 			for (RawEntity<?> entity : entities) {
-				proxies.get(entity).flushCache();
+				proxies.get(entity).flushCache();		// TODO	flush relations cache
 			}
 		} finally {
 			proxyLock.readLock().unlock();

@@ -16,6 +16,12 @@
 package net.java.ao;
 
 /**
+ * Class designed to encapsulate a single field/value parameter to be passed
+ * to {@link EntityManager#create(Class, DBParam...)}.  This class is literally
+ * nothing more than a value container.  There is no checking done to ensure
+ * that the values match the type of the field.  Thus the responsibility of value/field
+ * matching lies with the developer.
+ * 
  * @author Daniel Spiewak
  */
 public class DBParam {
