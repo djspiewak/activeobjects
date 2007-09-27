@@ -22,7 +22,7 @@ import java.sql.SQLException;
 /**
  * @author Daniel Spiewak
  */
-public abstract class RSCachingStrategy {
+abstract class RSCachingStrategy {
 	public static final RSCachingStrategy AGGRESSIVE = new AggressiveStrategy();
 	public static final RSCachingStrategy ITERATIVE = new IterativeStrategy();
 	public static final RSCachingStrategy NULL = new NullStrategy();

@@ -271,8 +271,11 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 		if (obj instanceof RawEntity) {
 			RawEntity<?> entity = (RawEntity<?>) obj;
+			
+			String ourTableName = getManager().getTableNameConverter().getName(proxy.getEntityType());
+			String theirTableName = getManager().getTableNameConverter().getName(entity.getEntityType());
 
-			return Common.getPrimaryKeyValue(entity).equals(key) && entity.getTableName().equals(proxy.getTableName());
+			return Common.getPrimaryKeyValue(entity).equals(key) && theirTableName.equals(ourTableName);
 		}
 
 		return false;

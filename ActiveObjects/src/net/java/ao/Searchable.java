@@ -21,7 +21,35 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Used to tag methods as being full-text searchable within a 
+ * Lucene index.  This annotation is only relevant when used in
+ * conjunction with an instance of {@link SearchableEntityManager}.
+ * Otherwise, it is ignored by ActiveObjects.  Example:</p>
+ * 
+ * <pre>public interface Post extends Entity {
+ *     public String getTitle();
+ *     public void setTitle(String title);
+ *     
+ *     @Searchable
+ *     @SQLType(Types.BLOB)
+ *     public String getBody();
+ *     
+ *     @Searchable
+ *     @SQLType(Types.BLOB)
+ *     public void setBody(String body);
+ * }
+ * 
+ * // ...
+ * SearchableEntityManager manager = ...;
+ * manager.search(Post.class, "my search string");    // returns search results as Post[]</pre>
+ * 
+ * <p>At the moment, it is impossible to specify the Lucene field and
+ * type which will be used in the index.  By default, <code>tablename.fieldname</code>
+ * is utilized to determine the Lucene field.  More features are planned
+ * for this annotation in future.</p>
+ * 
  * @author Daniel Spiewak
+ * @see net.java.ao.SearchableEntityManager
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

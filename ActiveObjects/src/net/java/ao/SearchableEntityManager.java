@@ -40,25 +40,75 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 
 /**
+ * <p>Required to manage entities with enabled full-text searching.  This is where
+ * all the "meat" of the Lucene indexing support is actually implemented.  It is
+ * required to use this {@link EntityManager} implementation to use full-text
+ * searching.  Example:</p>
+ * 
+ * <pre>public interface Post extends Entity {
+ *     // ...
+ *     
+ *     @Searchable
+ *     @SQLType(Types.BLOB)
+ *     public String getBody();
+ *     
+ *     @Searchable
+ *     @SQLType(Types.BLOB)
+ *     public void setBody(String body);
+ * }
+ * 
+ * // ...
+ * SearchableEntityManager manager = new SearchableEntityManager(
+ *         uri, username, password, FSDirectory.getDirectory("~/lucene_index"));
+ * manager.search(Post.class, "my search string");       // returns results as Post[]</pre>
+ * 
+ * <p>This class does not support any Java full-text search libraries other than
+ * Lucene.  Also, the support for Lucene itself is comparatively limited.  If your
+ * requirements dictate more advanced functionality, you should consider
+ * writing a custom implementation of this class to provide the enhancements
+ * you need.  More features are planned for this class in future...</p>
+ * 
  * @author Daniel Spiewak
+ * @see net.java.ao.Searchable
  */
 public class SearchableEntityManager extends EntityManager {
 	private Directory indexDir;
 
 	private Analyzer analyzer;
 
+	/**
+	 * Constructs a new instance with the specified provider and index
+	 * {@link Directory}.  Delegates more-or-less all of the functionality
+	 * to {@link EntityManager}.
+	 * 
+	 * @see net.java.ao.EntityManager#EntityManager(DatabaseProvider)
+	 */
 	public SearchableEntityManager(DatabaseProvider provider, Directory indexDir) throws IOException {
 		super(provider);
 
 		init(indexDir);
 	}
 
+	/**
+	 * Constructs a new instance with the specified provider, index
+	 * {@link Directory}, and <code>weaklyCache</code> flag.  Delegates 
+	 * more-or-less all of the functionality to {@link EntityManager}.
+	 * 
+	 * @see net.java.ao.EntityManager#EntityManager(DatabaseProvider, boolean)
+	 */
 	public SearchableEntityManager(DatabaseProvider provider, Directory indexDir, boolean weaklyCache) throws IOException {
 		super(provider, weaklyCache);
 
 		init(indexDir);
 	}
 
+	/**
+	 * Constructs a new instance with the specified JDBC information and index
+	 * {@link Directory}.  Delegates more-or-less all of the functionality to 
+	 * {@link EntityManager}.
+	 * 
+	 * @see net.java.ao.EntityManager#EntityManager(String, String, String)
+	 */
 	public SearchableEntityManager(String uri, String username, String password, Directory indexDir) throws IOException {
 		super(uri, username, password);
 
@@ -73,6 +123,16 @@ public class SearchableEntityManager extends EntityManager {
 		return back;
 	}
 
+	/**
+	 * Runs a Lucene full-text search on the specified entity type with the given
+	 * query.  The search will be run on every {@link Searchable} field within
+	 * the entity.  No caching is performed in this method.  Rather, AO relies
+	 * upon the underlying Lucene code to be performant.
+	 * 
+	 * @param type		The type of the entities to search for.
+	 * @param strQuery	The query to pass to Lucene for the search.
+	 * @returns The entity instances which correspond with the search results.
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends RawEntity<K>, K> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {
 		String table = getTableNameConverter().getName(type);
@@ -120,6 +180,14 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
+	/**
+	 * Adds the entity instance to the index.  No checking is performed to 
+	 * ensure that the entity is not already part of the index.  All of the
+	 * {@link Searchable} fields within the entity will be added to the
+	 * index as part of the document corresponding to the instance.
+	 * 
+	 * @param entity	The entity to add to the index.
+	 */
 	public void addToIndex(RawEntity<?> entity) throws IOException {
 		String table = getTableNameConverter().getName(entity.getEntityType());
 
@@ -168,7 +236,7 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
-	public void removeFromIndex(Entity entity) throws IOException {
+	public void removeFromIndex(RawEntity<?> entity) throws IOException {
 		IndexReader reader = null;
 		try {
 			reader = IndexReader.open(indexDir);
