@@ -21,6 +21,39 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Marks a method as relevant only to a one-to-many relation.  This
+ * informs ActiveObjects that the return value for the method in question
+ * should be determined from a one-to-many relation through the
+ * specified type onto the type in the return value.  For example:</p>
+ * 
+ * <pre>public interface Company {
+ *     // ...
+ *     
+ *     @OneToMany
+ *     public Person[] getEmployees();
+ * }</pre>
+ * 
+ * <p>Thus the return value of the <code>getEmployees()</code> method
+ * would be determined by a query something like the following:</p>
+ * 
+ * <code>SELECT id FROM people WHERE companyID = ?</code>
+ * 
+ * <p>If the {@link #where()} clause is specified, it will be used
+ * <i>in addition</i> to the base, necessary criterion to determine the
+ * returned entities.  Thus, the one-to-many relation could be referenced
+ * in the following way:</p>
+ * 
+ * <pre>public interface Company {
+ *     // ...
+ *     
+ *     @OneToMany(where="deleted = FALSE")
+ *     public Person[] getEmployees();
+ * }</pre>
+ * 
+ * <p>This would lead to a query like the following:</p>
+ * 
+ * <code>SELECT id FROM people WHERE companyID = ? AND (deleted = FALSE)</code>
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)

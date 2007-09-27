@@ -21,6 +21,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Marks a specific method as a mutator of a database field.  This
+ * annotation can also be (and usually is) used to manually specify
+ * a field name which corresponds to a method; as in the following
+ * example:</p>
+ * 
+ * <pre>public Company extends Entity {
+ *     // ...
+ *     
+ *     @Mutator("url")
+ *     public void setURL(URL url);
+ *     // ...
+ * }</pre>
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -296,6 +296,9 @@ public class EntityManager {
 	 * meerly delegates the call to the overloaded <code>get</code> method 
 	 * and functions as syntactical sugar.
 	 * 
+	 * @param type		The type of the entity instance to retrieve.
+	 * @param key		The primary key corresponding to the entity to be retrieved.
+	 * @returns An entity instance of the given type corresponding to the specified primary key.
 	 * @see #get(Class, Object...)
 	 */
 	public <T extends RawEntity<K>, K> T get(Class<T> type, K key) {
@@ -320,6 +323,20 @@ public class EntityManager {
 	 * the creation of large numbers of entities.  There doesn't seem to be a more
 	 * efficient way to create large numbers of entities, however one should still
 	 * be aware of the performance implications.</p>
+	 * 
+	 * <p>This method delegates the action INSERT action to 
+	 * {@link DatabaseProvider#insertReturningKeys(Connection, Class, String, String, DBParam...)}.
+	 * This is necessary because not all databases support the JDBC <code>RETURN_GENERATED_KEYS</code>
+	 * constant (e.g. PostgreSQL and HSQLDB).  Thus, the database provider itself is
+	 * responsible for handling INSERTion and retrieval of the correct primary key
+	 * value.</p>
+	 * 
+	 * @param type		The type of the entity to INSERT.
+	 * @param params	An optional varargs array of initial values for the fields in the row.  These
+	 * 	values will be passed to the database within the INSERT statement.
+	 * @returns	The new entity instance corresponding to the INSERTed row. 
+	 * @see net.java.ao.DBParam
+	 * @see net.java.ao.DatabaseProvider#insertReturningKeys(Connection, Class, String, String, DBParam...)
 	 */
 	public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
@@ -388,15 +405,18 @@ public class EntityManager {
 	 * 
 	 * <p>This method does attempt to group the DELETE statements on a per-type
 	 * basis.  Thus, if you pass 5 instances of <code>EntityA</code> and two 
-	 * instances of <code>EntityB</code>, the following prepared statement SQL
+	 * instances of <code>EntityB</code>, the following SQL prepared statements
 	 * will be invoked:</p>
 	 * 
 	 * <pre>DELETE FROM entityA WHERE id IN (?,?,?,?,?);
 	 * DELETE FROM entityB WHERE id IN (?,?);</pre>
 	 * 
 	 * <p>Thus, this method scales very well for large numbers of entities grouped
-	 * into types.  However, the execution time scales linearly for each entity of
+	 * into types.  However, the execution time increases linearly for each entity of
 	 * unique type.</p>
+	 * 
+	 * @param entities	A varargs array of entities to delete.  Method returns immediately
+	 * 	if length == 0.
 	 */
 	public void delete(RawEntity<?>... entities) throws SQLException {
 		if (entities.length == 0) {
@@ -475,6 +495,9 @@ public class EntityManager {
 	/**
 	 * Returns all entities of the given type.  This actually peers the call to
 	 * the {@link #find(Class, Query)} method.
+	 * 
+	 * @param type		The type of entity to retrieve.
+	 * @returns	An array of all entities which correspond to the given type.
 	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type) throws SQLException {
 		return find(type, Query.select());
@@ -488,15 +511,38 @@ public class EntityManager {
 	 * 
 	 * <p>Example:</p>
 	 * 
-	 * <pre>manager.find(Person.class, "name LIKE ? OR age > ?", "Joe", 9);</pre>
+	 * <pre>manager.find(Person.class, "name LIKE ? OR age &gt; ?", "Joe", 9);</pre>
 	 * 
-	 * <p>This actually peers the call to the {@link #find(Class, Query)}
+	 * <p>This actually delegates the call to the {@link #find(Class, Query)}
 	 * method, properly parameterizing the {@link Query} object.</p>
+	 * 
+	 * @param type		The type of the entities to retrieve.
+	 * @param criteria		A parameterized WHERE statement used to determine the results.
+	 * @param parameters	A varargs array of parameters to be passed to the executed
+	 * 	prepared statement.  The length of this array <i>must</i> match the number of
+	 * 	parameters (denoted by the '?' char) in the <code>criteria</code>.
+	 * @returns	An array of entities of the given type which match the specified criteria.
 	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
 		return find(type, Query.select().where(criteria, parameters));
 	}
 	
+	/**
+	 * <p>Selects all entities matching the given type and {@link Query}.  By default, the
+	 * entities will be created based on the values within the primary key field for the
+	 * specified type (this is usually the desired behavior).</p>
+	 * 
+	 * <p>Example:</p>
+	 * 
+	 * <pre>manager.find(Person.class, Query.select().where("name LIKE ? OR age &gt; ?", "Joe", 9).limit(10));</pre>
+	 * 
+	 * <p>This method delegates the call to {@link #find(Class, String, Query)}, passing the
+	 * primary key field for the given type as the <code>String</code> parameter.</p>
+	 * 
+	 * @param type		The type of the entities to retrieve.
+	 * @param query	The {@link Query} instance to be used to determine the results.
+	 * @returns An array of entities of the given type which match the specified query.
+	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query) throws SQLException {
 		String selectField = Common.getPrimaryKeyField(type, getFieldNameConverter());
 		query.resolveFields(type, getFieldNameConverter());
@@ -515,8 +561,14 @@ public class EntityManager {
 	 * using the <code>Query</code> instance specified against the table
 	 * represented by the given type.  This query is then executed (with the
 	 * parameters specified in the query).  The method then iterates through
-	 * the result set and extracts the specified field, mapping an <code>Entity</code>
+	 * the result set and extracts the specified field, mapping an entity
 	 * of the given type to each row.  This array of entities is returned.</p>
+	 * 
+	 * @param type		The type of the entities to retrieve.
+	 * @param field		The field value to use in the creation of the entities.  This is usually
+	 * 	the primary key field of the corresponding table.
+	 * @param query	The {@link Query} instance to use in determining the results.
+	 * @returns	An array of entities of the given type which match the specified query.
 	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
@@ -594,9 +646,29 @@ public class EntityManager {
 	}
 	
 	/**
-	 * Executes the specified SQL and extracts the given idfield, wrapping each
+	 * <p>Executes the specified SQL and extracts the given key field, wrapping each
 	 * row into a instance of the specified type.  The SQL itself is executed as 
-	 * a PreparedStatement with the given parameters. 
+	 * a {@link PreparedStatement} with the given parameters.</p>
+	 * 
+	 *  <p>Example:</p>
+	 *  
+	 *  <pre>manager.findWithSQL(Person.class, "personID", "SELECT personID FROM chairs WHERE position &lt; ? LIMIT ?", 10, 5);</pre>
+	 *  
+	 *  <p>The SQL is not parsed or modified in any way by ActiveObjects.  As such, it is
+	 *  possible to execute database-specific queries using this method without realizing
+	 *  it.  For example, the above query will not run on MS SQL Server or Oracle, due to 
+	 *  the lack of a LIMIT clause in their SQL implementation.  As such, be extremely
+	 *  careful about what SQL is executed using this method, or else be conscious of the
+	 *  fact that you may be locking yourself to a specific DBMS.</p>
+	 *  
+	 * @param type		The type of the entities to retrieve.
+	 * @param keyField	The field value to use in the creation of the entities.  This is usually
+	 * 	the primary key field of the corresponding table.
+	 * @param sql	The SQL statement to execute.
+	 * @param parameters	A varargs array of parameters to be passed to the executed
+	 * 	prepared statement.  The length of this array <i>must</i> match the number of
+	 * 	parameters (denoted by the '?' char) in the <code>criteria</code>.
+	 * @returns	An array of entities of the given type which match the specified query.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters) throws SQLException {
@@ -633,8 +705,10 @@ public class EntityManager {
 	
 	/**
 	 * Counts all entities of the specified type.  This method is actually
-	 * a delegate for the <code>count(Class&lt;? extends Entity&gt;, Query)</code>
-	 * method.
+	 * a delegate for: <code>count(Class&lt;? extends Entity&gt;, Query)</code>
+	 * 
+	 * @param type		The type of the entities which should be counted.
+	 * @returns The number of entities of the specified type.
 	 */
 	public <K> int count(Class<? extends RawEntity<K>> type) throws SQLException {
 		return count(type, Query.select());
@@ -643,8 +717,15 @@ public class EntityManager {
 	/**
 	 * Counts all entities of the specified type matching the given criteria
 	 * and parameters.  This is a convenience method for:
-	 * 
 	 * <code>count(type, Query.select().where(criteria, parameters))</code>
+	 * 
+	 * @param type		The type of the entities which should be counted.
+	 * @param criteria		A parameterized WHERE statement used to determine the result
+	 * 	set which will be counted.
+	 * @param parameters	A varargs array of parameters to be passed to the executed
+	 * 	prepared statement.  The length of this array <i>must</i> match the number of
+	 * 	parameters (denoted by the '?' char) in the <code>criteria</code>.
+	 * @returns The number of entities of the given type which match the specified criteria.
 	 */
 	public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters) throws SQLException {
 		return count(type, Query.select().where(criteria, parameters));
@@ -654,6 +735,11 @@ public class EntityManager {
 	 * Counts all entities of the specified type matching the given {@link Query}
 	 * instance.  The SQL runs as a <code>SELECT COUNT(*)</code> to
 	 * ensure maximum performance.
+	 * 
+	 * @param type		The type of the entities which should be counted.
+	 * @param query	The {@link Query} instance used to determine the result set which
+	 * 	will be counted.
+	 * @returns The number of entities of the given type which match the specified query.
 	 */
 	public <K> int count(Class<? extends RawEntity<K>> type, Query query) throws SQLException {
 		int back = -1;
@@ -690,10 +776,12 @@ public class EntityManager {
 	/**
 	 * <p>Specifies the {@link TableNameConverter} instance to use for
 	 * name conversion of all entity types.  Name conversion is the process
-	 * of determining the appropriate table name from an arbitrary {@link Entity}
-	 * class.</p>
+	 * of determining the appropriate table name from an arbitrary interface
+	 * extending {@link RawEntity}.</p>
 	 * 
-	 * <p>The default nameConverter is {@link CamelCaseTableNameConverter}.</p>
+	 * <p>The default table name converter is {@link CamelCaseTableNameConverter}.</p>
+	 * 
+	 * @see #getTableNameConverter()
 	 */
 	public void setTableNameConverter(TableNameConverter tableNameConverter) {
 		tableNameConverterLock.writeLock().lock();
@@ -719,6 +807,16 @@ public class EntityManager {
 		}
 	}
 	
+	/**
+	 * <p>Specifies the {@link FieldNameConverter} instance to use for
+	 * field name conversion of all entity methods.  Name conversion is the
+	 * process of determining the appropriate field name from an arbitrary
+	 * method within an interface extending {@link RawEntity}.</p>
+	 * 
+	 * <p>The default field name converter is {@link CamelCaseFieldNameConverter}.</p>
+	 * 
+	 * @see #getFieldNameConverter()
+	 */
 	public void setFieldNameConverter(FieldNameConverter fieldNameConverter) {
 		fieldNameConverterLock.writeLock().lock();
 		try {
@@ -728,6 +826,12 @@ public class EntityManager {
 		}
 	}
 	
+	/**
+	 * Retrieves the {@link FieldNameConverter} instance used for name
+	 * conversion of all entity methods.
+	 * 
+	 * @see #setFieldNameConverter(FieldNameConverter)
+	 */
 	public FieldNameConverter getFieldNameConverter() {
 		fieldNameConverterLock.readLock().lock();
 		try {
@@ -737,9 +841,8 @@ public class EntityManager {
 		}
 	}
 
-	/**
-	 * 
-	 */
+	// TODO	remove
+	@Deprecated
 	public void setRSCachingStrategy(RSCachingStrategy rsStrategy) {
 		rsStrategyLock.writeLock().lock();
 		try {
@@ -749,6 +852,8 @@ public class EntityManager {
 		}
 	}
 	
+	// TODO	remove
+	@Deprecated
 	public RSCachingStrategy getRSCachingStrategy() {
 		rsStrategyLock.readLock().lock();
 		try {
@@ -758,11 +863,24 @@ public class EntityManager {
 		}
 	}
 
+	/**
+	 * <p>Retrieves the database provider used by this <code>EntityManager</code>
+	 * for all database operations.  This method can be used reliably to obtain
+	 * a database provider and hence a {@link Connection} instance which can
+	 * be used for JDBC operations outside of ActiveObjects.  Thus:</p>
+	 * 
+	 * <pre>Connection conn = manager.getProvider().getConnection();
+	 * try {
+	 *     // ...
+	 * } finally {
+	 *     conn.close();
+	 * }</pre>
+	 */
 	public DatabaseProvider getProvider() {
 		return provider;
 	}
 
-	protected <T extends RawEntity<K>, K> EntityProxy<T, K> getProxyForEntity(T entity) {
+	<T extends RawEntity<K>, K> EntityProxy<T, K> getProxyForEntity(T entity) {
 		proxyLock.readLock().lock();
 		try {
 			return (EntityProxy<T, K>) proxies.get(entity);

@@ -21,6 +21,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Used to specify a defined implementation for an entity.  Example:</p>
+ * 
+ * <pre>@Implementation(PersonImpl.class)
+ * public interface Person extends Entity {
+ *     // ...
+ * }</pre>
+ * 
+ * <p>The parameter is not optional.</p>
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)
