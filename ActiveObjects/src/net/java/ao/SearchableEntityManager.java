@@ -81,6 +81,7 @@ public class SearchableEntityManager extends EntityManager {
 	 * {@link Directory}.  Delegates more-or-less all of the functionality
 	 * to {@link EntityManager}.
 	 * 
+	 * @throws IOException		If Lucene was unable to open the index.
 	 * @see net.java.ao.EntityManager#EntityManager(DatabaseProvider)
 	 */
 	public SearchableEntityManager(DatabaseProvider provider, Directory indexDir) throws IOException {
@@ -94,6 +95,7 @@ public class SearchableEntityManager extends EntityManager {
 	 * {@link Directory}, and <code>weaklyCache</code> flag.  Delegates 
 	 * more-or-less all of the functionality to {@link EntityManager}.
 	 * 
+	 * @throws IOException		If Lucene was unable to open the index.
 	 * @see net.java.ao.EntityManager#EntityManager(DatabaseProvider, boolean)
 	 */
 	public SearchableEntityManager(DatabaseProvider provider, Directory indexDir, boolean weaklyCache) throws IOException {
@@ -107,6 +109,7 @@ public class SearchableEntityManager extends EntityManager {
 	 * {@link Directory}.  Delegates more-or-less all of the functionality to 
 	 * {@link EntityManager}.
 	 * 
+	 * @throws IOException		If Lucene was unable to open the index.
 	 * @see net.java.ao.EntityManager#EntityManager(String, String, String)
 	 */
 	public SearchableEntityManager(String uri, String username, String password, Directory indexDir) throws IOException {
@@ -131,6 +134,8 @@ public class SearchableEntityManager extends EntityManager {
 	 * 
 	 * @param type		The type of the entities to search for.
 	 * @param strQuery	The query to pass to Lucene for the search.
+	 * @throws IOException		If Lucene was unable to open the index.
+	 * @throws ParseException	If Lucene was unable to parse the search string into a valid query.
 	 * @returns The entity instances which correspond with the search results.
 	 */
 	@SuppressWarnings("unchecked")
@@ -187,6 +192,7 @@ public class SearchableEntityManager extends EntityManager {
 	 * index as part of the document corresponding to the instance.
 	 * 
 	 * @param entity	The entity to add to the index.
+	 * @throws IOException		If Lucene was unable to open the index.
 	 */
 	public void addToIndex(RawEntity<?> entity) throws IOException {
 		String table = getTableNameConverter().getName(entity.getEntityType());
@@ -236,6 +242,14 @@ public class SearchableEntityManager extends EntityManager {
 		}
 	}
 
+	/**
+	 * Removes the specified entity from the Lucene index.  This performs a lookup
+	 * in the index based on the value of the entity primary key and removes the
+	 * appropriate {@link Document}.
+	 * 
+	 * @param entity	The entity to remove from the index.
+	 * @throws IOException		If Lucene was unable to open the index.
+	 */
 	public void removeFromIndex(RawEntity<?> entity) throws IOException {
 		IndexReader reader = null;
 		try {
@@ -255,6 +269,21 @@ public class SearchableEntityManager extends EntityManager {
 				Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity))));
 	}
 
+	/**
+	 * <p>Optimizes the Lucene index for searching.  This call peers down to
+	 * <code>IndexWriter#optimize()</code>.  For sizable indexes, this
+	 * call will take some time, so it is best not to perform the operation
+	 * in scenarios where it may block interface responsiveness (such as
+	 * in the middle of a page request, or within the EDT).</p>
+	 * 
+	 * <p>This method is the only optimization call made against the Lucene
+	 * index.  Meaning, <code>SearchableEntityManager</code> never
+	 * optimizes the index automatically, as this could potentially cause major
+	 * performance issues.  Developers should be aware of this and the
+	 * negative impact lack-of optimization can have upon search performance.</p>
+	 * 
+	 * @throws IOException		If Lucene was unable to open the index.
+	 */
 	public void optimize() throws IOException {
 		IndexWriter writer = null;
 		try {

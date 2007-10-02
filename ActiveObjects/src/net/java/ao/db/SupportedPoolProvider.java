@@ -18,7 +18,16 @@ package net.java.ao.db;
 import net.java.ao.PoolProvider;
 
 /**
+ * <p>Contains a list of all internally supported connection pool providers.
+ * This list is used in the auto-magical pool provider selection based on the
+ * classpath.</p>
+ * 
+ * <p>This enum is designed primarily for INTERNAL use within AO.  While it
+ * is perfectly acceptible to utilize this enum externally, the API may change
+ * unnexpectedly, undocumented results may occur, you know the drill.</p>
+ * 
  * @author Daniel Spiewak
+ * @see net.java.ao.PoolProvider
  */
 public enum SupportedPoolProvider {
 	DBCP(DBCPPoolProvider.class),
