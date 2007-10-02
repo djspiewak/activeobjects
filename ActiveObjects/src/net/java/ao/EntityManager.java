@@ -418,6 +418,7 @@ public class EntityManager {
 	 * @param entities	A varargs array of entities to delete.  Method returns immediately
 	 * 	if length == 0.
 	 */
+	@SuppressWarnings("unchecked")
 	public void delete(RawEntity<?>... entities) throws SQLException {
 		if (entities.length == 0) {
 			return;
@@ -463,7 +464,7 @@ public class EntityManager {
 					
 					int index = 1;
 					for (RawEntity<?> entity : entityList) {
-						TypeManager.getInstance().getType((Class<RawEntity<?>>) entity.getEntityType()).putToDatabase(index++, stmt, entity);
+						TypeManager.getInstance().getType((Class) entity.getEntityType()).putToDatabase(index++, stmt, entity);
 					}
 					
 					relationsCache.remove(type);
