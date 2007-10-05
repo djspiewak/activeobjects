@@ -15,9 +15,9 @@
  */
 package test.schema;
 
+import net.java.ao.Generator;
 import net.java.ao.OneToMany;
 import net.java.ao.RawEntity;
-import net.java.ao.schema.AutoIncrement;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.PrimaryKey;
 
@@ -27,8 +27,8 @@ import net.java.ao.schema.PrimaryKey;
 public interface Company extends RawEntity<Long> {
 	
 	@PrimaryKey
-	@AutoIncrement
 	@NotNull
+	@Generator(TimestampGenerator.class)
 	public long getCompanyID();
 	
 	public String getName();

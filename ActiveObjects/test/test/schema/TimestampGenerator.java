@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
+
+import net.java.ao.EntityManager;
+import net.java.ao.ValueGenerator;
 
 /**
  * @author Daniel Spiewak
  */
-public interface ValueGenerator<T> {
-	public T generateValue(EntityManager manager);
+public class TimestampGenerator implements ValueGenerator<Long> {
+
+	public Long generateValue(EntityManager manager) {
+		return System.currentTimeMillis();
+	}
 }

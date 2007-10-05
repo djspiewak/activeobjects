@@ -74,55 +74,34 @@ public abstract class DataTest {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO company (name, cool) VALUES (?,?)", 
-					PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO company (companyID, name, cool) VALUES (?,?,?)");
 			
-			stmt.setString(1, "Company Name");
-			stmt.setBoolean(2, false);
+			stmt.setLong(1, companyID = System.currentTimeMillis());
+			stmt.setString(2, "Company Name");
+			stmt.setBoolean(3, false);
 			
 			stmt.executeUpdate();
-			
-			ResultSet res = stmt.getGeneratedKeys();
-			if (res.next()) {
-				companyID = res.getInt(1);
-			}
-			res.close();
 			
 			int index = 0;
 			coolCompanyIDs = new long[3];
 
-			stmt.setString(1, "Cool Company");
-			stmt.setBoolean(2, true);
+			stmt.setLong(1, coolCompanyIDs[index++] = System.currentTimeMillis());
+			stmt.setString(2, "Cool Company");
+			stmt.setBoolean(3, true);
 			
 			stmt.executeUpdate();
-			
-			res = stmt.getGeneratedKeys();
-			if (res.next()) {
-				coolCompanyIDs[index++] = res.getInt(1);
-			}
-			res.close();
 
-			stmt.setString(1, "Cool Company");
-			stmt.setBoolean(2, true);
+			stmt.setLong(1, coolCompanyIDs[index++] = System.currentTimeMillis());
+			stmt.setString(2, "Cool Company");
+			stmt.setBoolean(3, true);
 			
 			stmt.executeUpdate();
-			
-			res = stmt.getGeneratedKeys();
-			if (res.next()) {
-				coolCompanyIDs[index++] = res.getInt(1);
-			}
-			res.close();
 
-			stmt.setString(1, "Cool Company");
-			stmt.setBoolean(2, true);
+			stmt.setLong(1, coolCompanyIDs[index++] = System.currentTimeMillis());
+			stmt.setString(2, "Cool Company");
+			stmt.setBoolean(3, true);
 			
 			stmt.executeUpdate();
-			
-			res = stmt.getGeneratedKeys();
-			if (res.next()) {
-				coolCompanyIDs[index++] = res.getInt(1);
-			}
-			res.close();
 			
 			stmt.close();
 			
@@ -134,7 +113,7 @@ public abstract class DataTest {
 			
 			stmt.executeUpdate();
 			
-			res = stmt.getGeneratedKeys();
+			ResultSet res = stmt.getGeneratedKeys();
 			if (res.next()) {
 				personID = res.getInt(1);
 			}

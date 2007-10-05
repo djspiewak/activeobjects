@@ -946,16 +946,23 @@ public abstract class DatabaseProvider {
 				value = Common.getPrimaryKeyValue((RawEntity<?>) value);
 			}
 			
+			if (params[i].getField().equalsIgnoreCase(pkField)) {
+				back = (T) value;
+			}
+			
 			stmt.setObject(i + 1, value);
 		}
 		
 		stmt.executeUpdate();
 		
-		ResultSet res = stmt.getGeneratedKeys();
-		if (res.next()) {
-			 back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, 1);
+		if (back == null) {
+			ResultSet res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, 1);
+			}
+			res.close();
 		}
-		res.close();
+		
 		stmt.close();
 		
 		return back;

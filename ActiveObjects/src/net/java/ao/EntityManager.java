@@ -375,7 +375,7 @@ public class EntityManager {
 					valGenCacheLock.writeLock().unlock();
 				}
 				
-				listParams.add(new DBParam(field, generator.generateValue()));
+				listParams.add(new DBParam(field, generator.generateValue(this)));
 			}
 		} finally {
 			fieldNameConverterLock.readLock().unlock();
@@ -386,7 +386,8 @@ public class EntityManager {
 		try {
 			relationsCache.remove(type);
 			back = get(type, provider.insertReturningKeys(conn, Common.getPrimaryKeyClassType(type), 
-					Common.getPrimaryKeyField((Class<? extends RawEntity<?>>) type, getFieldNameConverter()), table, params));
+					Common.getPrimaryKeyField((Class<? extends RawEntity<?>>) type, getFieldNameConverter()), table, 
+					listParams.toArray(new DBParam[listParams.size()])));
 		} finally {
 			conn.close();
 		}

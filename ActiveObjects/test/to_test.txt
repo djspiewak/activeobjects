@@ -1,9 +1,6 @@
 ==Entities==
 
- * @Generator
  * @Searchable
- 
- * @PrimaryKey(String)
  
  * SearchableEntityManager#search
  * SearchableEntityManager#delete
