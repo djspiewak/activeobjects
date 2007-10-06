@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class BigIntType extends DatabaseType<Long> {
+class BigIntType extends DatabaseType<Long> {
 	
 	public BigIntType() {
 		super(Types.BIGINT, -1, long.class, Long.class);

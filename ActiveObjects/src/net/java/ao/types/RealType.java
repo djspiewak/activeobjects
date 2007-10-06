@@ -24,7 +24,7 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-public class RealType extends DatabaseType<Double> {
+class RealType extends DatabaseType<Double> {
 
 	protected RealType() {
 		super(Types.REAL, -1, double.class, Double.class);
