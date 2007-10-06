@@ -79,6 +79,8 @@
 			<packageset dir="${activeobjects.dir}/src">
 				<include name="net/java/ao/**/*.java"/>
 			</packageset>
+			
+			<link href="${lucene.javadoc}"/>
 		</javadoc>
 	</target>
 	
