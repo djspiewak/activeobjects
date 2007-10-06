@@ -37,6 +37,12 @@ public interface Company extends RawEntity<Long> {
 	public boolean isCool();
 	public void setCool(boolean cool);
 	
+	@Generator(MotivationGenerator.class)
+	public String getMotivation();
+	
+	@Generator(MotivationGenerator.class)
+	public void setMotivation(String motivation);
+	
 	public CompanyAddressInfo getAddressInfo();
 	public void setAddressInfo(CompanyAddressInfo info);
 	

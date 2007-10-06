@@ -173,6 +173,30 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
+	public void testStringGenerate() throws SQLException {
+		Company company = manager.create(Company.class);
+		
+		Connection conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT motivation FROM company WHERE companyID = ?");
+			stmt.setLong(1, company.getCompanyID());
+			
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				assertEquals("Work smarter, not harder", res.getString("motivation"));
+			} else {
+				fail("Unable to find INSERTed company row");
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		manager.delete(company);
+	}
+	
+	@Test
 	public void testDelete() throws SQLException {
 		Company company = manager.create(Company.class);
 		

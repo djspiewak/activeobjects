@@ -10,9 +10,6 @@
  
  * Transaction#execute  (need to find a way to create a transact conflict)
  
- * ValueGenerator (long type)
- * ValueGenerator (string type)
- 
  ==DDLAction Rendering==
  
  * DROP
