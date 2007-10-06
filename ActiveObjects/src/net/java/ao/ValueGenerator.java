@@ -16,8 +16,32 @@
 package net.java.ao;
 
 /**
+ * <p>A super-interface designed to allow auto-generated values
+ * to be inserted into database fields on INSERT.  Potentially,
+ * this could be expanded to also include on UPDATE
+ * functionality, but for the moment it only handles on entity
+ * creation (INSERT).  Implementations are assumed to be
+ * completely stateless and thus thread-safe.</p>
+ * 
+ * <p>The type parameter represents the return type of the
+ * method which does the actual generation.</p>
+ * 
  * @author Daniel Spiewak
+ * @see net.java.ao.Generator
  */
 public interface ValueGenerator<T> {
+	
+	/**
+	 * Generate a new value for an arbitrary field.  No write
+	 * database operations should be performed within this
+	 * method.  The <code>EntityManager</code> instance is only
+	 * intended to ensure various field constraints (such as
+	 * uniqueness for primary keys).  Great care should be
+	 * taken with performing such operations, as the value
+	 * generation method needs to be extremely efficient.
+	 * 
+	 * @param manager	An instance to gain <i>read</i> access to the database.
+	 * @returns A new value of the relevant type for INSERT.
+	 */
 	public T generateValue(EntityManager manager);
 }
