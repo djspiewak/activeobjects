@@ -393,12 +393,62 @@ public abstract class DatabaseProvider {
 		return null;
 	}
 	
+	/**
+	 * <p>Allows the provider to set database-specific options on a
+	 * {@link Statement} instance prior to its usage in a SELECT
+	 * query.  This is to allow things like emulation of the
+	 * LIMIT feature on databases which don't support it within
+	 * the SQL implementation.</p>
+	 * 
+	 * <p>This method is only called on SELECTs.</p>
+	 * 
+	 * @param stmt	The instance against which the properties 
+	 * 		should be set.
+	 * @param query	The query which is being executed against
+	 * 		the statement instance. 
+	 */
 	public void setQueryStatementProperties(Statement stmt, Query query) throws SQLException {
 	}
 	
+	/**
+	 * Allows the provider to set database-specific options on a
+	 * {@link ResultSet} instance prior to its use by the library.
+	 * This allows for features such as row offsetting even on
+	 * databases that don't support it (such as Oracle, Derby,
+	 * etc).
+	 * 
+	 * @param res	The <code>ResultSet</code> to modify.
+	 * @param query	The query instance which was run to produce
+	 * 		the result set.
+	 */
 	public void setQueryResultSetProperties(ResultSet res, Query query) throws SQLException {
 	}
 	
+	/**
+	 * <p>Returns a result set of all of the tables (and associated
+	 * meta) in the database.  The fields of the result set must
+	 * correspond with those specified in the
+	 * <code>DatabaseMetaData#getTables(String, String, String, String[])</code>
+	 * method.  In fact, the default implementation meerly calls
+	 * this method passing <code>(null, null, "", null)</code>.
+	 * For databases (such as PostgreSQL) where this is unsuitable,
+	 * different parameters can be specified to the <code>getTables</code>
+	 * method in the override, or an entirely new implementation
+	 * written, as long as the result set corresponds in fields to
+	 * the JDBC spec.</p>
+	 * 
+	 * <p>Databases which do not support this function (such as Oracle)
+	 * should <i>not</i> throw an exception.  Instead, they should
+	 * print a warning to stderr and return <code>null</code>.
+	 * ActiveObjects will interpret a <code>null</code> result set
+	 * as signifying no tables in the database, usually leading to a
+	 * complete recreation of the schema (raw migration).</p>
+	 * 
+	 * @param conn	The connection to use in retrieving the database tables.
+	 * @returns	A result set of tables (and meta) corresponding in fields
+	 * 		to the JDBC specification.
+	 * @see java.sql.DatabaseMetaData#getTables(String, String, String, String[])
+	 */
 	public ResultSet getTables(Connection conn) throws SQLException {
 		return conn.getMetaData().getTables(null, null, "", null);
 	}
