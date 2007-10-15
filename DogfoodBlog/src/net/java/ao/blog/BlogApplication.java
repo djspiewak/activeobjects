@@ -26,7 +26,7 @@ import net.java.ao.blog.db.Blog;
 import net.java.ao.blog.db.Comment;
 import net.java.ao.blog.pages.Index;
 import net.java.ao.blog.pages.ViewPost;
-import net.java.ao.schema.Generator;
+import net.java.ao.schema.SchemaGenerator;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.Request;
@@ -64,7 +64,7 @@ public class BlogApplication extends WebApplication {
 
 	private void generateSchema(EntityManager manager) {
 		try {
-			Generator.migrate(manager.getProvider(), Comment.class);
+			SchemaGenerator.migrate(manager.getProvider(), Comment.class);
 
 			manager.create(Blog.class).setName("AO Dogfood Blog");
 		} catch (SQLException e) {

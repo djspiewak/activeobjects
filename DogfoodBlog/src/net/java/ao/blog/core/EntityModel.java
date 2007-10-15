@@ -28,16 +28,13 @@ import org.apache.wicket.model.IModel;
  * @author Daniel Spiewak
  */
 public abstract class EntityModel implements IModel, Serializable {
-
 	private int id;
-
 	private String property;
-
 	private Class<? extends Entity> type;
 
 	public EntityModel(Entity entity, String property) {
 		id = entity.getID();
-		type = entity.getEntityType();
+		type = (Class<? extends Entity>) entity.getEntityType();
 
 		this.property = property;
 	}
