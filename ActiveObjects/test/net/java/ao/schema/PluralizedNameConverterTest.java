@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package net.java.ao.schema;
 
 import static org.junit.Assert.assertEquals;
-import net.java.ao.schema.CamelCaseTableNameConverter;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import test.schema.Company;
@@ -29,14 +33,18 @@ import test.schema.PersonSuit;
 /**
  * @author Daniel Spiewak
  */
-public class CamelCaseTableNameConverterTest {
+public class PluralizedNameConverterTest {
+	private PluralizedNameConverter converter;
+
+	@Before
+	public void setUp() throws Exception {
+		converter = new PluralizedNameConverter();
+	}
 
 	@Test
 	public void testAddClassMapping() {
-		CamelCaseTableNameConverter converter = new CamelCaseTableNameConverter();
-		
-		converter.addClassMapping(Person.class, "rowdy_ones");
-		assertEquals("rowdy_ones", converter.getName(Person.class));
+		converter.addClassMapping(Person.class, "rowdy_one");
+		assertEquals("rowdy_one", converter.getName(Person.class));
 		
 		converter.addClassMapping(PersonSuit.class, "unfair_procedings");
 		assertEquals("unfair_procedings", converter.getName(PersonSuit.class));
@@ -44,12 +52,26 @@ public class CamelCaseTableNameConverterTest {
 
 	@Test
 	public void testGetName() {
-		CamelCaseTableNameConverter converter = new CamelCaseTableNameConverter();
-		
-		assertEquals("person", converter.getName(Person.class));
-		assertEquals("company", converter.getName(Company.class));
-		assertEquals("personSuit", converter.getName(PersonSuit.class));
+		assertEquals("people", converter.getName(Person.class));
+		assertEquals("companies", converter.getName(Company.class));
+		assertEquals("personSuits", converter.getName(PersonSuit.class));
 		assertEquals("personDefence", converter.getName(PersonLegalDefence.class));
 		assertEquals("companyAddressInfo", converter.getName(CompanyAddressInfo.class));
+	}
+	
+	@Test
+	public void testPluralization() throws IOException {
+		Properties data = new Properties();
+		InputStream is = getClass().getResourceAsStream("/net/java/ao/schema/englishPluralTest.properties");
+		
+		try {
+			data.load(is);
+		} finally{
+			is.close();
+		}
+		
+		for (Object key : data.keySet()) {
+			assertEquals(data.getProperty(key.toString()), converter.processName(key.toString()));
+		}
 	}
 }

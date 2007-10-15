@@ -22,6 +22,8 @@ import java.util.Map;
 import net.java.ao.RawEntity;
 
 /**
+ * TODO	doesn't deal with all-caps pluralizing
+ * 
  * @author Daniel Spiewak
  */
 public class PluralizedNameConverter extends AbstractTableNameConverter {

@@ -25,8 +25,6 @@ public class BaseTests extends TestUtilities {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("net.java.ao");
 		//$JUnit-BEGIN$
-		suite.addTest(NameConverterTests.suite());
-		
 		suite.addTest(asTest(EntityTest.class));
 		suite.addTest(asTest(RelationsCacheTest.class));
 		suite.addTest(asTest(EntityManagerTest.class));

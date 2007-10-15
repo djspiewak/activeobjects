@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package net.java.ao.schema;
 
+import net.java.ao.TestUtilities;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
