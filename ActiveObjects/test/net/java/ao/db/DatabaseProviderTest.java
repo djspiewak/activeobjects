@@ -46,7 +46,7 @@ public class DatabaseProviderTest {
 
 	@Test
 	public void testRenderActionCreateTable() throws IOException {
-		DDLAction action = createAction();
+		DDLAction action = createActionCreateTable();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
 		assertEquals(readStatements("derby-create-table.sql"), provider.renderAction(action));
@@ -64,12 +64,36 @@ public class DatabaseProviderTest {
 		assertEquals(readStatements("oracle-create-table.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-create-table.sql"), provider.renderAction(action));action = createAction();
+		assertEquals(readStatements("postgres-create-table.sql"), provider.renderAction(action));action = createActionCreateTable();
+	}
+
+	@Test
+	public void testRenderActionDropTable() throws IOException {
+		DDLAction action = createActionDropTable();
+		String[] ddl = {"DROP TABLE person"};
+		
+		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(ddl, provider.renderAction(action));
+		
+		provider = new HSQLDatabaseProvider("", "", "");
+		assertEquals(ddl, provider.renderAction(action));
+		
+		provider = new JTDSSQLServerDatabaseProvider("", "", "");
+		assertEquals(ddl, provider.renderAction(action));
+		
+		provider = new MySQLDatabaseProvider("", "", "");
+		assertEquals(ddl, provider.renderAction(action));
+		
+		provider = new OracleDatabaseProvider("", "", "");
+		assertEquals(ddl, provider.renderAction(action));
+		
+		provider = new PostgreSQLDatabaseProvider("", "", "");
+		assertEquals(ddl, provider.renderAction(action));action = createActionCreateTable();
 	}
 	
 	@Test
 	public void testRenderActionCreateIndex() throws IOException {
-		DDLAction action = createIndexAction();
+		DDLAction action = createActionCreateIndex();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
 		assertEquals(readStatements("derby-create-index.sql"), provider.renderAction(action));
@@ -90,7 +114,7 @@ public class DatabaseProviderTest {
 		assertEquals(readStatements("postgres-create-index.sql"), provider.renderAction(action));
 	}
 	
-	private DDLAction createAction() {
+	private DDLAction createActionCreateTable() {
 		TypeManager tm = TypeManager.getInstance();
 		tm.addType(new ClassType());
 		
@@ -166,7 +190,17 @@ public class DatabaseProviderTest {
 		return back;
 	}
 	
-	private DDLAction createIndexAction() {
+	private DDLAction createActionDropTable() {
+		DDLAction back = new DDLAction(DDLActionType.DROP);
+		
+		DDLTable table = new DDLTable();
+		table.setName("person");
+		back.setTable(table);
+		
+		return back;
+	}
+	
+	private DDLAction createActionCreateIndex() {
 		DDLAction back = new DDLAction(DDLActionType.CREATE_INDEX);
 		
 		DDLIndex index = new DDLIndex();
