@@ -45,48 +45,49 @@ import test.schema.Company;
 public class DatabaseProviderTest {
 
 	@Test
-	public void testRenderAction() throws IOException {
-		// create table
+	public void testRenderActionCreateTable() throws IOException {
 		DDLAction action = createAction();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readString("derby-create-table.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("derby-create-table.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readString("hsqldb-create-table.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("hsqldb-create-table.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readString("sqlserver-create-table.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("sqlserver-create-table.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readString("mysql-create-table.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("mysql-create-table.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readString("oracle-create-table.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("oracle-create-table.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readString("postgres-create-table.sql"), provider.renderAction(action)[0]);action = createAction();
+		assertEquals(readStatements("postgres-create-table.sql"), provider.renderAction(action));action = createAction();
+	}
+	
+	@Test
+	public void testRenderActionCreateIndex() throws IOException {
+		DDLAction action = createIndexAction();
 		
-		// create index
-		action = createIndexAction();
-		
-		provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readString("derby-create-index.sql"), provider.renderAction(action)[0]);
+		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(readStatements("derby-create-index.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readString("hsqldb-create-index.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("hsqldb-create-index.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readString("sqlserver-create-index.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("sqlserver-create-index.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readString("mysql-create-index.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("mysql-create-index.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readString("oracle-create-index.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("oracle-create-index.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readString("postgres-create-index.sql"), provider.renderAction(action)[0]);
+		assertEquals(readStatements("postgres-create-index.sql"), provider.renderAction(action));
 	}
 	
 	private DDLAction createAction() {
@@ -176,10 +177,11 @@ public class DatabaseProviderTest {
 		return back;
 	}
 	
-	private String readString(String resource) throws IOException {
+	private String[] readStatements(String resource) throws IOException {
 		StringBuilder back = new StringBuilder();
 		
-		BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/net/java/ao/db/" + resource)));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				getClass().getResourceAsStream("/net/java/ao/db/" + resource)));
 		String cur = null;
 		while ((cur = reader.readLine()) != null) {
 			back.append(cur).append('\n');
@@ -188,6 +190,6 @@ public class DatabaseProviderTest {
 		
 		back.setLength(back.length() - 1);
 		
-		return back.toString();
+		return back.toString().split(";");
 	}
 }
