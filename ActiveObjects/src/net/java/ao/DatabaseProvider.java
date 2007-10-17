@@ -453,6 +453,24 @@ public abstract class DatabaseProvider {
 		return conn.getMetaData().getTables(null, null, "", null);
 	}
 	
+	/**
+	 * <p>Renders the SELECT portion of a given {@link Query} instance in the
+	 * manner required by the database-specific SQL implementation.  Usually,
+	 * this is as simple as <code>"SELECT id FROM table"</code> or <code>"SELECT DISTINCT
+	 * * FROM table"</code>.  However, some databases require the limit and offset
+	 * parameters to be specified as part of the SELECT clause.  For example,
+	 * on HSQLDB, a Query for the "id" field limited to 10 rows would render
+	 * SELECT like this: <code>SELECT TOP 10 id FROM table</code>.</p>
+	 * 
+	 * <p>There is usually no need to call this method directly.  Under normal
+	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
+	 * 
+	 * @param query	The Query instance from which to determine the SELECT properties.
+	 * @param converter	The name converter to allow conversion of the query entity
+	 * 		interface into a proper table name.
+	 * @param count	Whether or not the query should be rendered as a <code>SELECT COUNT(*)</code>.
+	 * @returns	The database-specific SQL rendering of the SELECT portion of the query.
+	 */
 	protected String renderQuerySelect(Query query, TableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
 		String tableName = query.getTable();
@@ -491,6 +509,21 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	/**
+	 * <p>Renders the JOIN portion of the query in the database-specific SQL
+	 * dialect.  Very few databases deviate from the standard in this matter,
+	 * thus the default implementation is usually sufficient.</p>
+	 * 
+	 * <p>An example return value: <code>" JOIN table1 ON table.id = table1.value"</code></p>
+	 * 
+	 * <p>There is usually no need to call this method directly.  Under normal
+	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
+	 * 
+	 * @param query	The Query instance from which to determine the JOIN properties.
+	 * @param converter	The name converter to allow conversion of the query entity
+	 * 		interface into a proper table name.
+	 * @returns	The database-specific SQL rendering of the JOIN portion of the query.
+	 */
 	protected String renderQueryJoins(Query query, TableNameConverter converter) {
 		StringBuilder sql = new StringBuilder();
 
@@ -510,6 +543,19 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	/**
+	 * <p>Renders the WHERE portion of the query in the database-specific SQL
+	 * dialect.  Very few databases deviate from the standard in this matter,
+	 * thus the default implementation is usually sufficient.</p>
+	 * 
+	 * <p>An example return value: <code>" WHERE name = ? OR age &lt; 20"</code></p>
+	 * 
+	 * <p>There is usually no need to call this method directly.  Under normal
+	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
+	 * 
+	 * @param query	The Query instance from which to determine the WHERE properties.
+	 * @returns	The database-specific SQL rendering of the WHERE portion of the query.
+	 */
 	protected String renderQueryWhere(Query query) {
 		StringBuilder sql = new StringBuilder();
 		
@@ -522,6 +568,19 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	/**
+	 * <p>Renders the GROUP BY portion of the query in the database-specific SQL
+	 * dialect.  Very few databases deviate from the standard in this matter,
+	 * thus the default implementation is usually sufficient.</p>
+	 * 
+	 * <p>An example return value: <code>" GROUP BY name"</code></p>
+	 * 
+	 * <p>There is usually no need to call this method directly.  Under normal
+	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
+	 * 
+	 * @param query	The Query instance from which to determine the GROUP BY  properties.
+	 * @returns	The database-specific SQL rendering of the GROUP BY portion of the query.
+	 */
 	protected String renderQueryGroupBy(Query query) {
 		StringBuilder sql = new StringBuilder();
 		
@@ -534,6 +593,19 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	/**
+	 * <p>Renders the ORDER BY portion of the query in the database-specific SQL
+	 * dialect.  Very few databases deviate from the standard in this matter,
+	 * thus the default implementation is usually sufficient.</p>
+	 * 
+	 * <p>An example return value: <code>" ORDER BY name ASC"</code></p>
+	 * 
+	 * <p>There is usually no need to call this method directly.  Under normal
+	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
+	 * 
+	 * @param query	The Query instance from which to determine the ORDER BY properties.
+	 * @returns	The database-specific SQL rendering of the ORDER BY portion of the query.
+	 */
 	protected String renderQueryOrderBy(Query query) {
 		StringBuilder sql = new StringBuilder();
 		
@@ -546,6 +618,23 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	/**
+	 * <p>Renders the LIMIT portion of the query in the database-specific SQL
+	 * dialect.  There is wide variety in database implementations of this
+	 * particular SQL clause.  In fact, many database do not support it at all.
+	 * If the database in question does not support LIMIT, this method should
+	 * be overridden to return an empty String.  For such databases, LIMIT
+	 * should be implemented by overriding {@link #setQueryResultSetProperties(ResultSet, Query)}
+	 * and {@link #setQueryStatementProperties(Statement, Query)}.</p>
+	 * 
+	 * <p>An example return value: <code>" LIMIT 10,2"</code></p>
+	 * 
+	 * <p>There is usually no need to call this method directly.  Under normal
+	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
+	 * 
+	 * @param query	The Query instance from which to determine the LIMIT properties.
+	 * @returns	The database-specific SQL rendering of the LIMIT portion of the query.
+	 */
 	protected String renderQueryLimit(Query query) {
 		StringBuilder sql = new StringBuilder();
 		
@@ -563,18 +652,72 @@ public abstract class DatabaseProvider {
 		return sql.toString();
 	}
 	
+	/**
+	 * Retrieves the JDBC URI in use by the provider to obtain connections
+	 * when necessary.  This should always return a valid URI, even in
+	 * implementations such as connection pools which don't use the URI
+	 * directly.
+	 * 
+	 * @returns	A JDBC URI.
+	 */
 	public String getURI() {
 		return uri;
 	}
 	
+	/**
+	 * Retrieves the username used to authenticate against the database.
+	 * 
+	 * @returns	The database username.
+	 */
 	public String getUsername() {
 		return username;
 	}
 	
+	/**
+	 * Retrieves the password used to authenticate against the database.
+	 * 
+	 * @returns	The database password.
+	 */
 	public String getPassword() {
 		return password;
 	}
 	
+	/**
+	 * <p>Retrieves a JDBC {@link Connection} instance which corresponds
+	 * to the database represented by the provider instance.  This Connection
+	 * can be used to execute arbitrary JDBC operations against the database.
+	 * Also, this is the method used by the whole of ActiveObjects itself to
+	 * get database connections when required.</p>
+	 * 
+	 * <p>All {@link Connection} instances are pooled internally by thread.
+	 * Thus, there is never more than one connection per thread.  This is
+	 * necessary to allow arbitrary JDBC operations within a transaction
+	 * without breaking transaction integrity.  Developers using this method
+	 * should bear this fact in mind and consider the {@link Connection}
+	 * instance immutable.  The only exception is if one is <i>absolutely</i>
+	 * certain that the JDBC code in question is not being executed within
+	 * a transaction.</p>
+	 * 
+	 * <p>Despite the fact that there is only a single connection per thread,
+	 * the {@link Connection} instances returned from this method should
+	 * still be treated as bona fide JDBC connections.  They can and
+	 * <i>should</i> be closed when their usage is complete.  This is
+	 * especially important when actual connection pooling is in use and
+	 * non-disposal of connections can lead to a crash as the connection
+	 * pool runs out of resources.  The developer need not concern themselves
+	 * with the single-connection-per-thread issue when closing the connection
+	 * as the call to <code>close()</code> will be intercepted and ignored
+	 * if necessary.</p>
+	 * 
+	 * <p>Due to the fact that this method must implement some thread-specific
+	 * operations, it is declared <code>final</code> and thus is not
+	 * overridable in subclasses.  Database providers which need to override
+	 * the connection fetching mechanism (such as pool providers) should
+	 * instead override the {@link #getConnectionImpl()} method.</p>
+	 * 
+	 * @returns	A new connection to the database or <code>null</code>
+	 * 		if the driver could not be loaded.
+	 */
 	public final Connection getConnection() throws SQLException {
 		connectionsLock.writeLock().lock();
 		try {
@@ -592,6 +735,21 @@ public abstract class DatabaseProvider {
 		}
 	}
 	
+	/**
+	 * <p>Creates a new connection to the database prepresented by the
+	 * provider instance.  This method should not attempt to do any
+	 * caching of any kind (unless implemented by a connection pool
+	 * library).  Prior to creating the database connection, this
+	 * method makes a call to {@link #getDriverClass()} to ensure that
+	 * the JDBC driver has been loaded.  The return value is not
+	 * checked for validity.</p>
+	 * 
+	 * <p>This method is <i>never</i> called directly.  Instead, the
+	 * {@link #getConnection()} method should be used.</p>
+	 * 
+	 * @returns	A new connection to the database or <code>null</code>
+	 * 		if the driver could not be loaded.
+	 */
 	protected Connection getConnectionImpl() throws SQLException {
 		try {
 			getDriverClass();
@@ -605,12 +763,52 @@ public abstract class DatabaseProvider {
 		return conn;
 	}
 	
+	/**
+	 * Frees any resources held by the database provider or delegate
+	 * libraries (such as connection pools).  This method should be
+	 * once usage of the provider is complete to ensure that all
+	 * connections are committed and closed.
+	 */
 	public void dispose() {
+		connectionsLock.writeLock().lock();
+		try {
+			for (Connection conn : connections.values()) {
+				if (conn instanceof DelegateConnection) {
+					((DelegateConnection) conn).setCloseable(true);
+				}
+				
+				conn.close();
+			}
+		} catch (SQLException e) {
+		} finally {
+			connectionsLock.writeLock().unlock();
+		}
 	}
 	
+	/**
+	 * Called to make any post-creation modifications to a new
+	 * {@link Connection} instance.  This is used for databases
+	 * such as Derby which require the schema to be set after
+	 * the connection is created.
+	 * 
+	 * @param conn	The connection to modify according to the database
+	 * 		requirements.
+	 */
 	protected void setPostConnectionProperties(Connection conn) throws SQLException {
 	}
 	
+	/**
+	 * Renders the foreign key constraints in database-specific DDL for
+	 * the table in question.  Actually, this method only loops through
+	 * the foreign keys and renders indentation and line-breaks.  The
+	 * actual rendering is done in a second delegate method.
+	 * 
+	 * @param table	The database-agnostic DDL representation of the table
+	 * 		in question.
+	 * @returns	The String rendering of <i>all</i> of the foreign keys for
+	 * 		the table.
+	 * @see #renderForeignKey(DDLForeignKey)
+	 */
 	protected String renderConstraintsForTable(DDLTable table) {
 		StringBuilder back = new StringBuilder();
 		
