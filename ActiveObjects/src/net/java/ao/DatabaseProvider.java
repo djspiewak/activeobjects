@@ -819,6 +819,16 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	/**
+	 * Renders the specified foreign key representation into the
+	 * database-specific DDL.  The implementation <i>must</i> name the
+	 * foreign key according to the <code>DDLForeignKey#getFKName()</code>
+	 * value otherwise migrations will no longer function appropriately.
+	 * 
+	 * @param key	The database-agnostic foreign key representation.
+	 * @returns	The database-pecific DDL fragment corresponding to the
+	 * 		foreign key in question.
+	 */
 	protected String renderForeignKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder();
 		
@@ -829,10 +839,34 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	/**
+	 * Converts the specified type into the database-specific DDL String
+	 * value.  By default, this delegates to the <code>DatabaseType#getDefaultName()</code>
+	 * method.  Subclass implementations should be sure to make a <code>super</code>
+	 * call in order to ensure that both default naming and future special
+	 * cases are handled appropriately.
+	 * 
+	 * @param type	The type instance to convert to a DDL string.
+	 * @returns	The database-specific DDL representation of the type (e.g. "VARCHAR").
+	 * @see net.java.ao.types.DatabaseType#getDefaultName()
+	 */
 	protected String convertTypeToString(DatabaseType<?> type) {
 		return type.getDefaultName();
 	}
 	
+	/**
+	 * Renders the specified table representation into the corresponding
+	 * database-specific DDL statement.  For legacy reasons, this only allows
+	 * single-statement table creation.  Additional statements (triggers,
+	 * functions, etc) must be created in one of the other delegate methods
+	 * for DDL creation.  This method does a great deal of delegation to
+	 * other <code>DatabaseProvider</code> methods for functions such as
+	 * field rendering, foreign key rendering, etc.
+	 * 
+	 * @param table	The database-agnostic table representation.
+	 * @returns	The database-specific DDL statements which correspond to the
+	 * 		specified table creation.
+	 */
 	protected String renderTable(DDLTable table) {
 		StringBuilder back = new StringBuilder("CREATE TABLE ");
 		back.append(table.getName());
@@ -878,14 +912,59 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	/**
+	 * Generates the appropriate database-specific DDL statement to
+	 * drop the specified table representation.  The default implementation
+	 * is merely <code>"DROP TABLE tablename"</code>.  This is suitable
+	 * for every database that I am aware of.  Any dependant database
+	 * objects (such as triggers, functions, etc) must be rendered in
+	 * one of the other delegate methods (such as <code>renderDropTriggers(DDLTable)</code>).
+	 * 
+	 * @param table	The table representation which is to be dropped.
+	 * @returns	A database-specific DDL statement which drops the specified 
+	 * 		table.
+	 */
 	protected String renderDropTable(DDLTable table) {
 		return "DROP TABLE " + table.getName();
 	}
 	
+	/**
+	 * Generates the database-specific DDL statements required to drop all
+	 * associated functions for the given table representation.  The default
+	 * implementation is to return an empty array.  Some databases (such
+	 * as PostgreSQL) require triggers to fire functions, unlike most
+	 * databases which allow triggers to function almost like standalone
+	 * functions themselves.  For such databases, dropping a table means
+	 * not only dropping the table and the associated triggers, but also
+	 * the functions associated with the triggers themselves.
+	 * 
+	 * @param table	The table representation against which all functions which
+	 * 		correspond (directly or indirectly) must be dropped.
+	 * @returns	An array of database-specific DDL statement(s) which drop the
+	 * 		required functions.
+	 */
 	protected String[] renderDropFunctions(DDLTable table) {
 		return new String[0];
 	}
 	
+	/**
+	 * Generates the database-specific DDL statements required to drop all
+	 * associated triggers for the given table representation.  The default
+	 * implementation is to return an empty array.  Most databases require
+	 * the <code>@OnUpdate</code> function to be implemented using triggers
+	 * explicitly (rather than the implicit MySQL syntax).  For such
+	 * databases, some tables will thus have triggers which are associated 
+	 * directly with the table.  It is these triggers which must be
+	 * dropped prior to the dropping of the table itself.  For databases
+	 * which associate functions with triggers (such as PostgreSQL), these
+	 * functions will be dropped using another delegate method and need
+	 * not be dealt with in this method's implementation.
+	 * 
+	 * @param table	The table representation against which all triggers which
+	 * 		correspond (directly or indirectly) must be dropped.
+	 * @returns	An array of database-specific DDL statement(s) which drop the
+	 * 		required triggers.
+	 */
 	protected String[] renderDropTriggers(DDLTable table) {
 		return new String[0];
 	}
