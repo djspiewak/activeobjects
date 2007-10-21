@@ -42,6 +42,7 @@ import test.schema.Company;
 /**
  * @author Daniel Spiewak
  */
+@SuppressWarnings("deprecation")
 public class DatabaseProviderTest {
 
 	@Test
@@ -89,6 +90,52 @@ public class DatabaseProviderTest {
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
 		assertEquals(ddl, provider.renderAction(action));action = createActionCreateTable();
+	}
+	
+	@Test
+	public void testRenderActionAddColumn() throws IOException {
+		DDLAction action = createActionAddColumn();
+		
+		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(readStatements("derby-add-column.sql"), provider.renderAction(action));
+		
+		provider = new HSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("hsqldb-add-column.sql"), provider.renderAction(action));
+		
+		provider = new JTDSSQLServerDatabaseProvider("", "", "");
+		assertEquals(readStatements("sqlserver-add-column.sql"), provider.renderAction(action));
+		
+		provider = new MySQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("mysql-add-column.sql"), provider.renderAction(action));
+		
+		provider = new OracleDatabaseProvider("", "", "");
+		assertEquals(readStatements("oracle-add-column.sql"), provider.renderAction(action));
+		
+		provider = new PostgreSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("postgres-add-column.sql"), provider.renderAction(action));
+	}
+	
+	@Test
+	public void testRenderActionAlterColumn() throws IOException {
+		DDLAction action = createActionAlterColumn();
+		
+		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(readStatements("derby-alter-column.sql"), provider.renderAction(action));
+		
+		provider = new HSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("hsqldb-alter-column.sql"), provider.renderAction(action));
+		
+		provider = new JTDSSQLServerDatabaseProvider("", "", "");
+		assertEquals(readStatements("sqlserver-alter-column.sql"), provider.renderAction(action));
+		
+		provider = new MySQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("mysql-alter-column.sql"), provider.renderAction(action));
+		
+		provider = new OracleDatabaseProvider("", "", "");
+		assertEquals(readStatements("oracle-alter-column.sql"), provider.renderAction(action));
+		
+		provider = new PostgreSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("postgres-alter-column.sql"), provider.renderAction(action));
 	}
 	
 	@Test
@@ -195,6 +242,45 @@ public class DatabaseProviderTest {
 		
 		DDLTable table = new DDLTable();
 		table.setName("person");
+		back.setTable(table);
+		
+		return back;
+	}
+	
+	private DDLAction createActionAddColumn() {
+		DDLTable table = new DDLTable();
+		table.setName("company");
+		
+		DDLField field = new DDLField();
+		field.setName("name");
+		field.setType(TypeManager.getInstance().getType(String.class));
+		field.setNotNull(true);
+		
+		DDLAction back = new DDLAction(DDLActionType.ALTER_ADD_COLUMN);
+		back.setField(field);
+		back.setTable(table);
+		
+		return back;
+	}
+	
+	private DDLAction createActionAlterColumn() {
+		DDLTable table = new DDLTable();
+		table.setName("company");
+		
+		DDLField oldField = new DDLField();
+		oldField.setName("name");
+		oldField.setType(TypeManager.getInstance().getType(int.class));
+		oldField.setNotNull(false);
+		table.setFields(new DDLField[] {oldField});
+		
+		DDLField field = new DDLField();
+		field.setName("name");
+		field.setType(TypeManager.getInstance().getType(String.class));
+		field.setNotNull(true);
+		
+		DDLAction back = new DDLAction(DDLActionType.ALTER_ADD_COLUMN);
+		back.setOldField(oldField);
+		back.setField(field);
 		back.setTable(table);
 		
 		return back;
