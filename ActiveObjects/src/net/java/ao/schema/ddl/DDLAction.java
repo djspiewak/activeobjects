@@ -94,7 +94,7 @@ public class DDLAction {
 		if (key != null) {
 			back += key.hashCode();
 		}
-		if (key != null) {
+		if (index != null) {
 			back += index.hashCode();
 		}
 		back %= 2 << 15;
