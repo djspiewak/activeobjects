@@ -969,6 +969,20 @@ public abstract class DatabaseProvider {
 		return new String[0];
 	}
 
+	/**
+	 * <p>Generates the database-specific DDL statements required to create
+	 * all of the functions necessary for the given table.  For most
+	 * databases, this will simply return an empty array.  The 
+	 * functionality is required for databases such as PostgreSQL which
+	 * require a function to be explicitly declared and associated when
+	 * a trigger is created.</p>
+	 * 
+	 * <p>Most of the work for this functionality is delegated to the
+	 * {@link #renderFunctionForField(DDLTable, DDLField)} method.</p>
+	 * 
+	 * @param table	The table for which the functions must be generated.
+	 * @returns	An array of DDL statements to execute.
+	 */
 	protected String[] renderFunctions(DDLTable table) {
 		List<String> back = new ArrayList<String>();
 		
@@ -982,6 +996,23 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
+	/**
+	 * <p>Generates the database-specific DDL statements required to create
+	 * all of the triggers necessary for the given table.  For MySQL, this
+	 * will likely return an empty array.  The functionality is required
+	 * for databases which do not provide an implicit syntax for the
+	 * <code>@OnUpdate</code> functionality.  In MySQL, it is possible to
+	 * provide this functionality with the 
+	 * <code>field TIMESTAMP ON UPDATE CURRENT_DATE</code> style syntax.
+	 * This syntax is not common to all databases, hence triggers must be
+	 * used to provide the functionality.</p>
+	 * 
+	 * <p>Most of the work for this functionality is delegated to the
+	 * {@link #renderTriggerForField(DDLTable, DDLField)} method.</p>
+	 * 
+	 * @param table	The table for which the triggers must be generated.
+	 * @returns	An array of DDL statements to execute.
+	 */
 	protected String[] renderTriggers(DDLTable table) {
 		List<String> back = new ArrayList<String>();
 		
@@ -995,6 +1026,24 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
+	/**
+	 * Generates the database-specific DDL statements required to add
+	 * a column to an existing table.  Included in the return value
+	 * should be the statements required to add all necessary functions
+	 * and triggers to ensure that the column acts appropriately.  For
+	 * example, if the field is tagged with an <code>@OnUpdate</code>
+	 * annotation, chances are there will be a trigger and possibly a
+	 * function along with the ALTER statement.  These "extra"
+	 * functions are properly ordered and will only be appended if
+	 * their values are not <code>null</code>.  Because of this, very
+	 * few database providers will need to override this method.
+	 * 
+	 * @param table	The table which should receive the new column.
+	 * @param field	The column to add to the specified table.
+	 * @returns	An array of DDL statements to execute.
+	 * @see #renderFunctionForField(DDLTable, DDLField)
+	 * @see #renderTriggerForField(DDLTable, DDLField)
+	 */
 	protected String[] renderAlterTableAddColumn(DDLTable table, DDLField field) {
 		List<String> back = new ArrayList<String>();
 		
@@ -1013,6 +1062,33 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
+	/**
+	 * <p>Generates the database-specific DDL statements required to change
+	 * the given column from its old specification to the given DDL value.
+	 * This method will also generate the appropriate statements to remove
+	 * old triggers and functions, as well as add new ones according to the 
+	 * requirements of the new field definition.</p>
+	 * 
+	 * <p>The default implementation of this method functions in the manner
+	 * specified by the MySQL database.  Some databases will have to perform
+	 * more complicated actions (such as dropping and re-adding the field)
+	 * in order to satesfy the same use-case.  Such databases should print
+	 * a warning to stderr to ensure that the end-developer is aware of
+	 * such restrictions.</p>
+	 * 
+	 * <p>Thus, the specification for this method <i>allows</i> for data
+	 * loss.  Nevertheless, if the database supplies a mechanism to
+	 * accomplish the task without data loss, it should be applied.</p>
+	 * 
+	 * @param table	The table containing the column to change.
+	 * @param oldField	The old column definition.
+	 * @param field	The new column definition (defining the resultant DDL).
+	 * @returns	An array of DDL statements to be executed.
+	 * @see #getTriggerNameForField(DDLTable, DDLField)
+	 * @see #getFunctionNameForField(DDLTable, DDLField)
+	 * @see #renderFunctionForField(DDLTable, DDLField)
+	 * @see #renderTriggerForField(DDLTable, DDLField)
+	 */
 	protected String[] renderAlterTableChangeColumn(DDLTable table, DDLField oldField, DDLField field) {
 		List<String> back = new ArrayList<String>();
 		StringBuilder current = new StringBuilder();
@@ -1051,6 +1127,21 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
+	/**
+	 * Generates the database-specific DDL statements required to remove
+	 * the specified column from the given table.  This should also
+	 * generate the necessary statements to drop all triggers and functions
+	 * associated with the column in question.  If the database being
+	 * implemented has a non-standard syntax for dropping functions and/or
+	 * triggers, it may be required to override this method, even if the
+	 * syntax to drop columns is standard.
+	 * 
+	 * @param table	The table from which to drop the column.
+	 * @param field	The column definition to remove from the table.
+	 * @returns	An array of DDL statements to be executed.
+	 * @see #getTriggerNameForField(DDLTable, DDLField)
+	 * @see #getFunctionNameForField(DDLTable, DDLField)
+	 */
 	protected String[] renderAlterTableDropColumn(DDLTable table, DDLField field) {
 		List<String> back = new ArrayList<String>();
 		StringBuilder current = new StringBuilder();
@@ -1078,6 +1169,18 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
+	/**
+	 * Generates the database-specific DDL statement required to add a
+	 * foreign key to a table.  For databases which do not support such
+	 * a statement, a warning should be printed to stderr and a
+	 * <code>null</code> value returned.
+	 * 
+	 * @param key	The foreign key to be added.  As this instance contains
+	 * 		all necessary data (such as domestic table, field, etc), no
+	 * 		additional parameters are required.
+	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 * @see #renderForeignKey(DDLForeignKey)
+	 */
 	protected String renderAlterTableAddKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder();
 		
@@ -1087,10 +1190,36 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	/**
+	 * Generates the database-specific DDL statement required to remove a
+	 * foreign key from a table.  For databases which do not support such
+	 * a statement, a warning should be printed to stderr and a
+	 * <code>null</code> value returned.  This method assumes that the
+	 * {@link #renderForeignKey(DDLForeignKey)} method properly names
+	 * the foreign key according to the {@link DDLForeignKey#getFKName()}
+	 * method.
+	 * 
+	 * @param key	The foreign key to be removed.  As this instance contains
+	 * 		all necessary data (such as domestic table, field, etc), no
+	 * 		additional parameters are required.
+	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 */
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
 		return "ALTER TABLE " + key.getDomesticTable() + " DROP FOREIGN KEY " + key.getFKName();
 	}
 	
+	/**
+	 * Generates the database-specific DDL statement required to create
+	 * a new index.  The syntax for this operation is highly standardized
+	 * and thus it is unlikely this method will be overridden.  If the
+	 * database in question does not support indexes, a warning should
+	 * be printed to stderr and <code>null</code> returned.
+	 * 
+	 * @param index	The index to create.  This single instance contains all
+	 * 		of the data necessary to create the index, thus no separate
+	 * 		parameters (such as a <code>DDLTable</code>) are required.
+	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 */
 	protected String renderCreateIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder();
 		
@@ -1100,6 +1229,18 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	/**
+	 * Generates the database-specific DDL statement required to drop
+	 * an index.  The syntax for this operation is highly standardized
+	 * and thus it is unlikely this method will be overridden.  If the
+	 * database in question does not support indexes, a warning should
+	 * be printed to stderr and <code>null</code> returned.
+	 * 
+	 * @param index	The index to drop.  This single instance contains all
+	 * 		of the data necessary to drop the index, thus no separate
+	 * 		parameters (such as a <code>DDLTable</code>) are required.
+	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 */
 	protected String renderDropIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder();
 		
@@ -1109,6 +1250,23 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 
+	/**
+	 * <p>Generates any database-specific options which must be appended
+	 * to the end of a table definition.  The only database I am aware
+	 * of which requires this is MySQL.  For example:</p>
+	 * 
+	 * <pre>CREATE TABLE test (
+	 *     id INTEGER NOT NULL AUTO_INCREMENT,
+	 *     name VARCHAR(45),
+	 *     PRIMARY KEY(id)
+	 * ) ENGINE=InnoDB;</pre>
+	 * 
+	 * <p>The "<code>ENGINE=InnoDB</code>" clause is what is returned by
+	 * this method.  The default implementation simply returns 
+	 * <code>null</code>, signifying that no append should be rendered.</p>
+	 * 
+	 * @returns	A DDL clause to be appended to the CREATE TABLE DDL, or <code>null</code>
+	 */
 	protected String renderAppend() {
 		return null;
 	}
