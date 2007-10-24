@@ -58,6 +58,18 @@ public class PluralizedNameConverterTest {
 		assertEquals("personDefence", converter.getName(PersonLegalDefence.class));
 		assertEquals("companyAddressInfo", converter.getName(CompanyAddressInfo.class));
 	}
+
+	@Test
+	public void testGetNameUnderscore() {
+		PluralizedNameConverter converter = new PluralizedNameConverter(
+				new UnderscoreTableNameConverter(true));
+		
+		assertEquals("PEOPLE", converter.getName(Person.class));
+		assertEquals("COMPANIES", converter.getName(Company.class));
+		assertEquals("PERSON_SUITS", converter.getName(PersonSuit.class));
+		assertEquals("personDefence", converter.getName(PersonLegalDefence.class));
+		assertEquals("COMPANY_ADDRESS_INFO", converter.getName(CompanyAddressInfo.class));
+	}
 	
 	@Test
 	public void testPluralization() throws IOException {
