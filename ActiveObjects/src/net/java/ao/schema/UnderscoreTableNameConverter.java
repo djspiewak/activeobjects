@@ -37,14 +37,15 @@ public class UnderscoreTableNameConverter extends AbstractTableNameConverter {
     @Override
     protected String convertName(Class<? extends RawEntity<?>> entity) {
     	Matcher matcher = WORD_PATTERN.matcher(Common.convertSimpleClassName(entity.getCanonicalName()));
-        String back = matcher.replaceAll("$1_$2");
-		
+        return matcher.replaceAll("$1_$2");
+    }
+    
+    @Override
+    protected String postProcessName(String back) {
 		if (uppercase) {
-			back = back.toUpperCase();
+			return back.toUpperCase();
 		} else {
-			back = back.toLowerCase();
+			return back.toLowerCase();
 		}
-        
-        return back;
     }
 }

@@ -73,14 +73,14 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 			return classMappings.get(entity);
 		}
 		
-		return processName(convertName(entity));
+		return postProcessName(processName(convertName(entity)));
 	}
 	
 	protected abstract String convertName(Class<? extends RawEntity<?>> entity);
 	
 	protected String processName(String back) {
 		for (String regexp : patterns) {
-			Pattern pattern = Pattern.compile("^" + regexp + "$");
+			Pattern pattern = Pattern.compile("^" + regexp + "$", Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(back);
 			
 			if (matcher.find()) {
@@ -105,6 +105,10 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 			}
 		}
 		
+		return back;
+	}
+	
+	protected String postProcessName(String back) {
 		return back;
 	}
 }

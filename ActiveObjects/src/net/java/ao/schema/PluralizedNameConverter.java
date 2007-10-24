@@ -22,8 +22,6 @@ import java.util.Map;
 import net.java.ao.RawEntity;
 
 /**
- * TODO	doesn't deal with all-caps pluralizing
- * 
  * @author Daniel Spiewak
  */
 public class PluralizedNameConverter extends AbstractTableNameConverter {
@@ -59,5 +57,14 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 	@Override
 	protected String convertName(Class<? extends RawEntity<?>> entity) {
 		return delegate.getName(entity);
+	}
+	
+	@Override
+	protected String postProcessName(String back) {
+		if (delegate instanceof AbstractTableNameConverter) {
+			return ((AbstractTableNameConverter) delegate).postProcessName(back);
+		}
+		
+		return back;
 	}
 }
