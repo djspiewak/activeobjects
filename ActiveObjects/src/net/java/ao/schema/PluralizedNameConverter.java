@@ -27,17 +27,18 @@ import net.java.ao.RawEntity;
  * @author Daniel Spiewak
  */
 public class PluralizedNameConverter extends AbstractTableNameConverter {
-	private AbstractTableNameConverter delegate;
+	private TableNameConverter delegate;
 	
 	public PluralizedNameConverter() {
 		this(new CamelCaseTableNameConverter());
 	}
 	
 	@SuppressWarnings("unchecked")
-	public PluralizedNameConverter(AbstractTableNameConverter delegateConverter) {
+	public PluralizedNameConverter(TableNameConverter delegateConverter) {
 		OrderedProperties rules = new OrderedProperties();
 		
-		InputStream is = PluralizedNameConverter.class.getResourceAsStream("/net/java/ao/schema/englishPluralRules.properties");
+		InputStream is = PluralizedNameConverter.class.getResourceAsStream(
+				"/net/java/ao/schema/englishPluralRules.properties");
 		
 		try {
 			rules.load(is);
@@ -57,6 +58,6 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 	
 	@Override
 	protected String convertName(Class<? extends RawEntity<?>> entity) {
-		return delegate.convertName(entity);
+		return delegate.getName(entity);
 	}
 }
