@@ -231,7 +231,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public synchronized <T> T insertReturningKeys(Connection conn, Class<T> pkType, String pkField, String table, 
+	public synchronized <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, 
 			DBParam... params) throws SQLException {
 		boolean identityInsert = false;
 		StringBuilder sql = new StringBuilder();
@@ -270,7 +270,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			sql.append("\nSET IDENTITY_INSERT ").append(table).append(" OFF");
 		}
 		
-		T back = executeInsertReturningKeys(conn, pkType, pkField, sql.toString(), params);
+		T back = executeInsertReturningKey(conn, pkType, pkField, sql.toString(), params);
 		
 		return back;
 	}

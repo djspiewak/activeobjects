@@ -283,7 +283,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 
 	@Override
-	public synchronized <T> T insertReturningKeys(Connection conn, Class<T> pkType, String pkField, String table, 
+	public synchronized <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, 
 			DBParam... params) throws SQLException {
 		T back = null;
 		for (DBParam param : params) {
@@ -313,13 +313,13 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			params = newParams.toArray(new DBParam[newParams.size()]);
 		}
 		
-		super.insertReturningKeys(conn, pkType, pkField, table, params);
+		super.insertReturningKey(conn, pkType, pkField, table, params);
 		
 		return back;
 	}
 	
 	@Override
-	protected <T> T executeInsertReturningKeys(Connection conn, Class<T> pkType, String pkField, String sql, 
+	protected <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, String sql, 
 			DBParam... params) throws SQLException {
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql);

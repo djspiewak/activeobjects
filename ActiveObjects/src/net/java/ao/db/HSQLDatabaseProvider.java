@@ -51,7 +51,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public <T> T insertReturningKeys(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
+	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
@@ -77,11 +77,11 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKeys(conn, pkType, pkField, sql.toString(), params);
+		return executeInsertReturningKey(conn, pkType, pkField, sql.toString(), params);
 	}
 	
 	@Override
-	protected synchronized <T> T executeInsertReturningKeys(Connection conn, Class<T> pkType, String pkField, String sql, 
+	protected synchronized <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, String sql, 
 			DBParam... params) throws SQLException {
 		T back = null;
 		

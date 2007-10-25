@@ -325,7 +325,7 @@ public class EntityManager {
 	 * be aware of the performance implications.</p>
 	 * 
 	 * <p>This method delegates the action INSERT action to 
-	 * {@link DatabaseProvider#insertReturningKeys(Connection, Class, String, String, DBParam...)}.
+	 * {@link DatabaseProvider#insertReturningKey(Connection, Class, String, String, DBParam...)}.
 	 * This is necessary because not all databases support the JDBC <code>RETURN_GENERATED_KEYS</code>
 	 * constant (e.g. PostgreSQL and HSQLDB).  Thus, the database provider itself is
 	 * responsible for handling INSERTion and retrieval of the correct primary key
@@ -336,7 +336,7 @@ public class EntityManager {
 	 * 	values will be passed to the database within the INSERT statement.
 	 * @returns	The new entity instance corresponding to the INSERTed row. 
 	 * @see net.java.ao.DBParam
-	 * @see net.java.ao.DatabaseProvider#insertReturningKeys(Connection, Class, String, String, DBParam...)
+	 * @see net.java.ao.DatabaseProvider#insertReturningKey(Connection, Class, String, String, DBParam...)
 	 */
 	public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
@@ -385,7 +385,7 @@ public class EntityManager {
 		
 		try {
 			relationsCache.remove(type);
-			back = get(type, provider.insertReturningKeys(conn, Common.getPrimaryKeyClassType(type), 
+			back = get(type, provider.insertReturningKey(conn, Common.getPrimaryKeyClassType(type), 
 					Common.getPrimaryKeyField((Class<? extends RawEntity<?>>) type, getFieldNameConverter()), table, 
 					listParams.toArray(new DBParam[listParams.size()])));
 		} finally {

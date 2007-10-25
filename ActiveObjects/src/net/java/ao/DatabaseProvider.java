@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 
 import net.java.ao.db.SupportedDBProvider;
 import net.java.ao.db.SupportedPoolProvider;
+import net.java.ao.schema.OnUpdate;
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLActionType;
@@ -1271,6 +1272,29 @@ public abstract class DatabaseProvider {
 		return null;
 	}
 	
+	/**
+	 * <p>Generates the database-specific DDL fragment required to render the
+	 * field and its associated type.  This includes all field attributes,
+	 * such as <code>@NotNull</code>, <code>@AutoIncrement</code> (if
+	 * supported by the database at the field level) and so on.  Sample
+	 * return value:</p>
+	 * 
+	 * <pre>name VARCHAR(255) DEFAULT "Skye" NOT NULL</pre>
+	 * 
+	 * <p>Certain databases don't allow defined precision for certain types
+	 * (such as Derby and INTEGER).  The logic for whether or not to render
+	 * precision should not be within this method, but delegated to the
+	 * {@link #considerPrecision(DDLField)} method.</p>
+	 * 
+	 * <p>Almost all functionality within this method is delegated to other
+	 * methods within the implementation.  As such, it is almost never
+	 * necessary to override this method directly.  An exception to this
+	 * would be a database like PostgreSQL which requires a different type
+	 * for auto-incremented fields.</p>
+	 * 
+	 * @param field	The field to be rendered.
+	 * @returns	A DDL fragment to be embedded in a statement elsewhere.
+	 */
 	protected String renderField(DDLField field) {
 		StringBuilder back = new StringBuilder();
 		
@@ -1315,6 +1339,21 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	/**
+	 * Renders the given Java instance in a database-specific way.  This
+	 * method handles special cases such as {@link Calendar},
+	 * {@link Boolean} (which is always rendered as 0/1), functions,
+	 * <code>null</code> and numbers.  All other values are rendered (by 
+	 * default) as <code>'value.toString()'</code> (the String value 
+	 * enclosed within single quotes).  Implementations are encouraged to 
+	 * override this method as necessary.
+	 * 
+	 * @param value	The Java instance to be rendered as a database literal.
+	 * @returns	The database-specific String rendering of the instance in 
+	 * 		question.
+	 * @see #renderCalendar(Calendar)
+	 * @see #renderFunction(DatabaseFunction)
+	 */
 	protected String renderValue(Object value) {
 		if (value == null) {
 			return "NULL";
@@ -1331,22 +1370,83 @@ public abstract class DatabaseProvider {
 		return "'" + value.toString() + "'";
 	}
 	
+	/**
+	 * Renders the provided {@link Calendar} instance as a TIMESTAMP literal
+	 * in the database-specific format.  The return value should <i>not</i>
+	 * be enclosed within quotes, as this is accomplished within other
+	 * functions when rendering is required.  This method is actually a
+	 * boiler-plate usage of the {@link SimpleDateFormat} class, using the
+	 * date format defined within the {@link #getDateFormat()} method.
+	 * 
+	 * @param calendar	The time instance to be rendered.
+	 * @returns	The database-specific String representation of the time.
+	 */
 	protected String renderCalendar(Calendar calendar) {
 		return new SimpleDateFormat(getDateFormat()).format(calendar.getTime());
 	}
 	
+	/**
+	 * Renders the <code>UNIQUE</code> constraint as defined by the
+	 * database-specific DDL syntax.  This method is a delegate of other, more
+	 * complex methods such as {@link #renderField(DDLField)}.  The default
+	 * implementation just returns <code>UNIQUE</code>.  Implementations may
+	 * override this method to return an empty {@link String} if the database
+	 * in question does not support the constraint.
+	 * 
+	 * @returns	The database-specific rendering of <code>UNIQUE</code>.
+	 */
 	protected String renderUnique() {
 		return "UNIQUE";
 	}
 	
+	/**
+	 * Returns the database-specific TIMESTAMP text format as defined by
+	 * the {@link SimpleDateFormat} syntax.  This format should include
+	 * the time down to the second (or even more precise, if allowed by
+	 * the database).  The default implementation returns the format for
+	 * MySQL, which is: <code>yyyy-MM-dd HH:mm:ss</code>
+	 * 
+	 * @returns The database-specific TIMESTAMP text format
+	 */
 	protected String getDateFormat() {
 		return "yyyy-MM-dd HH:mm:ss";
 	}
 	
+	/**
+	 * Renders the database-specific DDL type for the field in question.
+	 * This method merely delegates to the {@link #convertTypeToString(DatabaseType)}
+	 * method, passing the field type.  Thus, it is rarely necessary
+	 * (if ever) to override this method.  It may be deprecated in a
+	 * future release.
+	 * 
+	 * @param field	The field which contains the type to be rendered.
+	 * @returns	The database-specific type DDL rendering.
+	 */
 	protected String renderFieldType(DDLField field) {
 		return convertTypeToString(field.getType());
 	}
 
+	/**
+	 * <p>Renders the specified {@link DatabaseFunction} in its 
+	 * database-specific form.  For example, for MySQL the
+	 * <code>CURRENT_DATE</code> enum value would be rendered as
+	 * "<code>CURRENT_DATE</code>" (without the quotes).  For functions
+	 * which do not have a database equivalent, a default literal value
+	 * of the appropriate type should be returned.  For example, if MySQL
+	 * did <i>not</i> define either a CURRENT_DATE or a CURRENT_TIMESTAMP
+	 * function, the appropriate return value for both functions would
+	 * be <code>'0000-00-00 00:00:00'</code> (including the quotes).
+	 * This is to prevent migrations from failing even in cases where
+	 * non-standard functions are used.</p>
+	 * 
+	 * <p>As of 1.0, no unconventional functions are allowed by the 
+	 * {@link DatabaseFunction} enum, thus no database should have any
+	 * problems with any allowed functions.</p>
+	 * 
+	 * @param func	The abstract function to be rendered.
+	 * @returns	The database-specific DDL representation of the function
+	 * 		in question.
+	 */
 	protected String renderFunction(DatabaseFunction func) {
 		switch (func) {
 			case CURRENT_DATE:
@@ -1359,6 +1459,18 @@ public abstract class DatabaseProvider {
 		return null;
 	}
 	
+	/**
+	 * <p>Renders the appropriate field suffix to allow for the
+	 * {@link OnUpdate} functionality.  For most databases (read:
+	 * all but MySQL) this will return an empty String.  This is
+	 * because few databases provide an implicit ON UPDATE syntax for
+	 * fields.  As such, most databases will be compelled to return
+	 * an empty String and implement the functionality using triggers.
+	 * 
+	 * @param field	The field for which the ON UPDATE clause should 
+	 * 		be rendered.
+	 * @returns	The database-specific ON UPDATE field clause.
+	 */
 	protected String renderOnUpdate(DDLField field) {
 		StringBuilder back = new StringBuilder();
 		
@@ -1368,28 +1480,152 @@ public abstract class DatabaseProvider {
 		return back.toString();
 	}
 	
+	/**
+	 * <p>Determines whether or not the database allows explicit precisions
+	 * for the field in question.  This is to support databases such as
+	 * Derby which do not support precisions for certain types.  By
+	 * default, this method returns <code>true</code>.</p>
+	 * 
+	 * <p>More often than not, all that is required for this determination 
+	 * is the type.  As such, the method signature may change in a future 
+	 * release.</p>
+	 * 
+	 * @param field	The field for which precision should/shouldn't be rendered.
+	 * @returns	<code>true</code> if precision should be rendered, otherwise
+	 * 		<code>false</code>.
+	 */
 	protected boolean considerPrecision(DDLField field) {
 		return true;
 	}
 
+	/**
+	 * Retrieves the name of the trigger which corresponds to the field
+	 * in question (if any).  If no trigger will be automatically created
+	 * for the specified field, <code>null</code> should be returned.
+	 * This function is to allow for databases which require the use of
+	 * triggers on a field to allow for certain functionality (like
+	 * ON UPDATE).  The default implementation returns <code>null</code>.
+	 * 
+	 * @param table	The table which contains the field for which a trigger
+	 * 		may or may not exist.
+	 * @param field	The field for which a previous migration may have
+	 * 		created a trigger.
+	 * @returns	The unique name of the trigger which was created for the 
+	 * 		field, or <code>null</code> if none.
+	 * @see #renderTriggerForField(DDLTable, DDLField)
+	 */
 	protected String getTriggerNameForField(DDLTable table, DDLField field) {
 		return null;
 	}
 	
+	/**
+	 * Renders the trigger which corresponds to the specified field, or
+	 * <code>null</code> if none.  This is to allow for databases which
+	 * require the use of triggers to provide functionality such as ON
+	 * UPDATE.  The default implementation returns <code>null</code>.
+	 * 
+	 * @param table	The table containing the field for which a trigger
+	 * 		may need to be rendered.
+	 * @param field	The field for which the trigger should be rendered,
+	 * 		if any.
+	 * @returns	A database-specific DDL statement creating a trigger for
+	 * 		the field in question, or <code>null</code>.
+	 * @see #getTriggerNameForField(DDLTable, DDLField)
+	 */
 	protected String renderTriggerForField(DDLTable table, DDLField field) {
 		return null;
 	}
-	
+
+	/**
+	 * Retrieves the name of the function which corresponds to the field
+	 * in question (if any).  If no function will be automatically created
+	 * for the specified field, <code>null</code> should be returned.
+	 * This method is to allow for databases which require the use of
+	 * explicitly created functions which correspond to triggers (e.g.
+	 * PostgreSQL).  Few providers will need to override the default
+	 * implementation of this method, which returns <code>null</code>.
+	 * 
+	 * @param table	The table which contains the field for which a function
+	 * 		may or may not exist.
+	 * @param field	The field for which a previous migration may have
+	 * 		created a function.
+	 * @returns	The unique name of the function which was created for the 
+	 * 		field, or <code>null</code> if none.
+	 */
 	protected String getFunctionNameForField(DDLTable table, DDLField field) {
 		return null;
 	}
 	
+	/**
+	 * Renders the function which corresponds to the specified field, or
+	 * <code>null</code> if none.  This is to allow for databases which
+	 * require the use of triggers and explicitly created functions to 
+	 * provide functionality such as ON UPDATE (e.g. PostgreSQL).  The 
+	 * default implementation returns <code>null</code>.
+	 * 
+	 * @param table	The table containing the field for which a function
+	 * 		may need to be rendered.
+	 * @param field	The field for which the function should be rendered,
+	 * 		if any.
+	 * @returns	A database-specific DDL statement creating a function for
+	 * 		the field in question, or <code>null</code>.
+	 * @see #getFunctionNameForField(DDLTable, DDLField)
+	 */
 	protected String renderFunctionForField(DDLTable table, DDLField field) {
 		return null;
 	}
 	
+	/**
+	 * <p>Generates an INSERT statement to be used to create a new row in the
+	 * database, returning the primary key value.  This method also invokes
+	 * the delegate method, {@link #executeInsertReturningKey(Connection, Class, String, String, DBParam...)}
+	 * passing the appropriate parameters and query.  This method is required
+	 * because some databases do not support the JDBC parameter
+	 * <code>RETURN_GENERATED_KEYS</code> (such as HSQLDB and PostgreSQL).
+	 * Also, some databases (such as MS SQL Server) require odd tricks to
+	 * support explicit value passing to auto-generated fields.  This method
+	 * should take care of any extra queries or odd SQL generation required
+	 * to implement both auto-generated primary key returning, as well as
+	 * explicit primary key value definition.</p>
+	 * 
+	 * <p>Overriding implementations of this method should be sure to use the
+	 * {@link Connection} instance passed to the method, <i>not</i> a new
+	 * instance generated using the {@link #getConnection()} method.  This is
+	 * because this method is in fact a delegate invoked by {@link EntityManager}
+	 * as part of the entity creation process and may be part of a transaction,
+	 * a bulk creation or some more complicated operation.  Both optimization
+	 * and usage patterns on the API dictate that the specified connection
+	 * instance be used.  Implementations may assume that the given connection
+	 * instance is never <code>null</code>.</p>
+	 * 
+	 * <p>The default implementation of this method should be sufficient for any
+	 * fully compliant ANSI SQL database with a properly implemented JDBC
+	 * driver.  Note that this method should <i>not</i> not actually execute
+	 * the SQL it generates, but pass it on to the {@link #executeInsertReturningKey(Connection, Class, String, String, DBParam...)}
+	 * method, allowing for functional delegation and better extensibility. 
+	 * However, this method may execute any additional statements required to
+	 * prepare for the INSERTion (as in the case of MS SQL Server which requires
+	 * some config parameters to be set on the database itself prior to INSERT).</p>
+	 * 
+	 * @param conn	The connection to be used in the eventual execution of the
+	 * 		generated SQL statement.
+	 * @param pkType	The Java type of the primary key value.  Can be used to
+	 * 		perform a linear search for a specified primary key value in the
+	 * 		<code>params</code> list.  The return value of the method must be of
+	 * 		the same type.
+	 * @param pkField	The database field which is the primary key for the
+	 * 		table in question.  Can be used to perform a linear search for a 
+	 * 		specified primary key value in the <code>params</code> list.
+	 * @param table	The name of the table into which the row is to be INSERTed.
+	 * @param params	A varargs array of parameters to be passed to the
+	 * 		INSERT statement.  This may include a specified value for the
+	 * 		primary key.
+	 * @throws	SQLException	If the INSERT fails in the delegate method, or
+	 * 		if any additional statements fail with an exception.
+	 */
 	@SuppressWarnings("unused")
-	public <T> T insertReturningKeys(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
+	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, 
+			String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
@@ -1415,10 +1651,10 @@ public abstract class DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKeys(conn, pkType, pkField, sql.toString(), params);
+		return executeInsertReturningKey(conn, pkType, pkField, sql.toString(), params);
 	}
 	
-	protected <T> T executeInsertReturningKeys(Connection conn, Class<T> pkType, String pkField, String sql, DBParam... params) 
+	protected <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, String sql, DBParam... params) 
 				throws SQLException {
 		T back = null;
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
