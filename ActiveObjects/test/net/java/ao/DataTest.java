@@ -90,12 +90,16 @@ public abstract class DataTest {
 			stmt.setBoolean(3, true);
 			
 			stmt.executeUpdate();
+			
+			Thread.sleep(250);
 
 			stmt.setLong(1, coolCompanyIDs[index++] = System.currentTimeMillis());
 			stmt.setString(2, "Cool Company");
 			stmt.setBoolean(3, true);
 			
 			stmt.executeUpdate();
+			
+			Thread.sleep(250);
 
 			stmt.setLong(1, coolCompanyIDs[index++] = System.currentTimeMillis());
 			stmt.setString(2, "Cool Company");
@@ -232,6 +236,7 @@ public abstract class DataTest {
 			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
 		} finally {
 			conn.close();
 		}
