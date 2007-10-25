@@ -136,7 +136,7 @@ public class SearchableEntityManager extends EntityManager {
 	 * @param strQuery	The query to pass to Lucene for the search.
 	 * @throws IOException		If Lucene was unable to open the index.
 	 * @throws ParseException	If Lucene was unable to parse the search string into a valid query.
-	 * @returns The entity instances which correspond with the search results.
+	 * @return The entity instances which correspond with the search results.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends RawEntity<K>, K> T[] search(Class<T> type, String strQuery) throws IOException, ParseException {

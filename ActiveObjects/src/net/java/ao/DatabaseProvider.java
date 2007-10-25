@@ -129,7 +129,7 @@ public abstract class DatabaseProvider {
 	 * can and should be thrown (certain auto-magic configuration sections of
 	 * ActiveObjects depend upon this under certain circumstances).</p>
 	 * 
-	 * @returns The JDBC {@link Driver} implementation which corresponds to the
+	 * @return The JDBC {@link Driver} implementation which corresponds to the
 	 * 	relevant database.
 	 */
 	public abstract Class<? extends Driver> getDriverClass() throws ClassNotFoundException;
@@ -168,7 +168,7 @@ public abstract class DatabaseProvider {
 	 * @see #renderAlterTableDropKey(DDLForeignKey)
 	 * 
 	 * @param action	The database-agnostic action to render.
-	 * @returns An array of DDL statements specific to the database in question.
+	 * @return An array of DDL statements specific to the database in question.
 	 */
 	public String[] renderAction(DDLAction action) {
 		List<String> back = new ArrayList<String>();
@@ -275,7 +275,7 @@ public abstract class DatabaseProvider {
 	 * @param converter	Used to convert {@link Entity} classes into table names.
 	 * @param count	If <code>true</code>, render the Query as a <code>SELECT COUNT(*)</code>
 	 * 	rather than a standard field-data query.
-	 * @returns A syntactically complete SQL statement potentially specific to the
+	 * @return A syntactically complete SQL statement potentially specific to the
 	 * 	database.
 	 */
 	public String renderQuery(Query query, TableNameConverter converter, boolean count) {
@@ -306,7 +306,7 @@ public abstract class DatabaseProvider {
 	 * 	value.
 	 * @param value	The database-agnostic String value to parse into a proper Java object
 	 * 	with respect to the specified SQL type.
-	 * @returns	A Java value which corresponds to the specified String.
+	 * @return	A Java value which corresponds to the specified String.
 	 */
 	public Object parseValue(int type, String value) {
 		if (value == null || value.equals("") || value.equals("NULL")) {
@@ -446,7 +446,7 @@ public abstract class DatabaseProvider {
 	 * complete recreation of the schema (raw migration).</p>
 	 * 
 	 * @param conn	The connection to use in retrieving the database tables.
-	 * @returns	A result set of tables (and meta) corresponding in fields
+	 * @return	A result set of tables (and meta) corresponding in fields
 	 * 		to the JDBC specification.
 	 * @see java.sql.DatabaseMetaData#getTables(String, String, String, String[])
 	 */
@@ -470,7 +470,7 @@ public abstract class DatabaseProvider {
 	 * @param converter	The name converter to allow conversion of the query entity
 	 * 		interface into a proper table name.
 	 * @param count	Whether or not the query should be rendered as a <code>SELECT COUNT(*)</code>.
-	 * @returns	The database-specific SQL rendering of the SELECT portion of the query.
+	 * @return	The database-specific SQL rendering of the SELECT portion of the query.
 	 */
 	protected String renderQuerySelect(Query query, TableNameConverter converter, boolean count) {
 		StringBuilder sql = new StringBuilder();
@@ -523,7 +523,7 @@ public abstract class DatabaseProvider {
 	 * @param query	The Query instance from which to determine the JOIN properties.
 	 * @param converter	The name converter to allow conversion of the query entity
 	 * 		interface into a proper table name.
-	 * @returns	The database-specific SQL rendering of the JOIN portion of the query.
+	 * @return	The database-specific SQL rendering of the JOIN portion of the query.
 	 */
 	protected String renderQueryJoins(Query query, TableNameConverter converter) {
 		StringBuilder sql = new StringBuilder();
@@ -555,7 +555,7 @@ public abstract class DatabaseProvider {
 	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
 	 * 
 	 * @param query	The Query instance from which to determine the WHERE properties.
-	 * @returns	The database-specific SQL rendering of the WHERE portion of the query.
+	 * @return	The database-specific SQL rendering of the WHERE portion of the query.
 	 */
 	protected String renderQueryWhere(Query query) {
 		StringBuilder sql = new StringBuilder();
@@ -580,7 +580,7 @@ public abstract class DatabaseProvider {
 	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
 	 * 
 	 * @param query	The Query instance from which to determine the GROUP BY  properties.
-	 * @returns	The database-specific SQL rendering of the GROUP BY portion of the query.
+	 * @return	The database-specific SQL rendering of the GROUP BY portion of the query.
 	 */
 	protected String renderQueryGroupBy(Query query) {
 		StringBuilder sql = new StringBuilder();
@@ -605,7 +605,7 @@ public abstract class DatabaseProvider {
 	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
 	 * 
 	 * @param query	The Query instance from which to determine the ORDER BY properties.
-	 * @returns	The database-specific SQL rendering of the ORDER BY portion of the query.
+	 * @return	The database-specific SQL rendering of the ORDER BY portion of the query.
 	 */
 	protected String renderQueryOrderBy(Query query) {
 		StringBuilder sql = new StringBuilder();
@@ -634,7 +634,7 @@ public abstract class DatabaseProvider {
 	 * operations it functions as a delegate for {@link #renderQuery(Query, TableNameConverter, boolean)}.</p>
 	 * 
 	 * @param query	The Query instance from which to determine the LIMIT properties.
-	 * @returns	The database-specific SQL rendering of the LIMIT portion of the query.
+	 * @return	The database-specific SQL rendering of the LIMIT portion of the query.
 	 */
 	protected String renderQueryLimit(Query query) {
 		StringBuilder sql = new StringBuilder();
@@ -659,7 +659,7 @@ public abstract class DatabaseProvider {
 	 * implementations such as connection pools which don't use the URI
 	 * directly.
 	 * 
-	 * @returns	A JDBC URI.
+	 * @return	A JDBC URI.
 	 */
 	public String getURI() {
 		return uri;
@@ -668,7 +668,7 @@ public abstract class DatabaseProvider {
 	/**
 	 * Retrieves the username used to authenticate against the database.
 	 * 
-	 * @returns	The database username.
+	 * @return	The database username.
 	 */
 	public String getUsername() {
 		return username;
@@ -677,7 +677,7 @@ public abstract class DatabaseProvider {
 	/**
 	 * Retrieves the password used to authenticate against the database.
 	 * 
-	 * @returns	The database password.
+	 * @return	The database password.
 	 */
 	public String getPassword() {
 		return password;
@@ -716,7 +716,7 @@ public abstract class DatabaseProvider {
 	 * the connection fetching mechanism (such as pool providers) should
 	 * instead override the {@link #getConnectionImpl()} method.</p>
 	 * 
-	 * @returns	A new connection to the database or <code>null</code>
+	 * @return	A new connection to the database or <code>null</code>
 	 * 		if the driver could not be loaded.
 	 */
 	public final Connection getConnection() throws SQLException {
@@ -748,7 +748,7 @@ public abstract class DatabaseProvider {
 	 * <p>This method is <i>never</i> called directly.  Instead, the
 	 * {@link #getConnection()} method should be used.</p>
 	 * 
-	 * @returns	A new connection to the database or <code>null</code>
+	 * @return	A new connection to the database or <code>null</code>
 	 * 		if the driver could not be loaded.
 	 */
 	protected Connection getConnectionImpl() throws SQLException {
@@ -806,7 +806,7 @@ public abstract class DatabaseProvider {
 	 * 
 	 * @param table	The database-agnostic DDL representation of the table
 	 * 		in question.
-	 * @returns	The String rendering of <i>all</i> of the foreign keys for
+	 * @return	The String rendering of <i>all</i> of the foreign keys for
 	 * 		the table.
 	 * @see #renderForeignKey(DDLForeignKey)
 	 */
@@ -827,7 +827,7 @@ public abstract class DatabaseProvider {
 	 * value otherwise migrations will no longer function appropriately.
 	 * 
 	 * @param key	The database-agnostic foreign key representation.
-	 * @returns	The database-pecific DDL fragment corresponding to the
+	 * @return	The database-pecific DDL fragment corresponding to the
 	 * 		foreign key in question.
 	 */
 	protected String renderForeignKey(DDLForeignKey key) {
@@ -848,7 +848,7 @@ public abstract class DatabaseProvider {
 	 * cases are handled appropriately.
 	 * 
 	 * @param type	The type instance to convert to a DDL string.
-	 * @returns	The database-specific DDL representation of the type (e.g. "VARCHAR").
+	 * @return	The database-specific DDL representation of the type (e.g. "VARCHAR").
 	 * @see net.java.ao.types.DatabaseType#getDefaultName()
 	 */
 	protected String convertTypeToString(DatabaseType<?> type) {
@@ -865,7 +865,7 @@ public abstract class DatabaseProvider {
 	 * field rendering, foreign key rendering, etc.
 	 * 
 	 * @param table	The database-agnostic table representation.
-	 * @returns	The database-specific DDL statements which correspond to the
+	 * @return	The database-specific DDL statements which correspond to the
 	 * 		specified table creation.
 	 */
 	protected String renderTable(DDLTable table) {
@@ -922,7 +922,7 @@ public abstract class DatabaseProvider {
 	 * one of the other delegate methods (such as <code>renderDropTriggers(DDLTable)</code>).
 	 * 
 	 * @param table	The table representation which is to be dropped.
-	 * @returns	A database-specific DDL statement which drops the specified 
+	 * @return	A database-specific DDL statement which drops the specified 
 	 * 		table.
 	 */
 	protected String renderDropTable(DDLTable table) {
@@ -941,7 +941,7 @@ public abstract class DatabaseProvider {
 	 * 
 	 * @param table	The table representation against which all functions which
 	 * 		correspond (directly or indirectly) must be dropped.
-	 * @returns	An array of database-specific DDL statement(s) which drop the
+	 * @return	An array of database-specific DDL statement(s) which drop the
 	 * 		required functions.
 	 */
 	protected String[] renderDropFunctions(DDLTable table) {
@@ -963,7 +963,7 @@ public abstract class DatabaseProvider {
 	 * 
 	 * @param table	The table representation against which all triggers which
 	 * 		correspond (directly or indirectly) must be dropped.
-	 * @returns	An array of database-specific DDL statement(s) which drop the
+	 * @return	An array of database-specific DDL statement(s) which drop the
 	 * 		required triggers.
 	 */
 	protected String[] renderDropTriggers(DDLTable table) {
@@ -982,7 +982,7 @@ public abstract class DatabaseProvider {
 	 * {@link #renderFunctionForField(DDLTable, DDLField)} method.</p>
 	 * 
 	 * @param table	The table for which the functions must be generated.
-	 * @returns	An array of DDL statements to execute.
+	 * @return	An array of DDL statements to execute.
 	 */
 	protected String[] renderFunctions(DDLTable table) {
 		List<String> back = new ArrayList<String>();
@@ -1012,7 +1012,7 @@ public abstract class DatabaseProvider {
 	 * {@link #renderTriggerForField(DDLTable, DDLField)} method.</p>
 	 * 
 	 * @param table	The table for which the triggers must be generated.
-	 * @returns	An array of DDL statements to execute.
+	 * @return	An array of DDL statements to execute.
 	 */
 	protected String[] renderTriggers(DDLTable table) {
 		List<String> back = new ArrayList<String>();
@@ -1041,7 +1041,7 @@ public abstract class DatabaseProvider {
 	 * 
 	 * @param table	The table which should receive the new column.
 	 * @param field	The column to add to the specified table.
-	 * @returns	An array of DDL statements to execute.
+	 * @return	An array of DDL statements to execute.
 	 * @see #renderFunctionForField(DDLTable, DDLField)
 	 * @see #renderTriggerForField(DDLTable, DDLField)
 	 */
@@ -1084,7 +1084,7 @@ public abstract class DatabaseProvider {
 	 * @param table	The table containing the column to change.
 	 * @param oldField	The old column definition.
 	 * @param field	The new column definition (defining the resultant DDL).
-	 * @returns	An array of DDL statements to be executed.
+	 * @return	An array of DDL statements to be executed.
 	 * @see #getTriggerNameForField(DDLTable, DDLField)
 	 * @see #getFunctionNameForField(DDLTable, DDLField)
 	 * @see #renderFunctionForField(DDLTable, DDLField)
@@ -1139,7 +1139,7 @@ public abstract class DatabaseProvider {
 	 * 
 	 * @param table	The table from which to drop the column.
 	 * @param field	The column definition to remove from the table.
-	 * @returns	An array of DDL statements to be executed.
+	 * @return	An array of DDL statements to be executed.
 	 * @see #getTriggerNameForField(DDLTable, DDLField)
 	 * @see #getFunctionNameForField(DDLTable, DDLField)
 	 */
@@ -1179,7 +1179,7 @@ public abstract class DatabaseProvider {
 	 * @param key	The foreign key to be added.  As this instance contains
 	 * 		all necessary data (such as domestic table, field, etc), no
 	 * 		additional parameters are required.
-	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 * @return	A DDL statement to be executed, or <code>null</code>.
 	 * @see #renderForeignKey(DDLForeignKey)
 	 */
 	protected String renderAlterTableAddKey(DDLForeignKey key) {
@@ -1203,7 +1203,7 @@ public abstract class DatabaseProvider {
 	 * @param key	The foreign key to be removed.  As this instance contains
 	 * 		all necessary data (such as domestic table, field, etc), no
 	 * 		additional parameters are required.
-	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 * @return	A DDL statement to be executed, or <code>null</code>.
 	 */
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
 		return "ALTER TABLE " + key.getDomesticTable() + " DROP FOREIGN KEY " + key.getFKName();
@@ -1219,7 +1219,7 @@ public abstract class DatabaseProvider {
 	 * @param index	The index to create.  This single instance contains all
 	 * 		of the data necessary to create the index, thus no separate
 	 * 		parameters (such as a <code>DDLTable</code>) are required.
-	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 * @return	A DDL statement to be executed, or <code>null</code>.
 	 */
 	protected String renderCreateIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder();
@@ -1240,7 +1240,7 @@ public abstract class DatabaseProvider {
 	 * @param index	The index to drop.  This single instance contains all
 	 * 		of the data necessary to drop the index, thus no separate
 	 * 		parameters (such as a <code>DDLTable</code>) are required.
-	 * @returns	A DDL statement to be executed, or <code>null</code>.
+	 * @return	A DDL statement to be executed, or <code>null</code>.
 	 */
 	protected String renderDropIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder();
@@ -1266,7 +1266,7 @@ public abstract class DatabaseProvider {
 	 * this method.  The default implementation simply returns 
 	 * <code>null</code>, signifying that no append should be rendered.</p>
 	 * 
-	 * @returns	A DDL clause to be appended to the CREATE TABLE DDL, or <code>null</code>
+	 * @return	A DDL clause to be appended to the CREATE TABLE DDL, or <code>null</code>
 	 */
 	protected String renderAppend() {
 		return null;
@@ -1293,7 +1293,7 @@ public abstract class DatabaseProvider {
 	 * for auto-incremented fields.</p>
 	 * 
 	 * @param field	The field to be rendered.
-	 * @returns	A DDL fragment to be embedded in a statement elsewhere.
+	 * @return	A DDL fragment to be embedded in a statement elsewhere.
 	 */
 	protected String renderField(DDLField field) {
 		StringBuilder back = new StringBuilder();
@@ -1349,7 +1349,7 @@ public abstract class DatabaseProvider {
 	 * override this method as necessary.
 	 * 
 	 * @param value	The Java instance to be rendered as a database literal.
-	 * @returns	The database-specific String rendering of the instance in 
+	 * @return	The database-specific String rendering of the instance in 
 	 * 		question.
 	 * @see #renderCalendar(Calendar)
 	 * @see #renderFunction(DatabaseFunction)
@@ -1379,7 +1379,7 @@ public abstract class DatabaseProvider {
 	 * date format defined within the {@link #getDateFormat()} method.
 	 * 
 	 * @param calendar	The time instance to be rendered.
-	 * @returns	The database-specific String representation of the time.
+	 * @return	The database-specific String representation of the time.
 	 */
 	protected String renderCalendar(Calendar calendar) {
 		return new SimpleDateFormat(getDateFormat()).format(calendar.getTime());
@@ -1393,7 +1393,7 @@ public abstract class DatabaseProvider {
 	 * override this method to return an empty {@link String} if the database
 	 * in question does not support the constraint.
 	 * 
-	 * @returns	The database-specific rendering of <code>UNIQUE</code>.
+	 * @return	The database-specific rendering of <code>UNIQUE</code>.
 	 */
 	protected String renderUnique() {
 		return "UNIQUE";
@@ -1406,7 +1406,7 @@ public abstract class DatabaseProvider {
 	 * the database).  The default implementation returns the format for
 	 * MySQL, which is: <code>yyyy-MM-dd HH:mm:ss</code>
 	 * 
-	 * @returns The database-specific TIMESTAMP text format
+	 * @return The database-specific TIMESTAMP text format
 	 */
 	protected String getDateFormat() {
 		return "yyyy-MM-dd HH:mm:ss";
@@ -1420,7 +1420,7 @@ public abstract class DatabaseProvider {
 	 * future release.
 	 * 
 	 * @param field	The field which contains the type to be rendered.
-	 * @returns	The database-specific type DDL rendering.
+	 * @return	The database-specific type DDL rendering.
 	 */
 	protected String renderFieldType(DDLField field) {
 		return convertTypeToString(field.getType());
@@ -1444,7 +1444,7 @@ public abstract class DatabaseProvider {
 	 * problems with any allowed functions.</p>
 	 * 
 	 * @param func	The abstract function to be rendered.
-	 * @returns	The database-specific DDL representation of the function
+	 * @return	The database-specific DDL representation of the function
 	 * 		in question.
 	 */
 	protected String renderFunction(DatabaseFunction func) {
@@ -1469,7 +1469,7 @@ public abstract class DatabaseProvider {
 	 * 
 	 * @param field	The field for which the ON UPDATE clause should 
 	 * 		be rendered.
-	 * @returns	The database-specific ON UPDATE field clause.
+	 * @return	The database-specific ON UPDATE field clause.
 	 */
 	protected String renderOnUpdate(DDLField field) {
 		StringBuilder back = new StringBuilder();
@@ -1491,7 +1491,7 @@ public abstract class DatabaseProvider {
 	 * release.</p>
 	 * 
 	 * @param field	The field for which precision should/shouldn't be rendered.
-	 * @returns	<code>true</code> if precision should be rendered, otherwise
+	 * @return	<code>true</code> if precision should be rendered, otherwise
 	 * 		<code>false</code>.
 	 */
 	protected boolean considerPrecision(DDLField field) {
@@ -1510,7 +1510,7 @@ public abstract class DatabaseProvider {
 	 * 		may or may not exist.
 	 * @param field	The field for which a previous migration may have
 	 * 		created a trigger.
-	 * @returns	The unique name of the trigger which was created for the 
+	 * @return	The unique name of the trigger which was created for the 
 	 * 		field, or <code>null</code> if none.
 	 * @see #renderTriggerForField(DDLTable, DDLField)
 	 */
@@ -1528,7 +1528,7 @@ public abstract class DatabaseProvider {
 	 * 		may need to be rendered.
 	 * @param field	The field for which the trigger should be rendered,
 	 * 		if any.
-	 * @returns	A database-specific DDL statement creating a trigger for
+	 * @return	A database-specific DDL statement creating a trigger for
 	 * 		the field in question, or <code>null</code>.
 	 * @see #getTriggerNameForField(DDLTable, DDLField)
 	 */
@@ -1549,7 +1549,7 @@ public abstract class DatabaseProvider {
 	 * 		may or may not exist.
 	 * @param field	The field for which a previous migration may have
 	 * 		created a function.
-	 * @returns	The unique name of the function which was created for the 
+	 * @return	The unique name of the function which was created for the 
 	 * 		field, or <code>null</code> if none.
 	 */
 	protected String getFunctionNameForField(DDLTable table, DDLField field) {
@@ -1567,7 +1567,7 @@ public abstract class DatabaseProvider {
 	 * 		may need to be rendered.
 	 * @param field	The field for which the function should be rendered,
 	 * 		if any.
-	 * @returns	A database-specific DDL statement creating a function for
+	 * @return	A database-specific DDL statement creating a function for
 	 * 		the field in question, or <code>null</code>.
 	 * @see #getFunctionNameForField(DDLTable, DDLField)
 	 */
@@ -1756,7 +1756,7 @@ public abstract class DatabaseProvider {
 	 * should be suitable for every conceivable use-case.
 	 * 
 	 * @param type	The JDBC type which is to be tested.
-	 * @returns	<code>true</code> if the specified type represents a numeric
+	 * @return	<code>true</code> if the specified type represents a numeric
 	 * 		type, otherwise <code>false</code>.
 	 */
 	protected boolean isNumericType(int type) {
@@ -1788,7 +1788,7 @@ public abstract class DatabaseProvider {
 	 * 		do not make use of this field, <code>null</code> is permitted).
 	 * @param password		The database password (note: for implementations which
 	 * 		do not make use of this field, <code>null</code> is permitted).
-	 * @returns	A database provider corresponding to the database referenced by
+	 * @return	A database provider corresponding to the database referenced by
 	 * 		the <code>uri</code>.
 	 */
 	public final static DatabaseProvider getInstance(String uri, String username, String password) {
@@ -1828,7 +1828,7 @@ public abstract class DatabaseProvider {
 	 * @param enablePooling	A flag indicating whether or not connection pooling
 	 * 		should be enabled (if possible).  Note that this flag is ignored if
 	 * 		no connection pool library could be found on the CLASSPATH.
-	 * @returns	A database provider corresponding to the database referenced by
+	 * @return	A database provider corresponding to the database referenced by
 	 * 		the <code>uri</code>.
 	 * @throws	RuntimeException	If no database provider is found for the
 	 * 		specified URI prefix, or if the provider class could not be instantiated.

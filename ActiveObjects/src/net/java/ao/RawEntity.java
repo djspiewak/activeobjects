@@ -61,7 +61,7 @@ public interface RawEntity<T> {
 	 * get the relevant <code>EntityManager</code> instance in order
 	 * to run custom queries.
 	 * 
-	 * @returns The instance which manages this entity.
+	 * @return The instance which manages this entity.
 	 */
 	@Ignore public EntityManager getEntityManager();
 	
@@ -81,7 +81,7 @@ public interface RawEntity<T> {
 	 * p.getEntityType();         // returns Person.class
 	 * p.getClass();           // indeterminate return value, probably something like $Proxy26.class</pre>
 	 * 
-	 * @returns The {@link Class} which defines the entity in question.
+	 * @return The {@link Class} which defines the entity in question.
 	 */
 	@Ignore public Class<? extends RawEntity<T>> getEntityType();
 	

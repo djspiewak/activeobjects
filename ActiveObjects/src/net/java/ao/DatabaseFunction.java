@@ -50,7 +50,7 @@ public enum DatabaseFunction {
 	 * value0).</p>
 	 * 
 	 * @param value	The String name of the function to look for.
-	 * @returns The enum value which corresponds to the specified function
+	 * @return The enum value which corresponds to the specified function
 	 * 	name, or <code>null</code>.
 	 */
 	public static DatabaseFunction get(String value) {

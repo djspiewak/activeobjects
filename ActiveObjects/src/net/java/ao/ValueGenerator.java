@@ -41,7 +41,7 @@ public interface ValueGenerator<T> {
 	 * generation method needs to be extremely efficient.
 	 * 
 	 * @param manager	An instance to gain <i>read</i> access to the database.
-	 * @returns A new value of the relevant type for INSERT.
+	 * @return A new value of the relevant type for INSERT.
 	 */
 	public T generateValue(EntityManager manager);
 }

@@ -59,7 +59,7 @@ public interface RelatedEntity<T extends RelatedEntity<T> & RawEntity<?>> {
 	 * method.  Also, the results are uncached, relying instead on the 
 	 * underlying performance optimizations of Lucene itself.
 	 * 
-	 * @returns Any entities of the relevant type which relate to the current 
+	 * @return Any entities of the relevant type which relate to the current 
 	 * 	instance in the full-text index.
 	 */
 	@Ignore

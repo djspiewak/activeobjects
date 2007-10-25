@@ -239,7 +239,7 @@ public class EntityManager {
 	 * 	{@link RawEntity} inheritence (if inheriting from {@link Entity}, this is <code>Integer</code>
 	 * 	or <code>int</code>).  Thus, the <code>keys</code> array is type-checked at compile
 	 * 	time.
-	 * @returns An array of entities of the given type corresponding with the specified primary keys.
+	 * @return An array of entities of the given type corresponding with the specified primary keys.
 	 */
 	public <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys) {
 		T[] back = (T[]) Array.newInstance(type, keys.length);
@@ -272,7 +272,7 @@ public class EntityManager {
 	 * 
 	 *  @param type	The type of the entity to create.
 	 *  @param key		The primary key corresponding to the entity instance required.
-	 *  @returns An entity instance of the specified type and primary key.
+	 *  @return An entity instance of the specified type and primary key.
 	 */
 	protected <T extends RawEntity<K>, K> T getAndInstantiate(Class<T> type, K key) {
 		EntityProxy<T, K> proxy = new EntityProxy<T, K>(this, type, key);
@@ -298,7 +298,7 @@ public class EntityManager {
 	 * 
 	 * @param type		The type of the entity instance to retrieve.
 	 * @param key		The primary key corresponding to the entity to be retrieved.
-	 * @returns An entity instance of the given type corresponding to the specified primary key.
+	 * @return An entity instance of the given type corresponding to the specified primary key.
 	 * @see #get(Class, Object...)
 	 */
 	public <T extends RawEntity<K>, K> T get(Class<T> type, K key) {
@@ -334,7 +334,7 @@ public class EntityManager {
 	 * @param type		The type of the entity to INSERT.
 	 * @param params	An optional varargs array of initial values for the fields in the row.  These
 	 * 	values will be passed to the database within the INSERT statement.
-	 * @returns	The new entity instance corresponding to the INSERTed row. 
+	 * @return	The new entity instance corresponding to the INSERTed row. 
 	 * @see net.java.ao.DBParam
 	 * @see net.java.ao.DatabaseProvider#insertReturningKey(Connection, Class, String, String, DBParam...)
 	 */
@@ -499,7 +499,7 @@ public class EntityManager {
 	 * the {@link #find(Class, Query)} method.
 	 * 
 	 * @param type		The type of entity to retrieve.
-	 * @returns	An array of all entities which correspond to the given type.
+	 * @return	An array of all entities which correspond to the given type.
 	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type) throws SQLException {
 		return find(type, Query.select());
@@ -523,7 +523,7 @@ public class EntityManager {
 	 * @param parameters	A varargs array of parameters to be passed to the executed
 	 * 	prepared statement.  The length of this array <i>must</i> match the number of
 	 * 	parameters (denoted by the '?' char) in the <code>criteria</code>.
-	 * @returns	An array of entities of the given type which match the specified criteria.
+	 * @return	An array of entities of the given type which match the specified criteria.
 	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type, String criteria, Object... parameters) throws SQLException {
 		return find(type, Query.select().where(criteria, parameters));
@@ -543,7 +543,7 @@ public class EntityManager {
 	 * 
 	 * @param type		The type of the entities to retrieve.
 	 * @param query	The {@link Query} instance to be used to determine the results.
-	 * @returns An array of entities of the given type which match the specified query.
+	 * @return An array of entities of the given type which match the specified query.
 	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type, Query query) throws SQLException {
 		String selectField = Common.getPrimaryKeyField(type, getFieldNameConverter());
@@ -570,7 +570,7 @@ public class EntityManager {
 	 * @param field		The field value to use in the creation of the entities.  This is usually
 	 * 	the primary key field of the corresponding table.
 	 * @param query	The {@link Query} instance to use in determining the results.
-	 * @returns	An array of entities of the given type which match the specified query.
+	 * @return	An array of entities of the given type which match the specified query.
 	 */
 	public <T extends RawEntity<K>, K> T[] find(Class<T> type, String field, Query query) throws SQLException {
 		List<T> back = new ArrayList<T>();
@@ -670,7 +670,7 @@ public class EntityManager {
 	 * @param parameters	A varargs array of parameters to be passed to the executed
 	 * 	prepared statement.  The length of this array <i>must</i> match the number of
 	 * 	parameters (denoted by the '?' char) in the <code>criteria</code>.
-	 * @returns	An array of entities of the given type which match the specified query.
+	 * @return	An array of entities of the given type which match the specified query.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends RawEntity<K>, K> T[] findWithSQL(Class<T> type, String keyField, String sql, Object... parameters) throws SQLException {
@@ -710,7 +710,7 @@ public class EntityManager {
 	 * a delegate for: <code>count(Class&lt;? extends Entity&gt;, Query)</code>
 	 * 
 	 * @param type		The type of the entities which should be counted.
-	 * @returns The number of entities of the specified type.
+	 * @return The number of entities of the specified type.
 	 */
 	public <K> int count(Class<? extends RawEntity<K>> type) throws SQLException {
 		return count(type, Query.select());
@@ -727,7 +727,7 @@ public class EntityManager {
 	 * @param parameters	A varargs array of parameters to be passed to the executed
 	 * 	prepared statement.  The length of this array <i>must</i> match the number of
 	 * 	parameters (denoted by the '?' char) in the <code>criteria</code>.
-	 * @returns The number of entities of the given type which match the specified criteria.
+	 * @return The number of entities of the given type which match the specified criteria.
 	 */
 	public <K> int count(Class<? extends RawEntity<K>> type, String criteria, Object... parameters) throws SQLException {
 		return count(type, Query.select().where(criteria, parameters));
@@ -741,7 +741,7 @@ public class EntityManager {
 	 * @param type		The type of the entities which should be counted.
 	 * @param query	The {@link Query} instance used to determine the result set which
 	 * 	will be counted.
-	 * @returns The number of entities of the given type which match the specified query.
+	 * @return The number of entities of the given type which match the specified query.
 	 */
 	public <K> int count(Class<? extends RawEntity<K>> type, Query query) throws SQLException {
 		int back = -1;

@@ -51,7 +51,7 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	/**
-	 * @returns <code>null</code>
+	 * @return <code>null</code>
 	 */
 	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {

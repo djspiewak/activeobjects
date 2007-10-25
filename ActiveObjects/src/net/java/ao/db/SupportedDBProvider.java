@@ -91,7 +91,7 @@ public enum SupportedDBProvider {
 	 * proivder is found, <code>null</code> is returned.
 	 * 
 	 * @param uri	The JDBC URI for which a database provider is required.
-	 * @returns The enum value which corresponds to the required database provider.
+	 * @return The enum value which corresponds to the required database provider.
 	 */
 	public static SupportedDBProvider getProviderForURI(String uri) {
 		for (SupportedDBProvider provider : values()) {
