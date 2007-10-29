@@ -82,6 +82,8 @@ public abstract class DataTest {
 			
 			stmt.executeUpdate();
 			
+			Thread.sleep(10);
+			
 			int index = 0;
 			coolCompanyIDs = new long[3];
 
@@ -91,7 +93,7 @@ public abstract class DataTest {
 			
 			stmt.executeUpdate();
 			
-			Thread.sleep(250);
+			Thread.sleep(10);
 
 			stmt.setLong(1, coolCompanyIDs[index++] = System.currentTimeMillis());
 			stmt.setString(2, "Cool Company");
@@ -99,7 +101,7 @@ public abstract class DataTest {
 			
 			stmt.executeUpdate();
 			
-			Thread.sleep(250);
+			Thread.sleep(10);
 
 			stmt.setLong(1, coolCompanyIDs[index++] = System.currentTimeMillis());
 			stmt.setString(2, "Cool Company");
