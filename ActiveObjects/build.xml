@@ -20,6 +20,18 @@
 			</and>
 		</condition>
 	</target>
+	
+	<target name="check-jdocs">
+		<condition property="jdocs-check-ok">
+			<and>
+				<isset property="jdocs.path"/>
+				
+				<not>
+					<equals arg1="${jdocs.path}" arg2="" trim="yes"/>
+				</not>
+			</and>
+		</condition>
+	</target>
 
 	<target name="check-ant">
 		<condition property="test-ant-ok">
@@ -75,7 +87,7 @@
 	
 	<target name="doc" depends="upgrade-ant,init-doc,assign-doc-dir" if="test-ant-ok">
 		<javadoc sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
-		 		windowtitle="ActiveObjects: Javadoc" access="protected">
+		 		windowtitle="ActiveObjects: Javadoc" access="protected" overview="overview.html">
 			<packageset dir="${activeobjects.dir}/src">
 				<include name="net/java/ao/**/*.java"/>
 			</packageset>
@@ -83,6 +95,17 @@
 			<link href="${lucene.javadoc}"/>
 			<link href="http://java.sun.com/javase/6/docs/api"/>
 		</javadoc>
+	</target>
+	
+	<target name="build-jdocs" depends="check-jdocs" if="jdocs-check-ok">
+		<taskdef name="jdocs" classpath="${jdocs.path}" classname="com.dzone.jdocs.ant.jdk15.task.Jdocs"/>
+
+		<jdocs sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}"
+		 		windowtitle="ActiveObjects: Javadoc" overview="overview.html">
+			<packageset dir="${activeobjects.dir}/src">
+				<include name="net/java/ao/**/*.java"/>
+			</packageset>
+		</jdocs>
 	</target>
 	
 	<target name="jar">
