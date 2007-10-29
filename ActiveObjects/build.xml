@@ -87,7 +87,7 @@
 	
 	<target name="doc" depends="upgrade-ant,init-doc,assign-doc-dir" if="test-ant-ok">
 		<javadoc sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
-		 		windowtitle="ActiveObjects: Javadoc" access="protected" overview="overview.html">
+		 		windowtitle="ActiveObjects: Javadoc" access="protected" overview="src/overview.html">
 			<packageset dir="${activeobjects.dir}/src">
 				<include name="net/java/ao/**/*.java"/>
 			</packageset>
@@ -99,13 +99,10 @@
 	
 	<target name="build-jdocs" depends="check-jdocs" if="jdocs-check-ok">
 		<taskdef name="jdocs" classpath="${jdocs.path}" classname="com.dzone.jdocs.ant.jdk15.task.Jdocs"/>
+		<echo level="error" message="JDocs task doesn't work yet"/>
 
 		<jdocs sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}"
-		 		windowtitle="ActiveObjects: Javadoc" overview="overview.html">
-			<packageset dir="${activeobjects.dir}/src">
-				<include name="net/java/ao/**/*.java"/>
-			</packageset>
-		</jdocs>
+		 		overview="src/overview.html" sourcefiles="src/net/java/ao/**/*.java" package="net.java.ao"/>
 	</target>
 	
 	<target name="jar">
