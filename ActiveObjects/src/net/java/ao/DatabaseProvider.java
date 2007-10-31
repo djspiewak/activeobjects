@@ -1081,6 +1081,12 @@ public abstract class DatabaseProvider {
 	 * loss.  Nevertheless, if the database supplies a mechanism to
 	 * accomplish the task without data loss, it should be applied.</p>
 	 * 
+	 * <p>For maximum flexibility, the default implementation of this method
+	 * only deals with the dropping and addition of functions and triggers.
+	 * The actual generation of the ALTER TABLE statement is done in the
+	 * {@link #renderAlterTableChangeColumnStatement(DDLTable, DDLField, DDLField)}
+	 * method.</p>
+	 * 
 	 * @param table	The table containing the column to change.
 	 * @param oldField	The old column definition.
 	 * @param field	The new column definition (defining the resultant DDL).
@@ -1126,7 +1132,19 @@ public abstract class DatabaseProvider {
 	}
 	
 	/**
-	 * TODO
+	 * Generates the database-specific DDL statement only for altering a table and
+	 * changing a column.  This method must only generate a single statement as it
+	 * does not need to concern itself with functions or triggers associated with
+	 * the column.  This method is only to be called as a delegate for the
+	 * {@link #renderAlterTableChangeColumn(DDLTable, DDLField, DDLField)} method,
+	 * for which it is a primary delegate.  The default implementation of this
+	 * method functions according to the MySQL specification.
+	 * 
+	 * @param table	The table containing the column to change.
+	 * @param oldField	The old column definition.
+	 * @param field	The new column definition (defining the resultant DDL).
+	 * @return	A single DDL statement which is to be executed.
+	 * @see #renderField(DDLField)
 	 */
 	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
 		StringBuilder current = new StringBuilder();
@@ -1337,7 +1355,22 @@ public abstract class DatabaseProvider {
 	}
 
 	/**
-	 * TODO
+	 * <p>Renders the statement fragment for the given field representative of
+	 * its precision only.  Consider the following statement:</p>
+	 * 
+	 * <code>ALTER TABLE ADD COLUMN name VARCHAR(255)</code>
+	 * 
+	 * <p>In this statement, the bit which is rendered by this method is the
+	 * "<code>(255)</code>" (without quotes).  This is intended to allow
+	 * maximum flexibility in field type rendering (as required by PostgreSQL
+	 * and others which sometimes render types separately from the rest of
+	 * the field info).  The default implementation should suffice for every
+	 * conceivable database.  Any sort of odd functionality relating to
+	 * type precision rendering should be handled in the {@link #considerPrecision(DDLField)}
+	 * method if possible.</p>
+	 * 
+	 * @param field	The field for which the precision must be rendered.
+	 * @return	A DDL fragment which will be concatenated into a statement later.
 	 */
 	protected String renderFieldPrecision(DDLField field) {
 		StringBuilder back = new StringBuilder();
