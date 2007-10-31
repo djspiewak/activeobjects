@@ -51,7 +51,6 @@
 	</target>
 	
 	<target name="init-dist">
-		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/lib"/>
 		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src"/>
 		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
 	</target>
@@ -111,11 +110,7 @@
 		<antcall target="build"/>
 		
 		<jar basedir="${activeobjects.dir}/bin" compress="${jar.compress}" 
-				destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar">
-			<manifest>
-				<attribute name="Class-Path" value="lib/commons-cli-1.0.jar"/>
-			</manifest>
-		</jar>
+				destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar"/>
 	</target>
 	
 	<target name="dist" depends="upgrade-ant,init-dist,jar" if="test-ant-ok">
