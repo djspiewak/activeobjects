@@ -14,7 +14,7 @@
 		<h1>Example</h1>
 		
 		<p>The first step in building an application which uses ActiveObjects is to define the
-		entities.  This is done in pure Java (no XML configuration).  Tthe entiy definitions are
+		entities.  This is done in pure Java (no XML configuration).  The entity definitions are
 		database non-specific.</p>
 		
 <pre>// Person.java
@@ -57,31 +57,32 @@ public interface PersonToPerson extends Entity {
 }</pre>
 
 		<p>Once we have the entity definitions, the DDL statements can be auto-generated for
-		whatever database you may be using.  This is done using the <code>Generator</code> 
-		utility (set as the main class for the dist JAR). Here's what the SQL would look like as generated 
-		for the MySQL database.</p>
+		whatever database you may be using.  This is done using migrations. Here's what the 
+		DDL would look like as generated for the MySQL database:</p>
 
 <pre>CREATE TABLE person (
 	id INTEGER NOT NULL AUTO_INCREMENT,
-	name VARCHAR(45),
+	name VARCHAR(255),
 	age INTEGER,
 	comment TEXT,
 	familyID INTEGER,
 	PRIMARY KEY (id),
-	FOREIGN KEY (familyID) REFERENCES family(id)
+	CONSTRAINT fk_person_familyID FOREIGN KEY (familyID) REFERENCES family(id)
 ) ENGINE=InnoDB;
+
 CREATE TABLE family (
 	id INTEGER NOT NULL AUTO_INCREMENT,
-	name VARCHAR(45),
+	name VARCHAR(255),
 	PRIMARY KEY (id)
 ) ENGINE=InnoDB;
+
 CREATE TABLE personToPerson (
 	id INTEGER NOT NULL AUTO_INCREMENT,
 	personAID INTEGER,
 	personBID INTEGER,
 	PRIMARY KEY (id),
-	FOREIGN KEY (personAID) REFERENCES person (id),
-	FOREIGN KEY (personBID) REFERENCES person (id)
+	CONSTRAINT fk_personToPerson_personAID FOREIGN KEY (personAID) REFERENCES person (id),
+	CONSTRAINT fk_personToPerson_personBID FOREIGN KEY (personBID) REFERENCES person (id)
 ) ENGINE=InnoDB;</pre>
 		
 		<p>You'll notice the usage of convention to determine field names, primary and foreign keys,
@@ -98,48 +99,49 @@ EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "use
 		
 Family family = manager.create(Family.class);
 family.setName("Spiewak");
+family.save();
 		
 Person me = manager.create(Person.class);
 me.setName("Daniel Spiewak");
 me.setAge(27);
 me.setComment("I love databasing");
 me.setFamily(family);
+me.save();
 
 Person you = manager.create(Person.class);
 you.setName("Joe Blow");
 you.setName(23);
 you.setComment("Guess who?");
 you.setFamily(family);
+you.save();
 
 PersonToPerson relation = manager.create(PersonToPerson.class);
 relation.setPersonA(me);
 relation.setPersonB(you);
+relation.save();
 
 family.getPeople();		// ...returns new Person[] {you, me}
 you.getPeople();		// ...returns new Person[] {me}
 
-// notice, this is the first use of SQL in the whole example
-Family[] families = manager.findWithSQL(Family.class, "familyID", "SELECT familyID FROM person");
+/*
+ * notice, this is the first use of SQL in the whole example, and 
+ * it's a contrived usage at that
+ */
+Family[] families = manager.findWithSQL(Family.class, "familyID", "SELECT DISTINCT familyID FROM person");
 
-// returns any person with age >= 18
-Person[] overAge = manager.find(Person.class, "age >= ?", 18);
+// returns any person with age greater than or equal to 18
+Person[] overAge = manager.find(Person.class, "age &gt;= ?", 18);
 
 /*
  * notice the varargs parameters, as well as the direct use of an
  * entity instance without worrying about the ID value
  */
-Person[] inFamilyOver21 = manager.find(Person.class, "age >= ? AND familyID = ?", 21, family);</pre>
+Person[] inFamilyOver21 = manager.find(Person.class, "age &gt;= ? AND familyID = ?", 21, family);</pre>
 		
 		<p>As you see, much of the framework is designed to completely encapsulate
 		the developer from the complexities of SQL and even from the precise specifics
 		of the schema.  The only place where this rule is broken is in the <code>find</code>
-		methods, which are designed to leverage the power of SQL, rather than to
+		methods, which are designed to leverage the full power of SQL, rather than
 		completely shelter the developer.</p>
-		
-		<p>One particular detail which is worth noting, is that at no point do we call
-		a <code>update()</code> or a <code>commit()</code> method.  All of the
-		changes we make to the entity instances are committed immediately to the
-		database.  While ActiveObjects does support transactions, and thus delayed
-		commit, it does not <i>force</i> this manual committing.</p>
 	</body>
 </html>

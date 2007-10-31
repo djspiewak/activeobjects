@@ -22,41 +22,65 @@
 		with the specified Java class model.</p>
 		
 		<p>From a developer standpoint, using ActiveObjects is as simple as the following:</p>
+		
 <pre>public interface Person extends Entity {
-	public String getName();
-	public void setName(String name);
+    public String getFirstName();
+    public void setFirstName(String name);
+    
+    public String getLastName();
+    public void setLastName(String name); 
 }
 
+// ...
 EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "user", "password");
 
 Person frank = manager.create(Person.class);
-frank.setName("Frank");</pre>
+frank.setName("Frank");
+frank.setName("Smith");
+frank.save();</pre>
 
-		<p>ActiveObjects entities can be treated as POJOs (Plain Old Java Object) without any fears
-		surrounding change committing or data loss.</p>
-		
 		<p>The code specified above is fully functional; there are no unspecified configuration files.  In 
 		fact, the only missing step would be to create the corresponding database schema.  ActiveObjects
-		can handle this step too, ensuring that the database schema is perfectly in step with accepted
-		database conventions as well as optimized to the particular database you may be using.  Generating
-		the schema is as simple as the following invocation (also available as an Ant task):</p>
+		can handle this step too, using a feature called migrations:</p>
 		
-		<code>java -jar activeobjects-0.1.jar --classpath bin --uri jdbc:mysql://localhost/ao_test Person</code>
-		
-		<p>This utility will generate the following MySQL DDL statements:</p>
+<pre>// ...
+manager.migrate(Person.class);</pre>
+
+		<p>This will execute DDL something like the following (assuming MySQL as in the URI above):</p>
 		
 <pre>CREATE TABLE person (
-	id INTEGER NOT NULL AUTO_INCREMENT,
-	name VARCHAR(45),
-	PRIMARY KEY (id)
+    id INTEGER AUTO_INCREMENT NOT NULL,
+    firstName VARCHAR(255),
+    lastName VARCHAR(255),
+    PRIMARY KEY (id)
 );</pre>
 
-		<p>Switching databases is as easy as changing the JDBC URI value in the EntityManager constructor
-		and in the schema generator utility.  There is never any need to be concerned about the ins and outs
-		of database specifics.</p>
+		<p>With migrations, you don't need to worry about making changes to your schema, or keeping
+		your schema in sync with your entity model in code.  Supposing you add a <code>getAge():int</code>
+		method (and its corresponding setter) to the <code>Person</code> entity in the above example.
+		If the <code>person</code> table has already been created, it probably contains data.  It would
+		be ugly and painful to write scripts to generate a new version of the table, migrate the old
+		data over and delete the old table.  Instead of this mess, all that is necessary is another
+		call to the <code>migrate</code> method (as shown above).  This time, instead of generating
+		the full table from scratch, ActiveObjects will inspect the existing schema and determine that
+		the only necessary action is the addition of the <code>age</code> field.  To this end, it will
+		execute <i>only</i> the following DDL statement:</p>
+
+<pre>ALTER TABLE person ADD COLUMN age INTEGER;</pre>
+
+		<p>All of the data has been retained, no ugly scripts were written and the entity model in
+		code is once again in sync with the database schema.  This powerful functionality allows for
+		things such as refactoring your entity model, adding constraints and indexes and so on all
+		without adversely effecting your database.</p>
+
+		<p>Switching databases is as easy as changing the JDBC URI value in the EntityManager constructor.  
+		There is never any need to be concerned about the ins and outs of database specifics or
+		to write any SQL by hand.  In fact, you can use ActiveObjects and take full advantage of
+		database functionality without ever once opening a database client or even understanding the
+		basics of SQL or RDBMS.</p>
 		
 		<p>In fact, any Java developer can use ActiveObjects, even if they have no experience whatsoever
 		in databases or their underlying concepts.  The framework is designed so that it "feels" natural to any
-		Java developer, not requiring an advanced knowledge of relational databases.</p>
+		Java developer, not requiring any knowledge of relational databases.</p>
 	</body>
 </html>
