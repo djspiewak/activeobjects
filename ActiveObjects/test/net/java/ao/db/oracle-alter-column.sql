@@ -1,1 +1,1 @@
-sdlfkjsdf
+ALTER TABLE company MODIFY (name VARCHAR(255) NOT NULL);

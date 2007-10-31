@@ -211,7 +211,19 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			back.add(str.toString());
 		}
 		
-		if (field.getDefaultValue() == null && oldField.getDefaultValue() != null) {
+		if (!field.getType().equals(oldField.getType())) {
+			foundChange = true;
+			
+			StringBuilder str = new StringBuilder();
+			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+			str.append(field.getName()).append(" TYPE ");
+			str.append(renderFieldType(field)).append(renderFieldPrecision(field));
+			back.add(str.toString());
+		}
+		
+		if (field.getDefaultValue() == null && oldField.getDefaultValue() == null) {
+			// dummy case
+		} else if (field.getDefaultValue() == null && oldField.getDefaultValue() != null) {
 			foundChange = true;
 			
 			StringBuilder str = new StringBuilder();

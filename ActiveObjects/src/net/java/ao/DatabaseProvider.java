@@ -1110,10 +1110,7 @@ public abstract class DatabaseProvider {
 			back.add(current.toString());
 		}
 		
-		current.setLength(0);
-		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ").append(oldField.getName()).append(' ');
-		current.append(renderField(field));
-		back.add(current.toString());
+		back.add(renderAlterTableChangeColumnStatement(table, oldField, field));
 		
 		String toRender = renderFunctionForField(table, field);
 		if (toRender != null) {
@@ -1128,6 +1125,17 @@ public abstract class DatabaseProvider {
 		return back.toArray(new String[back.size()]);
 	}
 	
+	/**
+	 * TODO
+	 */
+	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
+		StringBuilder current = new StringBuilder();
+		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ");
+		current.append(oldField.getName()).append(' ');
+		current.append(renderField(field));
+		return current.toString();
+	}
+
 	/**
 	 * Generates the database-specific DDL statements required to remove
 	 * the specified column from the given table.  This should also
@@ -1301,18 +1309,7 @@ public abstract class DatabaseProvider {
 		back.append(field.getName());
 		back.append(" ");
 		back.append(renderFieldType(field));
-		
-		if (considerPrecision(field) && field.getPrecision() > 0) {
-			back.append('(');
-			if (field.getScale() > 0) {
-				back.append(field.getPrecision());
-				back.append(',');
-				back.append(field.getScale());
-			} else {
-				back.append(field.getPrecision());
-			}
-			back.append(')');
-		}
+		back.append(renderFieldPrecision(field));
 		
 		if (field.isAutoIncrement()) {
 			String autoIncrementValue = renderAutoIncrement();
@@ -1334,6 +1331,27 @@ public abstract class DatabaseProvider {
 		
 		if (field.getOnUpdate() != null) {
 			back.append(renderOnUpdate(field));
+		}
+		
+		return back.toString();
+	}
+
+	/**
+	 * TODO
+	 */
+	protected String renderFieldPrecision(DDLField field) {
+		StringBuilder back = new StringBuilder();
+		
+		if (considerPrecision(field) && field.getPrecision() > 0) {
+			back.append('(');
+			if (field.getScale() > 0) {
+				back.append(field.getPrecision());
+				back.append(',');
+				back.append(field.getScale());
+			} else {
+				back.append(field.getPrecision());
+			}
+			back.append(')');
 		}
 		
 		return back.toString();

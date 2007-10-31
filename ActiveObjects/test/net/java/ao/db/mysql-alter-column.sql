@@ -1,1 +1,1 @@
-sdlfkjsdf
+ALTER TABLE company CHANGE COLUMN name name VARCHAR(255) NOT NULL;

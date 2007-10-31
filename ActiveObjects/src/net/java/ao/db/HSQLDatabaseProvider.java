@@ -32,6 +32,7 @@ import net.java.ao.DBParam;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
 
@@ -208,5 +209,15 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		return super.renderValue(value);
+	}
+	
+	@Override
+	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
+		StringBuilder current = new StringBuilder();
+		
+		current.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+		current.append(renderField(field));
+		
+		return current.toString();
 	}
 }

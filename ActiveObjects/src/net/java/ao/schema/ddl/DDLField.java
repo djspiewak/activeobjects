@@ -52,6 +52,12 @@ public class DDLField {
 	}
 
 	public int getPrecision() {
+		if (precision <= 0) {
+			if (type != null && type.getDefaultPrecision() > 0) {
+				return type.getDefaultPrecision();
+			}
+		}
+		
 		return precision;
 	}
 

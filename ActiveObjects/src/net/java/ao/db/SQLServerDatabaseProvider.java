@@ -230,6 +230,16 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
+		StringBuilder current = new StringBuilder();
+		
+		current.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+		current.append(renderField(field));
+		
+		return current.toString();
+	}
+	
+	@Override
 	@SuppressWarnings("unused")
 	public synchronized <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, 
 			DBParam... params) throws SQLException {

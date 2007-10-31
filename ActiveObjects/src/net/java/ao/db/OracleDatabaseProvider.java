@@ -143,4 +143,12 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 		
 		return super.renderTriggerForField(table, field);
 	}
+	
+	@Override
+	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
+		StringBuilder current = new StringBuilder();
+		current.append("ALTER TABLE ").append(table.getName()).append(" MODIFY (");
+		current.append(renderField(field)).append(')');
+		return current.toString();
+	}
 }
