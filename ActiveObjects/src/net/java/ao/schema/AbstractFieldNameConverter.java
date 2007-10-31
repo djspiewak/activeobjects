@@ -25,12 +25,39 @@ import net.java.ao.OneToMany;
 import net.java.ao.RawEntity;
 
 /**
+ * An abstract implementation of {@link FieldNameConverter} which handles common 
+ * tasks for the name converter (i.e. relations annotations, accessor/mutator
+ * annotations, etc).  For most tasks, custom field name converters should extend
+ * this class, rather than directly implementing <code>FieldNameConverter</code>.
+ * 
  * @author Daniel Spiewak
  */
 public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	
+	/**
+	 * Dummy constructor with protected visibility.  Does nothing.
+	 */
 	protected AbstractFieldNameConverter() {}
 
+	/**
+	 * <p>Handles operations which should be common to all field name converters
+	 * such as overriding of the generated field name through annotations, etc.
+	 * This method also handles the converting through the Java Bean method
+	 * prefix convention (get/set/is), allowing the implementing class to only
+	 * concern itself with converting one <code>String</code> (from the method
+	 * name) into another.</p>
+	 * 
+	 * <p>This method delegates the actual conversion logic to the
+	 * {@link #convertName(String, boolean)} method.  There is rarely a need
+	 * for subclasses to override this method.</p>
+	 * 
+	 * @param clazz	The entity class containing the method for which a field name
+	 * 		must be generated.
+	 * @param method	The method for which a field name must be generated.
+	 * @return	A valid database identifier to be used as the field name representative
+	 * 		of the method in question.
+	 * @see net.java.ao.schema.FieldNameConverter#getName(Class, Method)
+	 */
 	public String getName(Class<? extends RawEntity<?>> clazz, Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
@@ -62,5 +89,60 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 		return convertName(attributeName, Common.interfaceInheritsFrom(type, RawEntity.class));
 	}
 	
+	/**
+	 * <p>Performs the actual conversion logic between a method name (or, more normally
+	 * a trimmed method name) and the corresponding database field identifier.  This
+	 * method may impose conventions such as camelCase, all-lowercase with underscores
+	 * and so on.  There is no need for this method to concern itself with method
+	 * prefixes such as get, set or is.  All of these should be handled within the
+	 * {@link #getName(Class, Method)} method.</p>
+	 * 
+	 * <p>Some examples of input and their corresponding return values for this method
+	 * (assuming the {@link CamelCaseFieldNameConverter} is in use):</p>
+	 * 
+	 * <table border="1">
+	 * 		<tr>
+	 * 			<td><b>Actual Method Name</b></td>
+	 * 			<td><b>Param: name</b></td>
+	 * 			<td><b>Param: entity</b></td>
+	 * 			<td><b>Return Value</b></td>
+	 * 		</tr>
+	 * 		<tr>
+	 * 			<td>getFirstName</td>
+	 * 			<td>FirstName</td>
+	 * 			<td><code>false</code></td>
+	 * 			<td>firstName</td>
+	 * 		</tr>
+	 * 		<tr>
+	 * 			<td>getCompany</td>
+	 * 			<td>Company</td>
+	 * 			<td><code>true</code></td>
+	 * 			<td>companyID</td>
+	 * 		</tr>
+	 * 		<tr>
+	 * 			<td>isCool</td>
+	 * 			<td>Cool</td>
+	 * 			<td><code>false</code></td>
+	 * 			<td>cool</td>
+	 * 		</tr>
+	 * 		<tr>
+	 * 			<td>setLastName</td>
+	 * 			<td>LastName</td>
+	 * 			<td><code>false</code></td>
+	 * 			<td>lastName</td>
+	 * 		</tr>
+	 * </table>
+	 * 
+	 * <p>The implementation of this method must execute extremely quickly and be
+	 * totally thread-safe (stateless if possible).  This is because this method will
+	 * be called many times for some operations.  A slow algorithm here will dramaticly
+	 * affect the execution time of basic tasks.</p>
+	 * 
+	 * @param name	The (often trimmed) method name for which a field name is reqiured.
+	 * @param entity	Indicates whether or not the method in question returns an
+	 * 		entity value.
+	 * @return	A valid database field name which uniquely corresponds to the method
+	 *		name in question.  Should <i>never</i> return <code>null</code>.
+	 */
 	protected abstract String convertName(String name, boolean entity);
 }
