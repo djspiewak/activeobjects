@@ -18,6 +18,8 @@ package net.java.ao.db;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.sql.Types;
 import java.util.Calendar;
@@ -33,7 +35,9 @@ import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.ClassType;
 import net.java.ao.types.TypeManager;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import test.schema.Company;
@@ -43,6 +47,16 @@ import test.schema.Company;
  */
 @SuppressWarnings("deprecation")
 public class DatabaseProviderTest {
+	private static final PrintStream STDERR = System.err;
+	
+	@Before
+	public void setUp() {
+		System.setErr(new PrintStream(new OutputStream() {
+			@Override
+			public void write(int arg0) throws IOException {
+			}
+		}));
+	}
 
 	@Test
 	public void testRenderActionCreateTable() throws IOException {
@@ -118,8 +132,8 @@ public class DatabaseProviderTest {
 	public void testRenderActionAlterColumn() throws IOException {
 		DDLAction action = createActionAlterColumn();
 		
-		DatabaseProvider /*provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-alter-column.sql"), provider.renderAction(action));*/
+		DatabaseProvider provider  = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(new String[0], provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
 		assertEquals(readStatements("hsqldb-alter-column.sql"), provider.renderAction(action));
@@ -141,8 +155,8 @@ public class DatabaseProviderTest {
 	public void testRenderActionDropColumn() throws IOException {
 		DDLAction action = createActionDropColumn();
 		
-		DatabaseProvider provider /*= new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-drop-column.sql"), provider.renderAction(action))*/;
+		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(new String[0], provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
 		assertEquals(readStatements("hsqldb-drop-column.sql"), provider.renderAction(action));
@@ -181,6 +195,11 @@ public class DatabaseProviderTest {
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
 		assertEquals(readStatements("postgres-create-index.sql"), provider.renderAction(action));
+	}
+	
+	@After
+	public void tearDown() {
+		System.setErr(STDERR);
 	}
 	
 	private DDLAction createActionCreateTable() {
