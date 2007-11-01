@@ -138,6 +138,29 @@ public class DatabaseProviderTest {
 	}
 	
 	@Test
+	public void testRenderActionDropColumn() throws IOException {
+		DDLAction action = createActionDropColumn();
+		
+		DatabaseProvider provider /*= new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(readStatements("derby-drop-column.sql"), provider.renderAction(action))*/;
+		
+		provider = new HSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("hsqldb-drop-column.sql"), provider.renderAction(action));
+		
+		provider = new JTDSSQLServerDatabaseProvider("", "", "");
+		assertEquals(readStatements("sqlserver-drop-column.sql"), provider.renderAction(action));
+		
+		provider = new MySQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("mysql-drop-column.sql"), provider.renderAction(action));
+		
+		provider = new OracleDatabaseProvider("", "", "");
+		assertEquals(readStatements("oracle-drop-column.sql"), provider.renderAction(action));
+		
+		provider = new PostgreSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("postgres-drop-column.sql"), provider.renderAction(action));
+	}
+	
+	@Test
 	public void testRenderActionCreateIndex() throws IOException {
 		DDLAction action = createActionCreateIndex();
 		
@@ -279,6 +302,22 @@ public class DatabaseProviderTest {
 		
 		DDLAction back = new DDLAction(DDLActionType.ALTER_CHANGE_COLUMN);
 		back.setOldField(oldField);
+		back.setField(field);
+		back.setTable(table);
+		
+		return back;
+	}
+	
+	private DDLAction createActionDropColumn() {
+		DDLTable table = new DDLTable();
+		table.setName("company");
+		
+		DDLField field = new DDLField();
+		field.setName("name");
+		field.setType(TypeManager.getInstance().getType(String.class));
+		field.setNotNull(true);
+		
+		DDLAction back = new DDLAction(DDLActionType.ALTER_DROP_COLUMN);
 		back.setField(field);
 		back.setTable(table);
 		
