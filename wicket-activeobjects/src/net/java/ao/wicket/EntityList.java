@@ -9,12 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.java.ao.Entity;
-import net.java.ao.EntityManager;
 
 /**
  * @author Daniel Spiewak
  */
-public abstract class EntityList<T extends Entity> extends AbstractList<T> implements Serializable {
+public abstract class EntityList<T extends Entity> extends AbstractList<T> implements Serializable, IManagerWrapper {
 	private List<Integer> delegate;
 	private Class<T> type;
 	
@@ -23,8 +22,6 @@ public abstract class EntityList<T extends Entity> extends AbstractList<T> imple
 		this.type = type;
 	}
 	
-	public abstract EntityManager getEntityManager();
-
 	public void clear() {
 		delegate.clear();
 	}

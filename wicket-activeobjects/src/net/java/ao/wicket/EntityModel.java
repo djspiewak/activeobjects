@@ -8,14 +8,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import net.java.ao.Entity;
-import net.java.ao.EntityManager;
 
 import org.apache.wicket.model.IModel;
 
 /**
  * @author Daniel Spiewak
  */
-public abstract class EntityModel implements IModel, Serializable {
+public abstract class EntityModel implements IModel, Serializable, IManagerWrapper {
 	private int id;
 	private Class<? extends Entity> type;
 	
@@ -28,8 +27,6 @@ public abstract class EntityModel implements IModel, Serializable {
 		this.property = property;
 	}
 	
-	public abstract EntityManager getEntityManager();
-
 	public Object getObject() {
 		String capitolizedProperty = Character.toUpperCase(property.charAt(0)) + property.substring(1);
 		Method m = null;
