@@ -7,22 +7,22 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 
 import org.apache.wicket.model.IModel;
 
 /**
  * @author Daniel Spiewak
  */
-public abstract class EntityModel implements IModel, Serializable, IManagerWrapper {
-	private int id;
-	private Class<? extends Entity> type;
+public abstract class EntityModel<T extends RawEntity<?>> implements IModel, Serializable, IManagerWrapper {
+	private Object key;
+	private Class<? extends RawEntity<?>> type;
 	
 	private String property;
 	
-	public EntityModel(Entity entity, String property) {
-		id = entity.getID();
-		type = (Class<? extends Entity>) entity.getEntityType();
+	public EntityModel(T entity, String property) {
+		key = net.java.ao.Common.getPrimaryKeyValue((RawEntity<Object>) entity);
+		type = entity.getEntityType();
 		
 		this.property = property;
 	}
@@ -83,9 +83,10 @@ public abstract class EntityModel implements IModel, Serializable, IManagerWrapp
 	}
 
 	public void detach() {
+		getEntity().save();
 	}
 	
-	public Entity getEntity() {
-		return getEntityManager().get(type, id);
+	public T getEntity() {
+		return (T) getEntityManager().get((Class<RawEntity<Object>>) type, key);
 	}
 }

@@ -8,17 +8,18 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.java.ao.Entity;
+import net.java.ao.RawEntity;
 
 /**
  * @author Daniel Spiewak
  */
-public abstract class EntityList<T extends Entity> extends AbstractList<T> implements Serializable, IManagerWrapper {
-	private List<Integer> delegate;
+public abstract class EntityList<T extends RawEntity<?>> extends AbstractList<T> implements 
+		Serializable, IManagerWrapper {
+	private List<Object> delegate;
 	private Class<T> type;
 	
 	public EntityList(Class<T> type) {
-		delegate = new ArrayList<Integer>();
+		delegate = new ArrayList<Object>();
 		this.type = type;
 	}
 	
@@ -27,11 +28,11 @@ public abstract class EntityList<T extends Entity> extends AbstractList<T> imple
 	}
 
 	public boolean contains(Object o) {
-		return delegate.contains(((Entity) o).getID());
+		return delegate.contains(net.java.ao.Common.getPrimaryKeyValue((RawEntity<Object>) o));
 	}
 
 	public T get(int index) {
-		return getEntityManager().get(type, delegate.get(index));		// TODO	implement
+		return (T) getEntityManager().get((Class<RawEntity<Object>>) type, delegate.get(index));
 	}
 
 	public int hashCode() {
@@ -39,7 +40,7 @@ public abstract class EntityList<T extends Entity> extends AbstractList<T> imple
 	}
 
 	public int indexOf(Object o) {
-		return delegate.indexOf(((Entity) o).getID());
+		return delegate.indexOf(net.java.ao.Common.getPrimaryKeyValue((RawEntity<Object>) o));
 	}
 
 	public boolean isEmpty() {
@@ -47,11 +48,11 @@ public abstract class EntityList<T extends Entity> extends AbstractList<T> imple
 	}
 
 	public T remove(int index) {
-		return getEntityManager().get(type, delegate.remove(index));		// TODO	implement
+		return (T) getEntityManager().get((Class<RawEntity<Object>>) type, delegate.remove(index));
 	}
 
 	public boolean remove(Object o) {
-		return delegate.remove((Integer) ((Entity) o).getID());
+		return delegate.remove(net.java.ao.Common.getPrimaryKeyValue((RawEntity<Object>) o));
 	}
 
 	@Override
@@ -61,16 +62,17 @@ public abstract class EntityList<T extends Entity> extends AbstractList<T> imple
 
 	@Override
 	public boolean add(T e) {
-		return delegate.add(e.getID());
+		return delegate.add(net.java.ao.Common.getPrimaryKeyValue((RawEntity<Object>) e));
 	}
 
 	@Override
 	public void add(int index, T element) {
-		delegate.add(index, element.getID());
+		delegate.add(index, net.java.ao.Common.getPrimaryKeyValue((RawEntity<Object>) element));
 	}
 
 	@Override
 	public T set(int index, T element) {
-		return getEntityManager().get(type, delegate.set(index, ((Entity) element).getID()));
+		return (T) getEntityManager().get((Class<RawEntity<Object>>) type, delegate.set(index, 
+				net.java.ao.Common.getPrimaryKeyValue((RawEntity<Object>) element)));
 	}
 }
