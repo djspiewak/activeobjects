@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="wicket-activeobjects" default="build">
+	<dirname property="wicket-activeobjects.dir" file="${ant.file.wicket-activeobjects}"/>
+	
+	<property file="${wicket-activeobjects.dir}/build.properties"/>
+	
+	<import file="${activeobjects.dir}/build.xml"/>
+	
+	<target name="init" depends="ActiveObjects.init">
+		<mkdir dir="${wicket-activeobjects.dir}/bin"/>
+	</target>
+	
+	<target name="build" depends="init,ActiveObjects.build">
+		<javac srcdir="${wicket-activeobjects.dir}/src" destdir="${wicket-activeobjects.dir}/bin"
+			debug="${build.debug}" classpath="${wicket-activeobjects.build.classpath}"/>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${wicket-activeobjects.dir}/bin"/>
+	</target>
+</project>
