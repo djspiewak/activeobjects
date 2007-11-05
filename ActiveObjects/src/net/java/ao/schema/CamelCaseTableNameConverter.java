@@ -19,18 +19,44 @@ import net.java.ao.Common;
 import net.java.ao.RawEntity;
 
 /**
+ * <p>Imposes a standard camelCase convention upon table names.  This will
+ * convert entity names in the following way:</p>
+ * 
+ * <table border="1">
+ * 		<tr>
+ * 			<td><b>Entity Name</b></td>
+ * 			<td><b>Table Name</b></td>
+ * 		</tr>
+ * 
+ * 		<tr>
+ * 			<td><code>Person</code></td>
+ * 			<td>person</td>
+ * 		</tr>
+ * 
+ * 		<tr>
+ * 			<td><code>LicenseRegistration</code></td>
+ * 			<td>licenseRegistration</td>
+ * 		</tr>
+ * 
+ * 		<tr>
+ * 			<td><code>Volume4</code></td>
+ * 			<td>volume4</td>
+ * 		</tr>
+ * 
+ * 		<tr>
+ * 			<td><code>Company</code></td>
+ * 			<td>company</td>
+ * 		</tr>
+ * </table>
+ * 
+ * <p>This is the default table name converter for ActiveObjects.</p>
+ * 
  * @author Daniel Spiewak
  */
 public class CamelCaseTableNameConverter extends AbstractTableNameConverter {
 
 	@Override
 	protected String convertName(Class<? extends RawEntity<?>> type) {
-		String tableName = Common.convertDowncaseName(Common.convertSimpleClassName(type.getCanonicalName()));
-		
-		if (type.getAnnotation(Table.class) != null) {
-			tableName = type.getAnnotation(Table.class).value();
-		}
-		
-		return tableName;
+		return Common.convertDowncaseName(Common.convertSimpleClassName(type.getCanonicalName()));
 	}
 }

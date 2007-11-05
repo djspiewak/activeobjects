@@ -17,6 +17,7 @@ package net.java.ao.schema;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -76,9 +77,9 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 	}
 
 	/**
-	 * Adds multiple class mappings in a single method call.  This allows the
-	 * things such as loading class mappings from an external file and passing
-	 * them to the name converter in bulk.
+	 * Convenience method to add multiple class mappings in a single method call.  
+	 * This allows the things such as loading class mappings from an external file 
+	 * and passing them to the name converter in bulk.
 	 * 
 	 * @param mappings	The map of all mappings which are to be added to the
 	 * 		name converter.  Duplicate types will be overridden by the new
@@ -128,6 +129,23 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 		patternMappings.put(pattern, result);
 	}
 
+	/**
+	 * <p>Convenience method to add multiple pattern mappings in a single shot.  It's
+	 * important to note that mappings must be ordered, thus the second parameter
+	 * is required to enforce this ordering.  Technically, just passing a
+	 * {@link LinkedHashMap} would be sufficient, but enforcing the use of that
+	 * particular class is annoying.</p>
+	 * 
+	 * <p>This method is in place to allow things such as loading of patterns from
+	 * a properties file and importing them in bulk into the name converter.  It is
+	 * this technique which is used in {@link PluralizedNameConverter} to load and
+	 * setup the english pluralization rules.</p>
+	 * 
+	 * @param mappings	The pattern mappings to add (pattern =&gt; result).
+	 * @param keys	An iterator to enforce strict ordering of the patterns, allowing
+	 * 		for the notion of eval order.
+	 * @see #addPatternMapping(String, String)
+	 */
 	public void addPatternMappings(Map<String, String> mappings, Iterator<String> keys) {
 		int i = 0;
 		while (keys.hasNext()) {
@@ -137,6 +155,17 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 		patternMappings.putAll(mappings);
 	}
 
+	/**
+	 * Returns the corresponding table name for the given entity type.  This method
+	 * handles delegation to other functions to perform the actual conversion.  More
+	 * importantly, this method handles <code>@Table</code> annotations as well
+	 * as class mappings as a short-circuit on the standard conversion algorithm.
+	 * Thus if an expressed mapping is found, it will be used and returned
+	 * <i>immediately</i>, without post-processing, pattern matching or passing
+	 * "Go".
+	 * 
+	 * @see net.java.ao.schema.TableNameConverter#getName(Class)
+	 */
 	public String getName(Class<? extends RawEntity<?>> entity) {
 		Table tableAnnotation = entity.getAnnotation(Table.class);
 		if (tableAnnotation != null) {
@@ -150,8 +179,39 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 		return postProcessName(processName(convertName(entity)));
 	}
 	
+	/**
+	 * <p>Performs the actual operation of converting a class type into a proper
+	 * table name.  This method need not concern itself with particulars of
+	 * <code>@Table</code> annotations or pattern mappings.  All of these
+	 * things are handled in the {@link #getName(Class)} method in the
+	 * superclass implementation.</p>
+	 * 
+	 * <p>This method must run as fast as possible and should be thread-safe.  If
+	 * necessary, caching may be employed, but it is also within scope for such
+	 * caching to be utilized within the superclass.  As such, the implementation
+	 * of this method should be kept extremely simple.  Also note that this method
+	 * may not be called for <i>every</i> entity type which must be converted
+	 * (due to mappings, <code>@Table</code> overrides, etc).</p>
+	 * 
+	 * @param entity	The entity type which must be converted.
+	 * @return	The unique table name which corresponds to the given type.
+	 */
 	protected abstract String convertName(Class<? extends RawEntity<?>> entity);
 	
+	/**
+	 * <p>Performs first-step post-processing on converted names.  This is where
+	 * pattern mappings are applied.  This method is called <i>after</i> other
+	 * conversion functions such as class mappings, {@link #convertName(Class)}
+	 * and so on.</p>
+	 * 
+	 * <p>Note: few implementations will need to override this method.  Most
+	 * conventional post-processing should be handled in the {@link #postProcessName(String)}
+	 * method, which is invoked <i>after</i> this method, passing the result.</p>
+	 * 
+	 * @param back	The generated table name which should be processed to suit
+	 * 		conventions and patterns.
+	 * @return	An (optionally) modified version of the given table name.
+	 */
 	protected String processName(String back) {
 		for (String regexp : patterns) {
 			Pattern pattern = Pattern.compile("^" + regexp + "$", Pattern.CASE_INSENSITIVE);
@@ -182,6 +242,26 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 		return back;
 	}
 	
+	/**
+	 * <p>Performs second-step post-processing on converted names.  This method is
+	 * called to perform last-stage conventions enforcement prior to utilization
+	 * of the table name.  This allows implementations to impose sweeping
+	 * conventions such as "all table names should be uppercase" and so on.  Any
+	 * minor or name-specific conventions should be enforced within the {@link #processName(String)}
+	 * method.</p>
+	 * 
+	 * <p>The main reason for this method's existence is actually to allow for
+	 * table name pluralizing on conversions imposing odd conventions, such as
+	 * all uppercase or all lowercase.  This method should be invoked as the
+	 * last step of <i>any</i> table name conversion (with the exception of class
+	 * mappings and <code>@Table</code> annotations) to allow for extremely
+	 * broad-brush changes.  The default implementation simply returns the passed
+	 * name.</p>
+	 * 
+	 * @param back	The generated table name which should be processed to suit
+	 * 		large-scale conventions.
+	 * @return	An (optionally) modified version of the given table name.
+	 */
 	protected String postProcessName(String back) {
 		return back;
 	}

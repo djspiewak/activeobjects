@@ -21,10 +21,25 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Specifies a default value for the database field corresponding to
+ * the tagged method.  This default value will be used at INSERT,
+ * usually automatically by the database.  If the database does not
+ * provide a DEFAULT modifier for fields, the value will be
+ * injected into any INSERT statement, ensuring it is indeed the default
+ * value for the field in question.
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Default {
+	
+	/**
+	 * Contains the database-agnostic representation of the default value
+	 * for the corresponding field.  The conversion between this
+	 * <code>String</code> and the appropriate value is handled by the
+	 * {@link net.java.ao.types.DatabaseType#defaultParseValue(String)}
+	 * method.  Thus, even default values for custom types are supported.
+	 */
 	String value();
 }
