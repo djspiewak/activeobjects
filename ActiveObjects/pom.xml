@@ -4,7 +4,7 @@
   <groupId>activeobjects</groupId>
   <artifactId>activeobjects</artifactId>
   <name>ActiveObjects</name>
-  <version>0.5-SNAPSHOT</version>
+  <version>0.7-SNAPSHOT</version>
   <inceptionYear>2007</inceptionYear>
   <scm>
     <connection>scm:svn:https://activeobjects.dev.java.net/svn/activeobjects/trunk/ActiveObjects</connection>
