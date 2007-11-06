@@ -60,7 +60,13 @@ public interface PersonToPerson extends Entity {
 		whatever database you may be using.  This is done using migrations. Here's what the 
 		DDL would look like as generated for the MySQL database:</p>
 
-<pre>CREATE TABLE person (
+<pre>CREATE TABLE family (
+	id INTEGER NOT NULL AUTO_INCREMENT,
+	name VARCHAR(255),
+	PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE person (
 	id INTEGER NOT NULL AUTO_INCREMENT,
 	name VARCHAR(255),
 	age INTEGER,
@@ -68,12 +74,6 @@ public interface PersonToPerson extends Entity {
 	familyID INTEGER,
 	PRIMARY KEY (id),
 	CONSTRAINT fk_person_familyID FOREIGN KEY (familyID) REFERENCES family(id)
-) ENGINE=InnoDB;
-
-CREATE TABLE family (
-	id INTEGER NOT NULL AUTO_INCREMENT,
-	name VARCHAR(255),
-	PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE personToPerson (
