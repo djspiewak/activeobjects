@@ -1,7 +1,6 @@
 ==Name Conversion==
 
  * Run tests with different name converter combinations
- * Test manual rules passed to name converters
 
 ==Entities==
 
