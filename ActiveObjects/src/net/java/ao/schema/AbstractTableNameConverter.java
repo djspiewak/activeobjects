@@ -119,6 +119,11 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 	 * this sort of pattern matching is used to implement pluralization in
 	 * table name conversion (using {@link PluralizedNameConverter}.</p>
 	 * 
+	 * <p>Mappings are added to the head of the mapping list.  Thus, added
+	 * mappings override <i>any</i> prior mappings, including prior manual
+	 * mappings.  Thus mappings added sequentially will invert in order,
+	 * leading to the last mapping having the highest priority in evaluation.</p>
+	 * 
 	 * @param pattern	A regular expression in Java format defining the pattern
 	 * 		which should be matched.  (matching is case-insensetive)
 	 * @param result	A parsed String defining the value which should be
@@ -140,6 +145,13 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 	 * a properties file and importing them in bulk into the name converter.  It is
 	 * this technique which is used in {@link PluralizedNameConverter} to load and
 	 * setup the english pluralization rules.</p>
+	 * 
+	 * <p>Mappings are added to the head of the mapping list.  Thus, added
+	 * mappings override <i>any</i> prior mappings, including prior manual
+	 * mappings.  The order specified by the iterator is maintained however.
+	 * Thus the addition of a block of ordered mappings will occur at the head of
+	 * the mappings list, but will themselves remain in order (rather than being
+	 * reversed).</p>
 	 * 
 	 * @param mappings	The pattern mappings to add (pattern =&gt; result).
 	 * @param keys	An iterator to enforce strict ordering of the patterns, allowing
