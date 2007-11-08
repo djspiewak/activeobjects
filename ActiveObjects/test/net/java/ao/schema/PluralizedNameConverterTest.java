@@ -61,14 +61,31 @@ public class PluralizedNameConverterTest {
 
 	@Test
 	public void testGetNameUnderscore() {
-		PluralizedNameConverter converter = new PluralizedNameConverter(
-				new UnderscoreTableNameConverter(true));
+		converter = new PluralizedNameConverter(new UnderscoreTableNameConverter(true));
 		
 		assertEquals("PEOPLE", converter.getName(Person.class));
 		assertEquals("COMPANIES", converter.getName(Company.class));
 		assertEquals("PERSON_SUITS", converter.getName(PersonSuit.class));
 		assertEquals("personDefence", converter.getName(PersonLegalDefence.class));
 		assertEquals("COMPANY_ADDRESS_INFO", converter.getName(CompanyAddressInfo.class));
+	}
+	
+	/**
+	 * Tests explicit patterns, regular expression patterns, pattern overriding
+	 * and pattern addition order.
+	 */
+	@Test
+	public void testAddPatternMapping() {
+		converter.addPatternMapping("person", "persons");
+		converter.addPatternMapping("personDefence", "somethingBadHappened");
+		converter.addPatternMapping("company", "company");
+		converter.addPatternMapping("(.+)any", "{1}anies");
+		
+		assertEquals("persons", converter.getName(Person.class));
+		assertEquals("companies", converter.getName(Company.class));
+		assertEquals("personSuits", converter.getName(PersonSuit.class));
+		assertEquals("personDefence", converter.getName(PersonLegalDefence.class));
+		assertEquals("companyAddressInfo", converter.getName(CompanyAddressInfo.class));
 	}
 	
 	@Test
