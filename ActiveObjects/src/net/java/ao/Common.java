@@ -79,32 +79,18 @@ public final class Common {
 //		return EntityNameManager.getInstance().getName(type);
 //	}
 	
-	public static String[] getMappingFields(Class<? extends RawEntity<?>> from, Class<? extends RawEntity<?>> to) { 
+	public static String[] getMappingFields(FieldNameConverter converter,
+			Class<? extends RawEntity<?>> from, Class<? extends RawEntity<?>> to) { 
 		Set<String> back = new LinkedHashSet<String>();
 		
 		for (Method method : from.getMethods()) {
-			Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
-			Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
-			
-			if (accessorAnnotation != null) {
-				if (method.getReturnType().equals(to)) {
-					back.add(accessorAnnotation.value());
+			if (isAccessor(method)) {
+				if (interfaceInheritsFrom(method.getReturnType(), to)) {
+					back.add(converter.getName(from, method));
 				}
-			} else if (mutatorAnnotation != null) {
-				if (method.getParameterTypes()[0].equals(to)) {
-					back.add(mutatorAnnotation.value());
-				}
-			} else if (method.getName().toLowerCase().startsWith("get")) {
-				if (method.getReturnType().equals(to)) {
-					back.add(convertDowncaseName(method.getName().substring(3)) + "ID");
-				}
-			} else if (method.getName().toLowerCase().startsWith("is")) {
-				if (method.getReturnType().equals(to)) {
-					back.add(convertDowncaseName(method.getName().substring(2)) + "ID");
-				}
-			} else if (method.getName().toLowerCase().startsWith("set")) {
-				if (method.getParameterTypes()[0].equals(to)) {
-					back.add(convertDowncaseName(method.getName().substring(3)) + "ID");
+			} else if (isMutator(method)) {
+				if (interfaceInheritsFrom(method.getParameterTypes()[0], to)) {
+					back.add(converter.getName(from, method));
 				}
 			}
 		}

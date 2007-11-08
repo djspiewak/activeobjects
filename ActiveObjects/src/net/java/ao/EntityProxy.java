@@ -154,7 +154,9 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType().getComponentType();
 
 			return retrieveRelations((RawEntity<K>) proxy, null, 
-					Common.getMappingFields(throughType, type), throughType, (Class<? extends RawEntity>) type, manyToManyAnnotation.where());
+					Common.getMappingFields(getManager().getFieldNameConverter(), 
+							throughType, type), throughType, (Class<? extends RawEntity>) type, 
+							manyToManyAnnotation.where());
 		} else if (Common.isAccessor(method)) {
 			return invokeGetter(getKey(), tableName, getManager().getFieldNameConverter().getName(type, method), 
 					method.getReturnType(), onUpdateAnnotation == null);
@@ -493,7 +495,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	private <V extends RawEntity<K>> V[] retrieveRelations(RawEntity<K> entity, String[] inMapFields, String[] outMapFields, 
 			Class<? extends RawEntity<?>> type, Class<V> finalType, String where) throws SQLException {
 		if (inMapFields == null || inMapFields.length == 0) {
-			inMapFields = Common.getMappingFields((Class<? extends RawEntity<?>>) type, this.type);
+			inMapFields = Common.getMappingFields(getManager().getFieldNameConverter(), 
+					(Class<? extends RawEntity<?>>) type, this.type);
 		}
 		String[] fields = getFields(Common.getPrimaryKeyField(finalType, getManager().getFieldNameConverter()), 
 				inMapFields, outMapFields, where);
