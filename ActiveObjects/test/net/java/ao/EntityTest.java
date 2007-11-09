@@ -172,7 +172,7 @@ public class EntityTest extends DataTest {
 		manager.delete(company);
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
-		Person person = manager.create(Person.class);
+		Person person = manager.create(Person.class, new DBParam("url", "http://www.codecommit.com"));
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
 		conn = manager.getProvider().getConnection();

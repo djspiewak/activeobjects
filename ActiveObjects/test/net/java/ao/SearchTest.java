@@ -64,54 +64,49 @@ public class SearchTest {
 	protected static long[] coolCompanyIDs;
 
 	@BeforeClass
-	public static void setUp() throws Throwable {
-		try {
-			TypeManager.getInstance().addType(new ClassType());
-			
-			manager = new SearchableEntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges", 
-					FSDirectory.getDirectory(TEST_INDEX));
-			
-			DataStruct data = TestUtilities.setUpEntityManager(manager);
-			
-			personID = data.personID;
-			companyID = data.companyID;
-			penIDs = data.penIDs;
-			defenceIDs = data.defenceIDs;
-			suitIDs = data.suitIDs;
-			coolCompanyIDs = data.coolCompanyIDs;
-			
-			Map<String, String> people = new LinkedHashMap<String, String>() {
-				{
-					put("Daniel", "Spiewak");
-					put("Christopher", "Spiewak");
-					
-					put("Jack", "O'Neil");
-					put("Katheryn", "Janeway");
-					
-					put("Martin", "Smith");
-					put("Steve", "Smith");
-					put("Craig", "Antler");
-					put("Greg", "Smith");
-				}
-			};
-			String[] companies = {"Miller", "Chrysler", "Apple", "GM", "HP", "Dell", "Wal-Mart", 
-					"Ma Bell", "Sell, Sell, Sell", "Viacom"};
-			
-			for (String firstName : people.keySet()) {
-				Person person = manager.create(Person.class);
-				person.setFirstName(firstName);
-				person.setLastName(people.get(firstName));
-				person.save();
+	public static void setUp() throws IOException, SQLException {
+		TypeManager.getInstance().addType(new ClassType());
+
+		manager = new SearchableEntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges", 
+				FSDirectory.getDirectory(TEST_INDEX));
+
+		DataStruct data = TestUtilities.setUpEntityManager(manager);
+
+		personID = data.personID;
+		companyID = data.companyID;
+		penIDs = data.penIDs;
+		defenceIDs = data.defenceIDs;
+		suitIDs = data.suitIDs;
+		coolCompanyIDs = data.coolCompanyIDs;
+
+		Map<String, String[]> people = new LinkedHashMap<String, String[]>() {
+			{
+				put("Daniel", new String[] {"Spiewak", "http://www.codecommit.com"});
+				put("Christopher", new String[] {"Spiewak", "http://www.weirdthings.com"});
+
+				put("Jack", new String[] {"O'Neil", "http://www.gateworld.net"});
+				put("Katheryn", new String[] {"Janeway", "http://www.startrek.com"});
+
+				put("Martin", new String[] {"Smith", "http://www.delirious.com"});
+				put("Steve", new String[] {"Smith", "http://www.panthers.com"});
+				put("Craig", new String[] {"Antler", "http://www.rockyandbullwinkle.com"});
+				put("Greg", new String[] {"Smith", "http://www.imagination.com"});
 			}
-			
-			for (String name : companies) {
-				Company company = manager.create(Company.class);
-				company.setName(name);
-				company.save();
-			}
-		} catch (Throwable t) {
-			t.printStackTrace();
-			throw t;
+		};
+		String[] companies = {"Miller", "Chrysler", "Apple", "GM", "HP", "Dell", "Wal-Mart", 
+				"Ma Bell", "Sell, Sell, Sell", "Viacom"};
+
+		for (String firstName : people.keySet()) {
+			Person person = manager.create(Person.class, new DBParam("url", people.get(firstName)[1]));
+			person.setFirstName(firstName);
+			person.setLastName(people.get(firstName)[0]);
+			person.save();
+		}
+
+		for (String name : companies) {
+			Company company = manager.create(Company.class);
+			company.setName(name);
+			company.save();
 		}
 	}
 	
@@ -231,7 +226,7 @@ public class SearchTest {
 	public void testDelete() throws SQLException, IOException, ParseException {
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 		
-		Person person = manager.create(Person.class);
+		Person person = manager.create(Person.class, new DBParam("url", "http://en.wikipedia.org"));
 		person.setFirstName("George");
 		person.setLastName("Foreman");
 		person.save();
@@ -247,7 +242,7 @@ public class SearchTest {
 	public void testAddToIndex() throws SQLException, IOException, ParseException {
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 		
-		Person person = manager.create(Person.class);
+		Person person = manager.create(Person.class, new DBParam("url", "http://en.wikipedia.org"));
 		person.setFirstName("George");
 		person.setLastName("Foreman");
 		person.save();
@@ -271,7 +266,7 @@ public class SearchTest {
 	public void testRemoveFromIndex() throws SQLException, IOException, ParseException {
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 		
-		Person person = manager.create(Person.class);
+		Person person = manager.create(Person.class, new DBParam("url", "http://en.wikipedia.org"));
 		person.setFirstName("George");
 		person.setLastName("Foreman");
 		person.save();
@@ -316,5 +311,6 @@ public class SearchTest {
 				file.delete();
 			}
 		}
+		dir.delete();
 	}
 }
