@@ -23,6 +23,7 @@ import net.java.ao.Implementation;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
+import net.java.ao.Searchable;
 import net.java.ao.schema.Default;
 import net.java.ao.schema.Indexed;
 import net.java.ao.schema.Unique;
@@ -33,10 +34,14 @@ import net.java.ao.schema.Unique;
 @Implementation(PersonImpl.class)
 public interface Person extends Entity {
 	
+	@Searchable
 	public String getFirstName();
+	@Searchable
 	public void setFirstName(String firstName);
 	
+	@Searchable
 	public String getLastName();
+	@Searchable
 	public void setLastName(String lastName);
 	
 	@Indexed

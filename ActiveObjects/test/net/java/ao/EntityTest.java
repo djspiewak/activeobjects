@@ -170,6 +170,27 @@ public class EntityTest extends DataTest {
 		}
 		
 		manager.delete(company);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		Person person = manager.create(Person.class);
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM person WHERE id = ?");
+			stmt.setInt(1, person.getID());
+			
+			ResultSet res = stmt.executeQuery();
+			if (!res.next()) {
+				fail("Unable to find INSERTed person row");
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		manager.delete(person);
 	}
 	
 	@Test

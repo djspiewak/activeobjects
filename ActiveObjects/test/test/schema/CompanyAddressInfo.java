@@ -16,12 +16,14 @@
 package test.schema;
 
 import net.java.ao.Entity;
+import net.java.ao.Searchable;
 
 /**
  * @author Daniel Spiewak
  */
 public interface CompanyAddressInfo extends Entity {
-	
+	@Searchable
 	public String getAddressLine1();
+	@Searchable
 	public void setAddressLine1(String address);
 }
