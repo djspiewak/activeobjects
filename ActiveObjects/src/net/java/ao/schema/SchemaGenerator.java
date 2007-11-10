@@ -210,7 +210,6 @@ public final class SchemaGenerator {
 	private static DDLField[] parseFields(Class<? extends RawEntity<?>> clazz, FieldNameConverter fieldConverter) {
 		List<DDLField> fields = new ArrayList<DDLField>();
 		List<String> attributes = new LinkedList<String>();
-		TypeManager manager = TypeManager.getInstance();
 		
 		for (Method method : clazz.getMethods()) {
 			if (method.getAnnotation(Ignore.class) != null
@@ -228,21 +227,9 @@ public final class SchemaGenerator {
 				}
 				attributes.add(attributeName);
 				
-				DatabaseType<?> sqlType = null;
-				int precision = -1;
-				int scale = -1;
-				
-				sqlType = manager.getType(type);
-				precision = sqlType.getDefaultPrecision();
-				
-				SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
-				if (sqlTypeAnnotation != null) {
-					if (sqlTypeAnnotation.value() > 0) {
-						sqlType = manager.getType(sqlTypeAnnotation.value());
-					}
-					precision = sqlTypeAnnotation.precision();
-					scale = sqlTypeAnnotation.scale();
-				}
+				DatabaseType<?> sqlType = getSQLTypeFromMethod(type, method);
+				int precision = getPrecisionFromMethod(type, method);
+				int scale = getScaleFromMethod(type, method);
 				
 				DDLField field = new DDLField();
 				
@@ -278,6 +265,47 @@ public final class SchemaGenerator {
 		}
 		
 		return fields.toArray(new DDLField[fields.size()]);
+	}
+	
+	private static DatabaseType<?> getSQLTypeFromMethod(Class<?> type, Method method) {
+		DatabaseType<?> sqlType = null;
+		TypeManager manager = TypeManager.getInstance();
+		
+		sqlType = manager.getType(type);
+		
+		SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+		if (sqlTypeAnnotation != null) {
+			if (sqlTypeAnnotation.value() > 0) {
+				sqlType = manager.getType(sqlTypeAnnotation.value());
+			}
+		}
+		
+		return sqlType;
+	}
+	
+	private static int getPrecisionFromMethod(Class<?> type, Method method) {
+		TypeManager manager = TypeManager.getInstance();
+		int precision = -1;
+		
+		precision = manager.getType(type).getDefaultPrecision();
+		
+		SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+		if (sqlTypeAnnotation != null) {
+			precision = sqlTypeAnnotation.precision();
+		}
+		
+		return precision;
+	}
+	
+	private static int getScaleFromMethod(Class<?> type, Method method) {
+		int scale = -1;
+		
+		SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+		if (sqlTypeAnnotation != null) {
+			scale = sqlTypeAnnotation.scale();
+		}
+		
+		return scale;
 	}
 	
 	private static DDLForeignKey[] parseForeignKeys(TableNameConverter nameConverter, FieldNameConverter fieldConverter,
@@ -325,6 +353,8 @@ public final class SchemaGenerator {
 					DDLIndex index = new DDLIndex();
 					index.setField(attributeName);
 					index.setTable(tableName);
+					index.setType(getSQLTypeFromMethod(type, method));
+					
 					back.add(index);
 				}
 			}

@@ -15,12 +15,15 @@
  */
 package net.java.ao.schema.ddl;
 
+import net.java.ao.types.DatabaseType;
+
 /**
  * @author Daniel Spiewak
  */
 public class DDLIndex {
 	private String table;
 	private String field;
+	private DatabaseType<?> type;
 
 	public String getTable() {
 		return table;
@@ -42,6 +45,14 @@ public class DDLIndex {
 		return field;
 	}
 	
+	public DatabaseType<?> getType() {
+		return type;
+	}
+
+	public void setType(DatabaseType<?> type) {
+		this.type = type;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof DDLIndex) {
@@ -56,7 +67,7 @@ public class DDLIndex {
 		
 		return super.equals(obj);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		int back = 0;

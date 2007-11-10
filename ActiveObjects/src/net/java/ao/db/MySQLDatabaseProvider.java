@@ -19,6 +19,7 @@ import java.sql.Driver;
 import java.sql.Types;
 
 import net.java.ao.DatabaseProvider;
+import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.types.DatabaseType;
 
 /**
@@ -52,5 +53,20 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 	@Override
 	protected String renderAppend() {
 		return "ENGINE=InnoDB";
+	}
+	
+	@Override
+	protected String renderCreateIndex(DDLIndex index) {
+		StringBuilder back = new StringBuilder("CREATE INDEX ");
+		back.append(index.getName()).append(" ON ");
+		back.append(index.getTable()).append(" (").append(index.getField());
+		
+		if (index.getType().getType() == Types.BLOB || index.getType().getType() == Types.VARCHAR) {
+			int defaultPrecision = index.getType().getDefaultPrecision();
+			back.append('(').append(defaultPrecision > 0 ? defaultPrecision : 255).append(')');
+		}
+		back.append(')');
+		
+		return back.toString();
 	}
 }
