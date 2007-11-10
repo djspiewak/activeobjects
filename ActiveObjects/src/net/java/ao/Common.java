@@ -180,6 +180,9 @@ public final class Common {
 	
 	public static Method getPrimaryKeyAccessor(Class<? extends RawEntity<?>> type) {
 		Method[] methods = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type);
+		if (methods.length == 0) {
+			throw new RuntimeException("Entity " + type.getSimpleName() + " has no primary key field");
+		}
 		
 		for (Method method : methods) {
 			if (!method.getReturnType().equals(Void.TYPE) && method.getParameterTypes().length == 0) {
@@ -191,7 +194,12 @@ public final class Common {
 	}
 	
 	public static String getPrimaryKeyField(Class<? extends RawEntity<?>> type, FieldNameConverter converter) {
-		return converter.getName(type, MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type)[0]);
+		Method[] annotatedMethods = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type);
+		if (annotatedMethods.length == 0) {
+			throw new RuntimeException("Entity " + type.getSimpleName() + " has no primary key field");
+		}
+		
+		return converter.getName(type, annotatedMethods[0]);
 	}
 	
 	public static <K> DatabaseType<K> getPrimaryKeyType(Class<? extends RawEntity<K>> type) {
@@ -199,7 +207,12 @@ public final class Common {
 	}
 	
 	public static <K> Class<K> getPrimaryKeyClassType(Class<? extends RawEntity<K>> type) {
-		Method meth = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type)[0];
+		Method[] annotatedMethods = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type);
+		if (annotatedMethods.length == 0) {
+			throw new RuntimeException("Entity " + type.getSimpleName() + " has no primary key field");
+		}
+		
+		Method meth = annotatedMethods[0];
 		
 		Class<K> keyType = (Class<K>) meth.getReturnType();
 		if (keyType.equals(Void.TYPE)) {
