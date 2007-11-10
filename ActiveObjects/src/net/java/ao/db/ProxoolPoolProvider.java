@@ -19,18 +19,55 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import net.java.ao.DatabaseProvider;
 import net.java.ao.PoolProvider;
+
+import org.logicalcobwebs.proxool.ProxoolException;
+import org.logicalcobwebs.proxool.ProxoolFacade;
 
 /**
  * @author Daniel Spiewak
  */
 public class ProxoolPoolProvider extends PoolProvider {
 	private static final String CLASSNAME = "org.logicalcobwebs.proxool.ProxoolDriver";
+	
+	private final String alias;
 
-	public ProxoolPoolProvider(DatabaseProvider delegate) {
+	public ProxoolPoolProvider(DatabaseProvider delegate) throws ProxoolException {
+		this(delegate, "activeobjects");
+	}
+	
+	public ProxoolPoolProvider(DatabaseProvider delegate, String alias) throws ProxoolException {
 		super(delegate);
+		
+		this.alias = alias;
+		
+		try {
+			getDriverClass();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		Properties props = new Properties();
+		props.setProperty("proxool.maximum-connection-count", "20");
+		props.setProperty("user", getUsername());
+		props.setProperty("password", getPassword());
+		
+		String driverClass = null;
+		try {
+			driverClass = delegate.getDriverClass().getCanonicalName();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		String driverUrl = getURI();
+		String url = "proxool." + alias + ":" + driverClass + ":" + driverUrl;
+		
+		ProxoolFacade.registerConnectionPool(url, props);
 	}
 	
 	@Override
@@ -40,11 +77,14 @@ public class ProxoolPoolProvider extends PoolProvider {
 	
 	@Override
 	protected Connection getConnectionImpl() throws SQLException {
+		return DriverManager.getConnection("proxool." + alias);
+	}
+	
+	@Override
+	public void dispose() {
 		try {
-			return DriverManager.getConnection("proxool.example:" + getDelegate().getDriverClass().getCanonicalName() 
-					+ ":" + getDelegate().getURI());
-		} catch (ClassNotFoundException e) {
-			return null;
+			ProxoolFacade.removeConnectionPool(alias);
+		} catch (ProxoolException e) {
 		}
 	}
 	

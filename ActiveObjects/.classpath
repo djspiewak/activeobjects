@@ -11,5 +11,6 @@
 	<classpathentry kind="var" path="lucene-queries" sourcepath="/lucene-queries-src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="var" path="derby"/>
+	<classpathentry kind="var" path="proxool"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
