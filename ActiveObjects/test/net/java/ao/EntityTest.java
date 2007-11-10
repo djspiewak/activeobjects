@@ -31,6 +31,7 @@ import org.junit.Test;
 import test.schema.Company;
 import test.schema.Pen;
 import test.schema.Person;
+import test.schema.PersonImpl;
 import test.schema.PersonLegalDefence;
 
 /**
@@ -245,9 +246,13 @@ public class EntityTest extends DataTest {
 	public void testDefinedImplementation() {
 		Person person = manager.get(Person.class, personID);
 		
+		PersonImpl.enableOverride = true;
+		
 		SQLLogMonitor.getInstance().markWatchSQL();
 		assertEquals("Smith", person.getLastName());
 		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		PersonImpl.enableOverride = false;
 	}
 	
 	// if this test doesn't stack overflow, we're good

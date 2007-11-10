@@ -19,6 +19,8 @@ package test.schema;
  * @author Daniel Spiewak
  */
 public class PersonImpl {
+	public static boolean enableOverride = false;
+	
 	private Person person;
 	
 	public PersonImpl(Person person) {
@@ -26,7 +28,11 @@ public class PersonImpl {
 	}
 	
 	public String getLastName() {
-		return "Smith";
+		if (enableOverride) {
+			return "Smith";
+		}
+		
+		return person.getLastName();
 	}
 	
 	public void setLastName(String lastName) {

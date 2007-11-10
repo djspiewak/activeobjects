@@ -108,6 +108,10 @@ public class SearchTest {
 			company.setName(name);
 			company.save();
 		}
+		
+		try {
+			Thread.sleep(10000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
 	}
 	
 	@Test
@@ -231,9 +235,17 @@ public class SearchTest {
 		person.setLastName("Foreman");
 		person.save();
 		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
+		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.delete(person);
+		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
 		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 	}
@@ -247,17 +259,33 @@ public class SearchTest {
 		person.setLastName("Foreman");
 		person.save();
 		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
+		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.removeFromIndex(person);
+		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
 		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 		
 		manager.addToIndex(person);
 		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
+		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.delete(person);
+		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
 		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 	}
@@ -271,13 +299,25 @@ public class SearchTest {
 		person.setLastName("Foreman");
 		person.save();
 		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
+		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.removeFromIndex(person);
 		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
+		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 		
 		manager.delete(person);
+		
+		try {
+			Thread.sleep(1000);		// give lucene a chance to catch up
+		} catch (InterruptedException e) {}
 		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 	}
