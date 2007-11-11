@@ -61,7 +61,7 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 		back.append(index.getName()).append(" ON ");
 		back.append(index.getTable()).append(" (").append(index.getField());
 		
-		if (index.getType().getType() == Types.BLOB || index.getType().getType() == Types.VARCHAR) {
+		if (index.getType().getType() == Types.CLOB || index.getType().getType() == Types.VARCHAR) {
 			int defaultPrecision = index.getType().getDefaultPrecision();
 			back.append('(').append(defaultPrecision > 0 ? defaultPrecision : 255).append(')');
 		}
