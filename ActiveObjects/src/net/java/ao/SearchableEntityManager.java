@@ -72,6 +72,8 @@ import org.apache.lucene.store.Directory;
  * @see net.java.ao.Searchable
  */
 public class SearchableEntityManager extends EntityManager {
+	static boolean asynchronous = true;		// hack for testing
+	
 	private Directory indexDir;
 
 	private Analyzer analyzer;
@@ -332,7 +334,7 @@ public class SearchableEntityManager extends EntityManager {
 
 		public void propertyChange(final PropertyChangeEvent evt) {
 			if (indexFields.contains(evt.getPropertyName())) {
-				new Thread() {
+				Thread t = new Thread() {
 					{
 						setPriority(3);
 					}
@@ -357,7 +359,13 @@ public class SearchableEntityManager extends EntityManager {
 							}
 						}
 					}
-				}.start();
+				};
+				
+				if (asynchronous) {
+					t.start();
+				} else {
+					t.run();
+				}
 			}
 		}
 	}

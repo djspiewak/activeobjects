@@ -67,6 +67,7 @@ public class SearchTest {
 	public static void setUp() throws IOException, SQLException {
 		TypeManager.getInstance().addType(new ClassType());
 
+		SearchableEntityManager.asynchronous = false;
 		manager = new SearchableEntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges", 
 				FSDirectory.getDirectory(TEST_INDEX));
 
@@ -108,10 +109,6 @@ public class SearchTest {
 			company.setName(name);
 			company.save();
 		}
-		
-		try {
-			Thread.sleep(10000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
 	}
 	
 	@Test
@@ -199,11 +196,10 @@ public class SearchTest {
 		}
 		assertEquals(0, resultSet.size());
 		
-		companies = manager.search(Company.class, "eLL");
+		companies = manager.search(Company.class, "deLL sell");
 		resultSet = new HashSet<String>() {
 			{
 				add("Dell");
-				add("Ma Bell");
 				add("Sell, Sell, Sell");
 			}
 		};
@@ -235,17 +231,9 @@ public class SearchTest {
 		person.setLastName("Foreman");
 		person.save();
 		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.delete(person);
-		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
 		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 	}
@@ -259,34 +247,15 @@ public class SearchTest {
 		person.setLastName("Foreman");
 		person.save();
 		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.removeFromIndex(person);
-		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 		
 		manager.addToIndex(person);
-		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.delete(person);
-		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 	}
 	
@@ -299,26 +268,12 @@ public class SearchTest {
 		person.setLastName("Foreman");
 		person.save();
 		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(1, manager.search(Person.class, "foreman").length);
 		
 		manager.removeFromIndex(person);
-		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 		
 		manager.delete(person);
-		
-		try {
-			Thread.sleep(1000);		// give lucene a chance to catch up
-		} catch (InterruptedException e) {}
-		
 		assertEquals(0, manager.search(Person.class, "foreman").length);
 	}
 	
@@ -341,6 +296,8 @@ public class SearchTest {
 		
 		manager.getProvider().dispose();
 		deleteDir(TEST_INDEX);
+
+		SearchableEntityManager.asynchronous = true;
 	}
 	
 	private static void deleteDir(File dir) {
