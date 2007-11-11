@@ -349,6 +349,7 @@ public class DatabaseProviderTest {
 		DDLIndex index = new DDLIndex();
 		index.setField("companyID");
 		index.setTable("person");
+		index.setType(TypeManager.getInstance().getType(Types.VARCHAR));
 		back.setIndex(index);
 		
 		return back;

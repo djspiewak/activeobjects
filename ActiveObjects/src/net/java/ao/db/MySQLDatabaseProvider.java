@@ -59,7 +59,7 @@ public class MySQLDatabaseProvider extends DatabaseProvider {
 	protected String renderCreateIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder("CREATE INDEX ");
 		back.append(index.getName()).append(" ON ");
-		back.append(index.getTable()).append(" (").append(index.getField());
+		back.append(index.getTable()).append('(').append(index.getField());
 		
 		if (index.getType().getType() == Types.CLOB || index.getType().getType() == Types.VARCHAR) {
 			int defaultPrecision = index.getType().getDefaultPrecision();
