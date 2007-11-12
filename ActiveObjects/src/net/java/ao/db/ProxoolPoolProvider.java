@@ -77,10 +77,7 @@ public class ProxoolPoolProvider extends PoolProvider {
 	
 	@Override
 	protected Connection getConnectionImpl() throws SQLException {
-		Connection conn = DriverManager.getConnection("proxool." + alias);
-		setPostConnectionProperties(conn);
-		
-		return conn;
+		return DriverManager.getConnection("proxool." + alias);
 	}
 	
 	@Override

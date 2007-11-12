@@ -50,10 +50,7 @@ public class C3P0PoolProvider extends PoolProvider {
 	
 	@Override
 	protected Connection getConnectionImpl() throws SQLException {
-		Connection conn = cpds.getConnection();
-		setPostConnectionProperties(conn);
-		
-		return conn;
+		return cpds.getConnection();
 	}
 	
 	@Override
