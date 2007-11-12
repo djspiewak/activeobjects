@@ -41,7 +41,7 @@ public class DBCPPoolProvider extends PoolProvider {
 		ds.setPassword(getPassword());
 		ds.setUrl(getURI());
 		
-		ds.setMaxActive(20);
+		ds.setMaxActive(30);
 	}
 	
 	@Override

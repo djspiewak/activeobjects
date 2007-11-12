@@ -44,7 +44,7 @@ public class C3P0PoolProvider extends PoolProvider {
 		cpds.setUser(getUsername());
 		cpds.setPassword(getPassword());
 		
-		cpds.setMaxPoolSize(20);
+		cpds.setMaxPoolSize(30);
 		cpds.setMaxStatements(180);
 	}
 	

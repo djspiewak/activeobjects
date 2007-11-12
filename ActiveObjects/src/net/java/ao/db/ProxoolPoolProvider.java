@@ -52,7 +52,7 @@ public class ProxoolPoolProvider extends PoolProvider {
 		}
 		
 		Properties props = new Properties();
-		props.setProperty("proxool.maximum-connection-count", "20");
+		props.setProperty("proxool.maximum-connection-count", "30");
 		props.setProperty("user", getUsername());
 		props.setProperty("password", getPassword());
 		
