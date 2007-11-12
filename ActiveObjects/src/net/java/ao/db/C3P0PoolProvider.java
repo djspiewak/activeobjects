@@ -40,9 +40,9 @@ public class C3P0PoolProvider extends PoolProvider {
 		} catch (PropertyVetoException e) {
 		} catch (ClassNotFoundException e) {
 		}
-		cpds.setJdbcUrl(delegate.getURI());
-		cpds.setUser(delegate.getUsername());
-		cpds.setPassword(delegate.getPassword());
+		cpds.setJdbcUrl(getURI());
+		cpds.setUser(getUsername());
+		cpds.setPassword(getPassword());
 		
 		cpds.setMaxPoolSize(20);
 		cpds.setMaxStatements(180);
@@ -50,7 +50,10 @@ public class C3P0PoolProvider extends PoolProvider {
 	
 	@Override
 	protected Connection getConnectionImpl() throws SQLException {
-		return cpds.getConnection();
+		Connection conn = cpds.getConnection();
+		setPostConnectionProperties(conn);
+		
+		return conn;
 	}
 	
 	@Override
