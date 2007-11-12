@@ -43,8 +43,7 @@ public class C3P0PoolProvider extends PoolProvider {
 		cpds.setUser(delegate.getUsername());
 		cpds.setPassword(delegate.getPassword());
 		
-		cpds.setMinPoolSize(5);
-		cpds.setMaxPoolSize(30);
+		cpds.setMaxPoolSize(20);
 		cpds.setMaxStatements(180);
 	}
 	
