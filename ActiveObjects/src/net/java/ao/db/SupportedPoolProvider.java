@@ -30,9 +30,9 @@ import net.java.ao.PoolProvider;
  * @see net.java.ao.PoolProvider
  */
 public enum SupportedPoolProvider {
+	C3P0(C3P0PoolProvider.class),
 	PROXOOL(ProxoolPoolProvider.class),
-	DBCP(DBCPPoolProvider.class),
-	C3P0(C3P0PoolProvider.class);
+	DBCP(DBCPPoolProvider.class);
 	
 	private final Class<? extends PoolProvider> provider;
 	
