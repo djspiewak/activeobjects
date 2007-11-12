@@ -36,8 +36,9 @@ public class C3P0PoolProvider extends PoolProvider {
 
 		cpds = new ComboPooledDataSource();
 		try {
-			cpds.setDriverClass(delegate.getClass().getCanonicalName());
+			cpds.setDriverClass(delegate.getDriverClass().getCanonicalName());
 		} catch (PropertyVetoException e) {
+		} catch (ClassNotFoundException e) {
 		}
 		cpds.setJdbcUrl(delegate.getURI());
 		cpds.setUser(delegate.getUsername());
