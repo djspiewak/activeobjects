@@ -12,5 +12,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="var" path="derby"/>
 	<classpathentry kind="var" path="proxool"/>
+	<classpathentry kind="var" path="dbpool" sourcepath="/dbpool-src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
