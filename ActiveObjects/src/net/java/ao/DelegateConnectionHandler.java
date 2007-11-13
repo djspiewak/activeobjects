@@ -26,6 +26,7 @@ import java.sql.Connection;
 class DelegateConnectionHandler implements InvocationHandler {
 	private Connection delegate;
 	private boolean closeable;
+	private boolean closed;
 	
 	private DelegateConnectionHandler(Connection delegate) {
 		this.delegate = delegate;
@@ -44,9 +45,12 @@ class DelegateConnectionHandler implements InvocationHandler {
 		} else if (method.getName().equals("close") && method.getParameterTypes().length == 0) {
 			if (closeable) {
 				delegate.close();
+				closed = true;
 			}
 			
 			return Void.TYPE;
+		} else if (method.getName().equals("isClosed") && method.getReturnType().equals(boolean.class)) {
+			return closed;
 		}
 		
 		Class<Connection> clazz = (Class<Connection>) delegate.getClass();
