@@ -217,7 +217,7 @@ public class SearchableEntityManager extends EntityManager {
 					shouldAdd = true;
 					
 					if (Common.isAccessor(m)) {
-						String attribute = getFieldNameConverter().getName(entity.getEntityType(), m);
+						String attribute = getFieldNameConverter().getName(m);
 						Object value = m.invoke(entity);
 
 						if (value != null) {

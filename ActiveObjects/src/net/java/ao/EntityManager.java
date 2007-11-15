@@ -356,7 +356,7 @@ public class EntityManager {
 		try {
 			for (Method method : MethodFinder.getInstance().findAnnotation(Generator.class, (Class<? extends RawEntity<?>>) type)) {
 				Generator genAnno = method.getAnnotation(Generator.class);
-				String field = fieldNameConverter.getName(type, method);
+				String field = fieldNameConverter.getName(method);
 				ValueGenerator<?> generator;
 
 				valGenCacheLock.writeLock().lock();

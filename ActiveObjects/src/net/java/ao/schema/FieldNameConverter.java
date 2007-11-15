@@ -18,7 +18,6 @@ package net.java.ao.schema;
 import java.lang.reflect.Method;
 
 import net.java.ao.EntityManager;
-import net.java.ao.RawEntity;
 
 /**
  * <p>Superinterface to all field name converters; designed to impose conventions
@@ -39,5 +38,5 @@ import net.java.ao.RawEntity;
  * @author Daniel Spiewak
  */
 public interface FieldNameConverter {
-	public String getName(Class<? extends RawEntity<?>> clazz, Method method);
+	public String getName(Method method);
 }

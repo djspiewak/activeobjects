@@ -86,11 +86,11 @@ public final class Common {
 		for (Method method : from.getMethods()) {
 			if (isAccessor(method)) {
 				if (interfaceInheritsFrom(method.getReturnType(), to)) {
-					back.add(converter.getName(from, method));
+					back.add(converter.getName(method));
 				}
 			} else if (isMutator(method)) {
 				if (interfaceInheritsFrom(method.getParameterTypes()[0], to)) {
-					back.add(converter.getName(from, method));
+					back.add(converter.getName(method));
 				}
 			}
 		}
@@ -166,7 +166,7 @@ public final class Common {
 			
 			if (annot != null) {
 				Class<?> attributeType = Common.getAttributeTypeFromMethod(m);
-				String name = manager.getFieldNameConverter().getName(type, m);
+				String name = manager.getFieldNameConverter().getName(m);
 				
 				// don't index Entity fields
 				if (name != null && !Common.interfaceInheritsFrom(attributeType, RawEntity.class) && !back.contains(name)) {
@@ -199,7 +199,7 @@ public final class Common {
 			throw new RuntimeException("Entity " + type.getSimpleName() + " has no primary key field");
 		}
 		
-		return converter.getName(type, annotatedMethods[0]);
+		return converter.getName(annotatedMethods[0]);
 	}
 	
 	public static <K> DatabaseType<K> getPrimaryKeyType(Class<? extends RawEntity<K>> type) {

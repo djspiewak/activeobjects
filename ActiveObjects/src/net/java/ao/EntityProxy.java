@@ -158,10 +158,10 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 							throughType, type), throughType, (Class<? extends RawEntity>) type, 
 							manyToManyAnnotation.where());
 		} else if (Common.isAccessor(method)) {
-			return invokeGetter(getKey(), tableName, getManager().getFieldNameConverter().getName(type, method), 
+			return invokeGetter(getKey(), tableName, getManager().getFieldNameConverter().getName(method), 
 					method.getReturnType(), onUpdateAnnotation == null);
 		} else if (Common.isMutator(method)) {
-			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(type, method), args[0], onUpdateAnnotation == null);
+			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(method), args[0], onUpdateAnnotation == null);
 
 			return Void.TYPE;
 		}

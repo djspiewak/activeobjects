@@ -50,15 +50,13 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	 * <p>This method delegates the actual conversion logic to the
 	 * {@link #convertName(String, boolean)} method.  There is rarely a need
 	 * for subclasses to override this method.</p>
-	 * 
-	 * @param clazz	The entity class containing the method for which a field name
-	 * 		must be generated.
 	 * @param method	The method for which a field name must be generated.
+	 * 
 	 * @return	A valid database identifier to be used as the field name representative
 	 * 		of the method in question.
-	 * @see net.java.ao.schema.FieldNameConverter#getName(Class, Method)
+	 * @see net.java.ao.schema.FieldNameConverter#getName(Method)
 	 */
-	public String getName(Class<? extends RawEntity<?>> clazz, Method method) {
+	public String getName(Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		PrimaryKey primaryKeyAnnotation = method.getAnnotation(PrimaryKey.class);
@@ -95,7 +93,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	 * method may impose conventions such as camelCase, all-lowercase with underscores
 	 * and so on.  There is no need for this method to concern itself with method
 	 * prefixes such as get, set or is.  All of these should be handled within the
-	 * {@link #getName(Class, Method)} method.</p>
+	 * {@link #getName(Method)} method.</p>
 	 * 
 	 * <p>Some examples of input and their corresponding return values for this method
 	 * (assuming the {@link CamelCaseFieldNameConverter} is in use):</p>

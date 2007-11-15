@@ -173,7 +173,7 @@ public final class SchemaGenerator {
 			Set<Class<? extends RawEntity<?>>> individualDeps = new LinkedHashSet<Class<? extends RawEntity<?>>>();
 			
 			for (Method method : clazz.getMethods()) {
-				String attributeName = fieldConverter.getName(clazz, method);
+				String attributeName = fieldConverter.getName(method);
 				Class<?> type = Common.getAttributeTypeFromMethod(method);
 				
 				if (attributeName != null && type != null && Common.interfaceInheritsFrom(type, RawEntity.class)) {
@@ -218,7 +218,7 @@ public final class SchemaGenerator {
 				continue;
 			}
 			
-			String attributeName = fieldConverter.getName(clazz, method);
+			String attributeName = fieldConverter.getName(method);
 			Class<?> type = Common.getAttributeTypeFromMethod(method);
 			
 			if (attributeName != null && type != null) {
@@ -313,7 +313,7 @@ public final class SchemaGenerator {
 		Set<DDLForeignKey> back = new LinkedHashSet<DDLForeignKey>();
 		
 		for (Method method : clazz.getMethods()) {
-			String attributeName = fieldConverter.getName(clazz, method);
+			String attributeName = fieldConverter.getName(method);
 			Class<?> type =  Common.getAttributeTypeFromMethod(method);
 			
 			if (type != null && attributeName != null && Common.interfaceInheritsFrom(type, RawEntity.class)) {
@@ -343,7 +343,7 @@ public final class SchemaGenerator {
 		String tableName = nameConverter.getName(clazz);
 		
 		for (Method method : clazz.getMethods()) {
-			String attributeName = fieldConverter.getName(clazz, method);
+			String attributeName = fieldConverter.getName(method);
 			
 			if (Common.isAccessor(method) || Common.isMutator(method)) {
 				Indexed indexedAnno = method.getAnnotation(Indexed.class);
