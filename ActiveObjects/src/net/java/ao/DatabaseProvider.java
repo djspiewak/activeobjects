@@ -15,7 +15,6 @@
  */
 package net.java.ao;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -1906,17 +1905,7 @@ public abstract class DatabaseProvider {
 						back = providerClass.getConstructor(DatabaseProvider.class).newInstance(back);
 						break;
 					}
-				} catch (IllegalArgumentException e) {
-					continue;
-				} catch (SecurityException e) {
-					continue;
-				} catch (IllegalAccessException e) {
-					continue;
-				} catch (InvocationTargetException e) {
-					continue;
-				} catch (NoSuchMethodException e) {
-					continue;
-				} catch (InstantiationException e) {
+				} catch (Throwable t) {
 					continue;
 				}
 			}
