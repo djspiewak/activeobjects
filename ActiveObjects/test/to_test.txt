@@ -4,6 +4,8 @@
 
 ==Entities==
 
+ * polymorphic usage of inheriting entities
+
  * Transaction#execute  (need to find a way to create a transact conflict)
  
  ==DDLAction Rendering==
