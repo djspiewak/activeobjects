@@ -76,7 +76,7 @@
             </compilation-unit>
             <compilation-unit>
                 <package-root>test</package-root>
-                <classpath mode="compile">${build.classpath}</classpath>
+                <classpath mode="compile">${build.classpath}${path.separator}${junit4.path}${path.separator}${derby.path}${path.separator}bin</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
