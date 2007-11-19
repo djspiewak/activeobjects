@@ -100,6 +100,7 @@ public class DatabaseTypeTest extends DataTest {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testConvert() throws SQLException, MalformedURLException {
 		Connection conn = manager.getProvider().getConnection();
@@ -127,7 +128,7 @@ public class DatabaseTypeTest extends DataTest {
 				assertEquals("JoeJoe", new VarcharType().convert(manager, res, String.class, "firstName"));
 				assertEquals(123, new IntegerType().convert(manager, res, int.class, "age"));
 				assertEquals(new URL("http://www.google.com"), new URLType().convert(manager, res, URL.class, "url"));
-				assertEquals(getClass(), new ClassType().convert(manager, res, (Class<? extends Class<?>>) Class.class, "favoriteClass"));
+				assertEquals(getClass(), new ClassType().convert(manager, res, (Class) Class.class, "favoriteClass"));
 			}
 			res.close();
 			stmt.close();
