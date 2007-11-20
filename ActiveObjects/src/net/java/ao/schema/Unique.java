@@ -21,6 +21,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Marks a method such that the corresponding database field will
+ * have a UNIQUE constraint.  This constraint is implemented within
+ * the underlying database and is not enforced by ActiveObjects
+ * itself.</p>
+ * 
+ * <p>This annotation is only relevant to migrations.  It has no effect upon
+ * "runtime" entity usage.</p>
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)

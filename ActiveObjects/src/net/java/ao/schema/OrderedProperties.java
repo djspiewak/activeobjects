@@ -22,12 +22,15 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * TODO	convert this to use {@link LinkedHashMap}
+ * 
  * @author Daniel Spiewak
  */
 class OrderedProperties extends HashMap<String, String> implements Iterable<String> {

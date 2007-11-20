@@ -18,6 +18,15 @@ package net.java.ao.schema.ddl;
 import net.java.ao.types.DatabaseType;
 
 /**
+ * Database-agnostic reprensentation of a general field index 
+ * statement (not related to full-text indexing).  To save on
+ * object creation, as well as to simplify schema parsing, table
+ * and field <i>names</i> are stored rather than full DDL
+ * representations.  This class also defines the convention
+ * imposed to generate the names of field indexes.  It is
+ * important that all DDL renderers (i.e. database providers)
+ * observe this convention, else migrations will do strange things.
+ * 
  * @author Daniel Spiewak
  */
 public class DDLIndex {

@@ -16,6 +16,17 @@
 package net.java.ao.schema.ddl;
 
 /**
+ * <p>Database-agnostic representation of a foreign key constraint.  To
+ * avoid unnecessary object creation (and to simplify schema parsing)
+ * this class only contains table and field <i>names</i>, rather than
+ * the full DDL representation.  Basically, this class just wraps around
+ * the data represented by a fully-rendered foreign key constraint.</p>
+ * 
+ * <p>This class also defines the convention used to determine foreign
+ * key names.  It is important that this convention be observed by DDL
+ * renderings (i.e. database providers) otherwise migrations will do
+ * strange things.</p>
+ * 
  * @author Daniel Spiewak
  */
 public class DDLForeignKey {

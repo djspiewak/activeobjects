@@ -16,6 +16,11 @@
 package net.java.ao.schema.ddl;
 
 /**
+ * Specifies a specific DDL action type in a database-agnostic
+ * manner.  This enum contains all of the DDL action types
+ * supported by ActiveObjects, regardless of the fact that not
+ * all databases support all of these actions.
+ * 
  * @author Daniel Spiewak
  */
 public enum DDLActionType {

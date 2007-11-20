@@ -18,6 +18,11 @@ package net.java.ao.schema.ddl;
 import net.java.ao.types.DatabaseType;
 
 /**
+ * Database-agnostic representation of a field within a table containing
+ * all associated attributes such as type and constraints.  The only
+ * field-relative attribute not contained within this class is whether
+ * or not the field is indexed at the database level.
+ * 
  * @author Daniel Spiewak
  */
 public class DDLField {

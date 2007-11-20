@@ -21,10 +21,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Marks a specific field as to be constrained to non-NULL values within
+ * the database.  This functionality is handled through the schema indicating
+ * to the database that the constraint should be enforced.  ActiveObjects
+ * itself does no checking to ensure that the value of the field can only
+ * be non-NULL.  For most databases, this means that the field corresponding
+ * to the method in question will be defined with the <code>NOT NULL</code>
+ * clause.</p>
+ * 
+ * <p>This annotation is only relevant to migrations.  It has no effect upon
+ * "runtime" entity usage.</p>
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface NotNull {
-
-}
+public @interface NotNull {}

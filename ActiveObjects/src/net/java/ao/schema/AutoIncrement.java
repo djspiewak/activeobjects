@@ -36,6 +36,9 @@ import java.lang.annotation.Target;
  * of this property relies on the fact that PRIMARY KEY fields are already
  * auto-generated if no value is specified.</p>
  * 
+ * <p>This annotation is only relevant to migrations.  It has no effect upon
+ * "runtime" entity usage.</p>
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)

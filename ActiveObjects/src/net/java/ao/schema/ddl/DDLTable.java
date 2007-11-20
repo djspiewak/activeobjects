@@ -16,6 +16,10 @@
 package net.java.ao.schema.ddl;
 
 /**
+ * Database-agnostic representation of a table within the schema.  A
+ * table logically contains fields, keys and indexes (as represented
+ * by this class).
+ * 
  * @author Daniel Spiewak
  */
 public class DDLTable {

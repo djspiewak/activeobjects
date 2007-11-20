@@ -47,13 +47,12 @@ import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
 
 /**
+ * WARNING: <i>Not</i> part of the public API.  This class is public only
+ * to allow its use within other packages in the ActiveObjects library.
+ * 
  * @author Daniel Spiewak
  */
 public final class SchemaGenerator {
-	
-	public static void migrate(DatabaseProvider provider, Class<? extends RawEntity<?>>... classes) throws SQLException {
-		migrate(provider, new CamelCaseTableNameConverter(), new CamelCaseFieldNameConverter(), classes);
-	}
 	
 	public static void migrate(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
 			Class<? extends RawEntity<?>>... classes) throws SQLException {

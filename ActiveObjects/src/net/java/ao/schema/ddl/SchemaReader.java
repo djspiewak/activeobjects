@@ -36,6 +36,9 @@ import net.java.ao.Query;
 import net.java.ao.types.TypeManager;
 
 /**
+ * WARNING: <i>Not</i> part of the public API.  This class is public only
+ * to allow its use within other packages in the ActiveObjects library.
+ * 
  * @author Daniel Spiewak
  */
 public final class SchemaReader {

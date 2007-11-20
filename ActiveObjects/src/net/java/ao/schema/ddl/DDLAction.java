@@ -16,6 +16,20 @@
 package net.java.ao.schema.ddl;
 
 /**
+ * <p>Database-agnostic representation of any supported DDL action
+ * (usually one or two statements).  The idea behind this class
+ * is to allow ActiveObjects to internally represent actions to
+ * be taken on a database schema without coupling to a
+ * database-specific rendering of the action.</p>
+ * 
+ * <p>As this class is meant to be a generic container of different
+ * action types, some fields may not be relevant to certain action
+ * types, and thus these fields will contain <code>null</code>
+ * values.  For example, the equivalent of an ALTER TABLE DROP FIELD
+ * action will return <code>null</code> for {@link #getIndex()}.
+ * However, code should not depend on this behavior; instead testing
+ * the action type and only retrieving relevant data.</p>
+ * 
  * @author Daniel Spiewak
  */
 public class DDLAction {

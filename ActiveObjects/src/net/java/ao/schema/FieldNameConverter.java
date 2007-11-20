@@ -38,5 +38,17 @@ import net.java.ao.EntityManager;
  * @author Daniel Spiewak
  */
 public interface FieldNameConverter {
+	
+	/**
+	 * Generates a field name to correspond with the specified method.  The
+	 * algorithm used must not only be aware of the defined conventions (such as
+	 * getters and setters) but also the annotations sometimes used to override
+	 * the field name explicitly.  AO will not test for these annotations
+	 * separately from the field name converter.
+	 * 
+	 * @param method	The method for which a corresponding field name must be
+	 * 		generated.
+	 * @return	A database field name which corresponds to the given method.
+	 */
 	public String getName(Method method);
 }
