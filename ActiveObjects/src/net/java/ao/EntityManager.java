@@ -86,8 +86,10 @@ public class EntityManager {
 	private FieldNameConverter fieldNameConverter;
 	private final ReadWriteLock fieldNameConverterLock = new ReentrantReadWriteLock();
 	
+	private PolymorphicTypeMapper typeMapper;
+	private final ReadWriteLock typeMapperLock = new ReentrantReadWriteLock();
+	
 	private RSCachingStrategy rsStrategy;
-	private final ReadWriteLock rsStrategyLock = new ReentrantReadWriteLock();
 	
 	private Map<Class<? extends ValueGenerator<?>>, ValueGenerator<?>> valGenCache;
 	private final ReadWriteLock valGenCacheLock = new ReentrantReadWriteLock();
@@ -140,6 +142,7 @@ public class EntityManager {
 		
 		tableNameConverter = new CamelCaseTableNameConverter();
 		fieldNameConverter = new CamelCaseFieldNameConverter();
+		typeMapper = new DefaultPolymorphicTypeMapper(new HashMap<Class<? extends RawEntity<?>>, String>());
 		rsStrategy = RSCachingStrategy.AGGRESSIVE;
 	}
 	
@@ -628,13 +631,7 @@ public class EntityManager {
 			
 			while (res.next()) {
 				T entity = get(type, Common.getPrimaryKeyType(type).convert(this, res, Common.getPrimaryKeyClassType(type), field));
-				
-				rsStrategyLock.readLock().lock();
-				try {
-					rsStrategy.cache(res, getProxyForEntity(entity));
-				} finally {
-					rsStrategyLock.readLock().unlock();
-				}
+				rsStrategy.cache(res, getProxyForEntity(entity));
 				
 				back.add(entity);
 			}
@@ -842,26 +839,36 @@ public class EntityManager {
 			fieldNameConverterLock.readLock().unlock();
 		}
 	}
-
-	// TODO	remove
-	@Deprecated
-	public void setRSCachingStrategy(RSCachingStrategy rsStrategy) {
-		rsStrategyLock.writeLock().lock();
+	
+	/**
+	 * Specifies the {@link PolymorphicTypeMapper} instance to use for
+	 * all flag value conversion of polymorphic types.  The default type
+	 * mapper is an empty {@link DefaultPolymorphicTypeMapper} instance
+	 * (thus using the fully qualified classname for all values).
+	 * 
+	 * @see #getPolymorphicTypeMapper()
+	 */
+	public void setPolymorphicTypeMapper(PolymorphicTypeMapper typeMapper) {
+		typeMapperLock.writeLock().lock();
 		try {
-			this.rsStrategy = rsStrategy;
+			this.typeMapper = typeMapper;
 		} finally {
-			rsStrategyLock.writeLock().unlock();
+			typeMapperLock.writeLock().unlock();
 		}
 	}
 	
-	// TODO	remove
-	@Deprecated
-	public RSCachingStrategy getRSCachingStrategy() {
-		rsStrategyLock.readLock().lock();
+	/**
+	 * Retrieves the {@link PolymorphicTypeMapper} instance used for flag
+	 * value conversion of polymorphic types.
+	 * 
+	 * @see #setPolymorphicTypeMapper(PolymorphicTypeMapper)
+	 */
+	public PolymorphicTypeMapper getPolymorphicTypeMapper() {
+		typeMapperLock.readLock().lock();
 		try {
-			return rsStrategy;
+			return typeMapper;
 		} finally {
-			rsStrategyLock.readLock().unlock();
+			typeMapperLock.readLock().unlock();
 		}
 	}
 

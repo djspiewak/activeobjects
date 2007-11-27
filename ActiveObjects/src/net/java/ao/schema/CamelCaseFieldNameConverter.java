@@ -59,10 +59,12 @@ import net.java.ao.Common;
  */
 public class CamelCaseFieldNameConverter extends AbstractFieldNameConverter {
 	@Override
-	protected String convertName(String name, boolean entity) {
+	protected String convertName(String name, boolean entity, boolean polyType) {
 		name = Common.convertDowncaseName(name);
 		
-		if (entity) {
+		if (polyType) {
+			name += "Type";
+		} else if (entity) {
 			name += "ID";
 		}
 		

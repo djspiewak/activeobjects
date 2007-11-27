@@ -90,12 +90,14 @@ public class UnderscoreFieldNameConverter extends AbstractFieldNameConverter {
 	}
 	
 	@Override
-	protected String convertName(String name, boolean entity) {
+	protected String convertName(String name, boolean entity, boolean polyType) {
 		Matcher matcher = WORD_PATTERN.matcher(name);
 		String back = matcher.replaceAll("$1_$2");
-		
-		if (entity) {
-			back += "_id";
+
+		if (polyType) {
+			name += "_type";
+		} else if (entity) {
+			name += "_id";
 		}
 		
 		if (uppercase) {

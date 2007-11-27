@@ -51,4 +51,39 @@ public interface FieldNameConverter {
 	 * @return	A database field name which corresponds to the given method.
 	 */
 	public String getName(Method method);
+	
+	/**
+	 * <p>Generates a secondary field name which corresponds with the polymorphic
+	 * type flag for the field corresponding to the specified method.  If the
+	 * method in question does not represent a polymorphic field, this method
+	 * may return any value, or <code>null</code>.  For most use-cases, the
+	 * return value of this method will be identical to that of the
+	 * {@link #getName(Method)} method with a conventional suffix (usually "Type"
+	 * or "_type") to indicate that it is a polymorphic flag.  Polymorphic
+	 * fields are the only scenario in which two fields will correspond to a
+	 * single method.</p>
+	 * 
+	 * <p>An example of a table with a polymorphic flagging field could be taken
+	 * as follows (MySQL DDL):</p>
+	 * 
+	 * <pre>CREATE TABLE comments (
+	 *     id INTEGER NOT NULL AUTO_INCREMENT,
+	 *     title VARCHAR(45),
+	 *     text TEXT,
+	 *     commentableID INTEGER,
+	 *     commentableType VARCHAR(255),
+	 *     PRIMARY KEY(id)
+	 * );</pre>
+	 * 
+	 * <p>Notice the absence of foreign key constraint on the <code>commentableID</code>
+	 * field.  This is because this table has a one-to-many mapping with potentially
+	 * numerous tables which can be described as "commentable".  Thus, 
+	 * <code>commentableID</code> and <code>commentableType</code> describe a 
+	 * polymorphic one-to-many relationship within the database.</p>
+	 * 
+	 * @param method	The method for which a corresponding field name must be
+	 * 		generated.
+	 * @return	A database field name which corresponds to the given method.
+	 */
+	public String getPolyTypeName(Method method);
 }

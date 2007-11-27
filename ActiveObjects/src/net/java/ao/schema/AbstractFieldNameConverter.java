@@ -48,7 +48,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	 * name) into another.</p>
 	 * 
 	 * <p>This method delegates the actual conversion logic to the
-	 * {@link #convertName(String, boolean)} method.  There is rarely a need
+	 * {@link #convertName(String, boolean, boolean)} method.  There is rarely a need
 	 * for subclasses to override this method.</p>
 	 * @param method	The method for which a field name must be generated.
 	 * 
@@ -57,21 +57,52 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	 * @see net.java.ao.schema.FieldNameConverter#getName(Method)
 	 */
 	public String getName(Method method) {
+		return getNameImpl(method, false);
+	}
+	
+	/**
+	 * Docuentation on the {@link #getName(Method)} method.
+	 * 
+	 * @return	A valid database identifier to be used as the field name representative
+	 * 		of the method in question.
+	 * @see net.java.ao.schema.FieldNameConverter#getPolyTypeName(Method)
+	 */
+	public String getPolyTypeName(Method method) {
+		return getNameImpl(method, true);
+	}
+	
+	private String getNameImpl(Method method, boolean polyType) {
+		if (method == null) {
+			throw new IllegalArgumentException("Problem in ActiveObjects core, looking for field name for null method");
+		}
+		
+		String attributeName = null;
+		Class<?> type = Common.getAttributeTypeFromMethod(method);
+		
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		PrimaryKey primaryKeyAnnotation = method.getAnnotation(PrimaryKey.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		
-		String attributeName = null;
-		Class<?> type = Common.getAttributeTypeFromMethod(method);
-		
 		if (mutatorAnnotation != null) {
-			return mutatorAnnotation.value();
+			attributeName = mutatorAnnotation.value();
+			
+			if (!polyType) {
+				return attributeName;
+			}
 		} else if (accessorAnnotation != null) {
-			return accessorAnnotation.value();
+			attributeName = accessorAnnotation.value();
+			
+			if (!polyType) {
+				return attributeName;
+			}
 		} else if (primaryKeyAnnotation != null && !primaryKeyAnnotation.value().trim().equals("")) {
-			return primaryKeyAnnotation.value();
+			attributeName = primaryKeyAnnotation.value();
+			
+			if (!polyType) {
+				return attributeName;
+			}
 		} else if (oneToManyAnnotation != null) {
 			return null;
 		} else if (manyToManyAnnotation != null) {
@@ -84,7 +115,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 			return null;
 		}
 		
-		return convertName(attributeName, Common.interfaceInheritsFrom(type, RawEntity.class));
+		return convertName(attributeName, Common.interfaceInheritsFrom(type, RawEntity.class), polyType);
 	}
 	
 	/**
@@ -103,11 +134,13 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	 * 			<td><b>Actual Method Name</b></td>
 	 * 			<td><b>Param: name</b></td>
 	 * 			<td><b>Param: entity</b></td>
+	 * 			<td><b>Param: polyType</b></td>
 	 * 			<td><b>Return Value</b></td>
 	 * 		</tr>
 	 * 		<tr>
 	 * 			<td>getFirstName</td>
 	 * 			<td>FirstName</td>
+	 * 			<td><code>false</code></td>
 	 * 			<td><code>false</code></td>
 	 * 			<td>firstName</td>
 	 * 		</tr>
@@ -115,17 +148,27 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	 * 			<td>getCompany</td>
 	 * 			<td>Company</td>
 	 * 			<td><code>true</code></td>
+	 * 			<td><code>false</code></td>
 	 * 			<td>companyID</td>
+	 * 		</tr>
+	 * 		<tr>
+	 * 			<td>getCompany</td>
+	 * 			<td>Company</td>
+	 * 			<td><code>true</code></td>
+	 * 			<td><code>true</code></td>
+	 * 			<td>companyType</td>
 	 * 		</tr>
 	 * 		<tr>
 	 * 			<td>isCool</td>
 	 * 			<td>Cool</td>
+	 * 			<td><code>false</code></td>
 	 * 			<td><code>false</code></td>
 	 * 			<td>cool</td>
 	 * 		</tr>
 	 * 		<tr>
 	 * 			<td>setLastName</td>
 	 * 			<td>LastName</td>
+	 * 			<td><code>false</code></td>
 	 * 			<td><code>false</code></td>
 	 * 			<td>lastName</td>
 	 * 		</tr>
@@ -139,8 +182,10 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 	 * @param name	The (often trimmed) method name for which a field name is reqiured.
 	 * @param entity	Indicates whether or not the method in question returns an
 	 * 		entity value.
+	 * @param polyType	Indicates whether or not the field in question is a polymorphic
+	 * 		type flagging field.
 	 * @return	A valid database field name which uniquely corresponds to the method
 	 *		name in question.  Should <i>never</i> return <code>null</code>.
 	 */
-	protected abstract String convertName(String name, boolean entity);
+	protected abstract String convertName(String name, boolean entity, boolean polyType);
 }

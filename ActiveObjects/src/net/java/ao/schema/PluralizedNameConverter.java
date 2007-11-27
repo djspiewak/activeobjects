@@ -101,6 +101,14 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 		delegate = delegateConverter;
 	}
 	
+	/**
+	 * Returns the delegate name converter used for all pre-pluralization
+	 * conversions.
+	 */
+	public TableNameConverter getDelegate() {
+		return delegate;
+	}
+	
 	@Override
 	protected String convertName(Class<? extends RawEntity<?>> entity) {
 		return delegate.getName(entity);
