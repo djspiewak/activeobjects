@@ -82,31 +82,6 @@ public final class SchemaGenerator {
 		}
 	}
 	
-	public static boolean hasSchema(DatabaseProvider provider, TableNameConverter nameConverter,
-			Class<? extends RawEntity<?>>... classes) throws SQLException {
-		if (classes.length == 0) {
-			return true;
-		}
-		
-		Connection conn = provider.getConnection();
-		try {
-			Statement stmt = conn.createStatement();
-			
-			try {
-				// TODO	kind of a hacky way to figure this out, but it works
-				stmt.executeQuery("SELECT * FROM " + nameConverter.getName(classes[0])).close();
-			} catch (SQLException e) {
-				return false;
-			}
-			
-			stmt.close();
-		} finally {
-			conn.close();
-		}
-		
-		return true;
-	}
-	
 	private static String[] generateImpl(DatabaseProvider provider, TableNameConverter nameConverter, FieldNameConverter fieldConverter,
 			ClassLoader classloader, Class<? extends RawEntity<?>>... classes) throws ClassNotFoundException, SQLException {
 		List<String> back = new ArrayList<String>();
@@ -139,7 +114,7 @@ public final class SchemaGenerator {
 			roots.remove(rootsArray[0]);
 			
 			Class<? extends RawEntity<?>> clazz = rootsArray[0];
-			if (clazz.getAnnotation(Polymorphic.class) != null) {
+			if (clazz.getAnnotation(Polymorphic.class) == null) {
 				parsedTables.add(parseInterface(provider, nameConverter, fieldConverter, clazz));
 			}
 			
