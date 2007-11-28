@@ -217,14 +217,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 				
 				for (String field : dirtyPolymorphicFields.keySet()) {
-					sql.append(field);
-					
-					String value = dirtyPolymorphicFields.get(field);
-					if (value != null) {
-						sql.append(" = ?,");
-					} else {
-						sql.append(" = NULL,");
-					}
+					sql.append(field).append(" = ?,");
 				}
 
 				if (dirtyFields.size() + dirtyPolymorphicFields.size() > 0) {
@@ -237,7 +230,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				PreparedStatement stmt = conn.prepareStatement(sql.toString());
 
 				int index = 1;
-				for (String field : dirtyFields) {		// TODO	may be problem with nulls here
+				for (String field : dirtyFields) {
 					if (nullSet.contains(field.toLowerCase())) {
 						stmt.setString(index++, null);
 					} else if (cache.containsKey(field.toLowerCase())) {
@@ -257,6 +250,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 						DatabaseType<String> fieldType = manager.getType(String.class);
 						
 						fieldType.putToDatabase(index++, stmt, value);
+					} else {
+						stmt.setString(index++, null);
 					}
 				}
 				((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(index++, stmt, key);

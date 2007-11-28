@@ -28,11 +28,15 @@ import java.sql.SQLException;
 
 import org.junit.Test;
 
+import test.schema.Comment;
+import test.schema.Commentable;
 import test.schema.Company;
 import test.schema.Pen;
 import test.schema.Person;
 import test.schema.PersonImpl;
 import test.schema.PersonLegalDefence;
+import test.schema.Photo;
+import test.schema.Post;
 
 /**
  * @author Daniel Spiewak
@@ -147,6 +151,109 @@ public class EntityTest extends DataTest {
 		assertEquals(true, cool);
 		
 		manager.delete(company);
+	}
+	
+	@Test
+	public void testPolymorphicAccessor() throws SQLException {
+		Comment comment = manager.get(Comment.class, postCommentIDs[0]);
+		Commentable commentable = comment.getCommentable();
+		
+		assertTrue(commentable instanceof Post);
+		assertEquals(postID, commentable.getID());
+		
+		comment = manager.get(Comment.class, photoCommentIDs[0]);
+		commentable = comment.getCommentable();
+		
+		assertTrue(commentable instanceof Photo);
+		assertEquals(photoID, commentable.getID());
+		
+		comment = manager.create(Comment.class);
+		assertNull(comment.getCommentable());
+		manager.delete(comment);
+	}
+	
+	@Test
+	public void testPolymorphicMutator() throws SQLException {
+		Post post = manager.create(Post.class);
+		post.setTitle("My Temp Test Title");
+		post.save();
+		
+		Comment comment = manager.create(Comment.class);
+		comment.setTitle("My Temp Test Comment");
+		comment.setText("Here's some test text");
+		comment.setCommentable(post);
+		comment.save();
+		
+		Connection conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM comment WHERE id = ?");
+			stmt.setInt(1, comment.getID());
+			
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				assertEquals(post.getID(), res.getInt(1));
+				assertEquals("post", res.getString(2));
+			} else {
+				fail("No results found");
+			}
+			res.close();
+			
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		manager.delete(post);
+		
+		Photo photo = manager.create(Photo.class);
+		
+		comment.setCommentable(photo);
+		comment.save();
+		
+		conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM comment WHERE id = ?");
+			stmt.setInt(1, comment.getID());
+			
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				assertEquals(photo.getID(), res.getInt(1));
+				assertEquals("photo", res.getString(2));
+			} else {
+				fail("No results found");
+			}
+			res.close();
+			
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		manager.delete(photo);
+		
+		comment.setCommentable(null);
+		comment.save();
+		
+		conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM comment WHERE id = ?");
+			stmt.setInt(1, comment.getID());
+			
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				assertNull(res.getString(1));
+				assertNull(res.getString(2));
+			} else {
+				fail("No results found");
+			}
+			res.close();
+			
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		manager.delete(comment);
 	}
 	
 	@Test

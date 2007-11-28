@@ -27,4 +27,10 @@ public class DataStruct {
 	public int[] suitIDs;
 	
 	public long[] coolCompanyIDs;
+	
+	public int postID;
+	public int photoID;
+	
+	public int[] postCommentIDs;
+	public int[] photoCommentIDs;
 }

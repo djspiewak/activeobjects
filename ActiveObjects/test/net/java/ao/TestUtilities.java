@@ -55,6 +55,9 @@ public class TestUtilities {
 		logger.setLevel(Level.FINE);
 		logger.addHandler(SQLLogMonitor.getInstance());
 		
+		manager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(manager.getTableNameConverter(), 
+				Photo.class, Post.class));
+		
 		try {
 			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class);
 		} catch (Throwable t) {
@@ -225,6 +228,109 @@ public class TestUtilities {
 			res.close();
 			
 			stmt.close();
+			
+			stmt = conn.prepareStatement("INSERT INTO post (title) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			
+			stmt.setString(1, "Test Post");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.postID = res.getInt(1);
+			}
+			res.close();
+			
+			stmt.close();
+			
+			stmt = conn.prepareStatement("INSERT INTO photo (depth) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			
+			stmt.setInt(1, 256);
+			
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.photoID = res.getInt(1);
+			}
+			res.close();
+			
+			stmt.close();
+			
+			stmt = conn.prepareStatement("INSERT INTO comment (title,text,commentableID,commentableType) VALUES (?,?,?,?)",
+					PreparedStatement.RETURN_GENERATED_KEYS);
+			
+			back.postCommentIDs = new int[3];
+			back.photoCommentIDs = new int[2];
+			
+			int postCommentIndex = 0;
+			int photoCommentIndex = 0;
+			
+			index = 1;
+			stmt.setString(index++, "Test Post Comment 1");
+			stmt.setString(index++, "Here's some test text");
+			stmt.setInt(index++, back.postID);
+			stmt.setString(index++, "post");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.postCommentIDs[postCommentIndex++] = res.getInt(1);
+			}
+			res.close();
+			
+			index = 1;
+			stmt.setString(index++, "Test Post Comment 2");
+			stmt.setString(index++, "Here's some test text");
+			stmt.setInt(index++, back.postID);
+			stmt.setString(index++, "post");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.postCommentIDs[postCommentIndex++] = res.getInt(1);
+			}
+			res.close();
+			
+			index = 1;
+			stmt.setString(index++, "Test Photo Comment 1");
+			stmt.setString(index++, "Here's some test text");
+			stmt.setInt(index++, back.photoID);
+			stmt.setString(index++, "photo");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.photoCommentIDs[photoCommentIndex++] = res.getInt(1);
+			}
+			res.close();
+			
+			index = 1;
+			stmt.setString(index++, "Test Post Comment 3");
+			stmt.setString(index++, "Here's some test text");
+			stmt.setInt(index++, back.postID);
+			stmt.setString(index++, "post");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.postCommentIDs[postCommentIndex++] = res.getInt(1);
+			}
+			res.close();
+			
+			index = 1;
+			stmt.setString(index++, "Test Photo Comment 2");
+			stmt.setString(index++, "Here's some test text");
+			stmt.setInt(index++, back.photoID);
+			stmt.setString(index++, "photo");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.photoCommentIDs[photoCommentIndex++] = res.getInt(1);
+			}
+			res.close();
+			
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -245,6 +351,9 @@ public class TestUtilities {
 			stmt.executeUpdate("DELETE FROM personDefence");
 			stmt.executeUpdate("DELETE FROM person");
 			stmt.executeUpdate("DELETE FROM company");
+			stmt.executeUpdate("DELETE FROM comment");
+			stmt.executeUpdate("DELETE FROM post");
+			stmt.executeUpdate("DELETE FROM photo");
 			
 			stmt.close();
 		} finally {

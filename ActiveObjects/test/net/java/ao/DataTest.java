@@ -37,6 +37,12 @@ public abstract class DataTest {
 	protected static int[] suitIDs;
 	
 	protected static long[] coolCompanyIDs;
+	
+	protected static int postID;
+	protected static int photoID;
+	
+	protected static int[] postCommentIDs;
+	protected static int[] photoCommentIDs;
 
 	@BeforeClass
 	public static void setUp() throws SQLException {
@@ -52,6 +58,10 @@ public abstract class DataTest {
 		defenceIDs = data.defenceIDs;
 		suitIDs = data.suitIDs;
 		coolCompanyIDs = data.coolCompanyIDs;
+		postID = data.postID;
+		photoID = data.photoID;
+		postCommentIDs = data.postCommentIDs;
+		photoCommentIDs = data.photoCommentIDs;
 	}
 
 	@AfterClass
