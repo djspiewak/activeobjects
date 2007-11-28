@@ -1,12 +1,15 @@
 ==Name Conversion==
 
  * Run tests with different name converter combinations
+ 
+ * polymorphic type names
 
 ==Entities==
 
  * polymorphic usage of inheriting entities
  * set NULL values
  * set NULL polymorphic values
+ * polymorphic relations cache expiry
 
  * Transaction#execute  (need to find a way to create a transact conflict)
  

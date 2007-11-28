@@ -10,8 +10,11 @@ import java.util.logging.Logger;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import test.schema.Comment;
 import test.schema.Pen;
 import test.schema.PersonSuit;
+import test.schema.Photo;
+import test.schema.Post;
 
 /*
  * Copyright 2007 Daniel Spiewak
@@ -53,7 +56,7 @@ public class TestUtilities {
 		logger.addHandler(SQLLogMonitor.getInstance());
 		
 		try {
-			manager.migrate(PersonSuit.class, Pen.class);
+			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
