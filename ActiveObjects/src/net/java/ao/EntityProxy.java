@@ -134,8 +134,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		String tableName = getManager().getTableNameConverter().getName(type);
 
 		Class<?> attributeType = Common.getAttributeTypeFromMethod(method);
-		String polyFieldName = (attributeType.getAnnotation(Polymorphic.class) == null ? null : 
-			getManager().getFieldNameConverter().getPolyTypeName(method));
+		String polyFieldName = null;
+		
+		if (attributeType != null) {
+			polyFieldName = (attributeType.getAnnotation(Polymorphic.class) == null ? null : 
+				getManager().getFieldNameConverter().getPolyTypeName(method));
+		}
 		
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
