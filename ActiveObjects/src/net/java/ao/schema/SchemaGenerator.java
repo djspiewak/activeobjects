@@ -36,6 +36,7 @@ import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
+import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLAction;
 import net.java.ao.schema.ddl.DDLField;
@@ -138,7 +139,9 @@ public final class SchemaGenerator {
 			roots.remove(rootsArray[0]);
 			
 			Class<? extends RawEntity<?>> clazz = rootsArray[0];
-			parsedTables.add(parseInterface(provider, nameConverter, fieldConverter, clazz));
+			if (clazz.getAnnotation(Polymorphic.class) != null) {
+				parsedTables.add(parseInterface(provider, nameConverter, fieldConverter, clazz));
+			}
 			
 			List<Class<? extends RawEntity<?>>> toRemove = new LinkedList<Class<? extends RawEntity<?>>>();
 			Iterator<Class<? extends RawEntity<?>>> depIterator = deps.keySet().iterator();
@@ -259,7 +262,32 @@ public final class SchemaGenerator {
 					field.setOnUpdate(convertStringValue(method.getAnnotation(OnUpdate.class).value(), sqlType));
 				}
 				
-				fields.add(field);
+				if (field.isPrimaryKey()) {
+					fields.add(0, field);
+				} else {
+					fields.add(field);
+				}
+				
+				if (Common.interfaceInheritsFrom(type, RawEntity.class)
+						&& type.getAnnotation(Polymorphic.class) != null) {
+					field.setDefaultValue(null);		// polymorphic fields can't have default
+					field.setOnUpdate(null);		// or on update
+					
+					attributeName = fieldConverter.getPolyTypeName(method);
+					
+					field = new DDLField();
+					
+					field.setName(attributeName);
+					field.setType(TypeManager.getInstance().getType(String.class));
+					field.setPrecision(127);
+					field.setScale(-1);
+					
+					if (method.getAnnotation(NotNull.class) != null) {
+						field.setNotNull(true);
+					}
+					
+					fields.add(field);
+				}
 			}
 		}
 		
@@ -315,7 +343,8 @@ public final class SchemaGenerator {
 			String attributeName = fieldConverter.getName(method);
 			Class<?> type =  Common.getAttributeTypeFromMethod(method);
 			
-			if (type != null && attributeName != null && Common.interfaceInheritsFrom(type, RawEntity.class)) {
+			if (type != null && attributeName != null && Common.interfaceInheritsFrom(type, RawEntity.class)
+					&& type.getAnnotation(Polymorphic.class) != null) {
 				DDLForeignKey key = new DDLForeignKey();
 				
 				key.setField(attributeName);
@@ -324,12 +353,6 @@ public final class SchemaGenerator {
 				key.setDomesticTable(nameConverter.getName(clazz));
 				
 				back.add(key);
-			}
-		}
-		
-		for (Class<?> superInterface : clazz.getInterfaces()) {
-			if (!superInterface.equals(RawEntity.class)) {
-				back.addAll(Arrays.asList(parseForeignKeys(nameConverter, fieldConverter, (Class<? extends RawEntity<?>>) superInterface)));
 			}
 		}
 		

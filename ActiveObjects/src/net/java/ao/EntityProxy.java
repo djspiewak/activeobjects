@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -66,6 +67,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 
 	private final Set<String> dirtyFields;
+	private final Map<String, String> dirtyPolymorphicFields;
 	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
 	
 	private final Set<Class<? extends RawEntity<?>>> toFlushRelations = new HashSet<Class<? extends RawEntity<?>>>();
@@ -84,6 +86,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		cache = new HashMap<String, Object>();
 		nullSet = new HashSet<String>();
 		dirtyFields = new LinkedHashSet<String>();
+		dirtyPolymorphicFields = new LinkedHashMap<String, String>();
 
 		listeners = new LinkedList<PropertyChangeListener>();
 	}
@@ -130,6 +133,10 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 		String tableName = getManager().getTableNameConverter().getName(type);
 
+		Class<?> attributeType = Common.getAttributeTypeFromMethod(method);
+		String polyFieldName = (attributeType.getAnnotation(Polymorphic.class) == null ? null : 
+			getManager().getFieldNameConverter().getPolyTypeName(method));
+		
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
@@ -137,10 +144,11 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		OnUpdate onUpdateAnnotation = method.getAnnotation(OnUpdate.class);
 
 		if (mutatorAnnotation != null) {
-			invokeSetter((T) proxy, mutatorAnnotation.value(), args[0], onUpdateAnnotation != null);
+			invokeSetter((T) proxy, mutatorAnnotation.value(), args[0], onUpdateAnnotation != null, polyFieldName);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
-			return invokeGetter(getKey(), tableName, accessorAnnotation.value(), method.getReturnType(), onUpdateAnnotation != null);
+			return invokeGetter(getKey(), tableName, accessorAnnotation.value(), polyFieldName, 
+					method.getReturnType(), onUpdateAnnotation != null);
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), RawEntity.class)) {
 			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType().getComponentType();
@@ -159,9 +167,10 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 							manyToManyAnnotation.where());
 		} else if (Common.isAccessor(method)) {
 			return invokeGetter(getKey(), tableName, getManager().getFieldNameConverter().getName(method), 
-					method.getReturnType(), onUpdateAnnotation == null);
+					polyFieldName, method.getReturnType(), onUpdateAnnotation == null);
 		} else if (Common.isMutator(method)) {
-			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(method), args[0], onUpdateAnnotation == null);
+			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(method), args[0], 
+					onUpdateAnnotation == null, polyFieldName);
 
 			return Void.TYPE;
 		}
@@ -202,8 +211,19 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 						sql.append(" = NULL,");
 					}
 				}
+				
+				for (String field : dirtyPolymorphicFields.keySet()) {
+					sql.append(field);
+					
+					String value = dirtyPolymorphicFields.get(field);
+					if (value != null) {
+						sql.append(" = ?,");
+					} else {
+						sql.append(" = NULL,");
+					}
+				}
 
-				if (dirtyFields.size() > 0) {
+				if (dirtyFields.size() + dirtyPolymorphicFields.size() > 0) {
 					sql.setLength(sql.length() - 1);
 				}
 
@@ -213,7 +233,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				PreparedStatement stmt = conn.prepareStatement(sql.toString());
 
 				int index = 1;
-				for (String field : dirtyFields) {
+				for (String field : dirtyFields) {		// TODO	may be problem with nulls here
 					if (nullSet.contains(field.toLowerCase())) {
 						stmt.setString(index++, null);
 					} else if (cache.containsKey(field.toLowerCase())) {
@@ -225,6 +245,14 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 						}
 						
 						manager.getType(javaType).putToDatabase(index++, stmt, obj);
+					}
+				}
+				for (String field : dirtyPolymorphicFields.keySet()) {
+					String value = dirtyPolymorphicFields.get(field);
+					if (field != null) {
+						DatabaseType<String> fieldType = manager.getType(String.class);
+						
+						fieldType.putToDatabase(index++, stmt, value);
 					}
 				}
 				((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(index++, stmt, key);
@@ -357,7 +385,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		conn.close();
 	}
 
-	private <V> V invokeGetter(K key, String table, String name, Class<V> type, boolean shouldCache) throws Throwable {
+	private <V> V invokeGetter(K key, String table, String name, String polyName, Class<V> type, 
+			boolean shouldCache) throws Throwable {
 		V back = null;
 
 		if (shouldCache) {
@@ -404,15 +433,23 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			Connection conn = getConnectionImpl();
 
 			try {
-				String sql = "SELECT " + name + " FROM " + table + " WHERE " + pkFieldName + " = ?";
+				StringBuilder sql = new StringBuilder("SELECT ");
+				
+				sql.append(name);
+				if (polyName != null) {
+					sql.append(',').append(polyName);
+				}
+				
+				sql.append(" FROM ").append(table).append(" WHERE ");
+				sql.append(pkFieldName).append(" = ?");
 
-				Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-				PreparedStatement stmt = conn.prepareStatement(sql);
+				Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
+				PreparedStatement stmt = conn.prepareStatement(sql.toString());
 				Common.getPrimaryKeyType(this.type).putToDatabase(1, stmt, key);
 
 				ResultSet res = stmt.executeQuery();
 				if (res.next()) {
-					back = convertValue(res, name, type);
+					back = convertValue(res, name, polyName, type);
 				}
 				res.close();
 				stmt.close();
@@ -436,7 +473,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return back;
 	}
 
-	private void invokeSetter(T entity, String name, Object value, boolean shouldCache) throws Throwable {
+	private void invokeSetter(T entity, String name, Object value, boolean shouldCache, String polyName) throws Throwable {
 		Object oldValue = null;
 		
 		cacheLock.readLock().lock();
@@ -457,7 +494,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			}
 		}
 		
-		invokeSetterImpl(name, value);
+		invokeSetterImpl(name, polyName, value);
 
 		PropertyChangeEvent evt = new PropertyChangeEvent(entity, name, oldValue, value);
 		for (PropertyChangeListener l : listeners) {
@@ -472,7 +509,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		}
 	}
 
-	private void invokeSetterImpl(String name, Object value) throws Throwable {
+	private void invokeSetterImpl(String name, String polyName, Object value) throws Throwable {
 		cacheLock.writeLock().lock();
 		try {
 			cache.put(name.toLowerCase(), value);
@@ -481,6 +518,21 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				nullSet.remove(name.toLowerCase());
 			} else {
 				nullSet.add(name.toLowerCase());
+			}
+			
+			if (polyName != null) {
+				String strValue = null;
+				
+				if (value != null) {
+					strValue = getManager().getPolymorphicTypeMapper().convert(((RawEntity<?>) value).getEntityType());
+				}
+				
+				dirtyFieldsLock.writeLock().lock();
+				try {
+					dirtyPolymorphicFields.put(polyName, strValue);
+				} finally {
+					dirtyFieldsLock.writeLock().unlock();
+				}
 			}
 		} finally {
 			cacheLock.writeLock().unlock();
@@ -674,9 +726,16 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return back.toArray(new String[back.size()]);
 	}
 
-	private <V> V convertValue(ResultSet res, String field, Class<V> type) throws SQLException {
+	private <V> V convertValue(ResultSet res, String field, String polyName, Class<V> type) throws SQLException {
 		if (res.getString(field) == null) {
 			return null;
+		}
+		
+		if (polyName != null) {
+			Class<? extends RawEntity<?>> entityType = (Class<? extends RawEntity<?>>) type;
+			entityType = getManager().getPolymorphicTypeMapper().invert(entityType, res.getString(polyName));
+			
+			type = (Class<V>) entityType;		// avoiding Java cast oddities with generics
 		}
 		
 		TypeManager manager = TypeManager.getInstance();
