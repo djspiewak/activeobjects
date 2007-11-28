@@ -319,7 +319,7 @@ public final class SchemaGenerator {
 			Class<?> type =  Common.getAttributeTypeFromMethod(method);
 			
 			if (type != null && attributeName != null && Common.interfaceInheritsFrom(type, RawEntity.class)
-					&& type.getAnnotation(Polymorphic.class) != null) {
+					&& type.getAnnotation(Polymorphic.class) == null) {
 				DDLForeignKey key = new DDLForeignKey();
 				
 				key.setField(attributeName);
