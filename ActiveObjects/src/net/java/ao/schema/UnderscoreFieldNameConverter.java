@@ -95,9 +95,9 @@ public class UnderscoreFieldNameConverter extends AbstractFieldNameConverter {
 		String back = matcher.replaceAll("$1_$2");
 
 		if (polyType) {
-			name += "_type";
+			back += "_type";
 		} else if (entity) {
-			name += "_id";
+			back += "_id";
 		}
 		
 		if (uppercase) {
