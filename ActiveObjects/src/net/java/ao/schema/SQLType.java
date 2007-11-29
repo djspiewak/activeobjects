@@ -31,9 +31,9 @@ import java.lang.annotation.Target;
  *     public String getTitle();
  *     public void setTitle(String title);
  *     
- *     @SQLType(Types.CLOB)
+ *     &#064;SQLType(Types.CLOB)
  *     public String getText();
- *     @SQLType(Types.CLOB)
+ *     &#064;SQLType(Types.CLOB)
  *     public void setText(String text);
  * }</pre>
  * 
