@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * <pre>public interface Person {
  *     // ...
  *     
- *     &amp;#064;ManyToMany(Authorship.class)
+ *     &#064;ManyToMany(Authorship.class)
  *     public Book[] getBooks();
  * }</pre>
  * 
@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * <pre>public interface Person {
  *     // ...
  *     
- *     &amp;#064;ManyToMany(value=Authorship.class, where="deleted = FALSE")
+ *     &#064;ManyToMany(value=Authorship.class, where="deleted = FALSE")
  *     public Book[] getBooks();
  * }</pre>
  * 
