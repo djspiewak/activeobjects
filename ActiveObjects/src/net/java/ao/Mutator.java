@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * <pre>public Company extends Entity {
  *     // ...
  *     
- *     &amp;#064;Mutator("url")
+ *     &#064;Mutator("url")
  *     public void setURL(URL url);
  *     // ...
  * }</pre>
