@@ -48,12 +48,12 @@ import org.apache.lucene.store.Directory;
  * <pre>public interface Post extends Entity {
  *     // ...
  *     
- *     @Searchable
- *     @SQLType(Types.BLOB)
+ *     &#064;Searchable
+ *     &#064;SQLType(Types.BLOB)
  *     public String getBody();
  *     
- *     @Searchable
- *     @SQLType(Types.BLOB)
+ *     &#064;Searchable
+ *     &#064;SQLType(Types.BLOB)
  *     public void setBody(String body);
  * }
  * 
