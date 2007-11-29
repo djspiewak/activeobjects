@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * <pre>public interface Company {
  *     // ...
  *     
- *     &amp;#064;OneToMany
+ *     &#064;OneToMany
  *     public Person[] getEmployees();
  * }</pre>
  * 
@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * <pre>public interface Company {
  *     // ...
  *     
- *     &amp;#064;OneToMany(where="deleted = FALSE")
+ *     &#064;OneToMany(where="deleted = FALSE")
  *     public Person[] getEmployees();
  * }</pre>
  * 
