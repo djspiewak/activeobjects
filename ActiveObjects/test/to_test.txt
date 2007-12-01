@@ -6,8 +6,10 @@
 
 ==Entities==
 
- * polymorphic relations
+ * relations cache expiry
  * polymorphic relations cache expiry
+
+ * many-to-many polymorphic relations
 
  * Transaction#execute  (need to find a way to create a transact conflict)
  

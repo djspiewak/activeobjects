@@ -75,29 +75,44 @@ public final class Common {
 		return true;
 	}
 	
-//	public static String getTableName(Class<? extends Entity> type) {
-//		return EntityNameManager.getInstance().getName(type);
-//	}
-	
 	public static String[] getMappingFields(FieldNameConverter converter,
 			Class<? extends RawEntity<?>> from, Class<? extends RawEntity<?>> to) { 
 		Set<String> back = new LinkedHashSet<String>();
 		
 		for (Method method : from.getMethods()) {
-			if (isAccessor(method)) {
-				if (interfaceInheritsFrom(method.getReturnType(), to)) {
-					back.add(converter.getName(method));
-				}
-			} else if (isMutator(method)) {
-				if (interfaceInheritsFrom(method.getParameterTypes()[0], to)) {
-					back.add(converter.getName(method));
-				}
+			Class<?> attributeType = getAttributeTypeFromMethod(method);
+			
+			if (attributeType == null) {
+				continue;
+			}
+			
+			if (interfaceInheritsFrom(attributeType, to)) {
+				back.add(converter.getName(method));
+			} else if (attributeType.getAnnotation(Polymorphic.class) != null 
+					&& interfaceInheritsFrom(to, attributeType)) {
+				back.add(converter.getName(method));
 			}
 		}
 		
 		return back.toArray(new String[back.size()]);
 	}
 	
+	public static String[] getPolymorphicFieldNames(FieldNameConverter converter, Class<? extends RawEntity<?>> from, 
+			Class<? extends RawEntity<?>> to) {
+		Set<String> back = new LinkedHashSet<String>();
+		
+		for (Method method : from.getMethods()) {
+			Class<?> attributeType = getAttributeTypeFromMethod(method);
+
+			if (attributeType != null && interfaceInheritsFrom(to, attributeType)
+					&& attributeType.getAnnotation(Polymorphic.class) != null) {
+				back.add(converter.getPolyTypeName(method));
+			}
+		}
+		
+		return back.toArray(new String[back.size()]);
+	}
+
 	public static boolean isAccessor(Method method) {
 		if (method.getAnnotation(Accessor.class) != null) {
 			return true;

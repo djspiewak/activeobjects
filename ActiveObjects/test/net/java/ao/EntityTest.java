@@ -454,4 +454,75 @@ public class EntityTest extends DataTest {
 		person.getPersonLegalDefences();
 		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
+
+	@Test
+	public void testPolymorphicOneToManyRetrievalIDs() {
+		Post post = manager.get(Post.class, postID);
+		Comment[] comments = post.getComments();
+		
+		assertEquals(postCommentIDs.length, comments.length);
+		
+		for (Comment comment : comments) {
+			boolean found = false;
+			for (int id : postCommentIDs) {
+				if (comment.getID() == id) {
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) {
+				fail("Unable to find id=" + comment.getID());
+			}
+		}
+
+		Photo photo = manager.get(Photo.class, photoID);
+		comments = photo.getComments();
+		
+		assertEquals(photoCommentIDs.length, comments.length);
+		
+		for (Comment comment : comments) {
+			boolean found = false;
+			for (int id : photoCommentIDs) {
+				if (comment.getID() == id) {
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) {
+				fail("Unable to find id=" + comment.getID());
+			}
+		}
+	}
+	
+	@Test
+	public void testPolymorphicOneToManyRetrievalPreload() {
+		fail("Unimplemented");
+	}
+
+	@Test
+	public void testPolymorphicOneToManyRetrievalFromCache() {
+		Post post = manager.get(Post.class, personID);
+		post.getComments();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		post.getComments();
+		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
+
+	@Test
+	public void testPolymorphicManyToManyRetrievalIDs() {
+		fail("Unimplemented");
+	}
+	
+	@Test
+	public void testPolymorphicManyToManyRetrievalPreload() {
+		fail("Unimplemented");
+	}
+
+	@Test
+	public void testPolymorphicManyToManyRetrievalFromCache() {
+		fail("Unimplemented");
+	}
 }
