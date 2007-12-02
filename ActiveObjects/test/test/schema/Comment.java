@@ -18,13 +18,14 @@ package test.schema;
 import java.sql.Types;
 
 import net.java.ao.Entity;
+import net.java.ao.Preload;
 import net.java.ao.schema.SQLType;
 
 /**
  * @author Daniel Spiewak
  */
+@Preload("title")
 public interface Comment extends Entity {
-	
 	public String getTitle();
 	public void setTitle(String title);
 	

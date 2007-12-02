@@ -498,7 +498,13 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testPolymorphicOneToManyRetrievalPreload() {
-		fail("Unimplemented");
+		Post post = manager.get(Post.class, postID);
+		
+		for (Comment comment : post.getComments()) {
+			SQLLogMonitor.getInstance().markWatchSQL();
+			comment.getTitle();
+			assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+		}
 	}
 
 	@Test
