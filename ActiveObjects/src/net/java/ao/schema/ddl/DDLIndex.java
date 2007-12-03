@@ -51,7 +51,7 @@ public class DDLIndex {
 	}
 	
 	public String getName() {
-		return field;
+		return "index_" + table.toLowerCase() + "_" + field.toLowerCase();
 	}
 	
 	public DatabaseType<?> getType() {
