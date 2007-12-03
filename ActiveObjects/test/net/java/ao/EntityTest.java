@@ -35,7 +35,6 @@ import test.schema.Commentable;
 import test.schema.Company;
 import test.schema.Distribution;
 import test.schema.Magazine;
-import test.schema.OnlineDistribution;
 import test.schema.Pen;
 import test.schema.Person;
 import test.schema.PersonImpl;
@@ -597,7 +596,7 @@ public class EntityTest extends DataTest {
 
 				for (Distribution distribution : distributions) {
 					boolean found = false;
-					for (int o = 0; o < bookDistributionIDs[o].length; o++) {
+					for (int o = 0; o < bookDistributionIDs[i].length; o++) {
 						if (distribution.getID() == bookDistributionIDs[i][o] 
 								&& distribution.getEntityType().equals(bookDistributionTypes[i][o])) {
 							found = true;
@@ -620,7 +619,7 @@ public class EntityTest extends DataTest {
 
 				for (Distribution distribution : distributions) {
 					boolean found = false;
-					for (int o = 0; o < magazineDistributionIDs[o].length; o++) {
+					for (int o = 0; o < magazineDistributionIDs[i].length; o++) {
 						if (distribution.getID() == magazineDistributionIDs[i][o] 
 								&& distribution.getEntityType().equals(magazineDistributionTypes[i][o])) {
 							found = true;
@@ -649,14 +648,6 @@ public class EntityTest extends DataTest {
 			SQLLogMonitor.getInstance().markWatchSQL();
 			author.getName();
 			assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
-		}
-		
-		for (Distribution distribution : book.getDistributions()) {
-			if (distribution instanceof OnlineDistribution) {
-				SQLLogMonitor.getInstance().markWatchSQL();
-				((OnlineDistribution) distribution).getURL();
-				assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
-			}
 		}
 	}
 
