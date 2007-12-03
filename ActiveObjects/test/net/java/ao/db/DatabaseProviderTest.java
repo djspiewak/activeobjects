@@ -220,6 +220,29 @@ public class DatabaseProviderTest {
 		assertEquals(readStatements("postgres-add-key.sql"), provider.renderAction(action));
 	}
 	
+	@Test
+	public void testRenderActionDropKey() throws IOException {
+		DDLAction action = createActionDropKey();
+		
+		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(readStatements("derby-drop-key.sql"), provider.renderAction(action));
+		
+		provider = new HSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("hsqldb-drop-key.sql"), provider.renderAction(action));
+		
+		provider = new JTDSSQLServerDatabaseProvider("", "", "");
+		assertEquals(readStatements("sqlserver-drop-key.sql"), provider.renderAction(action));
+		
+		provider = new MySQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("mysql-drop-key.sql"), provider.renderAction(action));
+		
+		provider = new OracleDatabaseProvider("", "", "");
+		assertEquals(readStatements("oracle-drop-key.sql"), provider.renderAction(action));
+		
+		provider = new PostgreSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("postgres-drop-key.sql"), provider.renderAction(action));
+	}
+	
 	@After
 	public void tearDown() {
 		System.setErr(STDERR);
@@ -368,6 +391,19 @@ public class DatabaseProviderTest {
 	
 	private DDLAction createActionAddKey() {
 		DDLAction back = new DDLAction(DDLActionType.ALTER_ADD_KEY);
+		
+		DDLForeignKey key = new DDLForeignKey();
+		key.setDomesticTable("person");
+		key.setField("companyID");
+		key.setForeignField("id");
+		key.setTable("company");
+		back.setKey(key);
+		
+		return back;
+	}
+	
+	private DDLAction createActionDropKey() {
+		DDLAction back = new DDLAction(DDLActionType.ALTER_DROP_KEY);
 		
 		DDLForeignKey key = new DDLForeignKey();
 		key.setDomesticTable("person");

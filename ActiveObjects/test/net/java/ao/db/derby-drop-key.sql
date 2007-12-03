@@ -1,0 +1,1 @@
+ALTER TABLE person DROP FOREIGN KEY fk_person_companyid
