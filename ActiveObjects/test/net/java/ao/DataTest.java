@@ -23,6 +23,8 @@ import net.java.ao.types.TypeManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import test.schema.Distribution;
+
 /**
  * @author Daniel Spiewak
  */
@@ -47,9 +49,14 @@ public abstract class DataTest {
 	protected static int[] bookIDs;
 	protected static int[] magazineIDs;
 	
-	protected static int[][] authorIDs;
+	protected static int[][] bookAuthorIDs;
+	protected static int[][] magazineAuthorIDs;
 	
-	protected static int[][] distributionIDs;
+	protected static int[][] bookDistributionIDs;
+	protected static Class<? extends Distribution>[][] bookDistributionTypes;
+	
+	protected static int[][] magazineDistributionIDs;
+	protected static Class<? extends Distribution>[][] magazineDistributionTypes;
 
 	@BeforeClass
 	public static void setUp() throws SQLException {
@@ -71,8 +78,12 @@ public abstract class DataTest {
 		photoCommentIDs = data.photoCommentIDs;
 		bookIDs = data.bookIDs;
 		magazineIDs = data.magazineIDs;
-		authorIDs = data.authorIDs;
-		distributionIDs = data.distributionIDs;
+		bookAuthorIDs = data.bookAuthorIDs;
+		magazineAuthorIDs = data.magazineAuthorIDs;
+		bookDistributionIDs = data.bookDistributionIDs;
+		bookDistributionTypes = data.bookDistributionTypes;
+		magazineDistributionIDs = data.magazineDistributionIDs;
+		magazineDistributionTypes = data.magazineDistributionTypes;
 	}
 
 	@AfterClass

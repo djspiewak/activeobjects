@@ -28,9 +28,14 @@ import java.sql.SQLException;
 
 import org.junit.Test;
 
+import test.schema.Author;
+import test.schema.Book;
 import test.schema.Comment;
 import test.schema.Commentable;
 import test.schema.Company;
+import test.schema.Distribution;
+import test.schema.Magazine;
+import test.schema.OnlineDistribution;
 import test.schema.Pen;
 import test.schema.Person;
 import test.schema.PersonImpl;
@@ -534,16 +539,132 @@ public class EntityTest extends DataTest {
 
 	@Test
 	public void testPolymorphicManyToManyRetrievalIDs() {
-		fail("Unimplemented");
+		EntityProxy.ignorePreload = true;
+		try {
+			for (int i = 0; i < bookIDs.length; i++) {
+				Book book = manager.get(Book.class, bookIDs[i]);
+				Author[] authors = book.getAuthors();
+
+				assertEquals(bookAuthorIDs[i].length, authors.length);
+
+				for (Author author : authors) {
+					boolean found = false;
+					for (int id : bookAuthorIDs[i]) {
+						if (author.getID() == id) {
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						fail("Unable to find id=" + author.getID());
+					}
+				}
+			}
+			
+			for (int i = 0; i < magazineIDs.length; i++) {
+				Magazine magazine = manager.get(Magazine.class, magazineIDs[i]);
+				Author[] authors = magazine.getAuthors();
+
+				assertEquals(magazineAuthorIDs[i].length, authors.length);
+
+				for (Author author : authors) {
+					boolean found = false;
+					for (int id : magazineAuthorIDs[i]) {
+						if (author.getID() == id) {
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						fail("Unable to find id=" + author.getID());
+					}
+				}
+			}
+
+			for (int i = 0; i < bookIDs.length; i++) {
+				Book book = manager.get(Book.class, bookIDs[i]);
+				Distribution[] distributions = book.getDistributions();
+
+				assertEquals(bookDistributionIDs[i].length, distributions.length);
+
+				for (Distribution distribution : distributions) {
+					boolean found = false;
+					for (int o = 0; o < bookDistributionIDs[o].length; o++) {
+						if (distribution.getID() == bookDistributionIDs[i][o] 
+								&& distribution.getEntityType().equals(bookDistributionTypes[i][o])) {
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						fail("Unable to find id=" + distribution.getID() 
+								+ ", type=" + manager.getPolymorphicTypeMapper().convert(distribution.getEntityType()));
+					}
+				}
+			}
+
+			for (int i = 0; i < magazineIDs.length; i++) {
+				Magazine magazine = manager.get(Magazine.class, magazineIDs[i]);
+				Distribution[] distributions = magazine.getDistributions();
+
+				assertEquals(magazineDistributionIDs[i].length, distributions.length);
+
+				for (Distribution distribution : distributions) {
+					boolean found = false;
+					for (int o = 0; o < magazineDistributionIDs[o].length; o++) {
+						if (distribution.getID() == magazineDistributionIDs[i][o] 
+								&& distribution.getEntityType().equals(magazineDistributionTypes[i][o])) {
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						fail("Unable to find id=" + distribution.getID() 
+								+ ", type=" + manager.getPolymorphicTypeMapper().convert(distribution.getEntityType()));
+					}
+				}
+			}
+		} finally {		
+			EntityProxy.ignorePreload = false;
+		}
 	}
 	
 	@Test
 	public void testPolymorphicManyToManyRetrievalPreload() {
-		fail("Unimplemented");
+		Book book = manager.get(Book.class, bookIDs[0]);
+		
+		for (Author author : book.getAuthors()) {
+			SQLLogMonitor.getInstance().markWatchSQL();
+			author.getName();
+			assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+		}
+		
+		for (Distribution distribution : book.getDistributions()) {
+			if (distribution instanceof OnlineDistribution) {
+				SQLLogMonitor.getInstance().markWatchSQL();
+				((OnlineDistribution) distribution).getURL();
+				assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+			}
+		}
 	}
 
 	@Test
 	public void testPolymorphicManyToManyRetrievalFromCache() {
-		fail("Unimplemented");
+		Magazine magazine = manager.get(Magazine.class, magazineIDs[0]);
+		magazine.getAuthors();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getAuthors();
+		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		magazine.getDistributions();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getDistributions();
+		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
 }

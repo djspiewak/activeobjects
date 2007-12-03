@@ -14,6 +14,7 @@ import junit.framework.Test;
 import test.schema.Authorship;
 import test.schema.Book;
 import test.schema.Comment;
+import test.schema.Distribution;
 import test.schema.Magazine;
 import test.schema.OnlineDistribution;
 import test.schema.Pen;
@@ -63,7 +64,7 @@ public class TestUtilities {
 		logger.addHandler(SQLLogMonitor.getInstance());
 		
 		manager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(manager.getTableNameConverter(), 
-				Photo.class, Post.class));
+				Photo.class, Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class));
 		
 		try {
 			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, 
@@ -340,6 +341,241 @@ public class TestUtilities {
 			res.close();
 			
 			stmt.close();
+			
+			back.bookIDs = new int[2];
+			index = 0;
+			
+			stmt = conn.prepareStatement("INSERT INTO book (title,hardcover) VALUES (?,?)", 
+					PreparedStatement.RETURN_GENERATED_KEYS);
+			
+			stmt.setString(1, "Test Book 1");
+			stmt.setInt(2, 1);
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.bookIDs[index++] = res.getInt(1);
+			}
+			res.close();
+			
+			stmt.setString(1, "Test Book 2");
+			stmt.setInt(2, 1);
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.bookIDs[index++] = res.getInt(1);
+			}
+			res.close();
+			
+			stmt.close();
+			
+			back.magazineIDs = new int[2];
+			index = 0;
+			
+			stmt = conn.prepareStatement("INSERT INTO magazine (title) VALUES (?)", 
+					PreparedStatement.RETURN_GENERATED_KEYS);
+			
+			stmt.setString(1, "Test Magazine 1");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.magazineIDs[index++] = res.getInt(1);
+			}
+			res.close();
+			
+			stmt.setString(1, "Test Magazine 2");
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.magazineIDs[index++] = res.getInt(1);
+			}
+			res.close();
+			
+			stmt.close();
+			
+			back.bookAuthorIDs = new int[2][3];
+			index = 0;
+			
+			for (int i = 0; i < back.bookIDs.length; i++) {
+				for (int subIndex = 0; subIndex < back.bookAuthorIDs[0].length; subIndex++) {
+					stmt = conn.prepareStatement("INSERT INTO author (name) VALUES (?)", 
+							PreparedStatement.RETURN_GENERATED_KEYS);
+					
+					stmt.setString(1, "Test Book Author " + (subIndex + 1));
+					stmt.executeUpdate();
+					
+					res = stmt.getGeneratedKeys();
+					if (res.next()) {
+						back.bookAuthorIDs[i][subIndex] = res.getInt(1);
+					}
+					res.close();
+					
+					stmt.close();
+					
+					stmt = conn.prepareStatement("INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
+					
+					stmt.setInt(1, back.bookIDs[i]);
+					stmt.setString(2, "book");
+					stmt.setInt(3, back.bookAuthorIDs[i][subIndex]);
+					stmt.executeUpdate();
+					
+					stmt.close();
+				}
+			}
+			
+			back.magazineAuthorIDs = new int[2][3];
+			
+			for (int i = 0; i < back.bookIDs.length; i++) {
+				for (int subIndex = 0; subIndex < back.magazineAuthorIDs[0].length; subIndex++) {
+					stmt = conn.prepareStatement("INSERT INTO author (name) VALUES (?)", 
+							PreparedStatement.RETURN_GENERATED_KEYS);
+					
+					stmt.setString(1, "Test Magazine Author " + (subIndex + 1));
+					stmt.executeUpdate();
+					
+					res = stmt.getGeneratedKeys();
+					if (res.next()) {
+						back.bookAuthorIDs[i][subIndex] = res.getInt(1);
+					}
+					res.close();
+					
+					stmt.close();
+					
+					stmt = conn.prepareStatement("INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
+					
+					stmt.setInt(1, back.magazineIDs[i]);
+					stmt.setString(2, "magazine");
+					stmt.setInt(3, back.magazineAuthorIDs[i][subIndex]);
+					stmt.executeUpdate();
+					
+					stmt.close();
+				}
+			}
+			
+			back.bookDistributionIDs = new int[2][5];
+			back.bookDistributionTypes = new Class[2][5];
+			
+			for (int i = 0; i < back.bookIDs.length; i++) {
+				for (int subIndex = 0; subIndex < back.bookDistributionIDs[0].length; subIndex++) {
+					Class<? extends Distribution> distType = (subIndex % 2 == 0 ? PrintDistribution.class 
+							: OnlineDistribution.class);
+					String distTableName = manager.getTableNameConverter().getName(distType);
+					String params = null;
+					
+					if (distType == PrintDistribution.class) {
+						params = " (copies) VALUES (?)";
+					} else if (distType == OnlineDistribution.class) {
+						params = " (url) VALUES (?)";
+					}
+					
+					back.bookDistributionTypes[i][subIndex] = distType;
+					
+					stmt = conn.prepareStatement("INSERT INTO " + distTableName + ' ' + params, 
+							PreparedStatement.RETURN_GENERATED_KEYS);
+					
+					if (distType == PrintDistribution.class) {
+						stmt.setInt(1, 20);
+					} else if (distType == OnlineDistribution.class) {
+						stmt.setString(1, "http://www.google.com");
+					}
+					stmt.executeUpdate();
+					
+					res = stmt.getGeneratedKeys();
+					if (res.next()) {
+						back.bookDistributionIDs[i][subIndex] = res.getInt(1);
+					}
+					res.close();
+					
+					stmt.close();
+					
+					stmt = conn.prepareStatement("INSERT INTO publicationToDistribution " +
+							"(publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
+					
+					stmt.setInt(1, back.bookIDs[i]);
+					stmt.setString(2, "book");
+					stmt.setInt(3, back.bookDistributionIDs[i][subIndex]);
+					stmt.setString(4, manager.getPolymorphicTypeMapper().convert(distType));
+					stmt.executeUpdate();
+					
+					stmt.close();
+				}
+			}
+			
+			back.magazineDistributionIDs = new int[2][12];
+			back.magazineDistributionTypes = new Class[2][12];
+			
+			for (int i = 0; i < back.bookIDs.length; i++) {
+				for (int subIndex = 0; subIndex < back.magazineDistributionIDs[0].length; subIndex++) {
+					Class<? extends Distribution> distType = (subIndex % 2 == 0 ? PrintDistribution.class 
+							: OnlineDistribution.class);
+					String distTableName = manager.getTableNameConverter().getName(distType);
+					String params = null;
+					
+					if (distType == PrintDistribution.class) {
+						params = " (copies) VALUES (?)";
+					} else if (distType == OnlineDistribution.class) {
+						params = " (url) VALUES (?)";
+					}
+					
+					back.magazineDistributionTypes[i][subIndex] = distType;
+					
+					stmt = conn.prepareStatement("INSERT INTO " + distTableName + ' ' + params, 
+							PreparedStatement.RETURN_GENERATED_KEYS);
+					
+					if (distType == PrintDistribution.class) {
+						stmt.setInt(1, 20);
+					} else if (distType == OnlineDistribution.class) {
+						stmt.setString(1, "http://www.google.com");
+					}
+					stmt.executeUpdate();
+					
+					res = stmt.getGeneratedKeys();
+					if (res.next()) {
+						back.magazineDistributionIDs[i][subIndex] = res.getInt(1);
+					}
+					res.close();
+					
+					stmt.close();
+					
+					stmt = conn.prepareStatement("INSERT INTO publicationToDistribution " +
+							"(publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
+					
+					stmt.setInt(1, back.magazineIDs[i]);
+					stmt.setString(2, "magazine");
+					stmt.setInt(3, back.magazineDistributionIDs[i][subIndex]);
+					stmt.setString(4, manager.getPolymorphicTypeMapper().convert(distType));
+					stmt.executeUpdate();
+					
+					stmt.close();
+				}
+			}
+			
+			for (int i = 0; i < 3; i++) {	// add some extra, unrelated distributions
+				Class<? extends Distribution> distType = (i % 2 == 0 ? PrintDistribution.class 
+						: OnlineDistribution.class);
+				String distTableName = manager.getTableNameConverter().getName(distType);
+				String params = null;
+				
+				if (distType == PrintDistribution.class) {
+					params = " (copies) VALUES (?)";
+				} else if (distType == OnlineDistribution.class) {
+					params = " (url) VALUES (?)";
+				}
+				
+				stmt = conn.prepareStatement("INSERT INTO " + distTableName + ' ' + params);
+				
+				if (distType == PrintDistribution.class) {
+					stmt.setInt(1, 20);
+				} else if (distType == OnlineDistribution.class) {
+					stmt.setString(1, "http://www.dzone.com");
+				}
+				stmt.executeUpdate();
+				
+				stmt.close();
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {

@@ -15,6 +15,8 @@
  */
 package net.java.ao;
 
+import test.schema.Distribution;
+
 /**
  * @author Daniel Spiewak
  */
@@ -37,7 +39,12 @@ public class DataStruct {
 	public int[] bookIDs;
 	public int[] magazineIDs;
 	
-	public int[][] authorIDs;
+	public int[][] bookAuthorIDs;
+	public int[][] magazineAuthorIDs;
 	
-	public int[][] distributionIDs;
+	public int[][] bookDistributionIDs;
+	public Class<? extends Distribution>[][] bookDistributionTypes;
+	
+	public int[][] magazineDistributionIDs;
+	public Class<? extends Distribution>[][] magazineDistributionTypes;
 }
