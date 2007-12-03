@@ -428,7 +428,7 @@ public class TestUtilities {
 			
 			back.magazineAuthorIDs = new int[2][3];
 			
-			for (int i = 0; i < back.bookIDs.length; i++) {
+			for (int i = 0; i < back.magazineIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.magazineAuthorIDs[0].length; subIndex++) {
 					stmt = conn.prepareStatement("INSERT INTO author (name) VALUES (?)", 
 							PreparedStatement.RETURN_GENERATED_KEYS);
@@ -438,7 +438,7 @@ public class TestUtilities {
 					
 					res = stmt.getGeneratedKeys();
 					if (res.next()) {
-						back.bookAuthorIDs[i][subIndex] = res.getInt(1);
+						back.magazineAuthorIDs[i][subIndex] = res.getInt(1);
 					}
 					res.close();
 					
@@ -507,7 +507,7 @@ public class TestUtilities {
 			back.magazineDistributionIDs = new int[2][12];
 			back.magazineDistributionTypes = new Class[2][12];
 			
-			for (int i = 0; i < back.bookIDs.length; i++) {
+			for (int i = 0; i < back.magazineIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.magazineDistributionIDs[0].length; subIndex++) {
 					Class<? extends Distribution> distType = (subIndex % 2 == 0 ? PrintDistribution.class 
 							: OnlineDistribution.class);
