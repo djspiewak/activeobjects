@@ -197,11 +197,13 @@ public class EntityManager {
 		proxyLock.readLock().lock();
 		try {
 			for (EntityProxy<? extends RawEntity<?>, ?> proxy : proxies.values()) {
-				proxy.flushCache();		// TODO	flush relations cache
+				proxy.flushCache();
 			}
 		} finally {
 			proxyLock.readLock().unlock();
 		}
+		
+		relationsCache.flush();
 	}
 	
 	/**
@@ -214,13 +216,17 @@ public class EntityManager {
 	public void flush(RawEntity<?>... entities) {
 		proxyLock.readLock().lock();
 		try {
+			List<Class<? extends RawEntity<?>>> types = new ArrayList<Class<? extends RawEntity<?>>>(entities.length);
+			
 			for (RawEntity<?> entity : entities) {
-				proxies.get(entity).flushCache();		// TODO	flush relations cache
+				types.add(entity.getEntityType());
+				proxies.get(entity).flushCache();
 			}
+			
+			relationsCache.remove(types.toArray(new Class[types.size()]));
 		} finally {
 			proxyLock.readLock().unlock();
 		}
-	
 	}
 	
 	/**

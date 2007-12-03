@@ -39,6 +39,17 @@ class RelationsCache {
 		
 		lock = new ReentrantReadWriteLock();
 	}
+	
+	public void flush() {
+		lock.writeLock().lock();
+		try {
+			cache.clear();
+			typeMap.clear();
+			fieldMap.clear();
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
 
 	public void put(RawEntity<?> from, RawEntity<?>[] through, RawEntity<?>[] to, String[] fields) {
 		if (to.length == 0) {
