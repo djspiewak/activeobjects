@@ -2,8 +2,6 @@
 
  * Run tests with different name converter combinations
  
- * polymorphic type names
-
 ==Entities==
 
  * relations cache expiry
