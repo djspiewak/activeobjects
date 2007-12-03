@@ -535,7 +535,7 @@ public class EntityTest extends DataTest {
 
 	@Test
 	public void testPolymorphicOneToManyRetrievalFromCache() {
-		Post post = manager.get(Post.class, personID);
+		Post post = manager.get(Post.class, postID);
 		post.getComments();
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
