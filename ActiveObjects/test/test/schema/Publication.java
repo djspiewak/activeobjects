@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
+
+import net.java.ao.Entity;
+import net.java.ao.ManyToMany;
+import net.java.ao.Polymorphic;
 
 /**
  * @author Daniel Spiewak
  */
-public class DataStruct {
-	public int personID;
-	public long companyID;
+@Polymorphic
+public interface Publication extends Entity {
+	public String getTitle();
+	public void setTitle(String title);
 	
-	public int[] penIDs;
-	public int[] defenceIDs;
-	public int[] suitIDs;
+	@ManyToMany(Authorship.class)
+	public Author[] getAuthors();
 	
-	public long[] coolCompanyIDs;
-	
-	public int postID;
-	public int photoID;
-	
-	public int[] postCommentIDs;
-	public int[] photoCommentIDs;
-	
-	public int[] bookIDs;
-	public int[] magazineIDs;
-	
-	public int[][] authorIDs;
-	
-	public int[][] distributionIDs;
+	@ManyToMany(PublicationToDistribution.class)
+	public Distribution[] getDistributions();
 }

@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
+
+import java.net.URL;
+
+import net.java.ao.Accessor;
+import net.java.ao.Mutator;
+import net.java.ao.Preload;
 
 /**
  * @author Daniel Spiewak
  */
-public class DataStruct {
-	public int personID;
-	public long companyID;
+@Preload("url")
+public interface OnlineDistribution extends Distribution {
 	
-	public int[] penIDs;
-	public int[] defenceIDs;
-	public int[] suitIDs;
+	@Accessor("url")
+	public URL getURL();
 	
-	public long[] coolCompanyIDs;
-	
-	public int postID;
-	public int photoID;
-	
-	public int[] postCommentIDs;
-	public int[] photoCommentIDs;
-	
-	public int[] bookIDs;
-	public int[] magazineIDs;
-	
-	public int[][] authorIDs;
-	
-	public int[][] distributionIDs;
+	@Mutator("url")
+	public void setURL(URL url);
 }

@@ -371,23 +371,28 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testOneToManyRetrievalIDs() {
-		Person person = manager.get(Person.class, personID);
-		Pen[] pens = person.getPens();
-		
-		assertEquals(penIDs.length, pens.length);
-		
-		for (Pen pen : pens) {
-			boolean found = false;
-			for (int id : penIDs) {
-				if (pen.getID() == id) {
-					found = true;
-					break;
+		EntityProxy.ignorePreload = true;
+		try {
+			Person person = manager.get(Person.class, personID);
+			Pen[] pens = person.getPens();
+
+			assertEquals(penIDs.length, pens.length);
+
+			for (Pen pen : pens) {
+				boolean found = false;
+				for (int id : penIDs) {
+					if (pen.getID() == id) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					fail("Unable to find id=" + pen.getID());
 				}
 			}
-			
-			if (!found) {
-				fail("Unable to find id=" + pen.getID());
-			}
+		} finally {
+			EntityProxy.ignorePreload = false;
 		}
 	}
 	
@@ -414,23 +419,28 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testManyToManyRetrievalIDs() {
-		Person person = manager.get(Person.class, personID);
-		PersonLegalDefence[] defences = person.getPersonLegalDefences();
-		
-		assertEquals(defenceIDs.length, defences.length);
-		
-		for (PersonLegalDefence defence : defences) {
-			boolean found = false;
-			for (int id : defenceIDs) {
-				if (defence.getID() == id) {
-					found = true;
-					break;
+		EntityProxy.ignorePreload = true;
+		try {
+			Person person = manager.get(Person.class, personID);
+			PersonLegalDefence[] defences = person.getPersonLegalDefences();
+
+			assertEquals(defenceIDs.length, defences.length);
+
+			for (PersonLegalDefence defence : defences) {
+				boolean found = false;
+				for (int id : defenceIDs) {
+					if (defence.getID() == id) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					fail("Unable to find id=" + defence.getID());
 				}
 			}
-			
-			if (!found) {
-				fail("Unable to find id=" + defence.getID());
-			}
+		} finally {		
+			EntityProxy.ignorePreload = false;
 		}
 	}
 	
@@ -457,42 +467,47 @@ public class EntityTest extends DataTest {
 
 	@Test
 	public void testPolymorphicOneToManyRetrievalIDs() {
-		Post post = manager.get(Post.class, postID);
-		Comment[] comments = post.getComments();
-		
-		assertEquals(postCommentIDs.length, comments.length);
-		
-		for (Comment comment : comments) {
-			boolean found = false;
-			for (int id : postCommentIDs) {
-				if (comment.getID() == id) {
-					found = true;
-					break;
-				}
-			}
-			
-			if (!found) {
-				fail("Unable to find id=" + comment.getID());
-			}
-		}
+		EntityProxy.ignorePreload = true;
+		try {
+			Post post = manager.get(Post.class, postID);
+			Comment[] comments = post.getComments();
 
-		Photo photo = manager.get(Photo.class, photoID);
-		comments = photo.getComments();
-		
-		assertEquals(photoCommentIDs.length, comments.length);
-		
-		for (Comment comment : comments) {
-			boolean found = false;
-			for (int id : photoCommentIDs) {
-				if (comment.getID() == id) {
-					found = true;
-					break;
+			assertEquals(postCommentIDs.length, comments.length);
+
+			for (Comment comment : comments) {
+				boolean found = false;
+				for (int id : postCommentIDs) {
+					if (comment.getID() == id) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					fail("Unable to find id=" + comment.getID());
 				}
 			}
-			
-			if (!found) {
-				fail("Unable to find id=" + comment.getID());
+
+			Photo photo = manager.get(Photo.class, photoID);
+			comments = photo.getComments();
+
+			assertEquals(photoCommentIDs.length, comments.length);
+
+			for (Comment comment : comments) {
+				boolean found = false;
+				for (int id : photoCommentIDs) {
+					if (comment.getID() == id) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					fail("Unable to find id=" + comment.getID());
+				}
 			}
+		} finally {
+			EntityProxy.ignorePreload = false;
 		}
 	}
 	

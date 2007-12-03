@@ -1,4 +1,5 @@
 package net.java.ao;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,11 +11,17 @@ import java.util.logging.Logger;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import test.schema.Authorship;
+import test.schema.Book;
 import test.schema.Comment;
+import test.schema.Magazine;
+import test.schema.OnlineDistribution;
 import test.schema.Pen;
 import test.schema.PersonSuit;
 import test.schema.Photo;
 import test.schema.Post;
+import test.schema.PrintDistribution;
+import test.schema.PublicationToDistribution;
 
 /*
  * Copyright 2007 Daniel Spiewak
@@ -59,7 +66,9 @@ public class TestUtilities {
 				Photo.class, Post.class));
 		
 		try {
-			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class);
+			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, 
+					Authorship.class, Book.class, Magazine.class, 
+					PublicationToDistribution.class, PrintDistribution.class, OnlineDistribution.class);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -354,6 +363,13 @@ public class TestUtilities {
 			stmt.executeUpdate("DELETE FROM comment");
 			stmt.executeUpdate("DELETE FROM post");
 			stmt.executeUpdate("DELETE FROM photo");
+			stmt.executeUpdate("DELETE FROM authorship");
+			stmt.executeUpdate("DELETE FROM author");
+			stmt.executeUpdate("DELETE FROM book");
+			stmt.executeUpdate("DELETE FROM magazine");
+			stmt.executeUpdate("DELETE FROM publicationToDistribution");
+			stmt.executeUpdate("DELETE FROM printDistribution");
+			stmt.executeUpdate("DELETE FROM onlineDistribution");
 			
 			stmt.close();
 		} finally {

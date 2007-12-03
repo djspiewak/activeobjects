@@ -52,6 +52,8 @@ import net.java.ao.types.TypeManager;
 class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	private static final Pattern WHERE_PATTERN = Pattern.compile("([\\d\\w]+)\\s*(=|>|<|LIKE|IS)");
 	
+	static boolean ignorePreload = false;	// hack for testing
+	
 	private K key;
 	private Method pkAccessor;
 	private String pkFieldName;
@@ -576,7 +578,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			String throughField = null;
 			int numParams = 0;
 			
-			if (oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
+			if (oneToMany && inMapFields.length == 1 && outMapFields.length == 1 
+					&& preloadAnnotation != null && !ignorePreload) {
 				sql.append("SELECT ");		// one-to-many preload
 				
 				sql.append(outMapFields[0]).append(',');
@@ -601,7 +604,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				
 				numParams++;
 				returnField = outMapFields[0];
-			} else if (!oneToMany && inMapFields.length == 1 && outMapFields.length == 1 && preloadAnnotation != null) {
+			} else if (!oneToMany && inMapFields.length == 1 && outMapFields.length == 1 
+					&& preloadAnnotation != null && !ignorePreload) {
 				String finalTable = getManager().getTableNameConverter().getName(finalType);		// many-to-many preload
 				
 				returnField = finalTable + "__aointernal__id";

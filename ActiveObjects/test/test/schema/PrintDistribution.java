@@ -13,31 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package test.schema;
 
 /**
  * @author Daniel Spiewak
  */
-public class DataStruct {
-	public int personID;
-	public long companyID;
-	
-	public int[] penIDs;
-	public int[] defenceIDs;
-	public int[] suitIDs;
-	
-	public long[] coolCompanyIDs;
-	
-	public int postID;
-	public int photoID;
-	
-	public int[] postCommentIDs;
-	public int[] photoCommentIDs;
-	
-	public int[] bookIDs;
-	public int[] magazineIDs;
-	
-	public int[][] authorIDs;
-	
-	public int[][] distributionIDs;
+public interface PrintDistribution extends Distribution {
+	public int getCopies();
+	public void setCopies(int copies);
 }
