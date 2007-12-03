@@ -796,7 +796,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		cached = back.toArray((V[]) Array.newInstance(finalType, back.size()));
 
 		getManager().getRelationsCache().put(entity, 
-				(throughValues.size() > 0 ? throughValues.toArray(new RawEntity[throughValues.size()]) : cached), cached, fields);	
+				(throughValues.size() > 0 ? throughValues.toArray(new RawEntity[throughValues.size()]) : cached), 
+				type, cached, finalType, fields);
 		
 		return cached;
 	}

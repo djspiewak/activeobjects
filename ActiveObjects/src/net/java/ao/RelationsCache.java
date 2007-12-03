@@ -51,14 +51,14 @@ class RelationsCache {
 		}
 	}
 
-	public void put(RawEntity<?> from, RawEntity<?>[] through, RawEntity<?>[] to, String[] fields) {
+	public void put(RawEntity<?> from, RawEntity<?>[] through, Class<? extends RawEntity<?>> throughType, RawEntity<?>[] to, Class<? extends RawEntity<?>> toType, String[] fields) {
 		if (to.length == 0) {
 			return;
 		}
 		
 		assert through.length != to.length;
 		
-		CacheKey key = new CacheKey(from, to[0].getEntityType(), through[0].getEntityType(), fields);
+		CacheKey key = new CacheKey(from, toType, throughType, fields);
 		lock.writeLock().lock();
 		try {
 			cache.put(key, to);
