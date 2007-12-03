@@ -223,6 +223,7 @@ public class EntityManager {
 				proxies.get(entity).flushCache();
 			}
 			
+			// TODO	doesn't account for polymorphic many-to-many types
 			relationsCache.remove(types.toArray(new Class[types.size()]));
 		} finally {
 			proxyLock.readLock().unlock();
