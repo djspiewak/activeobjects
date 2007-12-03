@@ -403,6 +403,8 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testOneToManyRetrievalPreload() {
+		manager.getRelationsCache().flush();
+		
 		Person person = manager.get(Person.class, personID);
 		
 		for (Pen pen : person.getPens()) {
@@ -451,6 +453,8 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testManyToManyRetrievalPreload() {
+		manager.getRelationsCache().flush();
+		
 		Person person = manager.get(Person.class, personID);
 		
 		for (PersonLegalDefence defence : person.getPersonLegalDefences()) {
@@ -518,6 +522,8 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testPolymorphicOneToManyRetrievalPreload() {
+		manager.getRelationsCache().flush();
+		
 		Post post = manager.get(Post.class, postID);
 		
 		for (Comment comment : post.getComments()) {
@@ -635,6 +641,8 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testPolymorphicManyToManyRetrievalPreload() {
+		manager.getRelationsCache().flush();
+		
 		Book book = manager.get(Book.class, bookIDs[0]);
 		
 		for (Author author : book.getAuthors()) {
