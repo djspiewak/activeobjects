@@ -21,10 +21,57 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>Marks a method as relevant only to a one-to-one relation.  This
+ * informs ActiveObjects that the return value for the method in question
+ * should be determined from a one-to-one relation onto the type in the 
+ * return value.  For example:</p>
+ * 
+ * <pre>public interface User {
+ *     // ...
+ *     
+ *     &#064;OneToOne
+ *     public Password getPassword();
+ * }</pre>
+ * 
+ * <p>Thus the return value of the <code>getPassword()</code> method
+ * would be determined by a query something like the following:</p>
+ * 
+ * <code>SELECT id FROM passwords WHERE userID = ?</code>
+ * 
+ * <p>If the {@link #where()} clause is specified, it will be used
+ * <i>in addition</i> to the base, necessary criterion to determine the
+ * returned entities.  Thus, the one-to-one relation could be referenced
+ * in the following way:</p>
+ * 
+ * <pre>public interface User {
+ *     // ...
+ *     
+ *     &#064;OneToOne(where="deleted = FALSE")
+ *     public Password getPassword();
+ * }</pre>
+ * 
+ * <p>This would lead to a query like the following:</p>
+ * 
+ * <code>SELECT id FROM passwords WHERE userID = ? AND (deleted = FALSE)</code>
+ * 
  * @author Daniel Spiewak
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface OneToOne {
+
+	/**
+	 * <p>A String clause allowing developer-specified additional
+	 * conditions to be imposed on the relationship.  The String 
+	 * must be a proper SQL WHERE clause:</p>
+	 * 
+	 * <code>"deleted = FALSE"</code>
+	 * 
+	 * <p>One must be extremely careful with this sort of thing though
+	 * because sometimes (as is the case with the above sample), the 
+	 * unparameterized code may not execute as expected against every
+	 * database (due to differences in typing and value handling).  Thus,
+	 * in all but non-trivial cases, defined implementations should be used.</p>
+	 */
 	String where() default "";
 }
