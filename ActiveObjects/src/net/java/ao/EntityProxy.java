@@ -145,6 +145,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
+		OneToOne oneToOneAnnotation = method.getAnnotation(OneToOne.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		OnUpdate onUpdateAnnotation = method.getAnnotation(OnUpdate.class);
@@ -155,6 +156,15 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getKey(), tableName, accessorAnnotation.value(), polyFieldName, 
 					method.getReturnType(), onUpdateAnnotation != null);
+		} else if (oneToOneAnnotation != null && Common.interfaceInheritsFrom(method.getReturnType(), RawEntity.class)) {
+			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType();
+
+			Object[] back = retrieveRelations((RawEntity<K>) proxy, new String[0], 
+					new String[] { Common.getPrimaryKeyField(type, getManager().getFieldNameConverter()) }, 
+					(Class<? extends RawEntity>) type, oneToOneAnnotation.where(), 
+					Common.getPolymorphicFieldNames(getManager().getFieldNameConverter(), type, this.type));
+			
+			return back.length == 0 ? null : back[0];
 		} else if (oneToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), RawEntity.class)) {
 			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType().getComponentType();

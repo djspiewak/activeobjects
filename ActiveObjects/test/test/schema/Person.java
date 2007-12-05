@@ -23,6 +23,7 @@ import net.java.ao.Implementation;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
+import net.java.ao.OneToOne;
 import net.java.ao.Searchable;
 import net.java.ao.schema.Default;
 import net.java.ao.schema.Indexed;
@@ -64,6 +65,9 @@ public interface Person extends Entity {
 	
 	public Company getCompany();
 	public void setCompany(Company company);
+	
+	@OneToOne
+	public Nose getNose();
 	
 	@OneToMany(where="deleted = 0")
 	public Pen[] getPens();

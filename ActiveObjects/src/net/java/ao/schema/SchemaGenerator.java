@@ -36,6 +36,7 @@ import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.ManyToMany;
 import net.java.ao.OneToMany;
+import net.java.ao.OneToOne;
 import net.java.ao.Polymorphic;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLAction;
@@ -104,7 +105,11 @@ public final class SchemaGenerator {
 		Set<Class<? extends RawEntity<?>>> roots = new LinkedHashSet<Class<? extends RawEntity<?>>>();
 		
 		for (Class<? extends RawEntity<?>> cls : classes) {
-			parseDependencies(fieldConverter, deps, roots, cls);
+			try {
+				parseDependencies(fieldConverter, deps, roots, cls);
+			} catch (StackOverflowError e) {
+				throw new RuntimeException("Circular dependency detected in or below " + cls.getCanonicalName());
+			}
 		}
 		
 		List<DDLTable> parsedTables = new ArrayList<DDLTable>();
@@ -190,6 +195,7 @@ public final class SchemaGenerator {
 		
 		for (Method method : clazz.getMethods()) {
 			if (method.getAnnotation(Ignore.class) != null
+					|| method.getAnnotation(OneToOne.class) != null
 					|| method.getAnnotation(OneToMany.class) != null
 					|| method.getAnnotation(ManyToMany.class) != null) {
 				continue;

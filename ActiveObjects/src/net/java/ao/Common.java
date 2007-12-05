@@ -140,6 +140,7 @@ public final class Common {
 	public static Class<?> getAttributeTypeFromMethod(Method method) {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
+		OneToOne oneToOneAnnotation = method.getAnnotation(OneToOne.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		
@@ -149,6 +150,8 @@ public final class Common {
 			type = method.getParameterTypes()[0];
 		} else if (accessorAnnotation != null) {
 			type = method.getReturnType();
+		} else if (oneToOneAnnotation != null) {
+			return null;
 		} else if (oneToManyAnnotation != null) {
 			return null;
 		} else if (manyToManyAnnotation != null) {

@@ -16,6 +16,7 @@ import test.schema.Book;
 import test.schema.Comment;
 import test.schema.Distribution;
 import test.schema.Magazine;
+import test.schema.Nose;
 import test.schema.OnlineDistribution;
 import test.schema.Pen;
 import test.schema.PersonSuit;
@@ -67,7 +68,7 @@ public class TestUtilities {
 				Photo.class, Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class));
 		
 		try {
-			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, 
+			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, Nose.class,
 					Authorship.class, Book.class, Magazine.class, 
 					PublicationToDistribution.class, PrintDistribution.class, OnlineDistribution.class);
 		} catch (Throwable t) {
@@ -126,6 +127,21 @@ public class TestUtilities {
 				back.personID = res.getInt(1);
 			}
 			res.close();
+			stmt.close();
+			
+			stmt = conn.prepareStatement("INSERT INTO nose (length,personID) VALUES (?,?)", 
+					PreparedStatement.RETURN_GENERATED_KEYS);
+			
+			stmt.setInt(1, 2);
+			stmt.setInt(2, back.personID);
+			stmt.executeUpdate();
+			
+			res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back.noseID = res.getInt(1);
+			}
+			res.close();
+			
 			stmt.close();
 			
 			back.penIDs = new int[3];
@@ -594,6 +610,7 @@ public class TestUtilities {
 			stmt.executeUpdate("DELETE FROM pen");
 			stmt.executeUpdate("DELETE FROM personSuit");
 			stmt.executeUpdate("DELETE FROM personDefence");
+			stmt.executeUpdate("DELETE FROM nose");
 			stmt.executeUpdate("DELETE FROM person");
 			stmt.executeUpdate("DELETE FROM company");
 			stmt.executeUpdate("DELETE FROM comment");

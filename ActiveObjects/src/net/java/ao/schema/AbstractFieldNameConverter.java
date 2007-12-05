@@ -22,6 +22,7 @@ import net.java.ao.Common;
 import net.java.ao.ManyToMany;
 import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
+import net.java.ao.OneToOne;
 import net.java.ao.RawEntity;
 
 /**
@@ -82,6 +83,7 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 		Mutator mutatorAnnotation = method.getAnnotation(Mutator.class);
 		Accessor accessorAnnotation = method.getAnnotation(Accessor.class);
 		PrimaryKey primaryKeyAnnotation = method.getAnnotation(PrimaryKey.class);
+		OneToOne oneToOneAnnotation = method.getAnnotation(OneToOne.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		
@@ -103,6 +105,8 @@ public abstract class AbstractFieldNameConverter implements FieldNameConverter {
 			if (!polyType) {
 				return attributeName;
 			}
+		} else if (oneToOneAnnotation != null) {
+			return null;
 		} else if (oneToManyAnnotation != null) {
 			return null;
 		} else if (manyToManyAnnotation != null) {

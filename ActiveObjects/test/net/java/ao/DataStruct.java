@@ -22,6 +22,7 @@ import test.schema.Distribution;
  */
 public class DataStruct {
 	public int personID;
+	public int noseID;
 	public long companyID;
 	
 	public int[] penIDs;

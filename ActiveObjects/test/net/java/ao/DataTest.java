@@ -32,6 +32,7 @@ public abstract class DataTest {
 	protected static EntityManager manager;
 	
 	protected static int personID;
+	protected static int noseID;
 	protected static long companyID;
 	
 	protected static int[] penIDs;
@@ -67,6 +68,7 @@ public abstract class DataTest {
 		DataStruct data = TestUtilities.setUpEntityManager(manager);
 		
 		personID = data.personID;
+		noseID = data.noseID;
 		companyID = data.companyID;
 		penIDs = data.penIDs;
 		defenceIDs = data.defenceIDs;

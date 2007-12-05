@@ -374,6 +374,12 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
+	public void testOneToOneRetrievalID() {
+		Person person = manager.get(Person.class, personID);
+		assertEquals(noseID, person.getNose().getID());
+	}
+	
+	@Test
 	public void testOneToManyRetrievalIDs() {
 		EntityProxy.ignorePreload = true;
 		try {
