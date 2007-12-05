@@ -406,6 +406,20 @@ public class EntityManager {
 		
 		return back;
 	}
+	
+	/**
+	 * TODO
+	 */
+	public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params) throws SQLException {
+		DBParam[] arrParams = new DBParam[params.size()];
+		int i = 0;
+		
+		for (String key : params.keySet()) {
+			arrParams[i++] = new DBParam(key, params.get(key));
+		}
+		
+		return create(type, arrParams);
+	}
 
 	/**
 	 * <p>Deletes the specified entities from the database.  DELETE statements are
