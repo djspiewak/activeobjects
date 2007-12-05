@@ -11,6 +11,4 @@
  
  ==DDLAction Rendering==
  
- * DROP_INDEX
- 
  * @OnUpdate

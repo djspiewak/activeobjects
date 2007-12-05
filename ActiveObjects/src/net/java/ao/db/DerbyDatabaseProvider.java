@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
 import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
 
@@ -228,5 +229,14 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 		System.err.println("WARNING: Derby doesn't support ALTER TABLE DROP COLUMN statements");
 		
 		return new String[0];
+	}
+	
+	@Override
+	protected String renderDropIndex(DDLIndex index) {
+		StringBuilder back = new StringBuilder("DROP INDEX ");
+		
+		back.append(index.getName());
+		
+		return back.toString();
 	}
 }

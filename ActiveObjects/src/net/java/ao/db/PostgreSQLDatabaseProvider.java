@@ -36,6 +36,7 @@ import net.java.ao.DatabaseProvider;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
+import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
@@ -282,6 +283,15 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		StringBuilder back = new StringBuilder("ALTER TABLE ");
 		
 		back.append(key.getDomesticTable()).append(" DROP CONSTRAINT ").append(key.getFKName());
+		
+		return back.toString();
+	}
+	
+	@Override
+	protected String renderDropIndex(DDLIndex index) {
+		StringBuilder back = new StringBuilder("DROP INDEX ");
+		
+		back.append(index.getName());
 		
 		return back.toString();
 	}

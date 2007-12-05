@@ -198,6 +198,29 @@ public class DatabaseProviderTest {
 	}
 	
 	@Test
+	public void testRenderActionDropIndex() throws IOException {
+		DDLAction action = createActionDropIndex();
+		
+		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
+		assertEquals(readStatements("derby-drop-index.sql"), provider.renderAction(action));
+		
+		provider = new HSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("hsqldb-drop-index.sql"), provider.renderAction(action));
+		
+		provider = new JTDSSQLServerDatabaseProvider("", "", "");
+		assertEquals(readStatements("sqlserver-drop-index.sql"), provider.renderAction(action));
+		
+		provider = new MySQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("mysql-drop-index.sql"), provider.renderAction(action));
+		
+		provider = new OracleDatabaseProvider("", "", "");
+		assertEquals(readStatements("oracle-drop-index.sql"), provider.renderAction(action));
+		
+		provider = new PostgreSQLDatabaseProvider("", "", "");
+		assertEquals(readStatements("postgres-drop-index.sql"), provider.renderAction(action));
+	}
+	
+	@Test
 	public void testRenderActionAddKey() throws IOException {
 		DDLAction action = createActionAddKey();
 		
@@ -417,6 +440,18 @@ public class DatabaseProviderTest {
 	
 	private DDLAction createActionCreateIndex() {
 		DDLAction back = new DDLAction(DDLActionType.CREATE_INDEX);
+		
+		DDLIndex index = new DDLIndex();
+		index.setField("companyID");
+		index.setTable("person");
+		index.setType(TypeManager.getInstance().getType(Types.VARCHAR));
+		back.setIndex(index);
+		
+		return back;
+	}
+	
+	private DDLAction createActionDropIndex() {
+		DDLAction back = new DDLAction(DDLActionType.DROP_INDEX);
 		
 		DDLIndex index = new DDLIndex();
 		index.setField("companyID");
