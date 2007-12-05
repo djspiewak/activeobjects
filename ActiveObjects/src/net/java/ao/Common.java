@@ -51,18 +51,7 @@ public final class Common {
 	}
 
 	public static boolean interfaceInheritsFrom(Class<?> type, Class<?> superType) {
-		if (type.equals(superType)) {
-			return true;
-		}
-
-		Class<?>[] interfaces = type.getInterfaces();
-		for (Class<?> t : interfaces) {
-			if (interfaceInheritsFrom(t, superType)) {
-				return true;
-			}
-		}
-
-		return false;
+		return typeInstanceOf(type, superType);
 	}
 	
 	public static boolean typeInstanceOf(Class<?> type, Class<?> otherType) {
