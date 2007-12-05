@@ -23,8 +23,8 @@ import java.lang.annotation.Target;
 /**
  * <p>Marks a method as relevant only to a one-to-many relation.  This
  * informs ActiveObjects that the return value for the method in question
- * should be determined from a one-to-many relation through the
- * specified type onto the type in the return value.  For example:</p>
+ * should be determined from a one-to-many relation  onto the type in the 
+ * return value.  For example:</p>
  * 
  * <pre>public interface Company {
  *     // ...
@@ -60,8 +60,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface OneToMany {
 	
-//	String[] fields() default {};
-
 	/**
 	 * <p>A String clause allowing developer-specified additional
 	 * conditions to be imposed on the relationship.  The String 
