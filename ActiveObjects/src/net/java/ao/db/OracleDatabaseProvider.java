@@ -25,6 +25,7 @@ import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.Query;
 import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
 
@@ -150,5 +151,14 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 		current.append("ALTER TABLE ").append(table.getName()).append(" MODIFY (");
 		current.append(renderField(field)).append(')');
 		return current.toString();
+	}
+	
+	@Override
+	protected String renderAlterTableDropKey(DDLForeignKey key) {
+		StringBuilder back = new StringBuilder("ALTER TABLE ");
+		
+		back.append(key.getDomesticTable()).append(" DROP CONSTRAINT ").append(key.getFKName());
+		
+		return back.toString();
 	}
 }

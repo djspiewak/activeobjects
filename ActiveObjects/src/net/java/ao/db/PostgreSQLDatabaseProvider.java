@@ -35,6 +35,7 @@ import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
+import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLTable;
 import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
@@ -274,6 +275,15 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		return back.toArray(new String[back.size()]);
+	}
+	
+	@Override
+	protected String renderAlterTableDropKey(DDLForeignKey key) {
+		StringBuilder back = new StringBuilder("ALTER TABLE ");
+		
+		back.append(key.getDomesticTable()).append(" DROP CONSTRAINT ").append(key.getFKName());
+		
+		return back.toString();
 	}
 	
 	@Override
