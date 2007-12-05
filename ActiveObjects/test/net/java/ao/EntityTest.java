@@ -39,6 +39,7 @@ import test.schema.Pen;
 import test.schema.Person;
 import test.schema.PersonImpl;
 import test.schema.PersonLegalDefence;
+import test.schema.PersonSuit;
 import test.schema.Photo;
 import test.schema.Post;
 
@@ -430,6 +431,41 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
+	public void testOneToManyCacheExpiry() throws SQLException {
+		Person person = manager.get(Person.class, personID);
+		person.getPens();
+		
+		Pen pen = manager.create(Pen.class);
+		pen.setPerson(person);
+		pen.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPens();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(pen);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPens();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		pen = manager.create(Pen.class, new DBParam("personID", person));
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPens();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		pen.setPerson(null);
+		pen.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPens();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(pen);
+	}
+	
+	@Test
 	public void testManyToManyRetrievalIDs() {
 		EntityProxy.ignorePreload = true;
 		try {
@@ -477,6 +513,62 @@ public class EntityTest extends DataTest {
 		SQLLogMonitor.getInstance().markWatchSQL();
 		person.getPersonLegalDefences();
 		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
+	
+	@Test
+	public void testManyToManyCacheExpiry() throws SQLException {
+		Person person = manager.get(Person.class, personID);
+		person.getPersonLegalDefences();
+		
+		PersonSuit suit = manager.create(PersonSuit.class);
+		suit.setPerson(person);
+		suit.setPersonLegalDefence(manager.get(PersonLegalDefence.class, defenceIDs[0]));
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(suit);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		suit = manager.create(PersonSuit.class, new DBParam("personID", person), 
+				new DBParam("personLegalDefenceID", defenceIDs[1]));
+
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		suit.setPerson(null);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		suit.setPerson(person);
+		suit.save();
+		
+		person.getPersonLegalDefences();
+		
+		PersonLegalDefence defence = manager.create(PersonLegalDefence.class);
+		
+		suit.setPersonLegalDefence(defence);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(suit);
+		manager.delete(defence);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
 
 	@Test
@@ -546,6 +638,11 @@ public class EntityTest extends DataTest {
 		SQLLogMonitor.getInstance().markWatchSQL();
 		post.getComments();
 		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
+	
+	@Test
+	public void testPolymorphicOneToManyCacheExpiry() {
+		fail("Not yet implemented");	// TODO
 	}
 
 	@Test
@@ -671,5 +768,10 @@ public class EntityTest extends DataTest {
 		SQLLogMonitor.getInstance().markWatchSQL();
 		magazine.getDistributions();
 		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
+	
+	@Test
+	public void testPolymorphicManyToManyCacheExpiry() {
+		fail("Not yet implemented");	// TODO
 	}
 }

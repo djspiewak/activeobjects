@@ -4,7 +4,6 @@
  
  ==Entities==
  
- * relations cache expiry
  * polymorphic relations cache expiry
  
  * Transaction#execute  (need to find a way to create a transact conflict)
