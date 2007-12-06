@@ -29,12 +29,14 @@ import java.sql.SQLException;
 import org.junit.Test;
 
 import test.schema.Author;
+import test.schema.Authorship;
 import test.schema.Book;
 import test.schema.Comment;
 import test.schema.Commentable;
 import test.schema.Company;
 import test.schema.Distribution;
 import test.schema.Magazine;
+import test.schema.OnlineDistribution;
 import test.schema.Pen;
 import test.schema.Person;
 import test.schema.PersonImpl;
@@ -42,6 +44,8 @@ import test.schema.PersonLegalDefence;
 import test.schema.PersonSuit;
 import test.schema.Photo;
 import test.schema.Post;
+import test.schema.PrintDistribution;
+import test.schema.PublicationToDistribution;
 
 /**
  * @author Daniel Spiewak
@@ -641,8 +645,39 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
-	public void testPolymorphicOneToManyCacheExpiry() {
-		fail("Not yet implemented");	// TODO
+	public void testPolymorphicOneToManyCacheExpiry() throws SQLException {
+		Post post = manager.get(Post.class, postID);
+		post.getComments();
+		
+		Comment comment = manager.create(Comment.class);
+		comment.setCommentable(post);
+		comment.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		post.getComments();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(comment);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		post.getComments();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		comment = manager.create(Comment.class, new DBParam("commentableID", post), 
+				new DBParam("commentableType", "post"));
+
+		SQLLogMonitor.getInstance().markWatchSQL();
+		post.getComments();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		comment.setCommentable(null);
+		comment.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		post.getComments();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(comment);
 	}
 
 	@Test
@@ -771,7 +806,110 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
-	public void testPolymorphicManyToManyCacheExpiry() {
-		fail("Not yet implemented");	// TODO
+	public void testPolymorphicManyToManyCacheExpiry() throws SQLException {
+		Magazine magazine = manager.get(Magazine.class, magazineIDs[0]);
+		magazine.getAuthors();
+		
+		Authorship authorship = manager.create(Authorship.class);
+		authorship.setPublication(magazine);
+		authorship.setAuthor(manager.get(Author.class, magazineAuthorIDs[0][0]));
+		authorship.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getAuthors();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(authorship);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getAuthors();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		authorship = manager.create(Authorship.class, new DBParam("publicationID", magazine), 
+				new DBParam("publicationType", "magazine"),
+				new DBParam("authorID", bookAuthorIDs[0][1]));
+
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getAuthors();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		authorship.setAuthor(null);
+		authorship.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getAuthors();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		authorship.setPublication(magazine);
+		authorship.save();
+		
+		magazine.getAuthors();
+		
+		Author author = manager.create(Author.class);
+		
+		authorship.setAuthor(author);
+		authorship.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getAuthors();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(authorship);
+		manager.delete(author);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getAuthors();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		magazine.getDistributions();
+		
+		PublicationToDistribution mapping = manager.create(PublicationToDistribution.class);
+		mapping.setPublication(magazine);
+		mapping.setDistribution(manager.get(OnlineDistribution.class, magazineDistributionIDs[0][1]));
+		mapping.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getDistributions();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(mapping);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getDistributions();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		mapping = manager.create(PublicationToDistribution.class);
+		mapping.setPublication(magazine);
+		mapping.setDistribution(manager.get(OnlineDistribution.class, magazineDistributionIDs[0][1]));
+		mapping.save();
+		
+		magazine.getDistributions();
+		
+		mapping.setDistribution(null);
+		mapping.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getDistributions();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		mapping.setDistribution(manager.get(PrintDistribution.class, magazineDistributionIDs[0][0]));
+		mapping.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getDistributions();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		mapping.setPublication(null);
+		mapping.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getDistributions();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		manager.delete(mapping);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		magazine.getDistributions();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
 }
