@@ -15,7 +15,6 @@
  */
 package net.java.ao;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,49 +35,45 @@ import net.java.ao.schema.TableNameConverter;
  * will also default to a <code>Class.forName(String)</code> invocation in case
  * of no valid mapping in the relevant class hierarchy.</p>
  * 
+ * <p>You should not attempt to use the same instance of this class with more than
+ * one instance of {@link EntityManager}.  This is because <code>EntityManager</code>
+ * performs some initialization on the mapper when it is set.  While this initialization
+ * is in fact thread-safe, it may cause undesired behavior if using two separate
+ * entity managers with different table name converters.</p>
+ * 
  * @author Daniel Spiewak
  */
 public class DefaultPolymorphicTypeMapper implements PolymorphicTypeMapper {
-	private Map<Class<? extends RawEntity<?>>, String> mappings;
-	private Map<String, Set<Class<? extends RawEntity<?>>>> reverse;
+	private final Map<Class<? extends RawEntity<?>>, String> mappings;
+	private final Map<String, Set<Class<? extends RawEntity<?>>>> reverse;
+	
+	private Class<? extends RawEntity<?>>[] types;
 	
 	/**
-	 * <p>Convenience constructor which will construct a set of mappings on the fly
-	 * from the given set of entity types and the specified table name converter.
-	 * If the name converter is an instance of {@link PluralizedNameConverter},
-	 * the delegate converter will be used to maintain "coolness conventions".</p>
+	 * <p>Convenience constructor which will construct a set of mappings on the fly based
+	 * on the specified entity types.  Actual construction of the mappings is delayed
+	 * and invoked directly by the {@link EntityManager} instance which receives the
+	 * instance of this class.  This is to allow <code>EntityManager</code> to pass the
+	 * relevant table name converter to be used in the initialization process.</p>
 	 * 
-	 * <p>This method does nothing but construct the appropriate mappings and
-	 * delegate to the {@link #DefaultPolymorphicTypeMapper(Map)} constructor.</p>
+	 * <p>It is very important that an instance created using this constructor is not
+	 * used with more than one <code>EntityManager</code>.</p>
 	 * 
-	 * @param converter	The table name converter to be used to auto-generate the mappings.
 	 * @param types	The polymorphic types which must be mapped.
 	 */
-	public DefaultPolymorphicTypeMapper(TableNameConverter converter, Class<? extends RawEntity<?>>... types) {
-		Map<Class<? extends RawEntity<?>>, String> mappings = new HashMap<Class<? extends RawEntity<?>>, String>();
+	public DefaultPolymorphicTypeMapper(Class<? extends RawEntity<?>>... types) {
+		this(new HashMap<Class<? extends RawEntity<?>>, String>());
 		
-		while (converter instanceof PluralizedNameConverter) {
-			converter = ((PluralizedNameConverter) converter).getDelegate();
-		}
-		
-		for (Class<? extends RawEntity<?>> type : types) {
-			mappings.put(type, converter.getName(type));
-		}
-		
-		init(mappings);
+		this.types = types;
 	}
 	
 	/**
-	 * Creates a new instance with the specified type =&gt; flag mappings.
+	 * Creates a new instance with the specified {type =&gt; flag} mappings.
 	 * 
 	 * @param mappings	The mappings from entity type to polymorphic flag value.
 	 */
 	public DefaultPolymorphicTypeMapper(Map<Class<? extends RawEntity<?>>, String> mappings) {
-		init(mappings);
-	}
-	
-	private void init(Map<Class<? extends RawEntity<?>>, String> mappings) {
-		this.mappings = Collections.unmodifiableMap(mappings);	// ensures external code doesn't have access to state
+		this.mappings = mappings;
 		
 		reverse = new HashMap<String, Set<Class<? extends RawEntity<?>>>>();
 		
@@ -93,6 +88,22 @@ public class DefaultPolymorphicTypeMapper implements PolymorphicTypeMapper {
 			
 			set.add(type);
 		}
+	}
+	
+	void resolveMappings(TableNameConverter converter) {
+		if (types == null) {
+			return;
+		}
+		
+		while (converter instanceof PluralizedNameConverter) {
+			converter = ((PluralizedNameConverter) converter).getDelegate();
+		}
+		
+		for (Class<? extends RawEntity<?>> type : types) {
+			mappings.put(type, converter.getName(type));
+		}
+		
+		types = null;
 	}
 
 	public String convert(Class<? extends RawEntity<?>> type) {

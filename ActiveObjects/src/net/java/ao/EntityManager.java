@@ -873,6 +873,10 @@ public class EntityManager {
 		typeMapperLock.writeLock().lock();
 		try {
 			this.typeMapper = typeMapper;
+			
+			if (typeMapper instanceof DefaultPolymorphicTypeMapper) {
+				((DefaultPolymorphicTypeMapper) typeMapper).resolveMappings(getTableNameConverter());
+			}
 		} finally {
 			typeMapperLock.writeLock().unlock();
 		}
