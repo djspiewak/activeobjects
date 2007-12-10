@@ -887,6 +887,10 @@ public class EntityManager {
 	public PolymorphicTypeMapper getPolymorphicTypeMapper() {
 		typeMapperLock.readLock().lock();
 		try {
+			if (typeMapper == null) {
+				throw new RuntimeException("No polymorphic type mapper was specified");
+			}
+			
 			return typeMapper;
 		} finally {
 			typeMapperLock.readLock().unlock();
