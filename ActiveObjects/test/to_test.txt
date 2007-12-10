@@ -2,6 +2,13 @@
  
  * Run tests with different name converter combinations
  
+ ==Query==
+ 
+ * limit(int)/offset(int)
+ * group(String)
+ * order(String)
+ * setDistinct
+ 
  ==Entities==
  
  * Transaction#execute  (need to find a way to create a transact conflict)
