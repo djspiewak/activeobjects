@@ -344,7 +344,7 @@ public class EntityManager {
 	 * @param type		The type of the entity to INSERT.
 	 * @param params	An optional varargs array of initial values for the fields in the row.  These
 	 * 	values will be passed to the database within the INSERT statement.
-	 * @return	The new entity instance corresponding to the INSERTed row. 
+	 * @return	The new entity instance corresponding to the INSERTed row.
 	 * @see net.java.ao.DBParam
 	 * @see net.java.ao.DatabaseProvider#insertReturningKey(Connection, Class, String, String, DBParam...)
 	 */
@@ -408,7 +408,17 @@ public class EntityManager {
 	}
 	
 	/**
-	 * TODO
+	 * Creates and INSERTs a new entity of the specified type with the given map of 
+	 * parameters.  This method merely delegates to the {@link #create(Class, DBParam...)} 
+	 * method.  The idea behind having a separate convenience method taking a map is in 
+	 * circumstances with large numbers of parameters or for people familiar with the 
+	 * anonymous inner class constructor syntax who might be more comfortable with 
+	 * creating a map than with passing a number of objects.
+	 * 
+	 * @param type	The type of the entity to INSERT.
+	 * @param params	A map of parameters to pass to the INSERT.
+	 * @return	The new entity instance corresponding to the INSERTed row.
+	 * @see #create(Class, DBParam...)
 	 */
 	public <T extends RawEntity<K>, K> T create(Class<T> type, Map<String, Object> params) throws SQLException {
 		DBParam[] arrParams = new DBParam[params.size()];
