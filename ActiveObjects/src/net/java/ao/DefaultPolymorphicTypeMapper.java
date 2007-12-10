@@ -74,8 +74,13 @@ public class DefaultPolymorphicTypeMapper implements PolymorphicTypeMapper {
 	 */
 	public DefaultPolymorphicTypeMapper(Map<Class<? extends RawEntity<?>>, String> mappings) {
 		this.mappings = mappings;
-		
 		reverse = new HashMap<String, Set<Class<? extends RawEntity<?>>>>();
+		
+		createReverseMappings();
+	}
+	
+	private void createReverseMappings() {
+		reverse.clear();
 		
 		for (Class<? extends RawEntity<?>> type : mappings.keySet()) {
 			String value = mappings.get(type);
@@ -104,6 +109,8 @@ public class DefaultPolymorphicTypeMapper implements PolymorphicTypeMapper {
 		}
 		
 		types = null;
+		
+		createReverseMappings();
 	}
 
 	public String convert(Class<? extends RawEntity<?>> type) {
