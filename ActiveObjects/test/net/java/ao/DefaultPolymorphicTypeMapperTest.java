@@ -39,8 +39,8 @@ public class DefaultPolymorphicTypeMapperTest {
 	
 	@Before
 	public void setUp() {
-		mapper = new DefaultPolymorphicTypeMapper(new PluralizedNameConverter(), 
-				Person.class, Company.class, Post.class, Photo.class, Pen.class);
+		mapper = new DefaultPolymorphicTypeMapper(Person.class, Company.class, Post.class, Photo.class, Pen.class);
+		mapper.resolveMappings(new PluralizedNameConverter());
 	}
 
 	@Test
