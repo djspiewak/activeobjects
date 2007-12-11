@@ -20,6 +20,8 @@ import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,7 +67,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			return null;
 		}
 		
-		value = value.substring(1, value.length() - 1);
+		//value = value.substring(1, value.length() - 1);
 		
 		if (isNumericType(type)) {
 			value = value.substring(1, value.length() - 1);
@@ -238,6 +240,25 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 		current.append(renderField(field));
 		
 		return current.toString();
+	}
+	
+	@Override
+	protected String[] renderAlterTableAddColumn(DDLTable table, DDLField field) {
+		List<String> back = new ArrayList<String>();
+		
+		back.add("ALTER TABLE " + table.getName() + " ADD " + renderField(field));
+		
+		String function = renderFunctionForField(table, field);
+		if (function != null) {
+			back.add(function);
+		}
+		
+		String trigger = renderTriggerForField(table, field);
+		if (trigger != null) {
+			back.add(trigger);
+		}
+		
+		return back.toArray(new String[back.size()]);
 	}
 	
 	@Override
