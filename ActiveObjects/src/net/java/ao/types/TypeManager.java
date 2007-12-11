@@ -64,6 +64,7 @@ public class TypeManager {
 		types.add(new DateDateType());
 		types.add(new RealType());
 		types.add(new URLType());
+		types.add(new EnumType());
 	}
 	
 	public void addType(DatabaseType<?> type) {
