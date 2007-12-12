@@ -64,8 +64,8 @@ public class TestUtilities {
 		logger.setLevel(Level.FINE);
 		logger.addHandler(SQLLogMonitor.getInstance());
 		
-		manager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(manager.getTableNameConverter(), 
-				Photo.class, Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class));
+		manager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(Photo.class, 
+				Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class));
 		
 		try {
 			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, Nose.class,

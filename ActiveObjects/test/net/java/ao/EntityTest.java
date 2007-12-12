@@ -558,9 +558,23 @@ public class EntityTest extends DataTest {
 		
 		person.getPersonLegalDefences();
 		
+		suit.setPersonLegalDefence(null);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
 		PersonLegalDefence defence = manager.create(PersonLegalDefence.class);
 		
 		suit.setPersonLegalDefence(defence);
+		suit.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getPersonLegalDefences();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		suit.setPersonLegalDefence(null);
 		suit.save();
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
