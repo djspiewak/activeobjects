@@ -7,7 +7,7 @@
  * limit(int)/offset(int)
  * group(String)
  * order(String)
- * setDistinct
+ * distinct
  
  ==Entities==
  
