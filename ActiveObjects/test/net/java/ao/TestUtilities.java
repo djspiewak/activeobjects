@@ -114,11 +114,12 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			stmt = conn.prepareStatement("INSERT INTO person (firstName, companyID) VALUES (?, ?)", 
+			stmt = conn.prepareStatement("INSERT INTO person (firstName, profession, companyID) VALUES (?, ?, ?)", 
 					PreparedStatement.RETURN_GENERATED_KEYS);
 			
 			stmt.setString(1, "Daniel");
-			stmt.setLong(2, back.companyID);
+			stmt.setInt(2, 0);
+			stmt.setLong(3, back.companyID);
 			
 			stmt.executeUpdate();
 			

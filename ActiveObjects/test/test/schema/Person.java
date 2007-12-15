@@ -45,6 +45,9 @@ public interface Person extends Entity {
 	@Searchable
 	public void setLastName(String lastName);
 	
+	public Profession getProfession();
+	public void setProfession(Profession profession);
+	
 	@Indexed
 	public int getAge();
 	@Indexed

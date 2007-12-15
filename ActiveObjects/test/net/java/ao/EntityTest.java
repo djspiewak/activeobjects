@@ -45,6 +45,7 @@ import test.schema.PersonSuit;
 import test.schema.Photo;
 import test.schema.Post;
 import test.schema.PrintDistribution;
+import test.schema.Profession;
 import test.schema.PublicationToDistribution;
 
 /**
@@ -57,6 +58,7 @@ public class EntityTest extends DataTest {
 		Person person = manager.get(Person.class, personID);
 		
 		assertEquals("Daniel", person.getFirstName());
+		assertEquals(Profession.DEVELOPER, person.getProfession());
 		
 		assertEquals(companyID, person.getCompany().getCompanyID());
 		assertEquals("Company Name", person.getCompany().getName());
@@ -160,6 +162,33 @@ public class EntityTest extends DataTest {
 		assertEquals(true, cool);
 		
 		manager.delete(company);
+		
+		Person person = manager.get(Person.class, personID);
+		person.setProfession(Profession.MUSICIAN);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.save();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT profession FROM person WHERE id = ?");
+			stmt.setInt(1, person.getID());
+			
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				assertEquals(1, res.getInt("profession"));
+			} else {
+				fail("No person found");
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		person.setProfession(Profession.DEVELOPER);
+		person.save();
 	}
 	
 	@Test

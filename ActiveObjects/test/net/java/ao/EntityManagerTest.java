@@ -27,6 +27,7 @@ import org.junit.Test;
 import test.schema.Company;
 import test.schema.Pen;
 import test.schema.Person;
+import test.schema.Profession;
 
 /**
  * @author Daniel Spiewak
@@ -74,6 +75,11 @@ public class EntityManagerTest extends DataTest {
 				fail("Unable to find key=" + c.getCompanyID());
 			}
 		}
+		
+		Person[] people = manager.find(Person.class, "profession = ?", Profession.DEVELOPER);
+		
+		assertEquals(1, people.length);
+		assertEquals(personID, people[0].getID());
 	}
 	
 	@Test

@@ -42,7 +42,7 @@ public class SchemaGeneratorTest extends DataTest {
 
 	@Test
 	public void testParseDDL() {
-		String[] expectedFields = {"id", "firstName", "lastName", "age", "url", "favoriteClass", "companyID"};
+		String[] expectedFields = {"id", "firstName", "lastName", "profession", "age", "url", "favoriteClass", "companyID"};
 		String[] expectedIndexes = {"age", "companyID"};
 		
 		DDLTable[] parsedTables = SchemaGenerator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
