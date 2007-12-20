@@ -72,7 +72,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	private final Map<String, String> dirtyPolymorphicFields;
 	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
 	
-	private final Set<Class<? extends RawEntity<?>>> toFlushRelations = new HashSet<Class<? extends RawEntity<?>>>();
+	private final Set<Class<? extends RawEntity<?>>> toFlushTypes = new HashSet<Class<? extends RawEntity<?>>>();
 	private final ReadWriteLock toFlushLock = new ReentrantReadWriteLock();
 
 	private List<PropertyChangeListener> listeners;
@@ -273,8 +273,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				
 				toFlushLock.writeLock().lock();
 				try {
-					getManager().getRelationsCache().remove(toFlushRelations.toArray(new Class[toFlushRelations.size()]));
-					toFlushRelations.clear();
+					getManager().getRelationsCache().remove(toFlushTypes.toArray(new Class[toFlushTypes.size()]));
+					toFlushTypes.clear();
 				} finally {
 					toFlushLock.writeLock().unlock();
 				}
@@ -502,7 +502,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		if (value instanceof RawEntity) {
 			toFlushLock.writeLock().lock();
 			try {
-				toFlushRelations.add(((RawEntity<?>) value).getEntityType());
+				toFlushTypes.add(((RawEntity<?>) value).getEntityType());
 			} finally {
 				toFlushLock.writeLock().unlock();
 			}
@@ -664,6 +664,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				numParams++;
 			} else if (inMapFields.length == 1 && outMapFields.length == 1) {
 				sql.append("SELECT ").append(outMapFields[0]);
+				
+				if (!oneToMany) {
+					throughField = Common.getPrimaryKeyField(type, getManager().getFieldNameConverter());
+					
+					sql.append(',').append(throughField);
+				}
 				
 				if (thatPolyNames != null) {
 					for (String name : thatPolyNames) {
