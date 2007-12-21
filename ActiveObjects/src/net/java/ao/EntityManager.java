@@ -187,7 +187,7 @@ public class EntityManager {
 	/**
 	 * Flushes all value caches contained within entities controlled by this <code>EntityManager</code>
 	 * instance.  This does not actually remove the entities from the instance cache maintained
-	 * within this class.  Rather, it simply dumps all of the field values cached within the enties
+	 * within this class.  Rather, it simply dumps all of the field values cached within the entities
 	 * themselves (with the exception of the primary key value).  This should be used in the case
 	 * of a complex process outside AO control which may have changed values in the database.  If
 	 * it is at all possible to determine precisely which rows have been changed, the {@link #flush(RawEntity...)}
