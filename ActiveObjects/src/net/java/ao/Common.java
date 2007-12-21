@@ -242,6 +242,12 @@ public final class Common {
 	}
 	
 	public static boolean fuzzyCompare(Object a, Object b) {
+		if (a == null && b == null) {
+			return true;
+		} else if (a == null || b == null) {	// implicitly, one or other is null, not both
+			return false;
+		}
+		
 		Object array = null;
 		Object other = null;
 		
