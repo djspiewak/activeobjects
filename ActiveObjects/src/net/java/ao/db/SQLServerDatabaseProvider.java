@@ -39,6 +39,7 @@ import net.java.ao.types.DatabaseType;
  * @author Daniel Spiewak
  */
 public class SQLServerDatabaseProvider extends DatabaseProvider {
+	private static final Pattern VALUE_PATTERN = Pattern.compile("^\\((.*?)\\)$");
 
 	public SQLServerDatabaseProvider(String uri, String username, String password) {
 		super(uri, username, password);
@@ -67,10 +68,10 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			return null;
 		}
 		
-		//value = value.substring(1, value.length() - 1);
-		
-		if (isNumericType(type)) {
-			value = value.substring(1, value.length() - 1);
+		Matcher valueMatcher = VALUE_PATTERN.matcher(value);
+		while (valueMatcher.matches()) {
+			value = valueMatcher.group(1);
+			valueMatcher = VALUE_PATTERN.matcher(value);
 		}
 		
 		switch (type) {
