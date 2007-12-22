@@ -1,6 +1,6 @@
 lucene.path=C:/Users/Daniel Spiewak/Libraries/lucene-2.2.0/lucene-core-2.2.0.jar
 lucene.queries.path=C:/Users/Daniel Spiewak/Libraries/lucene-2.2.0/contrib/queries/lucene-queries-2.2.0.jar
-lucene.javadoc=http://lucene.zones.apache.org:8080/hudson/job/Lucene-Nightly/javadoc
+lucene.javadoc=http://lucene.apache.org/java/2_2_0/api
 
 commons-dbcp.path=C:/Users/Daniel Spiewak/Libraries/commons-dbcp-1.2.2/commons-dbcp-1.2.2.jar
 ant.path=C:/Users/Daniel Spiewak/Applications/eclipse/plugins/org.apache.ant_1.7.0.v200704241635/lib/ant.jar
