@@ -27,21 +27,14 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.java.ao.cache.CacheLayer;
 import net.java.ao.schema.OnUpdate;
 import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
@@ -64,17 +57,6 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 	private ImplementationWrapper<T> implementation;
 
-	private final Map<String, Object> cache;
-	private final Set<String> nullSet;
-	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
-
-	private final Set<String> dirtyFields;
-	private final Map<String, String> dirtyPolymorphicFields;
-	private final ReadWriteLock dirtyFieldsLock = new ReentrantReadWriteLock();
-	
-	private final Set<Class<? extends RawEntity<?>>> toFlushTypes = new HashSet<Class<? extends RawEntity<?>>>();
-	private final ReadWriteLock toFlushLock = new ReentrantReadWriteLock();
-
 	private List<PropertyChangeListener> listeners;
 
 	public EntityProxy(EntityManager manager, Class<T> type, K key) {
@@ -84,11 +66,6 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		
 		pkAccessor = Common.getPrimaryKeyAccessor(type);
 		pkFieldName = Common.getPrimaryKeyField(type, getManager().getFieldNameConverter());
-
-		cache = new HashMap<String, Object>();
-		nullSet = new HashSet<String>();
-		dirtyFields = new LinkedHashSet<String>();
-		dirtyPolymorphicFields = new LinkedHashMap<String, String>();
 
 		listeners = new LinkedList<PropertyChangeListener>();
 	}
@@ -207,92 +184,73 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 	@SuppressWarnings("unchecked")
 	public void save(RawEntity entity) throws SQLException {
-		dirtyFieldsLock.writeLock().lock();
+		CacheLayer cacheLayer = getCacheLayer();
+		String[] dirtyFields = cacheLayer.getDirtyFields();
+		
+		if (dirtyFields.length == 0) {
+			return;
+		}
+
+		String table = getTableName();
+		TypeManager manager = TypeManager.getInstance();
+		Connection conn = getConnectionImpl();
+
 		try {
-			if (dirtyFields.isEmpty()) {
-				return;
+			StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
+
+			for (String field : dirtyFields) {
+				sql.append(field);
+
+				if (cacheLayer.contains(field)) {
+					sql.append(" = ?,");
+				} else {
+					sql.append(" = NULL,");
+				}
+			}
+			
+			if (sql.charAt(sql.length() - 1) == ',') {
+				sql.setLength(sql.length() - 1);
 			}
 
-			String table = getTableName();
-			TypeManager manager = TypeManager.getInstance();
-			Connection conn = getConnectionImpl();
+			sql.append(" WHERE ").append(pkFieldName).append(" = ?");
 
-			cacheLock.readLock().lock();
-			try {
-				StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
+			PreparedStatement stmt = conn.prepareStatement(sql.toString());
 
-				for (String field : dirtyFields) {
-					sql.append(field);
+			int index = 1;
+			for (String field : dirtyFields) {
+				if (!cacheLayer.contains(field)) {
+					continue;
+				}
+				
+				Object value = cacheLayer.get(field);
+				
+				if (value == null) {
+					stmt.setString(index++, null);
+				} else {
+					Class javaType = value.getClass();
 
-					if (cache.containsKey(field.toLowerCase())) {
-						sql.append(" = ?,");
-					} else {
-						sql.append(" = NULL,");
+					if (value instanceof RawEntity) {
+						javaType = ((RawEntity) value).getEntityType();
 					}
+
+					manager.getType(javaType).putToDatabase(index++, stmt, value);
 				}
-				
-				for (String field : dirtyPolymorphicFields.keySet()) {
-					sql.append(field).append(" = ?,");
-				}
-
-				if (dirtyFields.size() + dirtyPolymorphicFields.size() > 0) {
-					sql.setLength(sql.length() - 1);
-				}
-
-				sql.append(" WHERE ").append(pkFieldName).append(" = ?");
-
-				Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
-				PreparedStatement stmt = conn.prepareStatement(sql.toString());
-
-				int index = 1;
-				for (String field : dirtyFields) {
-					if (nullSet.contains(field.toLowerCase())) {
-						stmt.setString(index++, null);
-					} else if (cache.containsKey(field.toLowerCase())) {
-						Object obj = cache.get(field.toLowerCase());
-						Class javaType = obj.getClass();
-						
-						if (obj instanceof RawEntity) {
-							javaType = ((RawEntity) obj).getEntityType();
-						}
-						
-						manager.getType(javaType).putToDatabase(index++, stmt, obj);
-					}
-				}
-				for (String field : dirtyPolymorphicFields.keySet()) {
-					String value = dirtyPolymorphicFields.get(field);
-					if (field != null) {
-						DatabaseType<String> fieldType = manager.getType(String.class);
-						
-						fieldType.putToDatabase(index++, stmt, value);
-					} else {
-						stmt.setString(index++, null);
-					}
-				}
-				((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(index++, stmt, key);
-				
-				toFlushLock.writeLock().lock();
-				try {
-					getManager().getRelationsCache().remove(toFlushTypes.toArray(new Class[toFlushTypes.size()]));
-					toFlushTypes.clear();
-				} finally {
-					toFlushLock.writeLock().unlock();
-				}
-				
-				getManager().getRelationsCache().remove(entity, dirtyFields.toArray(new String[dirtyFields.size()]));
-				
-				stmt.executeUpdate();
-
-				dirtyFields.removeAll(dirtyFields);
-
-				stmt.close();
-			} finally {
-				cacheLock.readLock().unlock();
-
-				closeConnectionImpl(conn);
 			}
+			((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(index++, stmt, key);
+
+			getManager().getRelationsCache().remove(cacheLayer.getToFlush());
+			cacheLayer.clearFlush();
+
+			getManager().getRelationsCache().remove(entity, dirtyFields);
+
+			stmt.executeUpdate();
+
+			cacheLayer.clearDirty();
+
+			stmt.close();
 		} finally {
-			dirtyFieldsLock.writeLock().unlock();
+			closeConnectionImpl(conn);
 		}
 	}
 
@@ -349,21 +307,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return type.hashCode();
 	}
 
-	void addToCache(String key, Object value) {
-		if (key.trim().equalsIgnoreCase(pkFieldName)) {
-			return;
-		}
-
-		cacheLock.writeLock().lock();
-		try {
-			if (value == null) {
-				nullSet.add(key.toLowerCase());
-			} else if (!cache.containsKey(key.toLowerCase())) {
-				cache.put(key.toLowerCase(), value);
-			}
-		} finally {
-			cacheLock.writeLock().unlock();
-		}
+	CacheLayer getCacheLayer() {
+		return getManager().getValueCache().getCacheLayer(getManager().get(type, key));
 	}
 
 	Class<T> getType() {
@@ -372,19 +317,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 	// any dirty fields are kept in the cache, since they have yet to be saved
 	void flushCache() {
-		cacheLock.writeLock().lock();
-		dirtyFieldsLock.readLock().lock();
-		try {
-			for (String fieldName : cache.keySet()) {
-				if (!dirtyFields.contains(fieldName.toLowerCase())) {
-					cache.remove(fieldName.toLowerCase());
-					nullSet.remove(fieldName.toLowerCase());
-				}
-			}
-		} finally {
-			dirtyFieldsLock.readLock().unlock();
-			cacheLock.writeLock().unlock();
-		}
+		getCacheLayer().clear();
 	}
 	
 	private EntityManager getManager() {
@@ -402,86 +335,74 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	private <V> V invokeGetter(K key, String table, String name, String polyName, Class<V> type, 
 			boolean shouldCache) throws Throwable {
 		V back = null;
+		CacheLayer cacheLayer = getCacheLayer();
+
+		if (!shouldCache && cacheLayer.dirtyContains(name)) {
+			if (type.isPrimitive()) {
+				if (type.equals(boolean.class)) {
+					return (V) new Boolean(false);
+				} else if (type.equals(char.class)) {
+					return (V) new Character(' ');
+				} else if (type.equals(int.class)) {
+					return (V) new Integer(0);
+				} else if (type.equals(short.class)) {
+					return (V) new Short("0");
+				} else if (type.equals(long.class)) {
+					return (V) new Long("0");
+				} else if (type.equals(float.class)) {
+					return (V) new Float("0");
+				} else if (type.equals(double.class)) {
+					return (V) new Double("0");
+				} else if (type.equals(byte.class)) {
+					return (V) new Byte("0");
+				}
+			}
+
+			return null;
+		} else if (cacheLayer.contains(name)) {
+			Object value = cacheLayer.get(name);
+
+			if (instanceOf(value, type)) {
+				return (V) value;
+			} else if (Common.interfaceInheritsFrom(type, RawEntity.class) && value instanceof Integer) {
+				value = getManager().get((Class<? extends RawEntity<Object>>) type, value);
+
+				cacheLayer.put(name, value);
+				return (V) value;
+			} else {
+				cacheLayer.remove(name); // invalid cached value
+			}
+		}
+
+		Connection conn = getConnectionImpl();
+
+		try {
+			StringBuilder sql = new StringBuilder("SELECT ");
+
+			sql.append(name);
+			if (polyName != null) {
+				sql.append(',').append(polyName);
+			}
+
+			sql.append(" FROM ").append(table).append(" WHERE ");
+			sql.append(pkFieldName).append(" = ?");
+
+			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
+			PreparedStatement stmt = conn.prepareStatement(sql.toString());
+			Common.getPrimaryKeyType(this.type).putToDatabase(1, stmt, key);
+
+			ResultSet res = stmt.executeQuery();
+			if (res.next()) {
+				back = convertValue(res, name, polyName, type);
+			}
+			res.close();
+			stmt.close();
+		} finally {
+			closeConnectionImpl(conn);
+		}
 
 		if (shouldCache) {
-			cacheLock.writeLock().lock();
-		}
-		try {
-			if (shouldCache && nullSet.contains(name.toLowerCase())) {
-				if (type.isPrimitive()) {
-					if (type.equals(boolean.class)) {
-						return (V) new Boolean(false);
-					} else if (type.equals(char.class)) {
-						return (V) new Character(' ');
-					} else if (type.equals(int.class)) {
-						return (V) new Integer(0);
-					} else if (type.equals(short.class)) {
-						return (V) new Short("0");
-					} else if (type.equals(long.class)) {
-						return (V) new Long("0");
-					} else if (type.equals(float.class)) {
-						return (V) new Float("0");
-					} else if (type.equals(double.class)) {
-						return (V) new Double("0");
-					} else if (type.equals(byte.class)) {
-						return (V) new Byte("0");
-					}
-				}
-				
-				return null;
-			} else if (shouldCache && cache.containsKey(name.toLowerCase())) {
-				Object value = cache.get(name.toLowerCase());
-
-				if (instanceOf(value, type)) {
-					return (V) value;
-				} else if (Common.interfaceInheritsFrom(type, RawEntity.class) && value instanceof Integer) {
-					value = getManager().get((Class<? extends RawEntity<Object>>) type, value);
-
-					cache.put(name.toLowerCase(), value);
-					return (V) value;
-				} else {
-					cache.remove(name.toLowerCase()); // invalid cached value
-				}
-			}
-
-			Connection conn = getConnectionImpl();
-
-			try {
-				StringBuilder sql = new StringBuilder("SELECT ");
-				
-				sql.append(name);
-				if (polyName != null) {
-					sql.append(',').append(polyName);
-				}
-				
-				sql.append(" FROM ").append(table).append(" WHERE ");
-				sql.append(pkFieldName).append(" = ?");
-
-				Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
-				PreparedStatement stmt = conn.prepareStatement(sql.toString());
-				Common.getPrimaryKeyType(this.type).putToDatabase(1, stmt, key);
-
-				ResultSet res = stmt.executeQuery();
-				if (res.next()) {
-					back = convertValue(res, name, polyName, type);
-				}
-				res.close();
-				stmt.close();
-			} finally {
-				closeConnectionImpl(conn);
-			}
-
-			if (shouldCache) {
-				cache.put(name.toLowerCase(), back);
-				
-				if (back == null) {
-					nullSet.add(name.toLowerCase());
-				}
-			}
-		} finally {
-			if (shouldCache) {
-				cacheLock.writeLock().unlock();
-			}
+			cacheLayer.put(name, back);
 		}
 
 		return back;
@@ -489,68 +410,35 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 	private void invokeSetter(T entity, String name, Object value, boolean shouldCache, String polyName) throws Throwable {
 		Object oldValue = null;
+		CacheLayer cacheLayer = getCacheLayer();
 		
-		cacheLock.readLock().lock();
-		try {
-			if (cache.containsKey(name.toLowerCase())) {
-				oldValue = cache.get(name.toLowerCase());
-			}
-		} finally {
-			cacheLock.readLock().unlock();
+		if (cacheLayer.contains(name)) {
+			oldValue = cacheLayer.get(name);
 		}
 		
 		if (value instanceof RawEntity) {
-			toFlushLock.writeLock().lock();
-			try {
-				toFlushTypes.add(((RawEntity<?>) value).getEntityType());
-			} finally {
-				toFlushLock.writeLock().unlock();
-			}
+			cacheLayer.markToFlush(((RawEntity<?>) value).getEntityType());
 		}
 		
-		invokeSetterImpl(name, polyName, value);
+		cacheLayer.put(name, value);
+
+		if (polyName != null) {
+			String strValue = null;
+
+			if (value != null) {
+				strValue = getManager().getPolymorphicTypeMapper().convert(((RawEntity<?>) value).getEntityType());
+			}
+
+			cacheLayer.put(polyName, strValue);
+			cacheLayer.markDirty(polyName);
+		}
 
 		PropertyChangeEvent evt = new PropertyChangeEvent(entity, name, oldValue, value);
 		for (PropertyChangeListener l : listeners) {
 			l.propertyChange(evt);
 		}
 
-		dirtyFieldsLock.writeLock().lock();
-		try {
-			dirtyFields.add(name.toLowerCase());
-		} finally {
-			dirtyFieldsLock.writeLock().unlock();
-		}
-	}
-
-	private void invokeSetterImpl(String name, String polyName, Object value) throws Throwable {
-		cacheLock.writeLock().lock();
-		try {
-			cache.put(name.toLowerCase(), value);
-			
-			if (value != null) {
-				nullSet.remove(name.toLowerCase());
-			} else {
-				nullSet.add(name.toLowerCase());
-			}
-			
-			if (polyName != null) {
-				String strValue = null;
-				
-				if (value != null) {
-					strValue = getManager().getPolymorphicTypeMapper().convert(((RawEntity<?>) value).getEntityType());
-				}
-				
-				dirtyFieldsLock.writeLock().lock();
-				try {
-					dirtyPolymorphicFields.put(polyName, strValue);
-				} finally {
-					dirtyFieldsLock.writeLock().unlock();
-				}
-			}
-		} finally {
-			cacheLock.writeLock().unlock();
-		}
+		cacheLayer.markDirty(name);
 	}
 
 	private <V extends RawEntity<K>> V[] retrieveRelations(RawEntity<K> entity, String[] inMapFields, 
@@ -796,7 +684,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				ResultSetMetaData md = res.getMetaData();
 				for (int i = 0; i < md.getColumnCount(); i++) {
 					if (!resPolyNames.contains(md.getColumnLabel(i + 1))) {
-						getManager().getProxyForEntity(returnValueEntity).addToCache(md.getColumnLabel(i + 1), 
+						getManager().getValueCache().getCacheLayer(returnValueEntity).put(md.getColumnLabel(i + 1), 
 								res.getObject(i + 1));
 					}
 				}
@@ -859,6 +747,10 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	private boolean instanceOf(Object value, Class<?> type) {
+		if (value == null) {
+			return true;
+		}
+		
 		if (type.isPrimitive()) {
 			if (type.equals(boolean.class)) {
 				return instanceOf(value, Boolean.class);

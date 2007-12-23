@@ -22,4 +22,4 @@ build.classpath=${lucene.path}${path.separator}${lucene.queries.path}${path.sepa
 	${path.separator}${dbpool.path}
 build.debug=yes
 
-activeobjects.version=0.7
+activeobjects.version=0.8

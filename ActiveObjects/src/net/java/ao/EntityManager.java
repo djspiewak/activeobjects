@@ -23,6 +23,7 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +39,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.cache.CacheLayer;
+import net.java.ao.cache.RAMValueCache;
+import net.java.ao.cache.ValueCache;
 import net.java.ao.schema.CamelCaseFieldNameConverter;
 import net.java.ao.schema.CamelCaseTableNameConverter;
 import net.java.ao.schema.FieldNameConverter;
@@ -77,8 +81,11 @@ public class EntityManager {
 	private Map<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>> proxies;
 	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
 	
-	private Map<CacheKey<?>, RawEntity<?>> cache;
-	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+	private Map<CacheKey<?>, RawEntity<?>> entityCache;
+	private final ReadWriteLock entityCacheLock = new ReentrantReadWriteLock();
+	
+	private ValueCache valueCache;
+	private final ReadWriteLock valueCacheLock = new ReentrantReadWriteLock();
 	
 	private TableNameConverter tableNameConverter;
 	private final ReadWriteLock tableNameConverterLock = new ReentrantReadWriteLock();
@@ -88,8 +95,6 @@ public class EntityManager {
 	
 	private PolymorphicTypeMapper typeMapper;
 	private final ReadWriteLock typeMapperLock = new ReentrantReadWriteLock();
-	
-	private RSCachingStrategy rsStrategy;
 	
 	private Map<Class<? extends ValueGenerator<?>>, ValueGenerator<?>> valGenCache;
 	private final ReadWriteLock valGenCacheLock = new ReentrantReadWriteLock();
@@ -132,18 +137,19 @@ public class EntityManager {
 		
 		if (weaklyCache) {
 			proxies = new WeakHashMap<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>();
-			cache = new WeakHashMap<CacheKey<?>, RawEntity<?>>();
+			entityCache = new WeakHashMap<CacheKey<?>, RawEntity<?>>();
 		} else {
 			proxies = new SoftHashMap<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>();
-			cache = new SoftHashMap<CacheKey<?>, RawEntity<?>>();
+			entityCache = new SoftHashMap<CacheKey<?>, RawEntity<?>>();
 		}
+		
+		valueCache = new RAMValueCache();
 		
 		valGenCache = new HashMap<Class<? extends ValueGenerator<?>>, ValueGenerator<?>>();
 		
 		tableNameConverter = new CamelCaseTableNameConverter();
 		fieldNameConverter = new CamelCaseFieldNameConverter();
 		typeMapper = new DefaultPolymorphicTypeMapper(new HashMap<Class<? extends RawEntity<?>>, String>());
-		rsStrategy = RSCachingStrategy.AGGRESSIVE;
 	}
 	
 	/**
@@ -255,9 +261,9 @@ public class EntityManager {
 		int index = 0;
 		
 		for (K key : keys) {
-			cacheLock.writeLock().lock();
+			entityCacheLock.writeLock().lock();
 			try {
-				T entity = (T) cache.get(new CacheKey<K>(key, type));
+				T entity = (T) entityCache.get(new CacheKey<K>(key, type));
 				if (entity != null) {
 					back[index++] = entity;
 					continue;
@@ -265,7 +271,7 @@ public class EntityManager {
 				
 				back[index++] = getAndInstantiate(type, key);
 			} finally {
-				cacheLock.writeLock().unlock();
+				entityCacheLock.writeLock().unlock();
 			}
 		}
 		
@@ -295,7 +301,7 @@ public class EntityManager {
 			proxyLock.writeLock().unlock();
 		}
 		
-		cache.put(new CacheKey<K>(key, type), entity);
+		entityCache.put(new CacheKey<K>(key, type), entity);
 		return entity;
 	}
 	
@@ -470,7 +476,7 @@ public class EntityManager {
 			organizedEntities.get(type).add(entity);
 		}
 		
-		cacheLock.writeLock().lock();
+		entityCacheLock.writeLock().lock();
 		try {
 			Connection conn = getProvider().getConnection();
 			try {
@@ -510,7 +516,7 @@ public class EntityManager {
 			}
 			
 			for (RawEntity<?> entity : entities) {
-				cache.remove(new CacheKey<Object>(Common.getPrimaryKeyValue(entity), 
+				entityCache.remove(new CacheKey<Object>(Common.getPrimaryKeyValue(entity), 
 						(Class<? extends RawEntity<Object>>) entity.getEntityType()));
 			}
 			
@@ -523,7 +529,7 @@ public class EntityManager {
 				proxyLock.writeLock().unlock();
 			}
 		} finally {
-			cacheLock.writeLock().unlock();
+			entityCacheLock.writeLock().unlock();
 		}
 	}
 	
@@ -657,11 +663,17 @@ public class EntityManager {
 			query.setParameters(stmt);
 
 			ResultSet res = stmt.executeQuery();
+			ResultSetMetaData md = res.getMetaData();
+			
 			provider.setQueryResultSetProperties(res, query);
 			
 			while (res.next()) {
 				T entity = get(type, Common.getPrimaryKeyType(type).convert(this, res, Common.getPrimaryKeyClassType(type), field));
-				rsStrategy.cache(res, getProxyForEntity(entity));
+				CacheLayer cacheLayer = getValueCache().getCacheLayer(entity);
+
+				for (int i = 0; i < md.getColumnCount(); i++) {
+					cacheLayer.put(md.getColumnLabel(i + 1), res.getObject(i + 1));
+				}
 				
 				back.add(entity);
 			}
@@ -907,6 +919,24 @@ public class EntityManager {
 			return typeMapper;
 		} finally {
 			typeMapperLock.readLock().unlock();
+		}
+	}
+	
+	public void setValueCache(ValueCache valueCache) {
+		valueCacheLock.writeLock().lock();
+		try {
+			this.valueCache = valueCache;
+		} finally {
+			valueCacheLock.writeLock().unlock();
+		}
+	}
+	
+	public ValueCache getValueCache() {
+		valueCacheLock.readLock().lock();
+		try {
+			return valueCache;
+		} finally {
+			valueCacheLock.readLock().unlock();
 		}
 	}
 
