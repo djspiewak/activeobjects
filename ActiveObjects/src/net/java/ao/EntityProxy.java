@@ -389,7 +389,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	
 				if (instanceOf(value, type)) {
 					return (V) value;
-				} else if (Common.interfaceInheritsFrom(type, RawEntity.class) && value instanceof Integer) {
+				} else if (Common.interfaceInheritsFrom(type, RawEntity.class) 
+						&& instanceOf(value, Common.getPrimaryKeyClassType((Class<? extends RawEntity<K>>) type))) {
 					value = getManager().get((Class<? extends RawEntity<Object>>) type, value);
 	
 					cacheLayer.put(name, value);
@@ -449,9 +450,9 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			if (value instanceof RawEntity) {
 				cacheLayer.markToFlush(((RawEntity<?>) value).getEntityType());
 			}
-			
-			cacheLayer.put(name, value);
+
 			cacheLayer.markDirty(name);
+			cacheLayer.put(name, value);
 	
 			if (polyName != null) {
 				String strValue = null;
@@ -459,9 +460,9 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				if (value != null) {
 					strValue = getManager().getPolymorphicTypeMapper().convert(((RawEntity<?>) value).getEntityType());
 				}
-	
-				cacheLayer.put(polyName, strValue);
+
 				cacheLayer.markDirty(polyName);
+				cacheLayer.put(polyName, strValue);
 			}
 		} finally {
 			getLock(name).writeLock().unlock();

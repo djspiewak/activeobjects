@@ -925,6 +925,7 @@ public class EntityManager {
 	public void setValueCache(ValueCache valueCache) {
 		valueCacheLock.writeLock().lock();
 		try {
+			this.valueCache.dispose();
 			this.valueCache = valueCache;
 		} finally {
 			valueCacheLock.writeLock().unlock();

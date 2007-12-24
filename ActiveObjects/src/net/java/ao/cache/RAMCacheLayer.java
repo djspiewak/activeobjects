@@ -37,7 +37,7 @@ public class RAMCacheLayer implements CacheLayer {
 	private Set<Class<? extends RawEntity<?>>> flush;
 	private final ReadWriteLock flushLock = new ReentrantReadWriteLock();
 	
-	public RAMCacheLayer() {
+	RAMCacheLayer() {
 		values = new HashMap<String, Object>();
 		dirty = new HashSet<String>();
 		flush = new HashSet<Class<? extends RawEntity<?>>>();
