@@ -17,21 +17,24 @@
 		<p>ActiveObjects is an intuitive, pure-Java ORM.  AO is designed from the 
 		ground up to be extremely simple and easy to use from an API standpoint.  AO can be used 
 		with either an existing database schema, or it can auto-generate the database schema 
-		from the user-specified entity interfaces.</p>
+		from the user-specified entity interfaces.  ActiveObjects also supports Rails-style
+		database migrations, allowing incremental changes and refactoring of the database
+		schema without data loss.</p>
 		
-		<p>ActiveObjects can be more performant than traditional, mapper-style ORMs (such
-		as Hibernate) due to its natural use of lazy-loading coupled with sophisticated caching
+		<p>ActiveObjects can be more performant than traditional, data mapper ORMs
+		due to its natural use of lazy-loading coupled with sophisticated caching
 		mechanisms.  However, performance is not the primary design goal of the project.  Rather,
 		the intention is to create an ORM which is powerful and yet extremely natural to use
 		and integrate into your project.  This design has lead to certain performance benefits
-		(such as lazy-loading), but on the whole, mapping-style ORMs are inherantly slightly more
+		(such as lazy-loading), but on the whole, data mapper ORMs are inherantly slightly more
 		performant than ActiveObjects can be just from a theoretical standpoint.</p>
 		
 		<h3>Download</h3>
 		
 		<p>Preliminary releases (leading up to 1.0) will be made available on this site.  These
-		releases are for testing purposes only and should be considered to be unstable.  The
-		current release is <b>0.7</b> released on <i>December 22, 2007</i>.
+		releases are for testing purposes only and should be considered to be unstable.  Please
+		report bugs using <a href="https://activeobjects.dev.java.net/servlets/ProjectIssues">the issue tracker</a>
+		(requires a java.net login).  The current release is <b>0.7</b> released on <i>December 22, 2007</i>.
 		
 		<ul>
 			<li><a href="https://activeobjects.dev.java.net/files/documents/6960/80096/activeobjects-0.7.tar.gz">activeobjects-0.7.tar.gz</a> <i>(423.02 kB)</i></li>
