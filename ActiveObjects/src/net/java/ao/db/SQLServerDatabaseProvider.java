@@ -64,7 +64,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	public Object parseValue(int type, String value) {
-		if (value == null) {
+		if (value == null || value.equals("") || value.equals("NULL")) {
 			return null;
 		}
 		

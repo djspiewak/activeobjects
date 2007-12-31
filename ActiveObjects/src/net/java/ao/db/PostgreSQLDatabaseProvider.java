@@ -57,6 +57,10 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	public Object parseValue(int type, String value) {
+		if (value == null || value.equals("") || value.equals("NULL")) {
+			return null;
+		}
+		
 		switch (type) {
 			case Types.TIMESTAMP:
 				Matcher matcher = Pattern.compile("'(.+)'.*").matcher(value);
