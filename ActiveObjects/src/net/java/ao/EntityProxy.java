@@ -28,9 +28,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -514,11 +516,18 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					&& preloadAnnotation != null && !ignorePreload) {
 				sql.append("SELECT ");		// one-to-many preload
 				
-				sql.append(outMapFields[0]).append(',');
-				for (String field : preloadAnnotation.value()) {
-					sql.append(field).append(',');
+				Set<String> selectFields = new LinkedHashSet<String>();
+				selectFields.add(outMapFields[0]);
+				selectFields.addAll(Arrays.asList(preloadAnnotation.value()));
+				
+				if (selectFields.contains("*")) {
+					sql.append('*');
+				} else {
+					for (String field : selectFields) {
+						sql.append(field).append(',');
+					}
+					sql.setLength(sql.length() - 1);
 				}
-				sql.setLength(sql.length() - 1);
 				
 				sql.append(" FROM ").append(table);
 				
@@ -547,11 +556,23 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				
 				String finalPKField = Common.getPrimaryKeyField(finalType, getManager().getFieldNameConverter());
 				
-				sql.append(finalTable).append('.').append(finalPKField);
-				sql.append(" AS ").append(returnField).append(',');
+				Set<String> selectFields = new LinkedHashSet<String>();
+				selectFields.add(finalPKField);
+				selectFields.addAll(Arrays.asList(preloadAnnotation.value()));
+				
+				if (selectFields.contains("*")) {
+					returnField = finalPKField;
+				} else {
+					sql.append(finalTable).append('.').append(finalPKField);
+					sql.append(" AS ").append(returnField).append(',');
+					
+					selectFields.remove(finalPKField);
+				}
+				
 				sql.append(table).append('.').append(Common.getPrimaryKeyField(type, getManager().getFieldNameConverter()));
 				sql.append(" AS ").append(throughField).append(',');
-				for (String field : preloadAnnotation.value()) {
+				
+				for (String field : selectFields) {
 					sql.append(finalTable).append('.').append(field).append(',');
 				}
 				sql.setLength(sql.length() - 1);
