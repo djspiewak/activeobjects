@@ -24,10 +24,12 @@ import net.spy.memcached.MemcachedClient;
  */
 public class MemcachedCacheLayer extends RAMCacheLayer {
 	private final MemcachedClient client;
+	private final int expiry;
 	private final String prefix;
 	
-	MemcachedCacheLayer(MemcachedClient client, String prefix) {
+	MemcachedCacheLayer(MemcachedClient client, int expiry, String prefix) {
 		this.client = client;
+		this.expiry = expiry;
 		this.prefix = prefix;
 	}
 	
@@ -61,7 +63,7 @@ public class MemcachedCacheLayer extends RAMCacheLayer {
 				value = Common.getPrimaryKeyValue((RawEntity<Object>) value);
 			}
 			
-			client.add(prefix + field.toLowerCase(), Integer.MAX_VALUE, value);
+			client.add(prefix + field.toLowerCase(), expiry, value);
 		}
 	}
 

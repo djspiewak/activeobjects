@@ -35,15 +35,21 @@ public class MemcachedValueCache implements ValueCache {
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private final MemcachedClient client;
+	private final int expiry;
 	
 	public MemcachedValueCache(InetSocketAddress... servers) throws IOException {
 		this(new MemcachedClient(servers));
 	}
 	
 	public MemcachedValueCache(MemcachedClient client) {
+		this(client, Integer.MAX_VALUE);
+	}
+	
+	public MemcachedValueCache(MemcachedClient client, int expiry) {
 		cache = new WeakHashMap<RawEntity<?>, CacheLayer>();
 		
 		this.client = client;
+		this.expiry = expiry;
 	}
 	
 	public MemcachedClient getClient() {
@@ -54,29 +60,20 @@ public class MemcachedValueCache implements ValueCache {
 		cacheLock.writeLock().lock();
 		try {
 			if (cache.containsKey(entity)) {
-				cacheLock.readLock().lock();
-				cacheLock.writeLock().unlock();
-				
-				try {
-					return cache.get(entity);
-				} finally {
-					cacheLock.readLock().unlock();
-				}
+				return cache.get(entity);
 			} else {
 				String prefix = "activeobjects.";
 				prefix += entity.getEntityManager().getTableNameConverter().getName(entity.getEntityType()) + '.';
 				prefix += Common.getPrimaryKeyType(entity.getEntityType()).valueToString(
 						Common.getPrimaryKeyValue(entity)) + '.';
 				
-				CacheLayer layer = new MemcachedCacheLayer(client, prefix);
+				CacheLayer layer = new MemcachedCacheLayer(client, expiry, prefix);
 				cache.put(entity, layer);
 				
 				return layer;
 			}
 		} finally {
-			try {
-				cacheLock.writeLock().unlock();
-			} catch (Throwable t) {}	// may not actually be locked
+			cacheLock.writeLock().unlock();
 		}
 	}
 	
