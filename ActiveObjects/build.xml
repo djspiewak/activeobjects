@@ -104,7 +104,7 @@
 		 		overview="src/overview.html" sourcefiles="src/net/java/ao/**/*.java" package="net.java.ao"/>
 	</target>
 	
-	<target name="jar">
+	<target name="jar" depends="init-dist">
 		<!-- done as a antcall(s) rather than dependencies to ensure ordering -->
 		<antcall target="clean"/>
 		<antcall target="build"/>
