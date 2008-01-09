@@ -22,7 +22,7 @@ import net.spy.memcached.MemcachedClient;
 /**
  * @author Daniel Spiewak
  */
-public class MemcachedCacheLayer extends RAMCacheLayer {
+class MemcachedCacheLayer extends RAMCacheLayer {
 	private final MemcachedClient client;
 	private final int expiry;
 	private final String prefix;
