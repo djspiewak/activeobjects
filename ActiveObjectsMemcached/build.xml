@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ActiveObjectsMemcached" default="build">
+	<dirname property="ao-memcached.dir" file="${ant.file.ActiveObjectsMemcached}"/>
+	
+	<property file="${ao-memcached.dir}/build.properties"/>
+	
+	<import file="${activeobjects.dir}/build.xml"/>
+	
+	<target name="init" depends="ActiveObjects.init">
+		<mkdir dir="${ao-memcached.dir}/bin"/>
+	</target>
+	
+	<target name="init-dist">
+		<mkdir dir="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}/src"/>
+		<mkdir dir="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}/doc"/>
+	</target>
+	
+	<target name="build" depends="init,ActiveObjects.build">
+		<javac srcdir="${ao-memcached.dir}/src" destdir="${ao-memcached.dir}/bin"
+			debug="${build.debug}" classpath="${ao-memcached.build.classpath}"/>
+	</target>
+
+	<target name="doc" depends="init-dist">
+		<javadoc sourcepath="${ao-memcached.dir}/src" classpath="${ao-memcached.build.classpath}" 
+				destdir="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}/doc"
+		 		windowtitle="ActiveObjectsMemcached: Javadoc" access="protected" overview="src/overview.html">
+			<packageset dir="${ao-memcached.dir}/src">
+				<include name="net/java/ao/cache/**/*.java"/>
+			</packageset>
+			
+			<link href="${activeobjects.javadoc}"/>
+			<link href="${spy.javadoc}"/>
+			<link href="${memcached.javadoc}"/>
+			<link href="http://java.sun.com/javase/6/docs/api"/>
+		</javadoc>
+	</target>
+	
+	<target name="jar" depends="init-dist">
+		<antcall target="clean"/>
+		<antcall target="build"/>
+		
+		<jar basedir="${ao-memcached.dir}/bin" compress="${jar.compress}" 
+				destfile="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}/activeobjects-memcached-${activeobjects.version}.jar"/>
+	</target>
+	
+	<target name="dist" depends="init-dist,doc,jar">
+		<copy todir="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}/src">
+			<fileset dir="${ao-memcached.dir}/src">
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy todir="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}">
+			<fileset dir="${ao-memcached.dir}">
+				<include name="LICENSE"/>
+			</fileset>
+		</copy>
+		
+		<zip destfile="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}.zip">
+			<fileset id="productDir" dir="${ao-memcached.dir}/dist">
+				<include name="activeobjects-memcached-${activeobjects.version}/**/*"/>
+			</fileset>
+		</zip>
+		
+		<tar destfile="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}.tar">
+			<fileset refid="productDir"/>
+		</tar>
+		<gzip src="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}.tar" 
+				zipfile="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}.tar.gz"/>
+		<delete file="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}.tar"/>
+		
+		<delete includeemptydirs="yes">
+			<fileset dir="${ao-memcached.dir}/dist">
+				<include name="activeobjects-memcached-${activeobjects.version}/**/*"/>
+			</fileset>
+		</delete>
+		<delete includeemptydirs="yes">
+			<fileset dir="${ao-memcached.dir}/dist">
+				<include name="activeobjects-memcached-${activeobjects.version}"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${ao-memcached.dir}/bin"/>
+	</target>
+	
+	<target name="clean-dist">
+		<delete dir="${ao-memcached.dir}/dist"/>
+	</target>
+</project>

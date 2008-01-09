@@ -1,0 +1,12 @@
+activeobjects.dir=../ActiveObjects
+
+activeobjects.javadoc=https://activeobjects.dev.java.net/api/package-list
+memcached.javadoc=http://bleu.west.spy.net/~dustin/projects/memcached/apidocs
+
+memcached.path=C:/Users/Daniel Spiewak/Libraries/memcached-1.4.jar
+spy.path=C:/Users/Daniel Spiewak/Libraries/spy-2.4.jar
+
+ao-memcached.build.classpath=${memcached.path}${path.separator}${spy.path}${path.separator}${activeobjects.dir}/bin
+build.debug=yes
+
+jar.compress=no
