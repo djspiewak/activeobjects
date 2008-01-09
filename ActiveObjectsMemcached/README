@@ -1,0 +1,48 @@
+==ActiveObjects Memcached==
+
+This library implements a basic cache module which allows ActiveObjects to perform value
+caching against a Memcached cluster.  In essence, it substitutes Memcached as a key-value
+cache in place of a conventional HashMap implementation.  Memcached access is provided by
+the Bleu West Java Memcached client (preferred for speed).  This library (and all
+dependencies) can be obtained here: 
+
+ * http://bleu.west.spy.net/~dustin/projects/memcached
+
+This support should be taken to extremely* experimental and should not be implicitly 
+relied upon for mission-critical applications.  Memcached's pretty simple, so there 
+probably aren't too many trouble spots.  Regardless, handle with care.
+
+There are several caveats to bear in mind when using the Memcached support:
+
+ * There is no locking whatsoever.  This follows the Memcached principle of lockless
+   access.  However, it could easily lead to a race condition between a thread reading a
+   value for the first time (application-wide) and a thread modifying that same value.
+   For this reason, it is suggested that a shorter expiry time be used than the default
+   (Integer.MAX_VALUE).
+   
+ * ActiveObjects may not behave precisely in the way you expect under situations where a
+   single node has a "dirty" entity (one which has modified but has not yet been saved)
+   while other nodes are still working off the database copy (a fairly common scenario).
+   Any unsaved changes to an entity's values are maintained *locally* and not persisted
+   to the Memcached cache.  This is to avoid really weird race conditions with unsaved
+   data.  Additionally, it only makes sense for unpersisted changes to remain uncached.
+   However, the node which holds the entity with unsaved changes will have access to the
+   unpersisted data for other requests *prior* to its persistence in either the database
+   or the cache.  This is because ActiveObjects effectively caches changes to entity
+   values as they come in, flushing the unsaved changes to the database upon save().
+   This means that requests may return data indeterminately (perhaps from the cache on the
+   first request, from the unsaved data on the second, then from the cache again on the
+   third and fourth).  This of course depends on your server dispatch strategy.
+   
+   In short, take care when dealing withe concurrent reads/writes (as always).
+   
+ * Currently, relations are not persisted to Memcached.  This is on the roadmap for the
+   future (https://activeobjects.dev.java.net/issues/show_bug.cgi?id=4).  All this means
+   from a practical standpoint is relations caching will not be shared across nodes.
+   Thus some extra queries may be performed as the nodes separately build their local
+   caches.
+   
+Did I mention this is experimental support?  Please open all bugs in the ActiveObjects issue
+tracker filed against the "activeobjects-memcached" component:
+
+ * https://activeobjects.dev.java.net/servlets/ProjectIssues

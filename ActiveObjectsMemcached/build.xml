@@ -53,6 +53,7 @@
 		<copy todir="${ao-memcached.dir}/dist/activeobjects-memcached-${activeobjects.version}">
 			<fileset dir="${ao-memcached.dir}">
 				<include name="LICENSE"/>
+				<include name="README"/>
 			</fileset>
 		</copy>
 		
