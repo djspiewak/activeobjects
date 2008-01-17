@@ -15,6 +15,8 @@
  */
 package net.java.ao.cache;
 
+import java.io.Serializable;
+
 import net.java.ao.Common;
 import net.java.ao.RawEntity;
 import net.spy.memcached.MemcachedClient;
@@ -61,6 +63,10 @@ class MemcachedCacheLayer extends RAMCacheLayer {
 		} else {
 			if (value instanceof RawEntity) {
 				value = Common.getPrimaryKeyValue((RawEntity<Object>) value);
+			}
+			
+			if (!(value instanceof Serializable)) {
+				return;
 			}
 			
 			client.add(prefix + field.toLowerCase(), expiry, value);
