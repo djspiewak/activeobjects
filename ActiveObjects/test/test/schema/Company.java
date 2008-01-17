@@ -15,6 +15,8 @@
  */
 package test.schema;
 
+import java.io.InputStream;
+
 import net.java.ao.Generator;
 import net.java.ao.OneToMany;
 import net.java.ao.RawEntity;
@@ -48,6 +50,9 @@ public interface Company extends RawEntity<Long> {
 	
 	public CompanyAddressInfo getAddressInfo();
 	public void setAddressInfo(CompanyAddressInfo info);
+	
+	public InputStream getImage();
+	public void setImage(InputStream image);
 	
 	@OneToMany
 	public Person[] getPeople();

@@ -69,6 +69,9 @@ public interface Person extends Entity {
 	public Company getCompany();
 	public void setCompany(Company company);
 	
+	public byte[] getImage();
+	public void setImage(byte[] image);
+	
 	@OneToOne
 	public Nose getNose();
 	

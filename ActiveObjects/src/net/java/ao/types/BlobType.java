@@ -89,11 +89,19 @@ class BlobType extends DatabaseType<Object> {
 
 	@Override
 	public Object defaultParseValue(String value) {
+		if (value.equalsIgnoreCase("null")) {
+			return null;
+		}
+		
 		throw new IllegalArgumentException("Cannot assign a String representation to a BLOB");
 	}
 	
 	@Override
 	public String valueToString(Object value) {
+		if (value == null) {
+			return null;
+		}
+		
 		throw new IllegalArgumentException("Cannot assign a String representation to a BLOB");
 	}
 

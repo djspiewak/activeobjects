@@ -15,10 +15,6 @@
  * Transaction#execute  (need to find a way to create a transact conflict)
  * @OnUpdate
  
-==Types==
-
- * BLOB
- 
  ==DDLAction Rendering==
  
  * @OnUpdate

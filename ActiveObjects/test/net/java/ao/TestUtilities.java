@@ -1,5 +1,7 @@
 package net.java.ao;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,18 +79,25 @@ public class TestUtilities {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO company (companyID, name, cool) VALUES (?,?,?)");
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO company (companyID, name, cool, image) VALUES (?,?,?,?)");
 			
 			stmt.setLong(1, back.companyID = System.currentTimeMillis());
 			stmt.setString(2, "Company Name");
 			stmt.setBoolean(3, false);
 			
+			InputStream imageStream = TestUtilities.class.getResourceAsStream("/icon.png");
+			stmt.setBinaryStream(4, imageStream, imageStream.available());
+			
 			stmt.executeUpdate();
+			
+			imageStream.close();
 			
 			Thread.sleep(10);
 			
 			int index = 0;
 			back.coolCompanyIDs = new long[3];
+			
+			stmt = conn.prepareStatement("INSERT INTO company (companyID, name, cool) VALUES (?,?,?)");
 
 			stmt.setLong(1, back.coolCompanyIDs[index++] = System.currentTimeMillis());
 			stmt.setString(2, "Cool Company");
@@ -114,14 +123,19 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			stmt = conn.prepareStatement("INSERT INTO person (firstName, profession, companyID) VALUES (?, ?, ?)", 
+			stmt = conn.prepareStatement("INSERT INTO person (firstName, profession, companyID, image) VALUES (?, ?, ?, ?)", 
 					PreparedStatement.RETURN_GENERATED_KEYS);
 			
 			stmt.setString(1, "Daniel");
 			stmt.setInt(2, 0);
 			stmt.setLong(3, back.companyID);
 			
+			imageStream = TestUtilities.class.getResourceAsStream("/icon.png");
+			stmt.setBinaryStream(4, imageStream, imageStream.available());
+			
 			stmt.executeUpdate();
+			
+			imageStream.close();
 			
 			ResultSet res = stmt.getGeneratedKeys();
 			if (res.next()) {
@@ -596,6 +610,8 @@ public class TestUtilities {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
+		} catch (IOException e) {
+			e.printStackTrace();
 		} finally {
 			conn.close();
 		}

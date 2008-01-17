@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -189,6 +191,45 @@ public class EntityTest extends DataTest {
 		
 		person.setProfession(Profession.DEVELOPER);
 		person.save();
+	}
+	
+	@Test
+	public void testBlobAccessor() throws IOException {
+		Person person = manager.get(Person.class, personID);
+		byte[] image = person.getImage();
+		
+		assertTrue(image.length == 13510);
+		
+		Company company = manager.get(Company.class, companyID);
+		InputStream is = company.getImage();
+		
+		assertTrue(is.available() == 13510);
+		is.close();
+	}
+	
+	@Test
+	public void testBlobMutator() throws IOException {
+		Person person = manager.get(Person.class, personID);
+		InputStream is = EntityTest.class.getResourceAsStream("/icon.png");
+		byte[] image = new byte[is.available()];
+		
+		int i = 0;
+		int b = 0;
+		while ((b = is.read()) != 0) {
+			image[i++] = (byte) b;
+		}
+		is.close();
+		
+		person.setImage(image);
+		person.save();
+		
+		Company company = manager.get(Company.class, companyID);
+		
+		is = EntityTest.class.getResourceAsStream("/icon.png");
+		company.setImage(is);
+		company.save();
+		
+		is.close();
 	}
 	
 	@Test
@@ -404,7 +445,12 @@ public class EntityTest extends DataTest {
 	@Test
 	public void testDefinedImplementationRecursion() {
 		Person person = manager.get(Person.class, personID);
-		person.setLastName("Jameson");
+		
+		try {
+			person.setLastName("Jameson");
+		} catch (StackOverflowError e) {
+			assertTrue(false);
+		}
 	}
 	
 	@Test
