@@ -101,6 +101,16 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
+	public void testUncachableCacheAccessor() throws IOException {
+		Company company = manager.get(Company.class, companyID);
+		company.getImage().close();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		company.getImage().close();
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
+	
+	@Test
 	public void testCacheMutator() throws SQLException {
 		Company company = manager.create(Company.class);
 		

@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import net.java.ao.Common;
 import net.java.ao.EntityManager;
 
 /**
@@ -34,6 +35,15 @@ class BlobType extends DatabaseType<Object> {
 	
 	public BlobType() {
 		super(Types.BLOB, -1, byte[].class, InputStream.class);
+	}
+	
+	@Override
+	public boolean shouldCache(Class<?> type) {
+		if (Common.typeInstanceOf(type, InputStream.class)) {
+			return false;
+		}
+		
+		return super.shouldCache(type);
 	}
 
 	@Override
