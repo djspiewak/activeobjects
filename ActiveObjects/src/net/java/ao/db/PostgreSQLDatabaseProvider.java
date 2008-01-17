@@ -112,6 +112,8 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderFieldType(DDLField field) {
 		if (field.isAutoIncrement()) {
 			return "SERIAL";
+		} else if (field.getType().getType() == Types.BLOB) {
+			return "OID";
 		}
 		
 		return super.renderFieldType(field);
