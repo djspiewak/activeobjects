@@ -51,6 +51,7 @@ public class TypeManager {
 		// init built-in types
 		types.add(new BigIntType());
 		types.add(new BooleanType());
+		types.add(new BlobType());
 		types.add(new CharType());
 		types.add(new DoubleType());
 		types.add(new FloatType());
@@ -62,9 +63,9 @@ public class TypeManager {
 
 		types.add(new DateType());
 		types.add(new DateDateType());
+		types.add(new EnumType());
 		types.add(new RealType());
 		types.add(new URLType());
-		types.add(new EnumType());
 	}
 	
 	public void addType(DatabaseType<?> type) {
