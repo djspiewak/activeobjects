@@ -88,6 +88,19 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
+	public void testTransientCacheAccessor() {
+		Person person = manager.get(Person.class, personID);
+		person.setAge(25);
+		person.save();
+		
+		person.getAge();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		assertEquals(25, person.getAge());
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
+	
+	@Test
 	public void testCacheMutator() throws SQLException {
 		Company company = manager.create(Company.class);
 		

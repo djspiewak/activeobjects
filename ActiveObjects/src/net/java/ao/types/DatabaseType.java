@@ -88,6 +88,10 @@ public abstract class DatabaseType<T> {
 		return false;
 	}
 	
+	public boolean shouldCache(Class<?> type) {
+		return true;
+	}
+	
 	public void putToDatabase(int index, PreparedStatement stmt, T value) throws SQLException {
 		stmt.setObject(index, value, getType());
 	}

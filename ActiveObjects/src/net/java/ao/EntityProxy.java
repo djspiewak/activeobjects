@@ -135,13 +135,15 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		OnUpdate onUpdateAnnotation = method.getAnnotation(OnUpdate.class);
+		Transient transientAnnotation = method.getAnnotation(Transient.class);
 
+		// check annotations first, they trump all
 		if (mutatorAnnotation != null) {
 			invokeSetter((T) proxy, mutatorAnnotation.value(), args[0], onUpdateAnnotation != null, polyFieldName);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
 			return invokeGetter(getKey(), tableName, accessorAnnotation.value(), polyFieldName, 
-					method.getReturnType(), onUpdateAnnotation != null);
+					method.getReturnType(), onUpdateAnnotation == null && transientAnnotation == null);
 		} else if (oneToOneAnnotation != null && Common.interfaceInheritsFrom(method.getReturnType(), RawEntity.class)) {
 			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType();
 
@@ -172,7 +174,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 							Common.getPolymorphicFieldNames(getManager().getFieldNameConverter(), throughType, type));
 		} else if (Common.isAccessor(method)) {
 			return invokeGetter(getKey(), tableName, getManager().getFieldNameConverter().getName(method), 
-					polyFieldName, method.getReturnType(), onUpdateAnnotation == null);
+					polyFieldName, method.getReturnType(), onUpdateAnnotation == null && transientAnnotation == null);
 		} else if (Common.isMutator(method)) {
 			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(method), args[0], 
 					onUpdateAnnotation == null, polyFieldName);
@@ -243,7 +245,13 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 						javaType = ((RawEntity) value).getEntityType();
 					}
 
-					manager.getType(javaType).putToDatabase(index++, stmt, value);
+					DatabaseType dbType = manager.getType(javaType);
+					dbType.putToDatabase(index++, stmt, value);
+					
+					// this check is not comprehensive, will miss @Transient fields
+					if (!dbType.shouldCache(javaType)) {
+						cacheLayer.remove(field);
+					}
 				}
 			}
 			((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(index++, stmt, key);
@@ -362,6 +370,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		V back = null;
 		CacheLayer cacheLayer = getCacheLayer();
 		
+		shouldCache = shouldCache && TypeManager.getInstance().getType(type).shouldCache(type);
+		
 		getLock(name).writeLock().lock();
 		try {
 			if (!shouldCache && cacheLayer.dirtyContains(name)) {
@@ -386,7 +396,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 	
 				return null;
-			} else if (cacheLayer.contains(name)) {
+			} else if (shouldCache && cacheLayer.contains(name)) {
 				Object value = cacheLayer.get(name);
 	
 				if (instanceOf(value, type)) {

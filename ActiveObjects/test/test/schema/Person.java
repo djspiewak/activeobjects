@@ -25,6 +25,7 @@ import net.java.ao.Mutator;
 import net.java.ao.OneToMany;
 import net.java.ao.OneToOne;
 import net.java.ao.Searchable;
+import net.java.ao.Transient;
 import net.java.ao.schema.Default;
 import net.java.ao.schema.Indexed;
 import net.java.ao.schema.Unique;
@@ -48,8 +49,11 @@ public interface Person extends Entity {
 	public Profession getProfession();
 	public void setProfession(Profession profession);
 	
+	@Transient
 	@Indexed
 	public int getAge();
+	
+	@Transient
 	@Indexed
 	public void setAge(int age);
 
