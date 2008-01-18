@@ -10,7 +10,7 @@ dbpool.path=C:/Users/Daniel Spiewak/Libraries/DBPool-4.8.3/DBPool_v4.8.3.jar
 
 # provide values for these properties to enable unit testing 
 junit4.path=				# e.g. =junit.jar
-derby.path=				# e.g. =derby.jar
+hsqldb.path=				# e.g. =hsqldb.jar
 
 # provide value to enable building of JDocs file
 jdocs.path=			# e.g. =jdocs.jar

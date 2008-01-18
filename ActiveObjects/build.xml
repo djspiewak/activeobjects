@@ -9,12 +9,12 @@
 		<condition property="test-check-ok">
 			<and>
 				<isset property="junit4.path"/>
-				<isset property="derby.path"/>
+				<isset property="hsqldb.path"/>
 				
 				<not>
 					<or>
 						<equals arg1="${junit4.path}" arg2="" trim="yes"/>
-						<equals arg1="${derby.path}" arg2="" trim="yes"/>
+						<equals arg1="${hsqldb.path}" arg2="" trim="yes"/>
 					</or>
 				</not>
 			</and>
@@ -76,7 +76,7 @@
 	
 	<target name="build-test" depends="check-test,init,build" if="test-check-ok">
 		<javac srcdir="${activeobjects.dir}/test" destdir="${activeobjects.dir}/bin" 
-				classpath="bin${path.separator}${build.classpath}${path.separator}${junit4.path}${path.separator}${derby.path}" 
+				classpath="bin${path.separator}${build.classpath}${path.separator}${junit4.path}${path.separator}${hsqldb.path}" 
 				source="1.5" target="1.5" debug="yes"/>
 	</target>
 	
@@ -161,7 +161,7 @@
         	<classpath>
         		<pathelement location="bin/"/>
         		<pathelement location="${junit4.path}"/>
-        		<pathelement location="${derby.path}"/>
+        		<pathelement location="${hsqldb.path}"/>
         		<pathelement path="${build.classpath}"/>
         	</classpath>
         	
