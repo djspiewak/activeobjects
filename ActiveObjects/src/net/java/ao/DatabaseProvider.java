@@ -1341,7 +1341,11 @@ public abstract class DatabaseProvider {
 		}
 		
 		if (field.isUnique()) {
-			back.append(' ').append(renderUnique());
+			String renderUnique = renderUnique();
+			
+			if (!renderUnique.trim().equals("")) {
+				back.append(' ').append(renderUnique);
+			}
 		}
 
 		if (field.isNotNull() || field.isUnique()) {

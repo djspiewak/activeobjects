@@ -63,7 +63,7 @@ public abstract class DataTest {
 	public static void setUp() throws SQLException {
 		TypeManager.getInstance().addType(new ClassType());
 		
-		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
+		manager = new EntityManager("jdbc:hsqldb:mem:test_database", "sa", "");
 		
 		DataStruct data = TestUtilities.setUpEntityManager(manager);
 		

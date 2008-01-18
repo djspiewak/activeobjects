@@ -68,7 +68,7 @@ public class SearchTest {
 		TypeManager.getInstance().addType(new ClassType());
 
 		SearchableEntityManager.asynchronous = false;
-		manager = new SearchableEntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges", 
+		manager = new SearchableEntityManager("jdbc:hsqldb:mem:test_database", "sa", "", 
 				FSDirectory.getDirectory(TEST_INDEX));
 
 		DataStruct data = TestUtilities.setUpEntityManager(manager);
