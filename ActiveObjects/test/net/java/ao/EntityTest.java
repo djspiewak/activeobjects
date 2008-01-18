@@ -221,13 +221,18 @@ public class EntityTest extends DataTest {
 		Person person = manager.get(Person.class, personID);
 		byte[] image = person.getImage();
 		
-		assertTrue(image.length == 13510);
+		assertEquals(13510, image.length);
 		
 		Company company = manager.get(Company.class, companyID);
 		InputStream is = company.getImage();
 		
-		assertTrue(is.available() == 13510);
+		int count = 0;
+		while (is.read() != 0) {
+			count++;
+		}
 		is.close();
+		
+		assertEquals(13510, count);
 	}
 	
 	@Test

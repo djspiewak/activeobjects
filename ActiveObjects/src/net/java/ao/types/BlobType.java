@@ -15,11 +15,10 @@
  */
 package net.java.ao.types;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Blob;
+import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,31 +47,13 @@ class BlobType extends DatabaseType<Object> {
 
 	@Override
 	public Object convert(EntityManager manager, ResultSet res, Class<?> type, String field) throws SQLException {
-		Blob blob = res.getBlob(field);
-		InputStream is = blob.getBinaryStream();
-		
 		if (type.equals(InputStream.class)) {
-			return is;
+			return res.getBinaryStream(field);
+		} else if (type.equals(byte[].class)) {
+			return res.getBytes(field);
 		}
 		
-		BufferedInputStream bis = new BufferedInputStream(is);
-		byte[] back = new byte[(int) blob.length()];
-		
-		try {
-			bis.read(back);
-		} catch (IOException e) {
-			SQLException e2 = new SQLException(e.getMessage());
-			e2.initCause(e);
-			
-			throw e2;
-		} finally {
-			try {
-				bis.close();
-			} catch (IOException e) {
-			}
-		}
-		
-		return back;
+		return null;
 	}
 	
 	@Override
@@ -87,13 +68,24 @@ class BlobType extends DatabaseType<Object> {
 			throw new IllegalArgumentException("BLOB value must be of type byte[] or InputStream");
 		}
 		
-		try {
-			stmt.setBinaryStream(index, is, is.available());
-		} catch (IOException e) {
-			SQLException e2 = new SQLException(e.getMessage());
-			e2.initCause(e);
+		boolean handled = false;
+		try {		// for Java 6
+			Method m = stmt.getClass().getMethod("setBinaryStream", int.class, InputStream.class);
+			m.invoke(stmt, index, is);
 			
-			throw e2;
+			handled = true;
+		} catch (Throwable t) {
+		}
+		
+		if (!handled) {
+			try {
+				stmt.setBinaryStream(index, is, is.available());
+			} catch (IOException e) {
+				SQLException e2 = new SQLException(e.getMessage());
+				e2.initCause(e);
+				
+				throw e2;
+			}
 		}
 	}
 

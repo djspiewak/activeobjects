@@ -342,7 +342,8 @@ public abstract class DatabaseProvider {
 
 				case Types.CHAR:
 					value.charAt(0);
-
+				break;
+				
 				case Types.DATE:
 					try {
 						Calendar back = Calendar.getInstance();

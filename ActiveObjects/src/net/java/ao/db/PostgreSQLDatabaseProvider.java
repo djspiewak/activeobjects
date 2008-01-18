@@ -56,6 +56,19 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
+	protected boolean considerPrecision(DDLField field) {
+		switch (field.getType().getType()) {
+			case Types.INTEGER:
+				return false;
+				
+			case Types.DOUBLE:
+				return false;
+		}
+		
+		return super.considerPrecision(field);
+	}
+	
+	@Override
 	public Object parseValue(int type, String value) {
 		if (value == null || value.equals("") || value.equals("NULL")) {
 			return null;
@@ -112,8 +125,6 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderFieldType(DDLField field) {
 		if (field.isAutoIncrement()) {
 			return "SERIAL";
-		} else if (field.getType().getType() == Types.BLOB) {
-			return "OID";
 		}
 		
 		return super.renderFieldType(field);
@@ -123,6 +134,10 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	protected String convertTypeToString(DatabaseType<?> type) {
 		if (type.getType() == Types.CLOB) {
 			return "TEXT";
+		} else if (type.getType() == Types.BLOB) {
+			return "BYTEA";
+		} else if (type.getType() == Types.DOUBLE) {
+			return "DOUBLE PRECISION";
 		}
 		
 		return super.convertTypeToString(type);
@@ -133,9 +148,8 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		if (value instanceof Boolean) {
 			if (value.equals(true)) {
 				return "TRUE";
-			} else {
-				return "FALSE";
 			}
+			return "FALSE";
 		}
 		
 		return super.renderValue(value);
