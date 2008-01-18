@@ -45,12 +45,12 @@ public class RAMValueCache implements ValueCache {
 				} finally {
 					cacheLock.readLock().unlock();
 				}
-			} else {
-				CacheLayer layer = new RAMCacheLayer();
-				cache.put(entity, layer);
-				
-				return layer;
 			}
+			
+			CacheLayer layer = new RAMCacheLayer();
+			cache.put(entity, layer);
+			
+			return layer;
 		} finally {
 			try {
 				cacheLock.writeLock().unlock();

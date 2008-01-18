@@ -163,7 +163,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					Common.getPolymorphicFieldNames(getManager().getFieldNameConverter(), type, this.type));
 		} else if (manyToManyAnnotation != null && method.getReturnType().isArray() 
 				&& Common.interfaceInheritsFrom(method.getReturnType().getComponentType(), RawEntity.class)) {
-			Class<? extends RawEntity<?>> throughType = (Class<? extends RawEntity<?>>) manyToManyAnnotation.value();
+			Class<? extends RawEntity<?>> throughType = manyToManyAnnotation.value();
 			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType().getComponentType();
 
 			return retrieveRelations((RawEntity<K>) proxy, null, 
@@ -304,6 +304,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return getManager().getTableNameConverter().getName(type) + " {" + pkFieldName + " = " + key.toString() + "}";
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -312,7 +313,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		if (obj instanceof EntityProxy) {
 			EntityProxy<?, ?> proxy = (EntityProxy<?, ?>) obj;
 
-			if (proxy.type.equals(type) && proxy.key == key) {
+			if (proxy.type.equals(type) && proxy.key.equals(key)) {
 				return true;
 			}
 		}
@@ -320,8 +321,9 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return false;
 	}
 
+	@Override
 	public int hashCode() {
-		return type.hashCode();
+		return hashCodeImpl();
 	}
 
 	CacheLayer getCacheLayer() {
@@ -354,12 +356,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		try {
 			if (locks.containsKey(field)) {
 				return locks.get(field);
-			} else {
-				ReentrantReadWriteLock back = new ReentrantReadWriteLock();
-				locks.put(field, back);
-				
-				return back;
 			}
+			
+			ReentrantReadWriteLock back = new ReentrantReadWriteLock();
+			locks.put(field, back);
+			
+			return back;
 		} finally {
 			locksLock.writeLock().unlock();
 		}
@@ -495,8 +497,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			String[] outMapFields, Class<? extends RawEntity<?>> type, Class<V> finalType, String where, 
 					String[] thisPolyNames, String[] thatPolyNames) throws SQLException {
 		if (inMapFields == null || inMapFields.length == 0) {
-			inMapFields = Common.getMappingFields(getManager().getFieldNameConverter(), 
-					(Class<? extends RawEntity<?>>) type, this.type);
+			inMapFields = Common.getMappingFields(getManager().getFieldNameConverter(), type, this.type);
 		}
 		String[] fields = getFields(Common.getPrimaryKeyField(finalType, getManager().getFieldNameConverter()), 
 				inMapFields, outMapFields, where);

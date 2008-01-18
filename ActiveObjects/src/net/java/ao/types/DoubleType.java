@@ -30,6 +30,7 @@ class DoubleType extends DatabaseType<Double> {
 		super(Types.DOUBLE, -1, double.class, Double.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "DOUBLE";
 	}

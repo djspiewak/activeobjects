@@ -47,6 +47,7 @@ class EnumType extends DatabaseType<Enum<?>> {
 		} catch (NoSuchMethodException e) {
 		}
 		
+		assert values != null;
 		for (Enum<?> value : values) {
 			if (dbValue == value.ordinal()) {
 				return value;

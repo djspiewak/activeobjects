@@ -29,6 +29,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -180,9 +181,11 @@ public class SearchableEntityManager extends EntityManager {
 		} catch (IOException e) {
 			throw (SQLException) new SQLException().initCause(e);
 		} finally {
-			try {
-				reader.close();
-			} catch (Throwable t) {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 	}
@@ -237,9 +240,8 @@ public class SearchableEntityManager extends EntityManager {
 		} catch (InvocationTargetException e) {
 			throw (IOException) new IOException().initCause(e);
 		} finally {
-			try {
+			if (writer != null) {
 				writer.close();
-			} catch (Throwable t) {
 			}
 		}
 	}
@@ -258,9 +260,8 @@ public class SearchableEntityManager extends EntityManager {
 			reader = IndexReader.open(indexDir);
 			removeFromIndexImpl(entity, reader);
 		} finally {
-			try {
+			if (reader != null) {
 				reader.close();
-			} catch (Throwable t) {
 			}
 		}
 	}
@@ -292,9 +293,8 @@ public class SearchableEntityManager extends EntityManager {
 			writer = new IndexWriter(indexDir, analyzer, false);
 			writer.optimize();
 		} finally {
-			try {
+			if (writer != null) {
 				writer.close();
-			} catch (NullPointerException e) {
 			}
 		}
 	}
@@ -339,6 +339,7 @@ public class SearchableEntityManager extends EntityManager {
 						setPriority(3);
 					}
 
+					@Override
 					public void run() {
 						T entity = (T) evt.getSource();
 
@@ -353,9 +354,14 @@ public class SearchableEntityManager extends EntityManager {
 									Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity))), doc);
 						} catch (IOException e) {
 						} finally {
-							try {
-								writer.close();
-							} catch (Throwable t) {
+							if (writer != null) {
+								try {
+									writer.close();
+								} catch (CorruptIndexException e) {
+									e.printStackTrace();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
 							}
 						}
 					}

@@ -170,9 +170,11 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 			stmt.close();
 		} catch (SQLException e) {
 		} finally {
-			try {
-				conn.close();
-			} catch (Throwable t) {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException t) {
+				}
 			}
 		}
 	}
@@ -209,9 +211,9 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		if (value instanceof Boolean) {
 			if (value.equals(true)) {
 				return "TRUE";
-			} else {
-				return "FALSE";
 			}
+			
+			return "FALSE";
 		}
 		
 		return super.renderValue(value);

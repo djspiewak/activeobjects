@@ -37,6 +37,7 @@ public class MigrateTask extends Task {
 	
 	private List<EntityType> entities = new ArrayList<EntityType>();
 	
+	@Override
 	public void execute() {
 		try {
 			System.out.println("Migrating schema to match entity definition...");
@@ -81,6 +82,10 @@ public class MigrateTask extends Task {
 			converterClass = Class.forName(nameConverter, true, classloader);
 		} catch (Throwable t) {
 			t.printStackTrace();
+		}
+		
+		if (converterClass == null) {
+			throw new IllegalArgumentException("Unable to locate table name converter");
 		}
 		
 		Object back = null;

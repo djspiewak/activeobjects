@@ -251,10 +251,10 @@ public final class Common {
 		Object array = null;
 		Object other = null;
 		
-		if (a != null && a.getClass().isArray()) {
+		if (a.getClass().isArray()) {
 			array = a;
 			other = b;
-		} else if (b != null && b.getClass().isArray()) {
+		} else if (b.getClass().isArray()) {
 			array = b;
 			other = a;
 		}

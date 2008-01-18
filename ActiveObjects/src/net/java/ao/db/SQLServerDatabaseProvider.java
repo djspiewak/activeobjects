@@ -220,6 +220,10 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 				}
 			}
 			
+			if (pkField == null) {
+				throw new IllegalArgumentException("No primary key field found in table '" + table.getName() + '\'');
+			}
+			
 			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
 			back.append("ON ").append(table.getName()).append("\n");
 			back.append("FOR UPDATE\nAS\n");

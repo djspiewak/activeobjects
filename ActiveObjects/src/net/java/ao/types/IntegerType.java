@@ -30,6 +30,7 @@ class IntegerType extends DatabaseType<Integer> {
 		super(Types.INTEGER, -1, int.class, Integer.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "INTEGER";
 	}

@@ -30,6 +30,7 @@ class BooleanType extends DatabaseType<Boolean> {
 		super(Types.BOOLEAN, -1, boolean.class, Boolean.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "BOOLEAN";
 	}

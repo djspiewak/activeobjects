@@ -30,6 +30,7 @@ class CharType extends DatabaseType<Character> {
 		super(Types.CHAR, -1, char.class, Character.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "CHAR";
 	}

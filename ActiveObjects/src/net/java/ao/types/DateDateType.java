@@ -34,6 +34,7 @@ class DateDateType extends DatabaseType<Date> {
 		super(Types.DATE, -1, Date.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "DATE";
 	}

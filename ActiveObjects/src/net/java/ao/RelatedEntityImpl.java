@@ -40,8 +40,8 @@ class RelatedEntityImpl {
 	
 	public RelatedEntity<?>[] getRelated() throws IOException {
 		Class<? extends RawEntity<Object>> type = entity.getEntityType();
-		String table = entity.getEntityManager().getTableNameConverter().getName((Class<? extends RawEntity<?>>) type);
-		List<String> indexFields = Common.getSearchableFields(entity.getEntityManager(), (Class<? extends RawEntity<?>>) type);
+		String table = entity.getEntityManager().getTableNameConverter().getName(type);
+		List<String> indexFields = Common.getSearchableFields(entity.getEntityManager(), type);
 		String[] searchFields = new String[indexFields.size()];
 		
 		for (int i = 0; i < searchFields.length; i++) {
@@ -88,9 +88,11 @@ class RelatedEntityImpl {
 
 			return back.toArray((RelatedEntity<?>[]) Array.newInstance(type, back.size()));
 		} finally {
-			try {
-				reader.close();
-			} catch (Throwable t) {}
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {}
+			}
 		}
 	}
 }

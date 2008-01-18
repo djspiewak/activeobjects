@@ -33,6 +33,7 @@ class URLType extends DatabaseType<URL> {
 		super(Types.VARCHAR, 255, URL.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "VARCHAR";
 	}

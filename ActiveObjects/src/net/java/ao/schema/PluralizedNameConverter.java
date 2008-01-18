@@ -17,7 +17,6 @@ package net.java.ao.schema;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import net.java.ao.EntityManager;
 import net.java.ao.RawEntity;
@@ -78,7 +77,6 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 	 * 		requests will be delegated (with the results being pluralized by
 	 * 		this class).  Should be an instance of {@link AbstractTableNameConverter}.
 	 */
-	@SuppressWarnings("unchecked")
 	public PluralizedNameConverter(TableNameConverter delegateConverter) {
 		OrderedProperties rules = new OrderedProperties();
 		
@@ -96,7 +94,7 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 			}
 		}
 		
-		addPatternMappings((Map) rules, rules.iterator());
+		addPatternMappings(rules, rules.iterator());
 		
 		delegate = delegateConverter;
 	}

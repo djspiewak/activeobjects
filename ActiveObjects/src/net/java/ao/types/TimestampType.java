@@ -38,6 +38,7 @@ class TimestampType extends DatabaseType<Calendar> {
 		dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "TIMESTAMP";
 	}

@@ -30,6 +30,7 @@ class VarcharType extends DatabaseType<String> {
 		super(Types.VARCHAR, 255, String.class);
 	}
 	
+	@Override
 	public String getDefaultName() {
 		return "VARCHAR";
 	}

@@ -35,6 +35,7 @@ public class EmbeddedDerbyDatabaseProvider extends DerbyDatabaseProvider {
 		dbProperties.setProperty("password", password);
 	}
 
+	@Override
 	public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
 		return (Class<? extends Driver>) Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 	}
@@ -59,9 +60,11 @@ public class EmbeddedDerbyDatabaseProvider extends DerbyDatabaseProvider {
 		} catch (SQLException e) {
 		} catch (ClassNotFoundException e) {
 		} finally {
-			try {
-				conn.close();
-			} catch (Throwable t) {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException t) {
+				}
 			}
 		}
 		

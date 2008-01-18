@@ -40,6 +40,7 @@ import test.schema.PersonSuit;
  */
 public class SchemaGeneratorTest extends DataTest {
 
+	@SuppressWarnings("null")
 	@Test
 	public void testParseDDL() {
 		String[] expectedFields = {"id", "firstName", "lastName", "profession", "age", "url", "favoriteClass", "companyID", "image"};

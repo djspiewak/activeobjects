@@ -140,9 +140,11 @@ public abstract class Transaction<T> {
 			
 			conn.commit();
 		} catch (SQLException e) {
-			try {
-				conn.rollback();
-			} catch (SQLException e1) {
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (SQLException e1) {
+				}
 			}
 			
 			toThrow = e;

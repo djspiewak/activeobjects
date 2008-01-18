@@ -30,6 +30,7 @@ class BigIntType extends DatabaseType<Long> {
 		super(Types.BIGINT, -1, long.class, Long.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "BIGINT";
 	}

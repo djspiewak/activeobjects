@@ -39,6 +39,7 @@ class TimestampDateType extends DatabaseType<Date> {
 		dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "TIMESTAMP";
 	}

@@ -67,8 +67,8 @@ class SoftHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 
 		Entry(K key, V object, ReferenceQueue<K> queue) {
 			super(key, queue);
-			isNull = key == null;
-			hash = isNull ? 0 : key.hashCode();
+			
+			hash = key == null ? 0 : key.hashCode();
 			value = object;
 		}
 

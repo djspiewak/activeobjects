@@ -33,6 +33,7 @@ class DateType extends DatabaseType<Calendar> {
 		super(Types.DATE, -1, Calendar.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "DATE";
 	}

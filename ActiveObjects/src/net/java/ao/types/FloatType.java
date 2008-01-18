@@ -30,6 +30,7 @@ class FloatType extends DatabaseType<Float> {
 		super(Types.FLOAT, -1, float.class, Float.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "FLOAT";
 	}

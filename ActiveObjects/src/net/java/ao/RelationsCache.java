@@ -66,7 +66,7 @@ class RelationsCache {
 			Set<CacheKey> keys = typeMap.get(key.getThroughType());
 			if (keys == null) {
 				keys = new HashSet<CacheKey>();
-				typeMap.put((Class<? extends RawEntity<?>>) key.getThroughType(), keys);
+				typeMap.put(key.getThroughType(), keys);
 			}
 			keys.add(key);
 			

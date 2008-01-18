@@ -150,6 +150,10 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 				}
 			}
 			
+			if (pkField == null) {
+				throw new IllegalArgumentException("No primary key field found in table '" + table.getName() + '\'');
+			}
+			
 			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
 			back.append("    AFTER UPDATE ON ").append(table.getName());
 			back.append("\n    REFERENCING NEW AS inserted\n    FOR EACH ROW MODE DB2SQL\n        ");

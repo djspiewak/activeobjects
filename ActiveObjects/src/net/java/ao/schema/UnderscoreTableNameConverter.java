@@ -98,8 +98,8 @@ public class UnderscoreTableNameConverter extends AbstractTableNameConverter {
     protected String postProcessName(String back) {
 		if (uppercase) {
 			return back.toUpperCase();
-		} else {
-			return back.toLowerCase();
 		}
+		
+		return back.toLowerCase();
     }
 }

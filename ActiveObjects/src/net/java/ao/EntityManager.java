@@ -369,7 +369,7 @@ public class EntityManager {
 		
 		fieldNameConverterLock.readLock().lock();
 		try {
-			for (Method method : MethodFinder.getInstance().findAnnotation(Generator.class, (Class<? extends RawEntity<?>>) type)) {
+			for (Method method : MethodFinder.getInstance().findAnnotation(Generator.class, type)) {
 				Generator genAnno = method.getAnnotation(Generator.class);
 				String field = fieldNameConverter.getName(method);
 				ValueGenerator<?> generator;
@@ -401,7 +401,7 @@ public class EntityManager {
 		try {
 			relationsCache.remove(type);
 			back = get(type, provider.insertReturningKey(conn, Common.getPrimaryKeyClassType(type), 
-					Common.getPrimaryKeyField((Class<? extends RawEntity<?>>) type, getFieldNameConverter()), table, 
+					Common.getPrimaryKeyField(type, getFieldNameConverter()), table, 
 					listParams.toArray(new DBParam[listParams.size()])));
 		} finally {
 			conn.close();
@@ -980,10 +980,12 @@ public class EntityManager {
 			this.type = type;
 		}
 		
+		@Override
 		public int hashCode() {
 			return (type.hashCode() + key.hashCode()) % (2 << 15);
 		}
 		
+		@Override
 		public boolean equals(Object obj) {
 			if (obj == this) {
 				return true;

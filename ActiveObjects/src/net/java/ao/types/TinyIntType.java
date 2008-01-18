@@ -30,6 +30,7 @@ class TinyIntType extends DatabaseType<Short> {
 		super(Types.TINYINT, -1, short.class, Short.class);
 	}
 
+	@Override
 	public String getDefaultName() {
 		return "TINYINT";
 	}

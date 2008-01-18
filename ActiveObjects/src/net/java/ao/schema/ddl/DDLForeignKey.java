@@ -72,6 +72,7 @@ public class DDLForeignKey {
 		this.domesticTable = domesticTable;
 	}
 	
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
