@@ -29,8 +29,8 @@ import java.sql.SQLException;
  * <p>The design behind <code>Transaction</code> is modeled after the
  * following code snippet:</p>
  * 
- * <pre>new Transaction(manager) {
- *     public void run() {
+ * <pre>new Transaction&lt;Object&gt;(manager) {
+ *     public Object run() {
  *         Account a = getEntityManager().get(Account.class, 1);
  *         Account b = getEntityManager().get(Account.class, 2);
  *         
@@ -39,6 +39,8 @@ import java.sql.SQLException;
  *         
  *         b.setBalance(b.getBalance() + 1000);
  *         b.save();
+ *         
+ *         return null;
  *     }
  * }.execute();</pre>
  * 
@@ -50,12 +52,33 @@ import java.sql.SQLException;
  * transaction, ensuring data integrity.  Once the transaction is rolled back, the
  * exception is rethrown from the <code>execute()</code> method.</p>
  * 
+ * <p>In cases where the transaction generates data which must be returned, this
+ * can be accomplished by returning from the {@link #run()} method against the
+ * parameterized type.  Thus if a transaction to create an account is utilized:</p>
+ * 
+ * <pre>Account result = new Transaction&lt;Account&gt;(manager) {
+ *     public Account run() throws SQLException {
+ *         Account back = getEntityManager().create(Account.class);
+ *         
+ *         back.setBalance(0);
+ *         back.save():
+ *         
+ *         return back;
+ *     }
+ * }.execute();</pre>
+ * 
+ * <p>The value returned from <code>run()</code> will be passed back up the call
+ * stack to <code>execute()</code>, which will return the value to the caller.
+ * Thus in this example, <code>result</code> will be precisely the <code>back</code>
+ * instance from within the transaction.  This feature allows data to escape the
+ * scope of the transaction, thereby achieving a greater usefulness.</p>
+ * 
  * <p>The JDBC transaction type used is {@link Connection#TRANSACTION_SERIALIZABLE}.</p>
  * 
  * @author Daniel Spiewak
  * @see java.sql.Connection
  */
-public abstract class Transaction {
+public abstract class Transaction<T> {
 	private EntityManager manager;
 	
 	/**
@@ -82,7 +105,8 @@ public abstract class Transaction {
 	/**
 	 * <p>Executes the transaction defined within the overridden {@link #run()}
 	 * method.  If the transaction fails for any reason (such as a conflict), it will
-	 * be rolled back and an exception thrown.</p>
+	 * be rolled back and an exception thrown.  The value returned from the
+	 * <code>run()</code> method will be returned from <code>execute()</code>.</p>
 	 * 
 	 * <p>Custom JDBC code can be executed within a transaction.  However, one
 	 * should be a bit careful with the mutable state of the {@link Connection}
@@ -96,12 +120,14 @@ public abstract class Transaction {
 	 * already initialized and within an open transaction by the time it gets to your
 	 * custom code within the transaction.</p>
 	 * 
+	 * @return	The value (if any) returned from the transaction <code>run()</code>
 	 * @throws SQLException	If the transaction failed for any reason and was rolled back.
 	 * @see #run()
 	 */
-	public void execute() throws SQLException {
+	public T execute() throws SQLException {
 		Connection conn = null;
 		SQLException toThrow = null;
+		T back = null;
 		
 		try {
 			conn = manager.getProvider().getConnection();
@@ -110,7 +136,7 @@ public abstract class Transaction {
 			conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			conn.setAutoCommit(false);
 			
-			Transaction.this.run();
+			back = Transaction.this.run();
 			
 			conn.commit();
 		} catch (SQLException e) {
@@ -122,7 +148,7 @@ public abstract class Transaction {
 			toThrow = e;
 		} finally {
 			if (conn == null) {
-				return;
+				return null;
 			}
 			
 			try {
@@ -137,13 +163,19 @@ public abstract class Transaction {
 		if (toThrow != null) {
 			throw toThrow;
 		}
+		
+		return back;
 	}
 	
 	/**
 	 * <p>Called internally by {@link #execute()} to actually perform the actions
 	 * within the transaction.  Any <code>SQLException(s)</code> should be
 	 * allowed to propogate back up to the calling method, which will ensure
-	 * that the transaction is rolled back and the proper resources disposed.</p>
+	 * that the transaction is rolled back and the proper resources disposed.  If
+	 * the transaction generates a value which must be passed back to the calling
+	 * method, this value may be returned as long as it is of the parameterized
+	 * type.  If no value is generated, <code>null</code> is an acceptable return
+	 * value.</p>
 	 * 
 	 * <p>Be aware that <i>any</i> operations performed within a transaction
 	 * (even if indirectly invoked by the <code>run()</code> method) will use
@@ -151,8 +183,10 @@ public abstract class Transaction {
 	 * integrity of the transaction's operations while at the same time allowing
 	 * custom JDBC code and queries within the transaction.</p>
 	 * 
+	 * @return	Any value which must be passed back to the calling point (outside
+	 * 		the transaction), or <code>null</code>.
 	 * @throws SQLException	If something has gone wrong within the transaction and
-	 * 	it requires a roll-back.
+	 * 		it requires a roll-back.
 	 */
-	protected abstract void run() throws SQLException;
+	protected abstract T run() throws SQLException;
 }
