@@ -17,6 +17,7 @@ package net.java.ao;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -121,6 +122,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 	@Override
 	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
 		return delegate.insertReturningKey(conn, pkType, pkField, table, params);
+	}
+	
+	@Override
+	public void putNull(PreparedStatement stmt, int index) throws SQLException {
+		delegate.putNull(stmt, index);
 	}
 	
 	@Override

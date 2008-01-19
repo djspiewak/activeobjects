@@ -237,7 +237,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				Object value = cacheLayer.get(field);
 				
 				if (value == null) {
-					stmt.setString(index++, null);
+					getManager().getProvider().putNull(stmt, index++);
 				} else {
 					Class javaType = value.getClass();
 
@@ -615,7 +615,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 
 				numParams++;
-			} else if (inMapFields.length == 1 && outMapFields.length == 1) {
+			} else if (inMapFields.length == 1 && outMapFields.length == 1) {	// 99% case (1-* & *-*)
 				sql.append("SELECT ").append(outMapFields[0]);
 				
 				if (!oneToMany) {

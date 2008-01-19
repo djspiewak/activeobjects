@@ -660,7 +660,7 @@ public class EntityManager {
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			provider.setQueryStatementProperties(stmt, query);
 			
-			query.setParameters(stmt);
+			query.setParameters(this, stmt);
 
 			ResultSet res = stmt.executeQuery();
 			ResultSetMetaData md = res.getMetaData();
@@ -799,7 +799,7 @@ public class EntityManager {
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			provider.setQueryStatementProperties(stmt, query);
 			
-			query.setParameters(stmt);
+			query.setParameters(this, stmt);
 
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {

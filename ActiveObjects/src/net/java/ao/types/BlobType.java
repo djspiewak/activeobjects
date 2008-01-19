@@ -48,6 +48,16 @@ class BlobType extends DatabaseType<Object> {
 
 	@Override
 	public Object pullFromDatabase(EntityManager manager, ResultSet res, Class<?> type, String field) throws SQLException {
+		if (manager.getProvider().getURI().startsWith("jdbc:postgres")) {
+			if (type.equals(InputStream.class)) {
+				return res.getBinaryStream(field);
+			} else if (type.equals(byte[].class)) {
+				return res.getBytes(field);
+			}
+			
+			return null;
+		}
+		
 		Blob blob = res.getBlob(field);
 		
 		if (type.equals(InputStream.class)) {

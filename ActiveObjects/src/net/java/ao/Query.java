@@ -253,13 +253,13 @@ public class Query {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void setParameters(PreparedStatement stmt) throws SQLException {
+	protected void setParameters(EntityManager manager, PreparedStatement stmt) throws SQLException {
 		if (whereParams != null) {
-			TypeManager manager = TypeManager.getInstance();
+			TypeManager typeManager = TypeManager.getInstance();
 			
 			for (int i = 0; i < whereParams.length; i++) {
 				if (whereParams[i] == null) {
-					stmt.setString(i + 1, null);
+					manager.getProvider().putNull(stmt, i + 1);
 				} else {
 					Class javaType = whereParams[i].getClass();
 					
@@ -267,7 +267,7 @@ public class Query {
 						javaType = ((RawEntity) whereParams[i]).getEntityType();
 					}
 					
-					manager.getType(javaType).putToDatabase(i + 1, stmt, whereParams[i]);
+					typeManager.getType(javaType).putToDatabase(i + 1, stmt, whereParams[i]);
 				}
 			}
 		}

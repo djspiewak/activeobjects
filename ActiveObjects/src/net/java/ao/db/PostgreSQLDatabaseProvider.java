@@ -391,4 +391,9 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		
 		return null;
 	}
+	
+	@Override
+	public void putNull(PreparedStatement stmt, int index) throws SQLException {
+		stmt.setNull(index, Types.INTEGER);
+	}
 }

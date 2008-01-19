@@ -1802,7 +1802,14 @@ public abstract class DatabaseProvider {
 		
 		return back;
 	}
-	
+
+	/**
+	 * TODO
+	 */
+	public void putNull(PreparedStatement stmt, int index) throws SQLException {
+		stmt.setString(index, null);
+	}
+
 	/**
 	 * Simple helper function used to determine of the specified JDBC
 	 * type is representitive of a numeric type.  The definition of

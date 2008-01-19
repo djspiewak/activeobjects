@@ -46,6 +46,10 @@ import test.schema.PublicationToDistribution;
  * @author Daniel Spiewak
  */
 public class TestUtilities {
+	
+	@SuppressWarnings("unused")
+	private static int priorID = -1;	// ugly hack for postgresql
+	
 	public static final Test asTest(Class<?> clazz) {
 		return new JUnit4TestAdapter(clazz);
 	}
@@ -122,6 +126,8 @@ public class TestUtilities {
 			
 			stmt.close();
 			
+			assignPriorID(conn, "person");
+			
 			stmt = prepareStatement(conn, "INSERT INTO person (firstName, profession, companyID, image) VALUES (?, ?, ?, ?)");
 			
 			stmt.setString(1, "Daniel");
@@ -138,6 +144,8 @@ public class TestUtilities {
 			back.personID = getPriorID(conn, stmt);
 			stmt.close();
 			
+			assignPriorID(conn, "nose");
+			
 			stmt = prepareStatement(conn, "INSERT INTO nose (length,personID) VALUES (?,?)");
 			
 			stmt.setInt(1, 2);
@@ -147,6 +155,8 @@ public class TestUtilities {
 			back.noseID = getPriorID(conn, stmt);
 			
 			stmt.close();
+			
+			assignPriorID(conn, "pen");
 			
 			back.penIDs = new int[3];
 			stmt = prepareStatement(conn, "INSERT INTO pen (width,personID) VALUES (?,?)");
@@ -159,11 +169,15 @@ public class TestUtilities {
 			
 			back.penIDs[index++] = getPriorID(conn, stmt);
 			
+			assignPriorID(conn, "pen");
+			
 			stmt.setDouble(1, 0.7);
 			stmt.setInt(2, back.personID);
 			stmt.executeUpdate();
 			
 			back.penIDs[index++] = getPriorID(conn, stmt);
+			
+			assignPriorID(conn, "pen");
 			
 			stmt.setDouble(1, 1);
 			stmt.setInt(2, back.personID);
@@ -172,6 +186,8 @@ public class TestUtilities {
 			back.penIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
+			
+			assignPriorID(conn, "personDefence");
 			
 			back.defenceIDs = new int[3];
 			stmt = prepareStatement(conn, "INSERT INTO personDefence (severity) VALUES (?)");
@@ -183,10 +199,14 @@ public class TestUtilities {
 	
 			back.defenceIDs[index++] = getPriorID(conn, stmt);
 			
+			assignPriorID(conn, "personDefence");
+			
 			stmt.setInt(1, 7);
 			stmt.executeUpdate();
 	
 			back.defenceIDs[index++] = getPriorID(conn, stmt);
+			
+			assignPriorID(conn, "personDefence");
 			
 			stmt.setInt(1, 1);
 			stmt.executeUpdate();
@@ -194,6 +214,8 @@ public class TestUtilities {
 			back.defenceIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
+			
+			assignPriorID(conn, "personSuit");
 			
 			back.suitIDs = new int[3];
 			stmt = prepareStatement(conn, "INSERT INTO personSuit (personID, personLegalDefenceID) VALUES (?,?)");
@@ -206,19 +228,25 @@ public class TestUtilities {
 			
 			back.suitIDs[index++] = getPriorID(conn, stmt);
 			
+			assignPriorID(conn, "personSuit");
+			
 			stmt.setInt(1, back.personID);
 			stmt.setInt(2, back.defenceIDs[1]);
 			stmt.executeUpdate();
 			
 			back.suitIDs[index++] = getPriorID(conn, stmt);
 			
+			assignPriorID(conn, "personSuit");
+			
 			stmt.setInt(1, back.personID);
 			stmt.setInt(2, back.defenceIDs[2]);
 			stmt.executeUpdate();
 			
-				back.suitIDs[index++] = getPriorID(conn, stmt);
+			back.suitIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
+			
+			assignPriorID(conn, "post");
 			
 			stmt = prepareStatement(conn, "INSERT INTO post (title) VALUES (?)");
 			
@@ -229,6 +257,8 @@ public class TestUtilities {
 			
 			stmt.close();
 			
+			assignPriorID(conn, "photo");
+			
 			stmt = prepareStatement(conn, "INSERT INTO photo (depth) VALUES (?)");
 			
 			stmt.setInt(1, 256);
@@ -238,6 +268,8 @@ public class TestUtilities {
 			back.photoID = getPriorID(conn, stmt);
 			
 			stmt.close();
+			
+			assignPriorID(conn, "comment");
 			
 			stmt = prepareStatement(conn, "INSERT INTO comment (title,text,commentableID,commentableType) VALUES (?,?,?,?)");
 			
@@ -256,6 +288,8 @@ public class TestUtilities {
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
 			
+			assignPriorID(conn, "comment");
+			
 			index = 1;
 			stmt.setString(index++, "Test Post Comment 2");
 			stmt.setString(index++, "Here's some test text");
@@ -264,6 +298,8 @@ public class TestUtilities {
 			stmt.executeUpdate();
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
+			
+			assignPriorID(conn, "comment");
 			
 			index = 1;
 			stmt.setString(index++, "Test Photo Comment 1");
@@ -274,6 +310,8 @@ public class TestUtilities {
 			
 			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn, stmt);
 			
+			assignPriorID(conn, "comment");
+			
 			index = 1;
 			stmt.setString(index++, "Test Post Comment 3");
 			stmt.setString(index++, "Here's some test text");
@@ -282,6 +320,8 @@ public class TestUtilities {
 			stmt.executeUpdate();
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
+			
+			assignPriorID(conn, "comment");
 			
 			index = 1;
 			stmt.setString(index++, "Test Photo Comment 2");
@@ -297,16 +337,20 @@ public class TestUtilities {
 			back.bookIDs = new int[2];
 			index = 0;
 			
+			assignPriorID(conn, "book");
+			
 			stmt = prepareStatement(conn, "INSERT INTO book (title,hardcover) VALUES (?,?)");
 			
 			stmt.setString(1, "Test Book 1");
-			stmt.setInt(2, 1);
+			stmt.setBoolean(2, true);
 			stmt.executeUpdate();
 			
 			back.bookIDs[index++] = getPriorID(conn, stmt);
 			
+			assignPriorID(conn, "book");
+			
 			stmt.setString(1, "Test Book 2");
-			stmt.setInt(2, 1);
+			stmt.setBoolean(2, true);
 			stmt.executeUpdate();
 			
 			back.bookIDs[index++] = getPriorID(conn, stmt);
@@ -316,12 +360,16 @@ public class TestUtilities {
 			back.magazineIDs = new int[2];
 			index = 0;
 			
+			assignPriorID(conn, "magazine");
+			
 			stmt = prepareStatement(conn, "INSERT INTO magazine (title) VALUES (?)");
 			
 			stmt.setString(1, "Test Magazine 1");
 			stmt.executeUpdate();
 			
 			back.magazineIDs[index++] = getPriorID(conn, stmt);
+			
+			assignPriorID(conn, "magazine");
 			
 			stmt.setString(1, "Test Magazine 2");
 			stmt.executeUpdate();
@@ -335,6 +383,8 @@ public class TestUtilities {
 			
 			for (int i = 0; i < back.bookIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.bookAuthorIDs[0].length; subIndex++) {
+					assignPriorID(conn, "author");
+					
 					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
 					
 					stmt.setString(1, "Test Book Author " + (subIndex + 1));
@@ -359,6 +409,8 @@ public class TestUtilities {
 			
 			for (int i = 0; i < back.magazineIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.magazineAuthorIDs[0].length; subIndex++) {
+					assignPriorID(conn, "author");
+					
 					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
 					
 					stmt.setString(1, "Test Magazine Author " + (subIndex + 1));
@@ -396,6 +448,8 @@ public class TestUtilities {
 					}
 					
 					back.bookDistributionTypes[i][subIndex] = distType;
+					
+					assignPriorID(conn, distTableName);
 					
 					stmt = prepareStatement(conn, "INSERT INTO " + distTableName + ' ' + params);
 					
@@ -440,6 +494,8 @@ public class TestUtilities {
 					}
 					
 					back.magazineDistributionTypes[i][subIndex] = distType;
+					
+					assignPriorID(conn, distTableName);
 					
 					stmt = prepareStatement(conn, "INSERT INTO " + distTableName + ' ' + params);
 					
@@ -506,6 +562,20 @@ public class TestUtilities {
 		return conn.prepareStatement(sql/*, Statement.RETURN_GENERATED_KEYS*/);
 	}
 	
+	private static final void assignPriorID(Connection conn, String table) throws SQLException {
+//		priorID = -1;
+//		
+//		PreparedStatement stmt = conn.prepareStatement("SELECT NEXTVAL('" + table + "_id_seq')");
+//		ResultSet res = stmt.executeQuery();
+//		
+//		if (res.next()) {
+//			priorID = res.getInt(1) + 1;
+//		}
+//		
+//		res.close();
+//		stmt.close();
+	}
+	
 	private static final int getPriorID(Connection conn, PreparedStatement stmt) throws SQLException {
 		int back = -1;
 		PreparedStatement ident = conn.prepareStatement("CALL IDENTITY()");
@@ -527,6 +597,8 @@ public class TestUtilities {
 //		}
 //		
 //		return back;
+		
+//		return priorID;
 	}
 	
 	public static final void tearDownEntityManager(EntityManager manager) throws SQLException {
