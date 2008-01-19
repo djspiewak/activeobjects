@@ -104,7 +104,12 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 				back = (T) value;
 			}
 			
-			stmt.setObject(i + 1, value);
+			if (value == null) {
+				putNull(stmt, i + 1);
+			} else {
+				DatabaseType<Object> type = (DatabaseType<Object>) TypeManager.getInstance().getType(value.getClass());
+				type.putToDatabase(i + 1, stmt, value);
+			}
 		}
 		
 		stmt.executeUpdate();
