@@ -223,28 +223,20 @@ public class EntityTest extends DataTest {
 		
 		assertEquals(13510, image.length);
 		
-		new Transaction<Object>(manager) {
-			@Override
-			protected Object run() throws SQLException {
-				Company company = manager.get(Company.class, companyID);
-				InputStream is = company.getImage();
+		Company company = manager.get(Company.class, companyID);
+		InputStream is = company.getImage();
 
-				int count = 0;
-				try {
-					while (is.read() >= 0) {
-						count++;
-					}
-					is.close();
-				} catch (IOException e) {
-					throw new SQLException(e);
-				}
-				
-				assertEquals(13510, count);
-				
-				return null;
+		int count = 0;
+		try {
+			while (is.read() >= 0) {
+				count++;
 			}
-			
-		}.execute();
+			is.close();
+		} catch (IOException e) {
+			throw new SQLException(e);
+		}
+
+		assertEquals(13510, count);
 	}
 	
 	@Test

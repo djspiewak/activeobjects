@@ -51,6 +51,11 @@ class BlobType extends DatabaseType<Object> {
 		Blob blob = res.getBlob(field);
 		
 		if (type.equals(InputStream.class)) {
+			// derby handles BLOBs oddly
+			if (manager.getProvider().getURI().startsWith("jdbc:derby")) {
+				return new ByteArrayInputStream(blob.getBytes(1, (int) blob.length()));
+			}
+			
 			return blob.getBinaryStream();
 		} else if (type.equals(byte[].class)) {
 			return blob.getBytes(1, (int) blob.length());
