@@ -217,22 +217,34 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
-	public void testBlobAccessor() throws IOException {
+	public void testBlobAccessor() throws IOException, SQLException {
 		Person person = manager.get(Person.class, personID);
 		byte[] image = person.getImage();
 		
 		assertEquals(13510, image.length);
 		
-		Company company = manager.get(Company.class, companyID);
-		InputStream is = company.getImage();
-		
-		int count = 0;
-		while (is.read() >= 0) {
-			count++;
-		}
-		is.close();
-		
-		assertEquals(13510, count);
+		new Transaction<Object>(manager) {
+			@Override
+			protected Object run() throws SQLException {
+				Company company = manager.get(Company.class, companyID);
+				InputStream is = company.getImage();
+
+				int count = 0;
+				try {
+					while (is.read() >= 0) {
+						count++;
+					}
+					is.close();
+				} catch (IOException e) {
+					throw new SQLException(e);
+				}
+				
+				assertEquals(13510, count);
+				
+				return null;
+			}
+			
+		}.execute();
 	}
 	
 	@Test

@@ -78,7 +78,7 @@ public class TestUtilities {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO company (companyID, name, cool, image) VALUES (?,?,?,?)");
+			PreparedStatement stmt = prepareStatement(conn, "INSERT INTO company (companyID, name, cool, image) VALUES (?,?,?,?)");
 			
 			stmt.setLong(1, back.companyID = System.currentTimeMillis());
 			stmt.setString(2, "Company Name");
@@ -96,7 +96,7 @@ public class TestUtilities {
 			int index = 0;
 			back.coolCompanyIDs = new long[3];
 			
-			stmt = conn.prepareStatement("INSERT INTO company (companyID, name, cool) VALUES (?,?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO company (companyID, name, cool) VALUES (?,?,?)");
 
 			stmt.setLong(1, back.coolCompanyIDs[index++] = System.currentTimeMillis());
 			stmt.setString(2, "Cool Company");
@@ -122,7 +122,7 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			stmt = conn.prepareStatement("INSERT INTO person (firstName, profession, companyID, image) VALUES (?, ?, ?, ?)");
+			stmt = prepareStatement(conn, "INSERT INTO person (firstName, profession, companyID, image) VALUES (?, ?, ?, ?)");
 			
 			stmt.setString(1, "Daniel");
 			stmt.setInt(2, 0);
@@ -135,21 +135,21 @@ public class TestUtilities {
 			
 			imageStream.close();
 			
-			back.personID = getPriorID(conn);
+			back.personID = getPriorID(conn, stmt);
 			stmt.close();
 			
-			stmt = conn.prepareStatement("INSERT INTO nose (length,personID) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO nose (length,personID) VALUES (?,?)");
 			
 			stmt.setInt(1, 2);
 			stmt.setInt(2, back.personID);
 			stmt.executeUpdate();
 			
-			back.noseID = getPriorID(conn);
+			back.noseID = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
 			back.penIDs = new int[3];
-			stmt = conn.prepareStatement("INSERT INTO pen (width,personID) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO pen (width,personID) VALUES (?,?)");
 	
 			index = 0;
 			
@@ -157,46 +157,46 @@ public class TestUtilities {
 			stmt.setInt(2, back.personID);
 			stmt.executeUpdate();
 			
-			back.penIDs[index++] = getPriorID(conn);
+			back.penIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setDouble(1, 0.7);
 			stmt.setInt(2, back.personID);
 			stmt.executeUpdate();
 			
-			back.penIDs[index++] = getPriorID(conn);
+			back.penIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setDouble(1, 1);
 			stmt.setInt(2, back.personID);
 			stmt.executeUpdate();
 			
-			back.penIDs[index++] = getPriorID(conn);
+			back.penIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
 			back.defenceIDs = new int[3];
-			stmt = conn.prepareStatement("INSERT INTO personDefence (severity) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO personDefence (severity) VALUES (?)");
 			
 			index = 0;
 	
 			stmt.setInt(1, 5);
 			stmt.executeUpdate();
 	
-			back.defenceIDs[index++] = getPriorID(conn);
+			back.defenceIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setInt(1, 7);
 			stmt.executeUpdate();
 	
-			back.defenceIDs[index++] = getPriorID(conn);
+			back.defenceIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setInt(1, 1);
 			stmt.executeUpdate();
 	
-			back.defenceIDs[index++] = getPriorID(conn);
+			back.defenceIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
 			back.suitIDs = new int[3];
-			stmt = conn.prepareStatement("INSERT INTO personSuit (personID, personLegalDefenceID) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO personSuit (personID, personLegalDefenceID) VALUES (?,?)");
 	
 			index = 0;
 			
@@ -204,42 +204,42 @@ public class TestUtilities {
 			stmt.setInt(2, back.defenceIDs[0]);
 			stmt.executeUpdate();
 			
-			back.suitIDs[index++] = getPriorID(conn);
+			back.suitIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setInt(1, back.personID);
 			stmt.setInt(2, back.defenceIDs[1]);
 			stmt.executeUpdate();
 			
-			back.suitIDs[index++] = getPriorID(conn);
+			back.suitIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setInt(1, back.personID);
 			stmt.setInt(2, back.defenceIDs[2]);
 			stmt.executeUpdate();
 			
-				back.suitIDs[index++] = getPriorID(conn);
+				back.suitIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
-			stmt = conn.prepareStatement("INSERT INTO post (title) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO post (title) VALUES (?)");
 			
 			stmt.setString(1, "Test Post");
 			stmt.executeUpdate();
 			
-			back.postID = getPriorID(conn);
+			back.postID = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
-			stmt = conn.prepareStatement("INSERT INTO photo (depth) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO photo (depth) VALUES (?)");
 			
 			stmt.setInt(1, 256);
 			
 			stmt.executeUpdate();
 			
-			back.photoID = getPriorID(conn);
+			back.photoID = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
-			stmt = conn.prepareStatement("INSERT INTO comment (title,text,commentableID,commentableType) VALUES (?,?,?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO comment (title,text,commentableID,commentableType) VALUES (?,?,?,?)");
 			
 			back.postCommentIDs = new int[3];
 			back.photoCommentIDs = new int[2];
@@ -254,7 +254,7 @@ public class TestUtilities {
 			stmt.setString(index++, "post");
 			stmt.executeUpdate();
 			
-			back.postCommentIDs[postCommentIndex++] = getPriorID(conn);
+			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
 			
 			index = 1;
 			stmt.setString(index++, "Test Post Comment 2");
@@ -263,7 +263,7 @@ public class TestUtilities {
 			stmt.setString(index++, "post");
 			stmt.executeUpdate();
 			
-			back.postCommentIDs[postCommentIndex++] = getPriorID(conn);
+			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
 			
 			index = 1;
 			stmt.setString(index++, "Test Photo Comment 1");
@@ -272,7 +272,7 @@ public class TestUtilities {
 			stmt.setString(index++, "photo");
 			stmt.executeUpdate();
 			
-			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn);
+			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn, stmt);
 			
 			index = 1;
 			stmt.setString(index++, "Test Post Comment 3");
@@ -281,7 +281,7 @@ public class TestUtilities {
 			stmt.setString(index++, "post");
 			stmt.executeUpdate();
 			
-			back.postCommentIDs[postCommentIndex++] = getPriorID(conn);
+			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
 			
 			index = 1;
 			stmt.setString(index++, "Test Photo Comment 2");
@@ -290,43 +290,43 @@ public class TestUtilities {
 			stmt.setString(index++, "photo");
 			stmt.executeUpdate();
 			
-			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn);
+			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
 			back.bookIDs = new int[2];
 			index = 0;
 			
-			stmt = conn.prepareStatement("INSERT INTO book (title,hardcover) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO book (title,hardcover) VALUES (?,?)");
 			
 			stmt.setString(1, "Test Book 1");
 			stmt.setInt(2, 1);
 			stmt.executeUpdate();
 			
-			back.bookIDs[index++] = getPriorID(conn);
+			back.bookIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setString(1, "Test Book 2");
 			stmt.setInt(2, 1);
 			stmt.executeUpdate();
 			
-			back.bookIDs[index++] = getPriorID(conn);
+			back.bookIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
 			back.magazineIDs = new int[2];
 			index = 0;
 			
-			stmt = conn.prepareStatement("INSERT INTO magazine (title) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO magazine (title) VALUES (?)");
 			
 			stmt.setString(1, "Test Magazine 1");
 			stmt.executeUpdate();
 			
-			back.magazineIDs[index++] = getPriorID(conn);
+			back.magazineIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.setString(1, "Test Magazine 2");
 			stmt.executeUpdate();
 			
-			back.magazineIDs[index++] = getPriorID(conn);
+			back.magazineIDs[index++] = getPriorID(conn, stmt);
 			
 			stmt.close();
 			
@@ -335,16 +335,16 @@ public class TestUtilities {
 			
 			for (int i = 0; i < back.bookIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.bookAuthorIDs[0].length; subIndex++) {
-					stmt = conn.prepareStatement("INSERT INTO author (name) VALUES (?)");
+					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
 					
 					stmt.setString(1, "Test Book Author " + (subIndex + 1));
 					stmt.executeUpdate();
 					
-					back.bookAuthorIDs[i][subIndex] = getPriorID(conn);
+					back.bookAuthorIDs[i][subIndex] = getPriorID(conn, stmt);
 					
 					stmt.close();
 					
-					stmt = conn.prepareStatement("INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
+					stmt = prepareStatement(conn, "INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
 					
 					stmt.setInt(1, back.bookIDs[i]);
 					stmt.setString(2, "book");
@@ -359,16 +359,16 @@ public class TestUtilities {
 			
 			for (int i = 0; i < back.magazineIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.magazineAuthorIDs[0].length; subIndex++) {
-					stmt = conn.prepareStatement("INSERT INTO author (name) VALUES (?)");
+					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
 					
 					stmt.setString(1, "Test Magazine Author " + (subIndex + 1));
 					stmt.executeUpdate();
 					
-					back.magazineAuthorIDs[i][subIndex] = getPriorID(conn);
+					back.magazineAuthorIDs[i][subIndex] = getPriorID(conn, stmt);
 					
 					stmt.close();
 					
-					stmt = conn.prepareStatement("INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
+					stmt = prepareStatement(conn, "INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
 					
 					stmt.setInt(1, back.magazineIDs[i]);
 					stmt.setString(2, "magazine");
@@ -397,7 +397,7 @@ public class TestUtilities {
 					
 					back.bookDistributionTypes[i][subIndex] = distType;
 					
-					stmt = conn.prepareStatement("INSERT INTO " + distTableName + ' ' + params);
+					stmt = prepareStatement(conn, "INSERT INTO " + distTableName + ' ' + params);
 					
 					if (distType == PrintDistribution.class) {
 						stmt.setInt(1, 20);
@@ -406,11 +406,11 @@ public class TestUtilities {
 					}
 					stmt.executeUpdate();
 					
-					back.bookDistributionIDs[i][subIndex] = getPriorID(conn);
+					back.bookDistributionIDs[i][subIndex] = getPriorID(conn, stmt);
 					
 					stmt.close();
 					
-					stmt = conn.prepareStatement("INSERT INTO publicationToDistribution " +
+					stmt = prepareStatement(conn, "INSERT INTO publicationToDistribution " +
 							"(publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
 					
 					stmt.setInt(1, back.bookIDs[i]);
@@ -441,7 +441,7 @@ public class TestUtilities {
 					
 					back.magazineDistributionTypes[i][subIndex] = distType;
 					
-					stmt = conn.prepareStatement("INSERT INTO " + distTableName + ' ' + params);
+					stmt = prepareStatement(conn, "INSERT INTO " + distTableName + ' ' + params);
 					
 					if (distType == PrintDistribution.class) {
 						stmt.setInt(1, 20);
@@ -450,11 +450,11 @@ public class TestUtilities {
 					}
 					stmt.executeUpdate();
 					
-					back.magazineDistributionIDs[i][subIndex] = getPriorID(conn);
+					back.magazineDistributionIDs[i][subIndex] = getPriorID(conn, stmt);
 					
 					stmt.close();
 					
-					stmt = conn.prepareStatement("INSERT INTO publicationToDistribution " +
+					stmt = prepareStatement(conn, "INSERT INTO publicationToDistribution " +
 							"(publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
 					
 					stmt.setInt(1, back.magazineIDs[i]);
@@ -479,7 +479,7 @@ public class TestUtilities {
 					params = " (url) VALUES (?)";
 				}
 				
-				stmt = conn.prepareStatement("INSERT INTO " + distTableName + ' ' + params);
+				stmt = prepareStatement(conn, "INSERT INTO " + distTableName + ' ' + params);
 				
 				if (distType == PrintDistribution.class) {
 					stmt.setInt(1, 20);
@@ -502,19 +502,31 @@ public class TestUtilities {
 		return back;
 	}
 	
-	private static final int getPriorID(Connection conn) throws SQLException {
+	private static final PreparedStatement prepareStatement(Connection conn, String sql) throws SQLException {
+		return conn.prepareStatement(sql/*, Statement.RETURN_GENERATED_KEYS*/);
+	}
+	
+	private static final int getPriorID(Connection conn, PreparedStatement stmt) throws SQLException {
 		int back = -1;
-		PreparedStatement stmt = conn.prepareStatement("CALL IDENTITY()");
-		ResultSet res = stmt.executeQuery();
+		PreparedStatement ident = conn.prepareStatement("CALL IDENTITY()");
+		ResultSet res = ident.executeQuery();
 		
 		if (res.next()) {
 			back = res.getInt(1);
 		}
 		
 		res.close();
-		stmt.close();
+		ident.close();
 		
 		return back;
+		
+//		int back = -1;
+//		ResultSet res = stmt.getGeneratedKeys();
+//		if (res.next()) {
+//			back = res.getInt(1);
+//		}
+//		
+//		return back;
 	}
 	
 	public static final void tearDownEntityManager(EntityManager manager) throws SQLException {
