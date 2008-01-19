@@ -36,7 +36,7 @@ class BigIntType extends DatabaseType<Long> {
 	}
 	
 	@Override
-	public Long convert(EntityManager manager, ResultSet res, Class<? extends Long> type, String field) throws SQLException {
+	public Long pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Long> type, String field) throws SQLException {
 		return res.getLong(field);
 	}
 

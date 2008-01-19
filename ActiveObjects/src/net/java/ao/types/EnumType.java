@@ -33,7 +33,7 @@ class EnumType extends DatabaseType<Enum<?>> {
 	}
 
 	@Override
-	public Enum<?> convert(EntityManager manager, ResultSet res, Class<? extends Enum<?>> type, 
+	public Enum<?> pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Enum<?>> type, 
 			String field) throws SQLException {
 		Enum<?>[] values = null;
 		int dbValue = res.getInt(field);

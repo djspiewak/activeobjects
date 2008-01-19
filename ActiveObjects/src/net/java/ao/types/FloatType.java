@@ -36,7 +36,7 @@ class FloatType extends DatabaseType<Float> {
 	}
 	
 	@Override
-	public Float convert(EntityManager manager, ResultSet res, Class<? extends Float> type, String field) throws SQLException {
+	public Float pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Float> type, String field) throws SQLException {
 		return res.getFloat(field);
 	}
 

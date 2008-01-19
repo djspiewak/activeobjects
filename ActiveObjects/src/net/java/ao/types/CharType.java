@@ -36,7 +36,7 @@ class CharType extends DatabaseType<Character> {
 	}
 		
 	@Override
-	public Character convert(EntityManager manager, ResultSet res, Class<? extends Character> type, String field) throws SQLException {
+	public Character pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Character> type, String field) throws SQLException {
 		return res.getString(field).charAt(0);
 	}
 

@@ -47,7 +47,7 @@ class BlobType extends DatabaseType<Object> {
 	}
 
 	@Override
-	public Object convert(EntityManager manager, ResultSet res, Class<?> type, String field) throws SQLException {
+	public Object pullFromDatabase(EntityManager manager, ResultSet res, Class<?> type, String field) throws SQLException {
 		Blob blob = res.getBlob(field);
 		
 		if (type.equals(InputStream.class)) {

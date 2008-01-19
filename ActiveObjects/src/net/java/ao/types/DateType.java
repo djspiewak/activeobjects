@@ -44,7 +44,7 @@ class DateType extends DatabaseType<Calendar> {
 	}
 	
 	@Override
-	public Calendar convert(EntityManager manager, ResultSet res, Class<? extends Calendar> type, String field) throws SQLException {
+	public Calendar pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Calendar> type, String field) throws SQLException {
 		Calendar back = Calendar.getInstance();
 		back.setTime(res.getDate(field));
 		

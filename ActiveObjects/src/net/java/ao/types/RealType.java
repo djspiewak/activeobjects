@@ -31,7 +31,7 @@ class RealType extends DatabaseType<Double> {
 	}
 
 	@Override
-	public Double convert(EntityManager manager, ResultSet res, Class<? extends Double> type, String field) throws SQLException {
+	public Double pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Double> type, String field) throws SQLException {
 		return res.getDouble(field);
 	}
 

@@ -353,7 +353,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
-				 back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, 1);
+				 back = TypeManager.getInstance().getType(pkType).pullFromDatabase(null, res, pkType, 1);
 			}
 			res.close();
 			stmt.close();

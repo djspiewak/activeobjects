@@ -102,10 +102,10 @@ public abstract class DatabaseType<T> {
 	
 	public abstract String getDefaultName();
 	
-	public abstract T convert(EntityManager manager, ResultSet res, Class<? extends T> type, String field) throws SQLException;
+	public abstract T pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends T> type, String field) throws SQLException;
 	
-	public T convert(EntityManager manager, ResultSet res, Class<? extends T> type, int index) throws SQLException {
-		return convert(manager, res, type, res.getMetaData().getColumnLabel(index));
+	public T pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends T> type, int index) throws SQLException {
+		return pullFromDatabase(manager, res, type, res.getMetaData().getColumnLabel(index));
 	}
 	
 	public abstract Object defaultParseValue(String value);

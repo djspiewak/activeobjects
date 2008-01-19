@@ -34,7 +34,7 @@ public class ClassType extends DatabaseType<Class<?>> {
 	}
 
 	@Override
-	public Class<?> convert(EntityManager manager, ResultSet res, Class<? extends Class<?>> type, String field) throws SQLException {
+	public Class<?> pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Class<?>> type, String field) throws SQLException {
 		try {
 			return Class.forName(res.getString(field));
 		} catch (Throwable t) {

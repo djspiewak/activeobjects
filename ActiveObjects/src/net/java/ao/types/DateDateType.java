@@ -45,7 +45,7 @@ class DateDateType extends DatabaseType<Date> {
 	}
 	
 	@Override
-	public Date convert(EntityManager manager, ResultSet res, Class<? extends Date> type, String field) throws SQLException {
+	public Date pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Date> type, String field) throws SQLException {
 		return res.getDate(field);
 	}
 

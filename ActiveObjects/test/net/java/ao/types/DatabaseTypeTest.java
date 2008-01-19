@@ -125,10 +125,10 @@ public class DatabaseTypeTest extends DataTest {
 			
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
-				assertEquals("JoeJoe", new VarcharType().convert(manager, res, String.class, "firstName"));
-				assertEquals(123, new IntegerType().convert(manager, res, int.class, "age"));
-				assertEquals(new URL("http://www.google.com"), new URLType().convert(manager, res, URL.class, "url"));
-				assertEquals(getClass(), new ClassType().convert(manager, res, (Class) Class.class, "favoriteClass"));
+				assertEquals("JoeJoe", new VarcharType().pullFromDatabase(manager, res, String.class, "firstName"));
+				assertEquals(123, new IntegerType().pullFromDatabase(manager, res, int.class, "age"));
+				assertEquals(new URL("http://www.google.com"), new URLType().pullFromDatabase(manager, res, URL.class, "url"));
+				assertEquals(getClass(), new ClassType().pullFromDatabase(manager, res, (Class) Class.class, "favoriteClass"));
 			}
 			res.close();
 			stmt.close();

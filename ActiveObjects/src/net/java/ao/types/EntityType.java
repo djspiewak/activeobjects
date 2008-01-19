@@ -49,11 +49,11 @@ class EntityType<T> extends DatabaseType<RawEntity<T>> {
 	}
 	
 	@Override
-	public RawEntity<T> convert(EntityManager manager, ResultSet res, Class<? extends RawEntity<T>> type, String field) throws SQLException {
+	public RawEntity<T> pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends RawEntity<T>> type, String field) throws SQLException {
 		DatabaseType<T> dbType = Common.getPrimaryKeyType(type);
 		Class<T> pkType = Common.getPrimaryKeyClassType(type);
 		
-		return manager.get(type, dbType.convert(manager, res, pkType, field));
+		return manager.get(type, dbType.pullFromDatabase(manager, res, pkType, field));
 	}
 
 	@Override

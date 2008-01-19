@@ -668,7 +668,7 @@ public class EntityManager {
 			provider.setQueryResultSetProperties(res, query);
 			
 			while (res.next()) {
-				T entity = get(type, Common.getPrimaryKeyType(type).convert(this, res, Common.getPrimaryKeyClassType(type), field));
+				T entity = get(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, Common.getPrimaryKeyClassType(type), field));
 				CacheLayer cacheLayer = getValueCache().getCacheLayer(entity);
 
 				for (int i = 0; i < md.getColumnCount(); i++) {
@@ -733,7 +733,7 @@ public class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, Common.getPrimaryKeyType(type).convert(this, res, (Class<? extends K>) type, keyField)));
+				back.add(get(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, (Class<? extends K>) type, keyField)));
 			}
 			res.close();
 			stmt.close();

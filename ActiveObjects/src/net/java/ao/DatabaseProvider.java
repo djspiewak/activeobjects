@@ -1793,7 +1793,7 @@ public abstract class DatabaseProvider {
 		if (back == null) {
 			ResultSet res = stmt.getGeneratedKeys();
 			if (res.next()) {
-				back = TypeManager.getInstance().getType(pkType).convert(null, res, pkType, 1);
+				back = TypeManager.getInstance().getType(pkType).pullFromDatabase(null, res, pkType, 1);
 			}
 			res.close();
 		}

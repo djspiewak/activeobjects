@@ -36,7 +36,7 @@ class VarcharType extends DatabaseType<String> {
 	}
 	
 	@Override
-	public String convert(EntityManager manager, ResultSet res, Class<? extends String> type, String field) throws SQLException {
+	public String pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends String> type, String field) throws SQLException {
 		return res.getString(field);
 	}
 

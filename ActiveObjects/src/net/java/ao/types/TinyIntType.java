@@ -36,7 +36,7 @@ class TinyIntType extends DatabaseType<Short> {
 	}
 	
 	@Override
-	public Short convert(EntityManager manager, ResultSet res, Class<? extends Short> type, String field) throws SQLException {
+	public Short pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Short> type, String field) throws SQLException {
 		return res.getShort(field);
 	}
 

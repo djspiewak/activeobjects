@@ -36,7 +36,7 @@ class IntegerType extends DatabaseType<Integer> {
 	}
 	
 	@Override
-	public Integer convert(EntityManager manager, ResultSet res, Class<? extends Integer> type, String field) throws SQLException {
+	public Integer pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Integer> type, String field) throws SQLException {
 		return res.getInt(field);
 	}
 

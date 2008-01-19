@@ -34,7 +34,7 @@ class GenericType extends DatabaseType<Object> {
 	
 
 	@Override
-	public Object convert(EntityManager manager, ResultSet res, Class<? extends Object> type, String field) throws SQLException {
+	public Object pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Object> type, String field) throws SQLException {
 		return res.getObject(field);
 	}
 

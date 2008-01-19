@@ -726,7 +726,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				K returnValue = dbType.convert(getManager(), res, (Class<? extends K>) type, returnField);
+				K returnValue = dbType.pullFromDatabase(getManager(), res, (Class<? extends K>) type, returnField);
 				Class<V> backType = finalType;
 				
 				for (String polyName : resPolyNames) {
@@ -742,7 +742,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				
 				if (throughField != null) {
 					throughValues.add(getManager().get((Class<? extends RawEntity<Object>>) type, 
-							throughDBType.convert(getManager(), res, type, throughField)));
+							throughDBType.pullFromDatabase(getManager(), res, type, throughField)));
 				}
 
 				V returnValueEntity = getManager().get(backType, returnValue);
@@ -808,7 +808,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			throw new RuntimeException("UnrecognizedType: " + type.toString());
 		}
 		
-		return databaseType.convert(getManager(), res, type, field);
+		return databaseType.pullFromDatabase(getManager(), res, type, field);
 	}
 
 	private boolean instanceOf(Object value, Class<?> type) {

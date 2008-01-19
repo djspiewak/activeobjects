@@ -44,7 +44,7 @@ class URLType extends DatabaseType<URL> {
 	}
 	
 	@Override
-	public URL convert(EntityManager manager, ResultSet res, Class<? extends URL> type, String field) throws SQLException {
+	public URL pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends URL> type, String field) throws SQLException {
 		try {
 			return new URL(res.getString(field));
 		} catch (MalformedURLException e) {
