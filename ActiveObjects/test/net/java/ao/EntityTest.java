@@ -227,7 +227,7 @@ public class EntityTest extends DataTest {
 		InputStream is = company.getImage();
 		
 		int count = 0;
-		while (is.read() != 0) {
+		while (is.read() >= 0) {
 			count++;
 		}
 		is.close();
@@ -243,7 +243,7 @@ public class EntityTest extends DataTest {
 		
 		int i = 0;
 		int b = 0;
-		while ((b = is.read()) != 0) {
+		while ((b = is.read()) >= 0) {
 			image[i++] = (byte) b;
 		}
 		is.close();

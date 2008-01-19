@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,10 +48,12 @@ class BlobType extends DatabaseType<Object> {
 
 	@Override
 	public Object convert(EntityManager manager, ResultSet res, Class<?> type, String field) throws SQLException {
+		Blob blob = res.getBlob(field);
+		
 		if (type.equals(InputStream.class)) {
-			return res.getBinaryStream(field);
+			return blob.getBinaryStream();
 		} else if (type.equals(byte[].class)) {
-			return res.getBytes(field);
+			return blob.getBytes(1, (int) blob.length());
 		}
 		
 		return null;
