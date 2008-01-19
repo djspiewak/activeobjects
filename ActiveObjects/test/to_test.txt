@@ -2,13 +2,6 @@
  
  * Run tests with different name converter combinations
  
- ==Query==
- 
- * limit(int)/offset(int)
- * group(String)
- * order(String)
- * distinct
- 
  ==Entities==
  
  * concurrency
