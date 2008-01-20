@@ -88,11 +88,10 @@ public enum SupportedDBProvider {
 	/**
 	 * Returns the <code>SupportedDBProvider</code> which corresponds to the
 	 * database provider which corresponds to the specified JDBC URI.  If no corresponding
-	 * proivder is found, a {@link RuntimeException} is thrown.
+	 * proivder is found, <code>null</code> is returned.
 	 * 
 	 * @param uri	The JDBC URI for which a database provider is required.
 	 * @return The enum value which corresponds to the required database provider.
-	 * @throws	RuntimeException	If no suitable provider is found.
 	 */
 	public static SupportedDBProvider getProviderForURI(String uri) {
 		for (SupportedDBProvider provider : values()) {
@@ -101,6 +100,6 @@ public enum SupportedDBProvider {
 			}
 		}
 		
-		throw new RuntimeException("Unable to find suitable provider for URI: " + uri);
+		return null;
 	}
 }
