@@ -180,6 +180,9 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			case Types.BOOLEAN:
 				return "INTEGER";
 			
+			case Types.DOUBLE:
+				return "DECIMAL";
+				
 			case Types.TIMESTAMP:
 				return "DATETIME";
 				
@@ -188,9 +191,22 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 				
 			case Types.CLOB:
 				return "NTEXT";
+				
+			case Types.BLOB:
+				return "IMAGE";
 		}
 		
 		return super.convertTypeToString(type);
+	}
+	
+	@Override
+	protected boolean considerPrecision(DDLField field) {
+		switch (field.getType().getType()) {
+			case Types.INTEGER:
+				return false;
+		}
+		
+		return super.considerPrecision(field);
 	}
 	
 	@Override
