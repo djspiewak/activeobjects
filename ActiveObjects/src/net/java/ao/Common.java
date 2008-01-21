@@ -209,6 +209,15 @@ public final class Common {
 		return converter.getName(annotatedMethods[0]);
 	}
 	
+	public static Method getPrimaryKeyMethod(Class<? extends RawEntity<?>> type) {
+		Method[] annotatedMethods = MethodFinder.getInstance().findAnnotation(PrimaryKey.class, type);
+		if (annotatedMethods.length == 0) {
+			throw new RuntimeException("Entity " + type.getSimpleName() + " has no primary key field");
+		}
+		
+		return annotatedMethods[0];
+	}
+	
 	public static <K> DatabaseType<K> getPrimaryKeyType(Class<? extends RawEntity<K>> type) {
 		return TypeManager.getInstance().getType(getPrimaryKeyClassType(type));
 	}

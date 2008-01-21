@@ -117,11 +117,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	/**
-	 * @see net.java.ao.DatabaseProvider#insertReturningKey(Connection, Class, String, String, DBParam...)
+	 * @see net.java.ao.DatabaseProvider#insertReturningKey(Connection, Class, String, boolean, String, DBParam...)
 	 */
 	@Override
-	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
-		return delegate.insertReturningKey(conn, pkType, pkField, table, params);
+	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
+		return delegate.insertReturningKey(conn, pkType, pkField, pkIdentity, table, params);
 	}
 	
 	@Override

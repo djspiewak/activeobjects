@@ -293,16 +293,18 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public synchronized <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, 
-			DBParam... params) throws SQLException {
+	public synchronized <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, 
+			String table, DBParam... params) throws SQLException {
 		boolean identityInsert = false;
 		StringBuilder sql = new StringBuilder();
 		
-		for (DBParam param : params) {
-			if (param.getField().trim().equalsIgnoreCase(pkField)) {
-				identityInsert = true;
-				sql.append("SET IDENTITY_INSERT ").append(table).append(" ON\n");
-				break;
+		if (pkIdentity) {
+			for (DBParam param : params) {
+				if (param.getField().trim().equalsIgnoreCase(pkField)) {
+					identityInsert = true;
+					sql.append("SET IDENTITY_INSERT ").append(table).append(" ON\n");
+					break;
+				}
 			}
 		}
 		

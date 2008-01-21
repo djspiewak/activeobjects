@@ -1672,6 +1672,8 @@ public abstract class DatabaseProvider {
 	 * @param pkField	The database field which is the primary key for the
 	 * 		table in question.  Can be used to perform a linear search for a 
 	 * 		specified primary key value in the <code>params</code> list.
+	 * @param pkIdentity	Flag indicating whether or not the primary key field
+	 * 		is auto-incremented by the database (IDENTITY field).
 	 * @param table	The name of the table into which the row is to be INSERTed.
 	 * @param params	A varargs array of parameters to be passed to the
 	 * 		INSERT statement.  This may include a specified value for the
@@ -1682,7 +1684,7 @@ public abstract class DatabaseProvider {
 	 */
 	@SuppressWarnings("unused")
 	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, 
-			String table, DBParam... params) throws SQLException {
+			boolean pkIdentity, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
@@ -1714,7 +1716,7 @@ public abstract class DatabaseProvider {
 	/**
 	 * <p>Delegate method to execute an INSERT statement returning any auto-generated
 	 * primary key values.  This method is primarily designed to be called as a delegate
-	 * from the {@link #insertReturningKey(Connection, Class, String, String, DBParam...)}
+	 * from the {@link #insertReturningKey(Connection, Class, String, boolean, String, DBParam...)}
 	 * method.  The idea behind this method is to allow custom implementations to
 	 * override this method to potentially execute other statements (such as getting the
 	 * next value in a sequence) rather than the default implementaiton which uses the
@@ -1765,7 +1767,7 @@ public abstract class DatabaseProvider {
 	 * 		primary key.
 	 * @throws	SQLException	If the INSERT fails in the delegate method, or
 	 * 		if any additional statements fail with an exception.
-	 * @see #insertReturningKey(Connection, Class, String, String, DBParam...)
+	 * @see #insertReturningKey(Connection, Class, String, boolean, String, DBParam...)
 	 */
 	protected <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, 
 			String sql, DBParam... params) 

@@ -56,7 +56,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, String table, DBParam... params) throws SQLException {
+	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
 		
 		for (DBParam param : params) {
