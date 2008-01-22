@@ -15,6 +15,7 @@
  */
 package net.java.ao;
 
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ import net.java.ao.types.TypeManager;
 /**
  * @author Daniel Spiewak
  */
-public class Query {
+public class Query implements Serializable {
 	public enum QueryType {
 		SELECT
 	}
@@ -51,6 +52,8 @@ public class Query {
 	private int offset = -1;
 	
 	private Map<Class<? extends RawEntity<?>>, String> joins;
+	
+	private static final long serialVersionUID = 1l;
 	
 	public Query(QueryType type, String fields) {
 		this.type = type;
@@ -116,7 +119,7 @@ public class Query {
 	
 	public Query where(String clause, Object... params) {
 		whereClause = clause;
-		whereParams = params;
+		setWhereParams(params);
 		
 		return this;
 	}
@@ -195,6 +198,14 @@ public class Query {
 
 	public void setWhereParams(Object[] whereParams) {
 		this.whereParams = whereParams;
+		
+		if (whereParams != null) {
+			for (int i = 0; i < whereParams.length; i++) {
+				if (whereParams[i] instanceof RawEntity) {
+					whereParams[i] = Common.getPrimaryKeyValue((RawEntity<?>) whereParams[i]);
+				}
+			}
+		}
 	}
 
 	public String getOrderClause() {
