@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>activeobjects</groupId>
+  <groupId>net.java.dev.activeobjects</groupId>
   <artifactId>activeobjects</artifactId>
   <name>ActiveObjects</name>
-  <version>0.7-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <inceptionYear>2007</inceptionYear>
   <scm>
     <connection>scm:svn:https://activeobjects.dev.java.net/svn/activeobjects/trunk/ActiveObjects</connection>
@@ -33,8 +33,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.5</source>
+          <target>1.5</target>
         </configuration>
       </plugin>
     </plugins>
@@ -59,6 +59,7 @@
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
       <version>1.2.2</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>ant</groupId>
@@ -75,6 +76,13 @@
       <groupId>proxool</groupId>
       <artifactId>proxool</artifactId>
       <version>0.8.3</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>snaq.db.dbpool</groupId>
+      <artifactId>dbpool</artifactId>
+      <version>4.8.3</version>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>
