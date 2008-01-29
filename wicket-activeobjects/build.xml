@@ -11,9 +11,17 @@
 		<mkdir dir="${wicket-activeobjects.dir}/bin"/>
 	</target>
 	
+	<target name="init-dist">
+		<mkdir dir="dist"/>
+	</target>
+	
 	<target name="build" depends="init,ActiveObjects.build">
 		<javac srcdir="${wicket-activeobjects.dir}/src" destdir="${wicket-activeobjects.dir}/bin"
 			debug="${build.debug}" classpath="${wicket-activeobjects.build.classpath}"/>
+	</target>
+	
+	<target name="jar" depends="init-dist,build">
+		<jar basedir="bin" destfile="dist/wicket-activeobjects-${activeobjects.version}.jar" compress="no"/>
 	</target>
 	
 	<target name="clean">
