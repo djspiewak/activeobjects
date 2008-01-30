@@ -66,6 +66,7 @@ public class TypeManager {
 		types.add(new EnumType());
 		types.add(new RealType());
 		types.add(new URLType());
+		types.add(new URIType());
 	}
 	
 	public void addType(DatabaseType<?> type) {
