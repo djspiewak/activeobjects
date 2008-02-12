@@ -15,7 +15,9 @@
  */
 package net.java.ao.types;
 
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +25,28 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.java.ao.Common;
+import net.java.ao.EntityManager;
 import net.java.ao.RawEntity;
 
 /**
+ * <p>Central managing class for the ActiveObjects type system.  The type
+ * system in AO is designed to allow extensibility and control over
+ * how specific data types are handled internally.  All database-agnostic,
+ * type-specific tasks are delegated to the actual type instances.  This
+ * class acts as a singleton container for every available type, indexing
+ * them based on corresponding Java type and JDBC integer type.</p>
+ * 
+ * <p>This container is thread safe and so may be used from within multiple
+ * contexts.</p>
+ * 
  * @author Daniel Spiewak
+ * @see net.java.ao.types.DatabaseType
  */
 public class TypeManager {
 	private static TypeManager instance;
 	
 	private final List<DatabaseType<?>> types;
 	
-	// TODO	make thread safe
 	private final Map<Class<?>, DatabaseType<?>> classIndex;
 	private final ReadWriteLock classIndexLock;
 	
@@ -41,7 +54,7 @@ public class TypeManager {
 	private final ReadWriteLock intIndexLock;
 	
 	private TypeManager() {
-		types = new ArrayList<DatabaseType<?>>();
+		types = Collections.synchronizedList(new ArrayList<DatabaseType<?>>());
 		classIndex = new HashMap<Class<?>, DatabaseType<?>>();
 		intIndex = new HashMap<Integer, DatabaseType<?>>();
 		
@@ -69,14 +82,46 @@ public class TypeManager {
 		types.add(new URIType());
 	}
 	
+	/**
+	 * Adds a new type to the container.  Once the type is added, it
+	 * will be availble to <i>every</i> {@link EntityManager} instance.
+	 * This method is used internally to set up the default types
+	 * (such as <code>int</code>, <code>String</code> and so on).  Any
+	 * custom types should be added using this method.
+	 * 
+	 * @param type	The type instance to add to the container.
+	 */
 	public void addType(DatabaseType<?> type) {
 		types.add(type);
 	}
 	
+	/**
+	 * <p>Returns the corresponding {@link DatabaseType} for a given Java
+	 * class.  This is the primary mechanism used by ActiveObjects
+	 * internally to obtain type instances.  Code external to the
+	 * framework may also make use of this method to obtain the relevant
+	 * type information or to just test if a type is in fact
+	 * available.  Types are internally prioritized by entry order.  The
+	 * first type to respond <code>true</code> to the {@link DatabaseType#isHandlerFor(Class)}
+	 * method will be returned.</p>
+	 * 
+	 * <p>It's worth noting that this method worst case runs in <code>O(n)</code>
+	 * time.  This is because a linear search must be made through the
+	 * raw list of available types.  However, once the type has been found
+	 * it is placed into a hash indexed by class type.  Thus for most types,
+	 * this method will run in constant time (<code>O(1)</code>).</p>
+	 * 
+	 * @param javaType	The {@link Class} type for which a type instance
+	 * 		should be returned.
+	 * @return	The type instance which corresponds to the specified class.
+	 * @throws	RuntimeException	If no type was found correspondant to the
+	 * 		given class.
+	 * @see #getType(int)
+	 */
 	public <T> DatabaseType<T> getType(Class<T> javaType) {
 		DatabaseType<T> back = null;
 		
-		if (javaType.isInterface() && Common.interfaceInheritsFrom(javaType, RawEntity.class)) {
+		if (Common.typeInstanceOf(javaType, RawEntity.class)) {
 			return (DatabaseType<T>) new EntityType<Object>((Class<? extends RawEntity<Object>>) javaType);
 		}
 		
@@ -105,6 +150,27 @@ public class TypeManager {
 		return back;
 	}
 	
+	/**
+	 * <p>Returns the corresponding {@link DatabaseType} for a given JDBC
+	 * integer type.  Code external to the framework may also make use of 
+	 * this method to obtain the relevant type information or to just test 
+	 * if a type is in fact available.  Types are internally prioritized by 
+	 * entry order.  The first type to respond <code>true</code> to the 
+	 * {@link DatabaseType#isHandlerFor(int)} method will be returned.</p>
+	 * 
+	 * <p>It's worth noting that this method worst case runs in <code>O(n)</code>
+	 * time.  This is because a linear search must be made through the
+	 * raw list of available types.  However, once the type has been found
+	 * it is placed into a hash indexed by int value.  Thus for most types,
+	 * this method will run in constant time (<code>O(1)</code>).</p>
+	 * 
+	 * @param sqlType	The JDBC {@link Types} constant for which a type
+	 * 		instance should be retrieved.
+	 * @return	The type instance which corresponds to the specified type constant.
+	 * @throws	RuntimeException	If no type was found correspondant to the
+	 * 		given type constant.
+	 * @see #getType(Class)
+	 */
 	public DatabaseType<?> getType(int sqlType) {
 		DatabaseType<?> back = null;
 		
@@ -133,7 +199,15 @@ public class TypeManager {
 		return back;
 	}
 	
-	public static TypeManager getInstance() {
+	/**
+	 * Retrieves the singleton instance of the container.  This method is
+	 * thread-safe and synchronized using pre-Java 5 mechanisms (meaning it
+	 * may be a little slower than it could be).  For optimal efficiency, 
+	 * do not make repeated calls.
+	 * 
+	 * @return	The global singleton instance.
+	 */
+	public static synchronized TypeManager getInstance() {
 		if (instance == null) {
 			instance = new TypeManager();
 		}
