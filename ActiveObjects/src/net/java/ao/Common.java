@@ -102,6 +102,25 @@ public final class Common {
 		return back.toArray(new String[back.size()]);
 	}
 
+	/**
+	 * <b>Note</b>: this method leads to the creation and quick discard of
+	 * large numbers of {@link AnnotationDelegate} objects.  Need to
+	 * do some research to determine whether or not this is actually
+	 * a problem.
+	 */
+	public static AnnotationDelegate getAnnotationDelegate(FieldNameConverter converter, Method method) {
+		return new AnnotationDelegate(method, findCounterpart(converter, method));
+	}
+	
+	/**
+	 * Finds the corresponding method in an accessor/mutator pair based
+	 * on the given method (or <code>null</code> if no corresponding method).
+	 * @param converter TODO
+	 */
+	public static Method findCounterpart(FieldNameConverter converter, Method method) {
+		return MethodFinder.getInstance().findCounterpart(converter, method);
+	}
+	
 	public static boolean isAccessor(Method method) {
 		if (method.getAnnotation(Accessor.class) != null) {
 			return true;
@@ -169,7 +188,7 @@ public final class Common {
 		List<String> back = new ArrayList<String>();
 		
 		for (Method m : type.getMethods()) {
-			Searchable annot = m.getAnnotation(Searchable.class);
+			Searchable annot = getAnnotationDelegate(manager.getFieldNameConverter(), m).getAnnotation(Searchable.class);
 			
 			if (annot != null) {
 				Class<?> attributeType = Common.getAttributeTypeFromMethod(m);

@@ -214,7 +214,7 @@ public class SearchableEntityManager extends EntityManager {
 
 			boolean shouldAdd = false;
 			for (Method m : entity.getEntityType().getMethods()) {
-				Searchable indexAnno = m.getAnnotation(Searchable.class);
+				Searchable indexAnno = Common.getAnnotationDelegate(getFieldNameConverter(), m).getAnnotation(Searchable.class);
 
 				if (indexAnno != null) {
 					shouldAdd = true;

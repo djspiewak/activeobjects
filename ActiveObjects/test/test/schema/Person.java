@@ -58,11 +58,9 @@ public interface Person extends Entity {
 	public void setAge(int age);
 
 	@Unique
-	@Default("http://www.google.com")
 	@Accessor("url")
 	public URL getURL();
 
-	@Unique
 	@Default("http://www.google.com")
 	@Mutator("url")
 	public void setURL(URL url);

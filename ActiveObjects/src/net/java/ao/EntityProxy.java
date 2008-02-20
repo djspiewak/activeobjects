@@ -134,8 +134,11 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		OneToOne oneToOneAnnotation = method.getAnnotation(OneToOne.class);
 		OneToMany oneToManyAnnotation = method.getAnnotation(OneToMany.class);
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
-		OnUpdate onUpdateAnnotation = method.getAnnotation(OnUpdate.class);
-		Transient transientAnnotation = method.getAnnotation(Transient.class);
+		
+		AnnotationDelegate annotations = Common.getAnnotationDelegate(getManager().getFieldNameConverter(), method);
+		
+		OnUpdate onUpdateAnnotation = annotations.getAnnotation(OnUpdate.class);
+		Transient transientAnnotation = annotations.getAnnotation(Transient.class);
 
 		// check annotations first, they trump all
 		if (mutatorAnnotation != null) {

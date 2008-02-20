@@ -24,27 +24,35 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import net.java.ao.schema.FieldNameConverter;
+
 /**
  * @author Daniel Spiewak
  */
 final class MethodFinder {
 	private static MethodFinder instance;
 	
-	private Map<CacheKey, Method[]> cache;
-	private final ReadWriteLock cacheLock;
+	private Map<AnnotationCacheKey, Method[]> annotationCache;
+	private final ReadWriteLock annotationCacheLock;
+	
+	private Map<CounterpartCacheKey, Method> counterpartCache;
+	private final ReadWriteLock counterpartCacheLock;
 	
 	private MethodFinder() {
-		cache = new HashMap<CacheKey, Method[]>();
-		cacheLock = new ReentrantReadWriteLock();
+		annotationCache = new HashMap<AnnotationCacheKey, Method[]>();
+		annotationCacheLock = new ReentrantReadWriteLock();
+		
+		counterpartCache = new HashMap<CounterpartCacheKey, Method>();
+		counterpartCacheLock = new ReentrantReadWriteLock();
 	}
 	
 	public Method[] findAnnotation(Class<? extends Annotation> annotation, Class<? extends RawEntity<?>> clazz) {
-		CacheKey key = new CacheKey(annotation, clazz);
+		AnnotationCacheKey key = new AnnotationCacheKey(annotation, clazz);
 		
-		cacheLock.writeLock().lock();
+		annotationCacheLock.writeLock().lock();
 		try {
-			if (cache.containsKey(key)) {
-				return cache.get(key);
+			if (annotationCache.containsKey(key)) {
+				return annotationCache.get(key);
 			}
 			
 			List<Method> back = new ArrayList<Method>();
@@ -55,12 +63,37 @@ final class MethodFinder {
 			}
 			
 			Method[] array = back.toArray(new Method[back.size()]);
-			cache.put(key, array);
+			annotationCache.put(key, array);
 			
 			return array;
 		} finally {
-			cacheLock.writeLock().unlock();
+			annotationCacheLock.writeLock().unlock();
 		}
+	}
+	
+	public Method findCounterpart(FieldNameConverter converter, Method method) {
+		CounterpartCacheKey key = new CounterpartCacheKey(converter, method);
+		String name = converter.getName(method);
+		
+		counterpartCacheLock.writeLock().lock();
+		try {
+			if (counterpartCache.containsKey(key)) {
+				return counterpartCache.get(method);
+			}
+			
+			Class<?> clazz = method.getDeclaringClass();
+			for (Method other : clazz.getMethods()) {
+				String otherName = converter.getName(other);
+				if (!other.equals(method) && otherName != null && otherName.equals(name)) {
+					counterpartCache.put(key, other);
+					return other;
+				}
+			}
+		} finally {
+			counterpartCacheLock.writeLock().unlock();
+		}
+		
+		return null;
 	}
 	
 	public static synchronized MethodFinder getInstance() {
@@ -71,11 +104,11 @@ final class MethodFinder {
 		return instance;
 	}
 	
-	private static final class CacheKey {
+	private static final class AnnotationCacheKey {
 		private Class<? extends Annotation> annotation;
 		private Class<? extends RawEntity<?>> type;
 		
-		public CacheKey(Class<? extends Annotation> annotation, Class<? extends RawEntity<?>> type) {
+		public AnnotationCacheKey(Class<? extends Annotation> annotation, Class<? extends RawEntity<?>> type) {
 			this.annotation = annotation;
 			this.type = type;
 		}
@@ -113,8 +146,8 @@ final class MethodFinder {
 		
 		@Override
 		public boolean equals(Object obj) {
-			if (obj instanceof CacheKey) {
-				CacheKey key = (CacheKey) obj;
+			if (obj instanceof AnnotationCacheKey) {
+				AnnotationCacheKey key = (AnnotationCacheKey) obj;
 				
 				if (key.getAnnotation().equals(annotation) && key.getType().equals(type)) {
 					return true;
@@ -124,6 +157,44 @@ final class MethodFinder {
 			}
 			
 			return super.equals(obj);
+		}
+	}
+	
+	private static final class CounterpartCacheKey {
+		private final FieldNameConverter converter;
+		private final Method method;
+		
+		public CounterpartCacheKey(FieldNameConverter converter, Method method) {
+			this.converter = converter;
+			this.method = method;
+		}
+
+		public FieldNameConverter getConverter() {
+			return converter;
+		}
+
+		public Method getMethod() {
+			return method;
+		}
+		
+		@Override
+		public int hashCode() {
+			return converter.hashCode() + method.hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (super.equals(obj)) {
+				return true;
+			}
+			
+			if (obj instanceof CounterpartCacheKey) {
+				CounterpartCacheKey key = (CounterpartCacheKey) obj;
+				
+				return key.converter == converter && key.method == method;
+			}
+			
+			return false;
 		}
 	}
 }

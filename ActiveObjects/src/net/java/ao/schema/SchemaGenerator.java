@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.AnnotationDelegate;
 import net.java.ao.Common;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
@@ -194,10 +195,12 @@ public final class SchemaGenerator {
 		List<String> attributes = new LinkedList<String>();
 		
 		for (Method method : clazz.getMethods()) {
-			if (method.getAnnotation(Ignore.class) != null
-					|| method.getAnnotation(OneToOne.class) != null
-					|| method.getAnnotation(OneToMany.class) != null
-					|| method.getAnnotation(ManyToMany.class) != null) {
+			AnnotationDelegate annotations = Common.getAnnotationDelegate(fieldConverter, method);
+			
+			if (annotations.getAnnotation(Ignore.class) != null
+					|| annotations.getAnnotation(OneToOne.class) != null
+					|| annotations.getAnnotation(OneToMany.class) != null
+					|| annotations.getAnnotation(ManyToMany.class) != null) {
 				continue;
 			}
 			
@@ -210,9 +213,9 @@ public final class SchemaGenerator {
 				}
 				attributes.add(attributeName);
 				
-				DatabaseType<?> sqlType = getSQLTypeFromMethod(type, method);
-				int precision = getPrecisionFromMethod(type, method);
-				int scale = getScaleFromMethod(type, method);
+				DatabaseType<?> sqlType = getSQLTypeFromMethod(type, annotations);
+				int precision = getPrecisionFromMethod(type, method, fieldConverter);
+				int scale = getScaleFromMethod(type, method, fieldConverter);
 				
 				DDLField field = new DDLField();
 				
@@ -221,26 +224,26 @@ public final class SchemaGenerator {
 				field.setPrecision(precision);
 				field.setScale(scale);
 				
-				if (method.getAnnotation(PrimaryKey.class) != null) {
+				if (annotations.getAnnotation(PrimaryKey.class) != null) {
 					field.setPrimaryKey(true);
 				}
 				
-				if (method.getAnnotation(NotNull.class) != null) {
+				if (annotations.getAnnotation(NotNull.class) != null) {
 					field.setNotNull(true);
 				}
 				
-				if (method.getAnnotation(Unique.class) != null) {
+				if (annotations.getAnnotation(Unique.class) != null) {
 					field.setUnique(true);
 				}
 				
-				if (method.getAnnotation(AutoIncrement.class) != null) {
+				if (annotations.getAnnotation(AutoIncrement.class) != null) {
 					field.setAutoIncrement(true);
-				} else if (method.getAnnotation(Default.class) != null) {
-					field.setDefaultValue(convertStringValue(method.getAnnotation(Default.class).value(), sqlType));
+				} else if (annotations.getAnnotation(Default.class) != null) {
+					field.setDefaultValue(convertStringValue(annotations.getAnnotation(Default.class).value(), sqlType));
 				}
 				
-				if (method.getAnnotation(OnUpdate.class) != null) {
-					field.setOnUpdate(convertStringValue(method.getAnnotation(OnUpdate.class).value(), sqlType));
+				if (annotations.getAnnotation(OnUpdate.class) != null) {
+					field.setOnUpdate(convertStringValue(annotations.getAnnotation(OnUpdate.class).value(), sqlType));
 				}
 				
 				if (field.isPrimaryKey()) {
@@ -263,7 +266,7 @@ public final class SchemaGenerator {
 					field.setPrecision(127);
 					field.setScale(-1);
 					
-					if (method.getAnnotation(NotNull.class) != null) {
+					if (annotations.getAnnotation(NotNull.class) != null) {
 						field.setNotNull(true);
 					}
 					
@@ -275,13 +278,13 @@ public final class SchemaGenerator {
 		return fields.toArray(new DDLField[fields.size()]);
 	}
 	
-	private static DatabaseType<?> getSQLTypeFromMethod(Class<?> type, Method method) {
+	private static DatabaseType<?> getSQLTypeFromMethod(Class<?> type, AnnotationDelegate annotations) {
 		DatabaseType<?> sqlType = null;
 		TypeManager manager = TypeManager.getInstance();
 		
 		sqlType = manager.getType(type);
 		
-		SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+		SQLType sqlTypeAnnotation = annotations.getAnnotation(SQLType.class);
 		if (sqlTypeAnnotation != null) {
 			if (sqlTypeAnnotation.value() > 0) {
 				sqlType = manager.getType(sqlTypeAnnotation.value());
@@ -291,13 +294,13 @@ public final class SchemaGenerator {
 		return sqlType;
 	}
 	
-	private static int getPrecisionFromMethod(Class<?> type, Method method) {
+	private static int getPrecisionFromMethod(Class<?> type, Method method, FieldNameConverter converter) {
 		TypeManager manager = TypeManager.getInstance();
 		int precision = -1;
 		
 		precision = manager.getType(type).getDefaultPrecision();
 		
-		SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+		SQLType sqlTypeAnnotation = Common.getAnnotationDelegate(converter, method).getAnnotation(SQLType.class);
 		if (sqlTypeAnnotation != null) {
 			precision = sqlTypeAnnotation.precision();
 		}
@@ -305,10 +308,10 @@ public final class SchemaGenerator {
 		return precision;
 	}
 	
-	private static int getScaleFromMethod(Class<?> type, Method method) {
+	private static int getScaleFromMethod(Class<?> type, Method method, FieldNameConverter converter) {
 		int scale = -1;
 		
-		SQLType sqlTypeAnnotation = method.getAnnotation(SQLType.class);
+		SQLType sqlTypeAnnotation = Common.getAnnotationDelegate(converter, method).getAnnotation(SQLType.class);
 		if (sqlTypeAnnotation != null) {
 			scale = sqlTypeAnnotation.scale();
 		}
@@ -347,16 +350,17 @@ public final class SchemaGenerator {
 		
 		for (Method method : clazz.getMethods()) {
 			String attributeName = fieldConverter.getName(method);
+			AnnotationDelegate annotations = Common.getAnnotationDelegate(fieldConverter, method);
 			
 			if (Common.isAccessor(method) || Common.isMutator(method)) {
-				Indexed indexedAnno = method.getAnnotation(Indexed.class);
+				Indexed indexedAnno = annotations.getAnnotation(Indexed.class);
 				Class<?> type = Common.getAttributeTypeFromMethod(method);
 				
 				if (indexedAnno != null || (type != null && Common.interfaceInheritsFrom(type, RawEntity.class))) {
 					DDLIndex index = new DDLIndex();
 					index.setField(attributeName);
 					index.setTable(tableName);
-					index.setType(getSQLTypeFromMethod(type, method));
+					index.setType(getSQLTypeFromMethod(type, annotations));
 					
 					back.add(index);
 				}
