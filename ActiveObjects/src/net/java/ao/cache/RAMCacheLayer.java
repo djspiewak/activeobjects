@@ -47,10 +47,15 @@ public class RAMCacheLayer implements CacheLayer {
 		dirtyLock.readLock().lock();
 		valueLock.writeLock().lock();
 		try {
+			Set<String> toRemove = new HashSet<String>();
 			for (String field : values.keySet()) {
 				if (!dirty.contains(field)) {
-					values.remove(field);
+					toRemove.add(field);
 				}
+			}
+			
+			for (String field : toRemove) {
+				values.remove(field);
 			}
 		} finally {
 			valueLock.writeLock().unlock();
