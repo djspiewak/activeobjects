@@ -16,11 +16,14 @@
 package test.schema;
 
 import net.java.ao.Entity;
+import net.java.ao.schema.NotNull;
 
 /**
  * @author Daniel Spiewak
  */
 public interface Message extends Entity {
+	
+	@NotNull
 	public String getContents();
 	public void setContents(String contents);
 

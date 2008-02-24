@@ -487,6 +487,14 @@ public class EntityTest extends DataTest {
 		}
 	}
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testNotNullSoftCheck() {
+		Message message = manager.get(Message.class, messageIDs[0]);
+		message.setContents(null);		// should throw exception
+		
+		manager.flush(message);
+	}
+	
 	@Test
 	public void testOneToOneRetrievalID() {
 		Person person = manager.get(Person.class, personID);

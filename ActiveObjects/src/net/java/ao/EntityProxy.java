@@ -41,6 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.java.ao.cache.CacheLayer;
+import net.java.ao.schema.NotNull;
 import net.java.ao.schema.OnUpdate;
 import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
@@ -872,6 +873,14 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	private void checkConstraints(Method method, Object[] args) {
+		AnnotationDelegate annotations = Common.getAnnotationDelegate(getManager().getFieldNameConverter(), method);
 		
+		NotNull notNullAnnotation = annotations.getAnnotation(NotNull.class);
+		if (notNullAnnotation != null && args != null && args.length > 0) {
+			if (args[0] == null) {
+				String name = getManager().getFieldNameConverter().getName(method);
+				throw new IllegalArgumentException("Field '" + name + "' does not accept null values");
+			}
+		}
 	}
 }

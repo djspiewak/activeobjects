@@ -38,7 +38,6 @@ public interface Person extends Entity {
 	
 	@Searchable
 	public String getFirstName();
-	@Searchable
 	public void setFirstName(String firstName);
 	
 	@Searchable
