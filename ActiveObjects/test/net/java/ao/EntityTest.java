@@ -37,7 +37,9 @@ import test.schema.Comment;
 import test.schema.Commentable;
 import test.schema.Company;
 import test.schema.Distribution;
+import test.schema.EmailAddress;
 import test.schema.Magazine;
+import test.schema.Message;
 import test.schema.OnlineDistribution;
 import test.schema.Pen;
 import test.schema.Person;
@@ -1032,5 +1034,32 @@ public class EntityTest extends DataTest {
 		SQLLogMonitor.getInstance().markWatchSQL();
 		magazine.getDistributions();
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
+
+	@Test
+	public void testMultiPathPolymorphicOneToManyRetrievalIDs() {
+		EntityProxy.ignorePreload = true;
+		try {
+			EmailAddress address = manager.get(EmailAddress.class, addressIDs[0]);
+			Message[] messages = address.getMessages();
+
+			assertEquals(messageIDs.length, messages.length);
+
+			for (Message message : messages) {
+				boolean found = false;
+				for (int id : messageIDs) {
+					if (message.getID() == id) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					fail("Unable to find id=" + message.getID());
+				}
+			}
+		} finally {
+			EntityProxy.ignorePreload = false;
+		}
 	}
 }

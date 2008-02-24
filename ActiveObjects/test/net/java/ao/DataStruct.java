@@ -48,4 +48,7 @@ public class DataStruct {
 	
 	public int[][] magazineDistributionIDs;
 	public Class<? extends Distribution>[][] magazineDistributionTypes;
+	
+	public int[] addressIDs;
+	public int[] messageIDs;
 }

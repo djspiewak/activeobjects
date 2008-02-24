@@ -118,6 +118,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		} else if (method.getName().equals("toString")) {
 			return toStringImpl();
 		}
+		
+		checkConstraints(method, args);
 
 		String tableName = getManager().getTableNameConverter().getName(type);
 
@@ -676,6 +678,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 							}
 						}
 						
+						if (thisPolyNames != null) {
+							for (String name : thisPolyNames) {
+								sql.append(',').append(name);
+							}
+						}
+						
 						sql.append(" FROM ").append(table);
 						sql.append(" WHERE ");
 						sql.append(inMap).append(" = ?");
@@ -693,18 +701,37 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				sql.setLength(sql.length() - " UNION ".length());
 				sql.append(") a");
 				
+				if (thatPolyNames != null) {
+					if (thatPolyNames.length > 0) {
+						sql.append(" WHERE (");
+					}
+					
+					for (String name : thatPolyNames) {
+						sql.append("a.").append(name).append(" = ?").append(" OR ");
+					}
+					
+					if (thatPolyNames.length > 0) {
+						sql.setLength(sql.length() - " OR ".length());
+						sql.append(')');
+					}
+				}
+				
 				if (thisPolyNames != null) {
 					if (thisPolyNames.length > 0) {
-						sql.append(" AND (");
+						if (thatPolyNames == null) {
+							sql.append(" WHERE (");
+						} else {
+							sql.append(" AND (");
+						}
 					}
 					
 					for (String name : thisPolyNames) {
-						sql.append('a').append(name).append(" = ?").append(" OR ");
+						sql.append("a.").append(name).append(" = ?").append(" OR ");
 					}
 					
 					if (thisPolyNames.length > 0) {
 						sql.setLength(sql.length() - " OR ".length());
-						sql.append(")");
+						sql.append(')');
 					}
 				}
 			}
@@ -842,5 +869,9 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		}
 
 		return false;
+	}
+
+	private void checkConstraints(Method method, Object[] args) {
+		
 	}
 }

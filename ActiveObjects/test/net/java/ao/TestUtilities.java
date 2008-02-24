@@ -16,13 +16,16 @@ import test.schema.Authorship;
 import test.schema.Book;
 import test.schema.Comment;
 import test.schema.Distribution;
+import test.schema.EmailAddress;
 import test.schema.Magazine;
+import test.schema.Message;
 import test.schema.Nose;
 import test.schema.OnlineDistribution;
 import test.schema.Pen;
 import test.schema.PersonSuit;
 import test.schema.Photo;
 import test.schema.Post;
+import test.schema.PostalAddress;
 import test.schema.PrintDistribution;
 import test.schema.PublicationToDistribution;
 
@@ -70,12 +73,14 @@ public class TestUtilities {
 		logger.addHandler(SQLLogMonitor.getInstance());
 		
 		manager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(Photo.class, 
-				Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class));
+				Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class,
+				EmailAddress.class, PostalAddress.class));
 		
 		try {
 			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, Nose.class,
 					Authorship.class, Book.class, Magazine.class, 
-					PublicationToDistribution.class, PrintDistribution.class, OnlineDistribution.class);
+					PublicationToDistribution.class, PrintDistribution.class, OnlineDistribution.class,
+					Message.class, EmailAddress.class, PostalAddress.class);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -520,6 +525,69 @@ public class TestUtilities {
 					stmt.executeUpdate();
 					
 					stmt.close();
+					
+					back.addressIDs = new int[2];
+					
+					stmt = prepareStatement(conn, "INSERT INTO emailAddress (email) VALUES (?)");
+					
+					assignPriorID(conn, "emailAddress");
+					
+					stmt.setString(1, "djspiewak@gmail.com");
+					stmt.executeUpdate();
+					
+					back.addressIDs[0] = getPriorID(conn, stmt);
+					
+					assignPriorID(conn, "emailAddress");
+					
+					stmt.setString(1, "daniel@danielspiewak.org");
+					stmt.executeUpdate();
+					
+					back.addressIDs[1] = getPriorID(conn, stmt);
+					
+					stmt.close();
+					
+					back.messageIDs = new int[3];
+					
+					stmt = prepareStatement(conn, "INSERT INTO message (contents,fromID,fromType,toID,toType)" +
+							" VALUES (?,?,?,?,?)");
+					
+					assignPriorID(conn, "message");
+					
+					stmt.setString(1, "Hi there");
+					stmt.setInt(2, back.addressIDs[0]);
+					stmt.setString(3, "emailAddress");
+					stmt.setInt(4, back.addressIDs[1]);
+					stmt.setString(5, "emailAddress");
+					
+					stmt.executeUpdate();
+					
+					back.messageIDs[0] = getPriorID(conn, stmt);
+					
+					assignPriorID(conn, "message");
+					
+					stmt.setString(1, "Yo dude");
+					stmt.setInt(2, back.addressIDs[1]);
+					stmt.setString(3, "emailAddress");
+					stmt.setInt(4, back.addressIDs[0]);
+					stmt.setString(5, "emailAddress");
+					
+					stmt.executeUpdate();
+					
+					back.messageIDs[1] = getPriorID(conn, stmt);
+					
+					assignPriorID(conn, "message");
+					
+					stmt.setString(1, "Email is fun");
+					stmt.setInt(2, back.addressIDs[0]);
+					stmt.setString(3, "emailAddress");
+					stmt.setInt(4, back.addressIDs[1]);
+					stmt.setString(5, "emailAddress");
+					
+					stmt.executeUpdate();
+					
+					back.messageIDs[2] = getPriorID(conn, stmt);
+					
+					stmt.close();
 				}
 			}
 			
@@ -622,6 +690,9 @@ public class TestUtilities {
 			stmt.executeUpdate("DELETE FROM publicationToDistribution");
 			stmt.executeUpdate("DELETE FROM printDistribution");
 			stmt.executeUpdate("DELETE FROM onlineDistribution");
+			stmt.executeUpdate("DELETE FROM message");
+			stmt.executeUpdate("DELETE FROM emailAddress");
+			stmt.executeUpdate("DELETE FROM postalAddress");
 			
 			stmt.close();
 		} finally {

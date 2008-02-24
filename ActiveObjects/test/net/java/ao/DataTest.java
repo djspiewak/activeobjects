@@ -58,6 +58,9 @@ public abstract class DataTest {
 	
 	protected static int[][] magazineDistributionIDs;
 	protected static Class<? extends Distribution>[][] magazineDistributionTypes;
+	
+	protected static int[] addressIDs;
+	protected static int[] messageIDs;
 
 	@BeforeClass
 	public static void setUp() throws SQLException {
@@ -87,6 +90,8 @@ public abstract class DataTest {
 		bookDistributionTypes = data.bookDistributionTypes;
 		magazineDistributionIDs = data.magazineDistributionIDs;
 		magazineDistributionTypes = data.magazineDistributionTypes;
+		addressIDs = data.addressIDs;
+		messageIDs = data.messageIDs;
 	}
 
 	@AfterClass
