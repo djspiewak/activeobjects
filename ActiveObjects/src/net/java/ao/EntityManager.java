@@ -661,7 +661,7 @@ public class EntityManager {
 			}
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
-			PreparedStatement stmt = conn.prepareStatement(sql);
+			PreparedStatement stmt = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 			provider.setQueryStatementProperties(stmt, query);
 			
 			query.setParameters(this, stmt);
