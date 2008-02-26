@@ -16,6 +16,9 @@
 package net.java.ao;
 
 import static org.junit.Assert.assertEquals;
+
+import java.sql.SQLException;
+
 import net.java.ao.db.EmbeddedDerbyDatabaseProvider;
 import net.java.ao.db.HSQLDatabaseProvider;
 import net.java.ao.db.JTDSSQLServerDatabaseProvider;
@@ -30,17 +33,19 @@ import net.java.ao.schema.TableNameConverter;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.schema.Comment;
 import test.schema.Company;
 import test.schema.Person;
 
 /**
  * @author Daniel Spiewak
  */
-public class QueryTest {
+public class QueryTest extends DataTest {
+	
 	private FieldNameConverter converter;
 	
 	@Before
-	public void setUp() {
+	public void instanceSetUp() {
 		converter = new CamelCaseFieldNameConverter();
 	}
 
@@ -221,6 +226,17 @@ public class QueryTest {
 				query8.toSQL(Person.class, provider, converter, getFieldNameConverter(), true));
 	}
 
+	@Test
+	public void testLimitOffset() throws SQLException {
+		Query query = Query.select().limit(3).offset(1);
+		Comment[] comments = manager.find(Comment.class, query);
+		
+		assertEquals(3, comments.length);
+		assertEquals(postCommentIDs[1], comments[0].getID());
+		assertEquals(photoCommentIDs[0], comments[1].getID());
+		assertEquals(postCommentIDs[2], comments[2].getID());
+	}
+	
 	private FieldNameConverter getFieldNameConverter() {
 		return converter;
 	}
