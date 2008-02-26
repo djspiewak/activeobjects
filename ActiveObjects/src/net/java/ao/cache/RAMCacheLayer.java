@@ -27,7 +27,7 @@ import net.java.ao.RawEntity;
 /**
  * @author Daniel Spiewak
  */
-public class RAMCacheLayer implements CacheLayer {
+class RAMCacheLayer implements CacheLayer {
 	private Map<String, Object> values;
 	private final ReadWriteLock valueLock = new ReentrantReadWriteLock();
 	
