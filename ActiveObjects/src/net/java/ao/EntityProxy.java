@@ -92,7 +92,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 		MethodImplWrapper methodImpl = implementation.getMethod(method.getName(), method.getParameterTypes());
 		if (methodImpl != null) {
-			if (!Common.getCallingClass(1).equals(methodImpl.getMethod().getDeclaringClass()) 
+			Class<?> callingClass = Common.getCallingClass(1);
+			if (callingClass != null && !callingClass.equals(methodImpl.getMethod().getDeclaringClass()) 
 					&& !methodImpl.getMethod().getDeclaringClass().equals(Object.class)) {
 				return methodImpl.getMethod().invoke(methodImpl.getInstance(), args);
 			}
