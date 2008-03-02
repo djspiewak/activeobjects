@@ -11,7 +11,6 @@
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
-    <testSourceDirectory>test</testSourceDirectory>
     <resources>
       <resource>
         <directory>src</directory>
@@ -44,16 +43,19 @@
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
       <version>2.2.0</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queries</artifactId>
       <version>2.2.0</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>c3p0</groupId>
       <artifactId>c3p0</artifactId>
       <version>0.9.1.1</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-dbcp</groupId>
@@ -65,12 +67,6 @@
       <groupId>ant</groupId>
       <artifactId>ant</artifactId>
       <version>1.6.5</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-      <version>10.2.2.0</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>proxool</groupId>
