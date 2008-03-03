@@ -15,6 +15,7 @@
  */
 package net.java.ao;
 
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
@@ -72,17 +73,18 @@ import net.java.ao.types.TypeManager;
  * @author Daniel Spiewak
  */
 public class EntityManager {
-	
 	static {
 		Logger.getLogger("net.java.ao").setLevel(Level.OFF);
 	}
 	
 	private final DatabaseProvider provider;
 	
+	private final boolean weaklyCache;
+	
 	private Map<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>> proxies;
 	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
 	
-	private Map<CacheKey<?>, RawEntity<?>> entityCache;
+	private Map<CacheKey<?>, Reference<RawEntity<?>>> entityCache;
 	private final ReadWriteLock entityCacheLock = new ReentrantReadWriteLock();
 	
 	private ValueCache valueCache;
@@ -135,14 +137,15 @@ public class EntityManager {
 	 */
 	public EntityManager(DatabaseProvider provider, boolean weaklyCache) {
 		this.provider = provider;
+		this.weaklyCache = weaklyCache;
 		
 		if (weaklyCache) {
 			proxies = new WeakHashMap<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>();
-			entityCache = new WeakHashMap<CacheKey<?>, RawEntity<?>>();
 		} else {
 			proxies = new SoftHashMap<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>();
-			entityCache = new SoftHashMap<CacheKey<?>, RawEntity<?>>();
 		}
+		
+		entityCache = new HashMap<CacheKey<?>, Reference<RawEntity<?>>>();
 		
 		valueCache = new RAMValueCache();
 		
@@ -264,13 +267,14 @@ public class EntityManager {
 		for (K key : keys) {
 			entityCacheLock.writeLock().lock();
 			try {
-				T entity = (T) entityCache.get(new CacheKey<K>(key, type));
+				Reference<T> ref = (Reference<T>) entityCache.get(new CacheKey<K>(key, type));
+				T entity = (ref == null ? null : ref.get());
+				
 				if (entity != null) {
 					back[index++] = entity;
-					continue;
+				} else {
+					back[index++] = getAndInstantiate(type, key);
 				}
-				
-				back[index++] = getAndInstantiate(type, key);
 			} finally {
 				entityCacheLock.writeLock().unlock();
 			}
@@ -302,7 +306,7 @@ public class EntityManager {
 			proxyLock.writeLock().unlock();
 		}
 		
-		entityCache.put(new CacheKey<K>(key, type), entity);
+		entityCache.put(new CacheKey<K>(key, type), createRef(entity));
 		return entity;
 	}
 	
@@ -977,6 +981,14 @@ public class EntityManager {
 		return relationsCache;
 	}
 
+	private Reference<RawEntity<?>> createRef(RawEntity<?> entity) {
+		if (weaklyCache) {
+			return new WeakReference<RawEntity<?>>(entity);
+		}
+		
+		return new SoftReference<RawEntity<?>>(entity);
+	}
+	
 	private static class CacheKey<T> {
 		private T key;
 		private Class<? extends RawEntity<?>> type;
