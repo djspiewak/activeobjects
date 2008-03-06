@@ -119,11 +119,7 @@ class RelationsCache {
 		}
 	}
 
-	/**
-	 * The ReadWriteLock used internally to lock the caches.  This lock must be
-	 * 	released manually using  {@link #unlock()}
-	 */
-	void remove(RawEntity<?> entity, String[] fields) {
+	public void remove(RawEntity<?> entity, String[] fields) {
 		lock.writeLock().tryLock();
 		try {
 			for (String field : fields) {
