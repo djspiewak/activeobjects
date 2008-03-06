@@ -30,7 +30,7 @@ import net.spy.memcached.MemcachedClient;
 /**
  * @author Daniel Spiewak
  */
-public class MemcachedValueCache implements ValueCache {
+public class MemcachedValueCache implements Cache {
 	private Map<RawEntity<?>, CacheLayer> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
@@ -75,6 +75,10 @@ public class MemcachedValueCache implements ValueCache {
 		} finally {
 			cacheLock.writeLock().unlock();
 		}
+	}
+
+	public RelationsCache getRelationsCache() {
+		return null;	// TODO	implement for memcached
 	}
 	
 	public void dispose() {
