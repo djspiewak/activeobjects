@@ -40,9 +40,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.java.ao.cache.Cache;
 import net.java.ao.cache.CacheLayer;
-import net.java.ao.cache.RAMValueCache;
-import net.java.ao.cache.ValueCache;
+import net.java.ao.cache.RAMCache;
+import net.java.ao.cache.RAMRelationsCache;
+import net.java.ao.cache.RelationsCache;
 import net.java.ao.schema.AutoIncrement;
 import net.java.ao.schema.CamelCaseFieldNameConverter;
 import net.java.ao.schema.CamelCaseTableNameConverter;
@@ -87,8 +89,8 @@ public class EntityManager {
 	private Map<CacheKey<?>, Reference<RawEntity<?>>> entityCache;
 	private final ReadWriteLock entityCacheLock = new ReentrantReadWriteLock();
 	
-	private ValueCache valueCache;
-	private final ReadWriteLock valueCacheLock = new ReentrantReadWriteLock();
+	private Cache cache;
+	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private TableNameConverter tableNameConverter;
 	private final ReadWriteLock tableNameConverterLock = new ReentrantReadWriteLock();
@@ -102,7 +104,7 @@ public class EntityManager {
 	private Map<Class<? extends ValueGenerator<?>>, ValueGenerator<?>> valGenCache;
 	private final ReadWriteLock valGenCacheLock = new ReentrantReadWriteLock();
 	
-	private final RelationsCache relationsCache = new RelationsCache();
+	private final RelationsCache relationsCache = new RAMRelationsCache();
 	
 	/**
 	 * Creates a new instance of <code>EntityManager</code> using the specified
@@ -147,7 +149,7 @@ public class EntityManager {
 		
 		entityCache = new HashMap<CacheKey<?>, Reference<RawEntity<?>>>();
 		
-		valueCache = new RAMValueCache();
+		cache = new RAMCache();
 		
 		valGenCache = new HashMap<Class<? extends ValueGenerator<?>>, ValueGenerator<?>>();
 		
@@ -677,7 +679,7 @@ public class EntityManager {
 			
 			while (res.next()) {
 				T entity = get(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, Common.getPrimaryKeyClassType(type), field));
-				CacheLayer cacheLayer = getValueCache().getCacheLayer(entity);
+				CacheLayer cacheLayer = getCache().getCacheLayer(entity);
 
 				for (int i = 0; i < md.getColumnCount(); i++) {
 					cacheLayer.put(md.getColumnLabel(i + 1), res.getObject(i + 1));
@@ -930,24 +932,24 @@ public class EntityManager {
 		}
 	}
 	
-	public void setValueCache(ValueCache valueCache) {
-		valueCacheLock.writeLock().lock();
+	public void setCache(Cache cache) {
+		cacheLock.writeLock().lock();
 		try {
-			if (!this.valueCache.equals(valueCache)) {
-				this.valueCache.dispose();
-				this.valueCache = valueCache;
+			if (!this.cache.equals(cache)) {
+				this.cache.dispose();
+				this.cache = cache;
 			}
 		} finally {
-			valueCacheLock.writeLock().unlock();
+			cacheLock.writeLock().unlock();
 		}
 	}
 	
-	public ValueCache getValueCache() {
-		valueCacheLock.readLock().lock();
+	public Cache getCache() {
+		cacheLock.readLock().lock();
 		try {
-			return valueCache;
+			return cache;
 		} finally {
-			valueCacheLock.readLock().unlock();
+			cacheLock.readLock().unlock();
 		}
 	}
 

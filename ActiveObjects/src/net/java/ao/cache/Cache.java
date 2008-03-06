@@ -36,7 +36,7 @@ import net.java.ao.RawEntity;
  * row).  By separating these implementations, it is possible keep resources
  * handled in a central controller while still devoting distinct memory space to
  * specific entities.  The distinct memory is most important in the default
- * implementation, {@link RAMValueCache}.</p>
+ * implementation, {@link RAMCache}.</p>
  * 
  * <p>Generically, implementations of <code>ValueCache</code> function as a
  * factory and controller for the relevant implementation of <code>CacheLayer</code>.
@@ -46,10 +46,10 @@ import net.java.ao.RawEntity;
  * 
  * @author Daniel Spiewak
  * @see #getCacheLayer(RawEntity)
- * @see EntityManager#setValueCache(ValueCache)
- * @see EntityManager#getValueCache()
+ * @see EntityManager#setCache(ValueCache)
+ * @see EntityManager#getCache()
  */
-public interface ValueCache {
+public interface Cache {
 	
 	/**
 	 * <p>Retrieves a <code>CacheLayer</code> instance which corresponds to the given
@@ -58,7 +58,7 @@ public interface ValueCache {
 	 * this method should return an instance of a working <code>CacheLayer</code> 
 	 * implementation which can persist values relevant to the given entity in an
 	 * implementation-specific way.  For example, the default implementation of this
-	 * interface ({@link RAMValueCache}) returns a <code>CacheLayer</code> which can
+	 * interface ({@link RAMCache}) returns a <code>CacheLayer</code> which can
 	 * cache values in memory for a specific entity.</p>
 	 * 
 	 * <p>Typically, instances of the <i>same</i> implementation are returned for any
@@ -76,13 +76,15 @@ public interface ValueCache {
 	 */
 	public CacheLayer getCacheLayer(RawEntity<?> entity);
 	
+	public RelationsCache getRelationsCache();
+	
 	/**
 	 * Frees all resources associated with the cache.  This should be used to
 	 * handle things like closing connections, freeing result-sets, etc.  This
 	 * method will be called by {@link EntityManager} on the old <code>ValueCache</code>
 	 * when a new instance is specified.
 	 * 
-	 * @see EntityManager#setValueCache(ValueCache)
+	 * @see EntityManager#setCache(ValueCache)
 	 */
 	public void dispose();
 }

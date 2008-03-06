@@ -334,7 +334,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	CacheLayer getCacheLayer() {
-		return getManager().getValueCache().getCacheLayer(getManager().get(type, key));
+		return getManager().getCache().getCacheLayer(getManager().get(type, key));
 	}
 
 	Class<T> getType() {
@@ -781,7 +781,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				ResultSetMetaData md = res.getMetaData();
 				for (int i = 0; i < md.getColumnCount(); i++) {
 					if (!resPolyNames.contains(md.getColumnLabel(i + 1))) {
-						getManager().getValueCache().getCacheLayer(returnValueEntity).put(md.getColumnLabel(i + 1), 
+						getManager().getCache().getCacheLayer(returnValueEntity).put(md.getColumnLabel(i + 1), 
 								res.getObject(i + 1));
 					}
 				}

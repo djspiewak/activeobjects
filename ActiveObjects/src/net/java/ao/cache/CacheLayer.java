@@ -24,7 +24,7 @@ import net.java.ao.RawEntity;
  * <p>Superinterface for classes which manage the cache semantics for
  * specific entity values.  Implementations of this interface are what
  * actually handle the meat of the cache operation, using resources
- * allocated within the corresponding {@link ValueCache} implementation.</p>
+ * allocated within the corresponding {@link Cache} implementation.</p>
  * 
  * <p>The basic cache model is that of the {@link Map} interface (which
  * is logical as ActiveObjects was originally cached with a conventional
@@ -82,7 +82,7 @@ import net.java.ao.RawEntity;
  * cache handles the "what" while the cache layer manages the "how".</p>
  * 
  * @author Daniel Spiewak
- * @see ValueCache
+ * @see Cache
  */
 public interface CacheLayer {
 	

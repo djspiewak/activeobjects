@@ -25,39 +25,46 @@ import net.java.ao.RawEntity;
 /**
  * @author Daniel Spiewak
  */
-public class RAMValueCache implements ValueCache {
-	private Map<RawEntity<?>, CacheLayer> cache;
-	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+public class RAMCache implements Cache {
+	private Map<RawEntity<?>, CacheLayer> cacheLayer;
+	private final ReadWriteLock cacheLayerLock = new ReentrantReadWriteLock();
 	
-	public RAMValueCache() {
-		cache = new WeakHashMap<RawEntity<?>, CacheLayer>();
+	private final RAMRelationsCache relationsCache;
+	
+	public RAMCache() {
+		cacheLayer = new WeakHashMap<RawEntity<?>, CacheLayer>();
+		relationsCache = new RAMRelationsCache();
 	}
 
 	public CacheLayer getCacheLayer(RawEntity<?> entity) {
-		cacheLock.writeLock().lock();
+		cacheLayerLock.writeLock().lock();
 		try {
-			if (cache.containsKey(entity)) {
-				cacheLock.readLock().lock();
-				cacheLock.writeLock().unlock();
+			if (cacheLayer.containsKey(entity)) {
+				cacheLayerLock.readLock().lock();
+				cacheLayerLock.writeLock().unlock();
 				
 				try {
-					return cache.get(entity);
+					return cacheLayer.get(entity);
 				} finally {
-					cacheLock.readLock().unlock();
+					cacheLayerLock.readLock().unlock();
 				}
 			}
 			
 			CacheLayer layer = new RAMCacheLayer();
-			cache.put(entity, layer);
+			cacheLayer.put(entity, layer);
 			
 			return layer;
 		} finally {
 			try {
-				cacheLock.writeLock().unlock();
+				cacheLayerLock.writeLock().unlock();
 			} catch (Throwable t) {}	// may not actually be locked
 		}
 	}
 	
 	public void dispose() {
+	}
+
+	public RelationsCache getRelationsCache() {
+		return relationsCache;
 	}
 }

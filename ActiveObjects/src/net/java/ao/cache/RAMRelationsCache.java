@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao;
+package net.java.ao.cache;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,16 +23,18 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import net.java.ao.RawEntity;
+
 /**
  * @author Daniel Spiewak
  */
-class RelationsCache {
+public class RAMRelationsCache implements RelationsCache {
 	private final Map<CacheKey, RawEntity<?>[]> cache;
 	private final Map<Class<? extends RawEntity<?>>, Set<CacheKey>> typeMap;
 	private final Map<MetaCacheKey, Set<CacheKey>> fieldMap;
 	private final ReadWriteLock lock;
 
-	public RelationsCache() {
+	public RAMRelationsCache() {
 		cache = new HashMap<CacheKey, RawEntity<?>[]>();
 		typeMap = new HashMap<Class<? extends RawEntity<?>>, Set<CacheKey>>();
 		fieldMap = new HashMap<MetaCacheKey, Set<CacheKey>>();
