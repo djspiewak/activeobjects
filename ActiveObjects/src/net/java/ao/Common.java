@@ -153,10 +153,19 @@ public final class Common {
 		ManyToMany manyToManyAnnotation = method.getAnnotation(ManyToMany.class);
 		
 		Class<?> type = null;
+		Class<?>[] parameterTypes = method.getParameterTypes();
 		
 		if (mutatorAnnotation != null) {
-			type = method.getParameterTypes()[0];
+			if (parameterTypes.length != 1) {
+				throw new IllegalArgumentException("Invalid method signature: " + method.toGenericString());
+			}
+			
+			type = parameterTypes[0];
 		} else if (accessorAnnotation != null) {
+			if (method.getReturnType() == Void.TYPE) {
+				throw new IllegalArgumentException("Invalid method signature: " + method.toGenericString());
+			}
+			
 			type = method.getReturnType();
 		} else if (oneToOneAnnotation != null) {
 			return null;
@@ -165,11 +174,23 @@ public final class Common {
 		} else if (manyToManyAnnotation != null) {
 			return null;
 		} else if (method.getName().startsWith("get")) {
+			if (method.getReturnType() == Void.TYPE) {
+				throw new IllegalArgumentException("Invalid method signature: " + method.toGenericString());
+			}
+			
 			type = method.getReturnType();
 		} else if (method.getName().startsWith("is")) {
+			if (method.getReturnType() == Void.TYPE) {
+				throw new IllegalArgumentException("Invalid method signature: " + method.toGenericString());
+			}
+			
 			type = method.getReturnType();
 		} else if (method.getName().startsWith("set")) {
-			type = method.getParameterTypes()[0];
+			if (parameterTypes.length != 1) {
+				throw new IllegalArgumentException("Invalid method signature: " + method.toGenericString());
+			}
+			
+			type = parameterTypes[0];
 		}
 		
 		return type;

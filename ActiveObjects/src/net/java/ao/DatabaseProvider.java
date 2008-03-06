@@ -727,7 +727,12 @@ public abstract class DatabaseProvider {
 				return conn;
 			}
 			
-			conn = DelegateConnectionHandler.newInstance(getConnectionImpl());
+			Connection connectionImpl = getConnectionImpl();
+			if (connectionImpl == null) {
+				throw new SQLException("Unable to create connection");
+			}
+			
+			conn = DelegateConnectionHandler.newInstance(connectionImpl);
 			setPostConnectionProperties(conn);
 			connections.put(Thread.currentThread(), conn);
 			
