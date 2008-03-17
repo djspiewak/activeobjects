@@ -61,7 +61,7 @@ public class TypeManagerTest {
 		assertEquals(new IntegerType(), manager.getType(Types.INTEGER));
 		assertEquals(new TimestampType(), manager.getType(Types.TIMESTAMP));
 		assertEquals(new CharType(), manager.getType(Types.CHAR));
-		assertEquals(new GenericType(Types.SQLXML), manager.getType(Types.SQLXML));
+		assertEquals(new GenericType(Types.JAVA_OBJECT), manager.getType(Types.JAVA_OBJECT));
 		assertEquals(new DateType(), manager.getType(Types.DATE));
 		assertEquals(new RealType(), manager.getType(Types.REAL));
 	}
