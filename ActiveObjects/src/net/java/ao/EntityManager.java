@@ -183,7 +183,7 @@ public class EntityManager {
 	 * Convenience method to create the schema for the specified entities
 	 * using the current settings (table/field name converter and database provider).
 	 * 
-	 *  @see net.java.ao.schema.SchemaGenerator#migrate(DatabaseProvider, TableNameConverter, Class...)
+	 *  @see net.java.ao.schema.SchemaGenerator#migrate(DatabaseProvider, TableNameConverter, FieldNameConverter, Class...)
 	 */
 	public void migrate(Class<? extends RawEntity<?>>... entities) throws SQLException {
 		tableNameConverterLock.readLock().lock();

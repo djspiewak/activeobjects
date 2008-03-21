@@ -99,10 +99,6 @@ public class RAMRelationsCache implements RelationsCache {
 		}
 	}
 	
-	/**
-	 * The ReadWriteLock used internally to lock the caches.  This lock must be
-	 * 	released manually using  {@link #unlock()}
-	 */
 	public void remove(Class<? extends RawEntity<?>>... types) {
 		lock.writeLock().lock();
 		try {

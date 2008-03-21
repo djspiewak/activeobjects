@@ -67,7 +67,7 @@ public interface RawEntity<T> {
 	
 	/**
 	 * <p>Returns the actual {@link Class} instance which corresponds to the
-	 * original entity interface.  This is necessary because calling {@link #getClass()}
+	 * original entity interface.  This is necessary because calling {@link Object#getClass()}
 	 * on a proxy instance doesn't return the value one would expect.  As
 	 * such, <code>RawEntity</code> provides this method to give
 	 * developers access to the originating entity interface.  Example:</p>

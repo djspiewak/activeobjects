@@ -1798,7 +1798,6 @@ public abstract class DatabaseProvider {
 	 * @param pkField	The database field which is the primary key for the
 	 * 		table in question.  Can be used to perform a linear search for a 
 	 * 		specified primary key value in the <code>params</code> list.
-	 * @param table	The name of the table into which the row is to be INSERTed.
 	 * @param params	A varargs array of parameters to be passed to the
 	 * 		INSERT statement.  This may include a specified value for the
 	 * 		primary key.

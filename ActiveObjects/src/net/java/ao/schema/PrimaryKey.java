@@ -20,6 +20,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import net.java.ao.Accessor;
+import net.java.ao.Entity;
+import net.java.ao.EntityManager;
+import net.java.ao.Mutator;
+
 /**
  * <p>Marks a method such that the corresponding database field will be
  * the primary key for the table in question.  Using this annotation, it

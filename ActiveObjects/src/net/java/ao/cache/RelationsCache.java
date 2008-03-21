@@ -28,10 +28,6 @@ public interface RelationsCache {
 
 	public <T extends RawEntity<?>> T[] get(RawEntity<?> from, Class<T> toType, Class<? extends RawEntity<?>> throughType, String[] fields);
 
-	/**
-	 * The ReadWriteLock used internally to lock the caches.  This lock must be
-	 * 	released manually using  {@link #unlock()}
-	 */
 	public void remove(Class<? extends RawEntity<?>>... types);
 
 	public void remove(RawEntity<?> entity, String[] fields);

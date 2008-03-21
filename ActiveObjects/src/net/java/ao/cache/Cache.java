@@ -46,7 +46,7 @@ import net.java.ao.RawEntity;
  * 
  * @author Daniel Spiewak
  * @see #getCacheLayer(RawEntity)
- * @see EntityManager#setCache(ValueCache)
+ * @see EntityManager#setCache(Cache)
  * @see EntityManager#getCache()
  */
 public interface Cache {
@@ -84,7 +84,7 @@ public interface Cache {
 	 * method will be called by {@link EntityManager} on the old <code>ValueCache</code>
 	 * when a new instance is specified.
 	 * 
-	 * @see EntityManager#setCache(ValueCache)
+	 * @see EntityManager#setCache(Cache)
 	 */
 	public void dispose();
 }
