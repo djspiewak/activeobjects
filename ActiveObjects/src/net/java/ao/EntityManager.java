@@ -268,8 +268,9 @@ public class EntityManager {
 		
 		for (K key : keys) {
 			entityCacheLock.writeLock().lock();
-			try {
-				Reference<T> ref = (Reference<T>) entityCache.get(new CacheKey<K>(key, type));
+			try {	// upcast to workaround bug in javac
+				Reference<?> reference = entityCache.get(new CacheKey<K>(key, type));
+				Reference<T> ref = (Reference<T>) reference;
 				T entity = (ref == null ? null : ref.get());
 				
 				if (entity != null) {
