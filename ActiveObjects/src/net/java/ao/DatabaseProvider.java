@@ -178,8 +178,8 @@ public abstract class DatabaseProvider {
 			case CREATE:
 				back.add(renderTable(action.getTable()));
 				back.addAll(Arrays.asList(renderFunctions(action.getTable())));
-				back.addAll(Arrays.asList(renderTriggers(action.getTable())));
 				back.addAll(Arrays.asList(renderSequences(action.getTable())));
+				back.addAll(Arrays.asList(renderTriggers(action.getTable())));
 				
 				for (DDLIndex index : action.getTable().getIndexes()) {
 					DDLAction newAction = new DDLAction(DDLActionType.CREATE_INDEX);
@@ -194,9 +194,9 @@ public abstract class DatabaseProvider {
 					newAction.setIndex(index);
 					back.addAll(Arrays.asList(renderAction(newAction)));
 				}
-				
-                back.addAll(Arrays.asList(renderDropSequences(action.getTable())));				
+
 				back.addAll(Arrays.asList(renderDropTriggers(action.getTable())));
+                back.addAll(Arrays.asList(renderDropSequences(action.getTable())));
 				back.addAll(Arrays.asList(renderDropFunctions(action.getTable())));
 				back.add(renderDropTable(action.getTable()));
 			break;
