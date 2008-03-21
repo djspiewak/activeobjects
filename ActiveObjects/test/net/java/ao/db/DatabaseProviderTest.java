@@ -99,7 +99,7 @@ public class DatabaseProviderTest {
 		assertEquals(ddl, provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(ddl, provider.renderAction(action));
+		assertEquals(readStatements("oracle-drop-table.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
 		assertEquals(ddl, provider.renderAction(action));action = createActionCreateTable();
@@ -475,7 +475,7 @@ public class DatabaseProviderTest {
 		
 		back.setLength(back.length() - 1);
 		
-		return back.toString().split(";");
+		return back.toString().split("\n\n");
 	}
 	
 	public static final void assertEquals(String[] array1, String[] array2) {
