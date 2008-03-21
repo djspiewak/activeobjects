@@ -4,11 +4,25 @@
   <groupId>net.java.dev.activeobjects</groupId>
   <artifactId>activeobjects</artifactId>
   <name>ActiveObjects</name>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.8</version>
   <inceptionYear>2007</inceptionYear>
   <scm>
     <connection>scm:svn:https://activeobjects.dev.java.net/svn/activeobjects/trunk/ActiveObjects</connection>
   </scm>
+  <repositories>
+    <repository>
+      <id>maven2-repository.dev.java.net</id>
+      <name>Java.net Repository for Maven</name>
+      <url>http://download.java.net/maven/2/</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>java.net-m2-repository</id>
+      <url>java-net:/maven2-repository/trunk/www/repository/</url>
+    </repository>
+  </distributionManagement>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -36,7 +50,21 @@
           <target>1.5</target>
         </configuration>
       </plugin>
-    </plugins>
+	  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>    
+	<extensions>
+      <extension>
+        <groupId>org.jvnet.wagon-svn</groupId>
+        <artifactId>wagon-svn</artifactId>
+        <version>RELEASE</version>
+      </extension>
+    </extensions>
   </build>
   <dependencies>
     <dependency>
