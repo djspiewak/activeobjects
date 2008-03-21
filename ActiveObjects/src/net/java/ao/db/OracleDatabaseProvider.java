@@ -21,6 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,13 +61,11 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 
 	@Override
 	public ResultSet getTables(Connection conn) throws SQLException {
-		System.err.println("WARNING: Due to a bug in Oracle's JDBC Driver,");
-		System.err.println("WARNING: table retrieval will fail with an error");
-		System.err.println("WARNING: in native code.  Thus, an empty array");
-		System.err.println("WARNING: will be returned (effectively making the");
-		System.err.println("WARNING: schema recreate each time).");
 
-		return null;
+		String schema = conn.getMetaData().getUserName();
+        
+        return conn.getMetaData().getTables(null, schema, "%", new String[] {"TABLE"});
+		
 	}
 
 	@Override
@@ -169,6 +169,11 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 		return back.toString();
 	}
 
+    @Override
+    protected String renderDropTable(DDLTable table) {
+        return "DROP TABLE " + table.getName() + " PURGE";
+    }
+    
 	@Override
 	protected <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, String sql, DBParam... params) throws SQLException {
 		T back = null;
@@ -197,6 +202,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 			ResultSet res = stmt.getGeneratedKeys();
 			if (res.next()) {
 				back = TypeManager.getInstance().getType(pkType).pullFromDatabase(null, res, pkType, 1);
+				
 			}
 			res.close();
 		}
@@ -206,4 +212,78 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 		return back;
 	}
 
+	@Override
+	protected String[] renderTriggers(DDLTable table) {
+        List<String> back = new ArrayList<String>();
+        
+        for (DDLField field : table.getFields()) {
+            String trigger = renderTriggerForField(table, field);
+            if (trigger != null) {
+                back.add(trigger);
+            }
+        }
+        
+        // TODO	only need trigger if PK is auto-incrementing
+        // Create trigger for Primary key
+        StringBuilder trg = new StringBuilder();
+
+        trg.append("CREATE TRIGGER ").append(table.getName()).append("_TRG \n");
+        trg.append("BEFORE INSERT\n").append("    ON ").append(table.getName()).append("   FOR EACH ROW\n");
+        trg.append("BEGIN\n");
+        trg.append(" SELECT ").append(table.getName()).append("_SEQ.NEXTVAL ");
+        trg.append("INTO :NEW.ID FROM DUAL; \nEND;");
+    
+        back.add(trg.toString());
+           
+        
+        return back.toArray(new String[back.size()]);
+
+	}
+	
+	@Override
+	protected String[] renderDropTriggers(DDLTable table) {
+        List<String> back = new ArrayList<String>();        
+        
+        StringBuilder seq = new StringBuilder();
+
+        // TODO	only need trigger if PK is auto-incrementing
+        // add sequence
+        seq.append("DROP TRIGGER ").append(table.getName()).append("_TRG ");
+        
+        back.add(seq.toString());
+        
+        return back.toArray(new String[back.size()]);      
+    }
+	
+	@Override
+	protected String[] renderDropSequences(DDLTable table) {
+        List<String> back = new ArrayList<String>();        
+        
+        StringBuilder seq = new StringBuilder();
+
+        // TODO	only need sequence if PK is auto-incrementing
+        // add sequence
+        seq.append("DROP SEQUENCE ").append(table.getName()).append("_SEQ ");
+        
+        back.add(seq.toString());
+        
+        return back.toArray(new String[back.size()]);      
+	}
+	
+	@Override
+    protected String[] renderSequences(DDLTable table) {
+        List<String> back = new ArrayList<String>();        
+        
+        StringBuilder seq = new StringBuilder();
+        
+        // TODO	only need sequence if PK is auto-incrementing
+        // add sequence
+        seq.append("CREATE SEQUENCE ").append(table.getName()).append("_SEQ ").append("INCREMENT BY 1 START WITH 1 ");
+        seq.append("MAXVALUE ").append(Integer.MAX_VALUE).append(" MINVALUE 1 "); 
+        
+        back.add(seq.toString());
+	    
+        return back.toArray(new String[back.size()]);      
+	}
+	
 }

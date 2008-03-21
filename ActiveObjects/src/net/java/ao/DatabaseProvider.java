@@ -157,8 +157,10 @@ public abstract class DatabaseProvider {
 	 * @see #renderTable(DDLTable)
 	 * @see #renderFunctions(DDLTable)
 	 * @see #renderTriggers(DDLTable)
+	 * @see #renderSequences(DDLTable)
 	 * @see #renderDropTriggers(DDLTable)
 	 * @see #renderDropFunctions(DDLTable)
+	 * @see #renderDropSequences(DDLTable)
 	 * @see #renderDropTable(DDLTable)
 	 * @see #renderAlterTableAddColumn(DDLTable, DDLField)
 	 * @see #renderAlterTableChangeColumn(DDLTable, DDLField, DDLField)
@@ -177,6 +179,7 @@ public abstract class DatabaseProvider {
 				back.add(renderTable(action.getTable()));
 				back.addAll(Arrays.asList(renderFunctions(action.getTable())));
 				back.addAll(Arrays.asList(renderTriggers(action.getTable())));
+				back.addAll(Arrays.asList(renderSequences(action.getTable())));
 				
 				for (DDLIndex index : action.getTable().getIndexes()) {
 					DDLAction newAction = new DDLAction(DDLActionType.CREATE_INDEX);
@@ -192,6 +195,7 @@ public abstract class DatabaseProvider {
 					back.addAll(Arrays.asList(renderAction(newAction)));
 				}
 				
+                back.addAll(Arrays.asList(renderDropSequences(action.getTable())));				
 				back.addAll(Arrays.asList(renderDropTriggers(action.getTable())));
 				back.addAll(Arrays.asList(renderDropFunctions(action.getTable())));
 				back.add(renderDropTable(action.getTable()));
@@ -975,7 +979,21 @@ public abstract class DatabaseProvider {
 	protected String[] renderDropTriggers(DDLTable table) {
 		return new String[0];
 	}
-
+    /**
+	 * Generates the database-specific DDL statements required to drop all
+     * associated sequences for the given table representation.  The default
+     * implementation is to return an empty array.  This is an Oracle specific
+     * method used for primary key management
+     * 
+     * @param table The table representation against which all triggers which
+     *      correspond (directly or indirectly) must be dropped.
+     * @return  An array of database-specific DDL statement(s) which drop the
+     *      required triggers.
+     */
+    protected String[] renderDropSequences(DDLTable table) {
+        return new String[0];
+    }
+	
 	/**
 	 * <p>Generates the database-specific DDL statements required to create
 	 * all of the functions necessary for the given table.  For most
@@ -1032,6 +1050,20 @@ public abstract class DatabaseProvider {
 		
 		return back.toArray(new String[back.size()]);
 	}
+	
+    /**
+     * <p>Generates the database-specific DDL statements required to create
+     * all of the sequences necessary for the given table. This is an Oracle specific
+     * method used for primary key management
+     * 
+     * 
+     * @param table The table for which the triggers must be generated.
+     * @return  An array of DDL statements to execute.
+     */
+    protected String[] renderSequences(DDLTable table) {
+        
+        return new String[0];
+    }	
 	
 	/**
 	 * Generates the database-specific DDL statements required to add
