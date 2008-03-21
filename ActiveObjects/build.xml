@@ -126,6 +126,7 @@
 		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}">
 			<fileset dir="${activeobjects.dir}">
 				<include name="BUGS"/>
+				<include name="CONTRIBUTORS"/>
 				<include name="LICENSE"/>
 			</fileset>
 		</copy>
