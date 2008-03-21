@@ -30,22 +30,22 @@ import net.spy.memcached.MemcachedClient;
 /**
  * @author Daniel Spiewak
  */
-public class MemcachedValueCache implements Cache {
+public class MemcachedCache implements Cache {
 	private Map<RawEntity<?>, CacheLayer> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private final MemcachedClient client;
 	private final int expiry;
 	
-	public MemcachedValueCache(InetSocketAddress... servers) throws IOException {
+	public MemcachedCache(InetSocketAddress... servers) throws IOException {
 		this(new MemcachedClient(servers));
 	}
 	
-	public MemcachedValueCache(MemcachedClient client) {
+	public MemcachedCache(MemcachedClient client) {
 		this(client, Integer.MAX_VALUE);
 	}
 	
-	public MemcachedValueCache(MemcachedClient client, int expiry) {
+	public MemcachedCache(MemcachedClient client, int expiry) {
 		cache = new WeakHashMap<RawEntity<?>, CacheLayer>();
 		
 		this.client = client;
@@ -78,7 +78,7 @@ public class MemcachedValueCache implements Cache {
 	}
 
 	public RelationsCache getRelationsCache() {
-		return null;	// TODO	implement for memcached
+		return new MemcachedRelationsCache();
 	}
 	
 	public void dispose() {
