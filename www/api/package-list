@@ -1,4 +1,5 @@
 net.java.ao
+net.java.ao.cache
 net.java.ao.db
 net.java.ao.schema
 net.java.ao.schema.ddl
