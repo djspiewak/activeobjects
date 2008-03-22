@@ -41,12 +41,23 @@
 			<li><a href="https://activeobjects.dev.java.net/files/documents/6960/91090/activeobjects-0.8.zip">activeobjects-0.8.zip</a> <i>(726.73 kB)</i></li>
 		</ul>
 		
-		<p>ActiveObjects is also available through the java.net 
-		<a href="https://maven2-repository.dev.java.net/">Maven2 repository</a> under the groupId
-		<b>net.java.dev.activeobjects</b> and the artifactId <b>activeobjects</b>.  Note that while
-		ActiveObjects has support for a number of pool providers and databases, it does not require them as
-		Maven2 dependencies.  To use ActiveObjects with any database and pool provider, you must include
-		the relevant dependency information in your project's pom.xml.</p>
+		<h4>Maven2</h4>
+		
+		<p>ActiveObjects is also available as a Maven2 package through the java.net 
+		<a href="https://maven2-repository.dev.java.net/">repository</a>.  To use ActiveObjects in
+		your Maven2 project, add the following to your <code>&lt;dependencies&gt;</code> section:
+		
+<pre>
+    &lt;dependency&gt;
+      &lt;groupId&gt;net.java.dev.activeobjects&lt;/groupId&gt;
+      &lt;artifactId&gt;activeobjects&lt;/artifactId&gt;
+      &lt;version&gt;0.8&lt;/version&gt;
+    &lt;/dependency&gt;
+</pre>
+		
+		Note that while ActiveObjects has support for a number of connection pools and databases, it does 
+		not require them as Maven2 dependencies.  To use ActiveObjects with any database and pool provider, 
+		you must explicitly include the relevant dependency information in your project's pom.xml.</p>
 		
 		<h3>Documentation</h3>
 		
