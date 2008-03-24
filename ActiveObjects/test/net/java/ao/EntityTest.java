@@ -235,7 +235,7 @@ public class EntityTest extends DataTest {
 			}
 			is.close();
 		} catch (IOException e) {
-			throw new SQLException(e);
+			throw new SQLException(e.getMessage());
 		}
 
 		assertEquals(13510, count);
