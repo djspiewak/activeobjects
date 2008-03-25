@@ -1,0 +1,31 @@
+.. :mode=rest:
+
+Internals
+=========
+		
+While the ActiveObjects API does allow for some rather unusual usage patterns
+(such as the construction of entity definitions as pure Java interfaces), the code to
+support this API isn't all that complex.  Much of the heart and soul of the ActiveObjects
+library revolves around the concept of reflective instance proxying.
+
+Instance proxying is a lesser known part of the Java reflection API which allows
+a specified instance of the ``InvocationHandler`` class to intercept all
+method calls to a contrived instance of a specified class type.  This is how the
+``EntityManager`` can dynamically create an instance of an arbitrary
+``Entity`` sub-interface.  In fact, the instance created by ``EntityManager``
+is extremely special in that it will dynamically parse all method calls, attempting to
+proxy the relevant calls down to the database.  This is how a call to an accessor within
+an entity instance will immediately correspond to a call to the database.
+
+The instance proxy ``InvocationHandler`` for ActiveObjects is the
+``EntityProxy`` class.  ``EntityProxy`` has a single method -
+``invoke`` - which receives all method calls to the corresponding ``Entity``
+instance.  ``EntityProxy`` then applies a set of rules to the method name,
+method annotations and method parameters to determine if it is a data accessor method.
+If the method should correspond to a database function, ``EntityProxy`` handles
+the retrieval of a database connection and the execution of the appropriate SQL.
+
+For more details on ActiveObjects's implementation, refer to the 
+javadocs_.
+
+.. _javadocs: ../api/overview-summary.html

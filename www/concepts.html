@@ -1,86 +1,361 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-	<head>
-		<title>Basic Concepts</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-	</head>
-	<body>
-		<script src="https://ssl.google-analytics.com/urchin.js" type="text/javascript">
-		</script>
-		<script type="text/javascript">
-			_uacct = "UA-1070906-4";
-			urchinTracker();
-		</script>
-		
-		<h1>Basic Concepts</h1>
-		
-		<p>The underlying principle behind ActiveObjects is that ever-popular catch phrase:
-		convention rather than configuration.  With ActiveObjects, you create the abstract Java
-		class interfaces using standard Java data object conventions (<code>get</code>, <code>set</code>,
-		<code>is</code>, etc...) and ActiveObjects handles the wiring to the database.  In
-		fact, ActiveObjects will even generate the database-specific schema to correspond
-		with the specified Java class model.</p>
-		
-		<p>From a developer standpoint, using ActiveObjects is as simple as the following:</p>
-		
-<pre>public interface Person extends Entity {
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.5: http://docutils.sourceforge.net/" />
+<title>Basic Concepts</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5196 2007-06-03 20:25:28Z wiemann $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left {
+  clear: left }
+
+img.align-right {
+  clear: right }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font-family: serif ;
+  font-size: 100% }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body><script src="https://ssl.google-analytics.com/urchin.js" type="text/javascript"></script><script type="text/javascript">_uacct = "UA-1070906-4";urchinTracker();</script>
+<div class="document" id="basic-concepts">
+<h1 class="title">Basic Concepts</h1>
+
+<!-- :mode=rest: -->
+<div class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">C:\Users\Daniel Spiewak\Development\workspace\ActiveObjects\doc\concepts.txt</tt>, line 2)</p>
+Explicit markup ends without a blank line; unexpected unindent.</div>
+<p>The underlying principle behind ActiveObjects is that ever-popular catch phrase:
+convention rather than configuration.  With ActiveObjects, you create the abstract Java
+class interfaces using standard Java data object conventions (<tt class="docutils literal"><span class="pre">get</span></tt>, <tt class="docutils literal"><span class="pre">set</span></tt>,
+<tt class="docutils literal"><span class="pre">is</span></tt>, etc...) and ActiveObjects handles the wiring to the database.  In
+fact, ActiveObjects will even generate the database-specific schema to correspond
+with the specified Java class model.</p>
+<p>From a developer standpoint, using ActiveObjects is as simple as the following:</p>
+<pre class="literal-block">
+public interface Person extends Entity {
     public String getFirstName();
     public void setFirstName(String name);
-    
+
     public String getLastName();
-    public void setLastName(String name); 
+    public void setLastName(String name);
 }
 
 // ...
-EntityManager manager = new EntityManager("jdbc:mysql://localhost/ao_test", "user", "password");
+EntityManager manager = new EntityManager(&quot;jdbc:mysql://localhost/ao_test&quot;, &quot;user&quot;, &quot;password&quot;);
 
 Person frank = manager.create(Person.class);
-frank.setName("Frank");
-frank.setName("Smith");
-frank.save();</pre>
-
-		<p>The code specified above is fully functional; there are no unspecified configuration files.  In 
-		fact, the only missing step would be to create the corresponding database schema.  ActiveObjects
-		can handle this step too, using a feature called migrations:</p>
-		
-<pre>// ...
-manager.migrate(Person.class);</pre>
-
-		<p>This will execute DDL something like the following (assuming MySQL as in the URI above):</p>
-		
-<pre>CREATE TABLE person (
+frank.setName(&quot;Frank&quot;);
+frank.setName(&quot;Smith&quot;);
+frank.save();
+</pre>
+<p>The code specified above is fully functional; there are no unspecified configuration files.  In
+fact, the only missing step would be to create the corresponding database schema.  ActiveObjects
+can handle this step too, using a feature called migrations:</p>
+<pre class="literal-block">
+// ...
+manager.migrate(Person.class);
+</pre>
+<p>This will execute DDL something like the following (assuming MySQL as in the URI above):</p>
+<pre class="literal-block">
+CREATE TABLE person (
     id INTEGER AUTO_INCREMENT NOT NULL,
     firstName VARCHAR(255),
     lastName VARCHAR(255),
     PRIMARY KEY (id)
-);</pre>
-
-		<p>With migrations, you don't need to worry about making changes to your schema, or keeping
-		your schema in sync with your entity model in code.  Supposing you add a <code>getAge():int</code>
-		method (and its corresponding setter) to the <code>Person</code> entity in the above example.
-		If the <code>person</code> table has already been created, it probably contains data.  It would
-		be ugly and painful to write scripts to generate a new version of the table, migrate the old
-		data over and delete the old table.  Instead of this mess, all that is necessary is another
-		call to the <code>migrate</code> method (as shown above).  This time, instead of generating
-		the full table from scratch, ActiveObjects will inspect the existing schema and determine that
-		the only necessary action is the addition of the <code>age</code> field.  To this end, it will
-		execute <i>only</i> the following DDL statement:</p>
-
-<pre>ALTER TABLE person ADD COLUMN age INTEGER;</pre>
-
-		<p>All of the data has been retained, no ugly scripts were written and the entity model in
-		code is once again in sync with the database schema.  This powerful functionality allows for
-		things such as refactoring your entity model, adding constraints and indexes and so on all
-		without adversely effecting your database.</p>
-
-		<p>Switching databases is as easy as changing the JDBC URI value in the EntityManager constructor.  
-		There is never any need to be concerned about the ins and outs of database specifics or
-		to write any SQL by hand.  In fact, you can use ActiveObjects and take full advantage of
-		database functionality without ever once opening a database client or even understanding the
-		basics of SQL or RDBMS.</p>
-		
-		<p>In fact, any Java developer can use ActiveObjects, even if they have no experience whatsoever
-		in databases or their underlying concepts.  The framework is designed so that it "feels" natural to any
-		Java developer, not requiring any knowledge of relational databases.</p>
-	</body>
+);
+</pre>
+<p>With migrations, you don't need to worry about making changes to your schema, or keeping
+your schema in sync with your entity model in code.  Supposing you add a <tt class="docutils literal"><span class="pre">getAge():int</span></tt>
+method (and its corresponding setter) to the <tt class="docutils literal"><span class="pre">Person</span></tt> entity in the above example.
+If the <tt class="docutils literal"><span class="pre">person</span></tt> table has already been created, it probably contains data.  It would
+be ugly and painful to write scripts to generate a new version of the table, migrate the old
+data over and delete the old table.  Instead of this mess, all that is necessary is another
+call to the <tt class="docutils literal"><span class="pre">migrate</span></tt> method (as shown above).  This time, instead of generating
+the full table from scratch, ActiveObjects will inspect the existing schema and determine that
+the only necessary action is the addition of the <tt class="docutils literal"><span class="pre">age</span></tt> field.  To this end, it will
+execute <em>only</em> the following DDL statement:</p>
+<pre class="literal-block">
+ALTER TABLE person ADD COLUMN age INTEGER;
+</pre>
+<p>All of the data has been retained, no ugly scripts were written and the entity model in
+code is once again in sync with the database schema.  This powerful functionality allows for
+things such as refactoring your entity model, adding constraints and indexes and so on all
+without adversely effecting your database.</p>
+<p>Switching databases is as easy as changing the JDBC URI value in the EntityManager constructor.
+There is never any need to be concerned about the ins and outs of database specifics or
+to write any SQL by hand.  In fact, you can use ActiveObjects and take full advantage of
+database functionality without ever once opening a database client or even understanding the
+basics of SQL or RDBMS.</p>
+<p>In fact, any Java developer can use ActiveObjects, even if they have no experience whatsoever
+in databases or their underlying concepts.  The framework is designed so that it &quot;feels&quot; natural to any
+Java developer, not requiring any knowledge of relational databases.</p>
+</div>
+</body>
 </html>
