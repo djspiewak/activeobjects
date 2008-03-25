@@ -126,6 +126,13 @@
 				<include name="**/*.html"/>
 			</fileset>
 		</replaceregexp>
+		<delete>
+			<fileset dir="${www.path}">
+				<include name="**/*.html"/>
+				<exclude name="api/**/*"/>
+				<exclude name="index.html"/>
+			</fileset>
+		</delete>
 		<move todir="${www.path}" overwrite="yes" flatten="no">
 			<fileset refid="site-html"/>
 		</move>
