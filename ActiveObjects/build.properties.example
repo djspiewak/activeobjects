@@ -15,11 +15,11 @@ hsqldb.path=				# e.g. =hsqldb.jar
 # provide value to enable building of JDocs file
 jdocs.path=			# e.g. =jdocs.jar
 
-javadoc.path=../www/api
-
-build.classpath=${lucene.path}${path.separator}${lucene.queries.path}${path.separator}${commons-dbcp.path}\
-	${path.separator}${ant.path}${path.separator}${c3p0.path}${path.separator}${proxool.path}\
-	${path.separator}${dbpool.path}
 build.debug=yes
 
-activeobjects.version=0.8
+activeobjects.version=0.9-SNAPSHOT
+
+www.path=${activeobjects.dir}/../www
+
+docutils.path=		# e.g. =C:/Program Files/docutils
+

@@ -4,6 +4,7 @@
 	<dirname property="activeobjects.dir" file="${ant.file.ActiveObjects}"/>
 	
 	<property file="${activeobjects.dir}/build.properties"/>
+	<property file="${activeobjects.dir}/build-internal.properties"/>
 	
 	<target name="check-test">
 		<condition property="test-check-ok">
@@ -32,6 +33,22 @@
 			</and>
 		</condition>
 	</target>
+	
+	<target name="check-docutils">
+		<condition property="docutils-check-ok">
+			<and>
+				<isset property="docutils.path"/>
+				
+				<not>
+					<equals arg1="${docutils.path}" arg2="" trim="yes"/>
+				</not>
+			</and>
+		</condition>
+	</target>
+	
+	<target name="install-docutils" depends="check-docutils" unless="docutils-check-ok">
+		<fail message="Docutils must be installed to build the website"/>
+	</target>
 
 	<target name="check-ant">
 		<condition property="test-ant-ok">
@@ -52,7 +69,7 @@
 	
 	<target name="init-dist">
 		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src"/>
-		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
+		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc/api"/>
 	</target>
 	
 	<target name="init-doc" unless="supress-doc-deletion">
@@ -96,7 +113,24 @@
 		</javadoc>
 	</target>
 	
-	<target name="build-jdocs" depends="check-jdocs" if="jdocs-check-ok">
+	<target name="site" depends="install-docutils" if="docutils-check-ok">
+		<exec dir="${activeobjects.dir}/doc" executable="python">
+			<arg value="${docutils.path}/tools/buildhtml.py"/>
+		</exec>
+		<replaceregexp byline="yes">
+			<regexp pattern="&lt;body&gt;"/>
+			<substitution expression="${analytics.subst}"/>
+			
+			<fileset id="site-html" dir="${activeobjects.dir}/doc">
+				<include name="**/*.html"/>
+			</fileset>
+		</replaceregexp>
+		<move todir="${www.path}" overwrite="yes" flatten="no">
+			<fileset refid="site-html"/>
+		</move>
+	</target>
+	
+	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
 		<taskdef name="jdocs" classpath="${jdocs.path}" classname="com.dzone.jdocs.ant.jdk15.task.Jdocs"/>
 		<echo level="error" message="JDocs task doesn't work yet"/>
 
@@ -114,7 +148,7 @@
 	</target>
 	
 	<target name="dist" depends="upgrade-ant,init-dist,jar" if="test-ant-ok">
-		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
+		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc/api"/>
 		<property name="supress-doc-deletion" value="yes"/>
 		<antcall target="doc"/>
 		
@@ -128,6 +162,11 @@
 				<include name="BUGS"/>
 				<include name="CONTRIBUTORS"/>
 				<include name="LICENSE"/>
+			</fileset>
+		</copy>
+		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc">
+			<fileset dir="${activeobjects.dir}/doc">
+				<include name="**/*.txt"/>
 			</fileset>
 		</copy>
 		
