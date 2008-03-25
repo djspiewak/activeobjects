@@ -4,8 +4,8 @@
 Supported Databases
 ===================
 		
-Most major databases are currently supported by ActiveObjects in 
-release 0.6.  This data is only current to the 0.6 stable release.
+Most major databases are currently supported by ActiveObjects.  This data is
+only current to the **0.8** stable release.
 
  +---------------+-----------------------------+---------------------------+
  | Database      | URI Protocol                | Support                   |
