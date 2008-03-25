@@ -115,7 +115,8 @@
 	
 	<target name="site" depends="install-docutils" if="docutils-check-ok">
 		<exec dir="${activeobjects.dir}/doc" executable="python">
-			<arg value="${docutils.path}/tools/buildhtml.py"/>
+			<arg value="${docutils.path}${file.separator}tools${file.separator}buildhtml.py"/>
+			<arg value="--stylesheet-path=${www.path}${file.separator}style.css"/>
 		</exec>
 		<replaceregexp byline="yes">
 			<regexp pattern="&lt;body&gt;"/>
