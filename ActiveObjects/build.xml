@@ -137,6 +137,35 @@
 			<fileset refid="site-html"/>
 		</move>
 	</target>
+		
+	<target name="pdf" depends="install-docutils" if="docutils-check-ok">
+		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
+		<concat destfile="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt">
+			<header>~~~~~~~~~~~~~
+ActiveObjects
+~~~~~~~~~~~~~
+</header>
+			<fileset dir="${activeobjects.dir}/doc">
+				<include name="**/*.txt"/>
+				<exclude name="pdftmp/**/*"/>
+			</fileset>
+		</concat>
+		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="python" 
+				input="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" 
+				output="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<arg value="${docutils.path}${file.separator}tools${file.separator}rst2latex.py"/>
+			<arg value="--use-verbatim-when-possible"/>
+		</exec>
+		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" output="${activeobjects.dir}/doc/pdftmp/pdflatex.log">
+			<arg value="ActiveObjects.tex"/>
+		</exec>
+		<move todir="${www.path}">
+			<fileset dir="${activeobjects.dir}/doc/pdftmp">
+				<include name="ActiveObjects.pdf"/>
+			</fileset>
+		</move>
+		<delete dir="${activeobjects.dir}/doc/pdftmp"/>
+	</target>
 	
 	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
 		<taskdef name="jdocs" classpath="${jdocs.path}" classname="com.dzone.jdocs.ant.jdk15.task.Jdocs"/>
