@@ -1883,6 +1883,13 @@ public abstract class DatabaseProvider {
 	}
 	
 	/**
+	 * TODO
+	 */
+	public String processID(String id) {
+		return id;
+	}
+	
+	/**
 	 * Auto-magically retrieves the appropriate provider instance for the
 	 * specified JDBC URI, passing it the given username and password.  This
 	 * method actually delegates all of its interesting work to
