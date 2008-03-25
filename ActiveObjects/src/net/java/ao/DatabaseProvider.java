@@ -16,6 +16,7 @@
 package net.java.ao;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -85,6 +86,8 @@ public abstract class DatabaseProvider {
 	private Map<Thread, Connection> connections;
 	private final ReadWriteLock connectionsLock = new ReentrantReadWriteLock();
 	
+	private DatabaseMetaData metadata;
+	
 	/**
 	 * <p>The base constructor for <code>DatabaseProvider</code>.
 	 * Initializes the JDBC uri, username and password values as specified.</p>
@@ -105,6 +108,20 @@ public abstract class DatabaseProvider {
 		this.password = password;
 		
 		connections = new HashMap<Thread, Connection>();
+		
+		Connection conn = null;
+		try {
+			conn = getConnection();
+			metadata = conn.getMetaData();
+		} catch (SQLException e) {
+		} finally {
+			try {
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+			}
+		}
 	}
 	
 	/**
@@ -455,7 +472,7 @@ public abstract class DatabaseProvider {
 	 * @see java.sql.DatabaseMetaData#getTables(String, String, String, String[])
 	 */
 	public ResultSet getTables(Connection conn) throws SQLException {
-		return conn.getMetaData().getTables(null, null, "", null);
+		return metadata.getTables(null, null, "", null);
 	}
 	
 	/**
@@ -1884,9 +1901,11 @@ public abstract class DatabaseProvider {
 	
 	/**
 	 * TODO
+	 * @throws SQLException 
 	 */
-	public String processID(String id) {
-		return id;
+	public String processID(String id) throws SQLException {
+		String quote = metadata.getIdentifierQuoteString();
+		return quote + id + quote;
 	}
 	
 	/**
