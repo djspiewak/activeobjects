@@ -8,7 +8,7 @@ A connection pool will be selected from the following list based on which librar
 is available on the ``CLASSPATH``.  If more than one library is available,
 selection will be based on the following ordering.  This ordering is based on
 testing to determine the provider with optimal performance.
-		
+
 This data is only current to the **0.8** stable release.
 
  * DBPool_

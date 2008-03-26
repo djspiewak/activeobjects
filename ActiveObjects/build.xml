@@ -173,7 +173,8 @@
 		<!-- build the rest -->
 		<exec dir="${activeobjects.dir}/doc" executable="python">
 			<arg value="${docutils.path}${file.separator}tools${file.separator}buildhtml.py"/>
-			<arg value="--stylesheet-path=${www.path}${file.separator}style.css"/>
+			<arg value="--link-stylesheet"/>
+			<arg value="--stylesheet=/style.css"/>
 		</exec>
 		<replaceregexp byline="yes">
 			<regexp pattern="&lt;body&gt;"/>
