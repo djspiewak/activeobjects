@@ -1,7 +1,7 @@
  * `Why Another ORM? <why-another-orm.txt>`_
  * Performance Considerations
  * `Supported Databases <supported-databases.txt>`_
- * Supported Connection Pools
+ * `Supported Connection Pools <supported-connection-pools.txt>`_
  
 ---
 
