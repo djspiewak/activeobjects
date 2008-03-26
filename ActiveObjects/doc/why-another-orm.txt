@@ -1,15 +1,15 @@
 .. :mode=rest:
 
-==================
-Why ActiveObjects?
-==================
+================
+Why Another ORM?
+================
 
 Possibily the most important question to answer regarding ActiveObjects is
 to explain: why another ORM?  The Java ORM framework genre is completely
 dominated by the JBoss framework, Hibernate.  In fact, Hibernate is so widely
 used and respected that it's even been ported to .NET (NHibernate).  So, if
 there's already a widely respected, widely used and mature framework which
-seems to satesfy all important use-cases, why throw another into the mix?
+seems to satisfy all important use-cases, why throw another into the mix?
 
 The answer really comes back to complexity.  Hibernate is an incredibly
 complex framework.  Granted, it is complex mainly because it is powerful, but
@@ -17,7 +17,7 @@ sometimes - most of the time even - the required use-case is very simple and
 doesn't require all of Hibernate's compexities.  ActiveObjects is designed from
 the ground up to be as easy to use as possible, with a bare minimum of
 configuration.  In fact, to date ActiveObjects doesn't even have a single hook
-which takes an XML (or any other format) configuration file.  Any and all
+which takes an XML configuration file (or any other format).  Any and all
 configuration is either guessed from code, or easily set in code through the
 discrete use of annotations.
 
