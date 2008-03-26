@@ -189,6 +189,9 @@
 		<delete>
 			<fileset dir="${www.path}">
 				<include name="**/*.html"/>
+				<include name="**/*.png"/>
+				<include name="**/*.jpg"/>
+				<include name="**/*.gif"/>
 				<exclude name="api/**/*"/>
 				<!-- <exclude name="index.html"/> -->
 			</fileset>
@@ -196,6 +199,13 @@
 		<move todir="${www.path}" overwrite="yes" flatten="no">
 			<fileset refid="site-html"/>
 		</move>
+		<copy todir="${www.path}" overwrite="yes" flatten="no">
+			<fileset dir="${activeobjects.dir}/doc">
+				<include name="**/*.png"/>
+				<include name="**/*.jpg"/>
+				<include name="**/*.gif"/>
+			</fileset>
+		</copy>
 	</target>
 		
 	<target name="pdf" depends="install-docutils" if="docutils-check-ok">
@@ -233,10 +243,6 @@
 ActiveObjects
 ~~~~~~~~~~~~~
 </header>
-			<!--<fileset dir="${activeobjects.dir}/doc">
-				<include name="**/*.txt"/>
-				<exclude name="pdftmp/**/*"/>
-			</fileset>-->
 			<filelist dir="${activeobjects.dir}/doc" files="${index.toc}"/>
 		</concat>
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" token=".. :mode=rest:" value=""/>
