@@ -114,6 +114,63 @@
 	</target>
 	
 	<target name="site" depends="install-docutils" if="docutils-check-ok">
+		<!-- build index.html -->
+		<copy tofile="${activeobjects.dir}/doc/index.html" file="${activeobjects.dir}/doc/meta/index-template.html"/>
+		<exec dir="${activeobjects.dir}/doc" executable="python">
+			<arg value="${docutils.path}${file.separator}tools${file.separator}rst2html.py"/>
+			<arg value="--template=meta${file.separator}toc-template.txt"/>
+			<arg value="toc.rst"/>
+			<arg value="index-toc.html"/>
+		</exec>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;blockquote&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;/blockquote&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern=" class=&quot;.*?&quot;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;p&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;/p&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;dl&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;/dl&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;dd&gt;|&lt;dt&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="&lt;/dd&gt;|&lt;/dt&gt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="^-+$"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/index-toc.html">
+			<regexp pattern="\.txt"/>
+			<substitution expression=".html"/>
+		</replaceregexp>
+		<loadfile property="index.toc" srcfile="${activeobjects.dir}/doc/index-toc.html"/>
+		<delete file="${activeobjects.dir}/doc/index-toc.html"/>
+		<replace file="${activeobjects.dir}/doc/index.html" token="&lt;activeobjects:toc/&gt;" value="${index.toc}"/>
+		
+		<!-- build the rest -->
 		<exec dir="${activeobjects.dir}/doc" executable="python">
 			<arg value="${docutils.path}${file.separator}tools${file.separator}buildhtml.py"/>
 			<arg value="--stylesheet-path=${www.path}${file.separator}style.css"/>
@@ -124,13 +181,15 @@
 			
 			<fileset id="site-html" dir="${activeobjects.dir}/doc">
 				<include name="**/*.html"/>
+				<exclude name="meta/**/*"/>
 			</fileset>
 		</replaceregexp>
+
 		<delete>
 			<fileset dir="${www.path}">
 				<include name="**/*.html"/>
 				<exclude name="api/**/*"/>
-				<exclude name="index.html"/>
+				<!-- <exclude name="index.html"/> -->
 			</fileset>
 		</delete>
 		<move todir="${www.path}" overwrite="yes" flatten="no">
@@ -140,16 +199,47 @@
 		
 	<target name="pdf" depends="install-docutils" if="docutils-check-ok">
 		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
+		
+		<copy file="${activeobjects.dir}/doc/toc.rst" todir="${activeobjects.dir}/doc/pdftmp"/>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
+			<regexp pattern=".*?&lt;"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
+			<regexp pattern="&gt;.*?"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
+			<regexp pattern="`_$"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
+			<regexp pattern=".*?([^x]t|[^t])$"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<replaceregexp file="${activeobjects.dir}/doc/pdftmp/toc.rst">
+			<regexp pattern="\s+"/>
+			<substitution expression=","/>
+		</replaceregexp>
+		<replaceregexp file="${activeobjects.dir}/doc/pdftmp/toc.rst">
+			<regexp pattern="\n+"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		<loadfile property="index.toc" srcfile="${activeobjects.dir}/doc/pdftmp/toc.rst"/>
+		
 		<concat destfile="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt">
 			<header>~~~~~~~~~~~~~
 ActiveObjects
 ~~~~~~~~~~~~~
 </header>
-			<fileset dir="${activeobjects.dir}/doc">
+			<!--<fileset dir="${activeobjects.dir}/doc">
 				<include name="**/*.txt"/>
 				<exclude name="pdftmp/**/*"/>
-			</fileset>
+			</fileset>-->
+			<filelist dir="${activeobjects.dir}/doc" files="${index.toc}"/>
 		</concat>
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" token=".. :mode=rest:" value=""/>
+		
 		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="python" 
 				input="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" 
 				output="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
