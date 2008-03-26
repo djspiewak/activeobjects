@@ -218,11 +218,11 @@
 			<substitution expression=""/>
 		</replaceregexp>
 		<replaceregexp file="${activeobjects.dir}/doc/pdftmp/toc.rst">
-			<regexp pattern="\s+"/>
-			<substitution expression=","/>
+			<regexp pattern="\.txt"/>
+			<substitution expression="\.txt,"/>
 		</replaceregexp>
 		<replaceregexp file="${activeobjects.dir}/doc/pdftmp/toc.rst">
-			<regexp pattern="\n+"/>
+			<regexp pattern="[\n\s]+"/>
 			<substitution expression=""/>
 		</replaceregexp>
 		<loadfile property="index.toc" srcfile="${activeobjects.dir}/doc/pdftmp/toc.rst"/>
