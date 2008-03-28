@@ -1,0 +1,344 @@
+.. :mode=rest:
+
+===========
+Quick Start
+===========
+
+Getting up and running with ActiveObjects is extremely simple.  All you need
+is the main library jar (probably "activeobjects-1.0.jar" or similar) as well
+as the JDBC driver for whatever database you're using.  ActiveObjects itself has
+no dependencies on other libraries (outside of what you would otherwise need for
+JDBC access).  Here's a quick look at the steps involved in using ActiveObjects.
+
+
+1. Download
+===========
+
+Obviously, to use ActiveObjects, you will need the library itself on your
+CLASSPATH.  The most recent release of ActiveObjects can always be found on
+java.net:
+
+    https://activeobjects.dev.java.net/servlets/ProjectDocumentList
+	
+ActiveObjects is available in both tarball and zip archives, so select whichever
+you prefer (tarball is usually more compressed).  Once downloaded, extract the
+archive onto your filesystem.
+
+
+2. Setup the CLASSPATH
+======================
+
+ActiveObjects is composed of a single JAR file which contains all of the 
+`core classes`_ as well as built-in support for `numerous databases`_.  This JAR
+file is contained within the root directory of the distribution extracted in the
+previous step.  It is usually named something like "activeobjects-1.0.jar" or
+similar (depending on the current release number).
+
+While ActiveObjects does support numerous databases, it does not actually bundle
+the JDBC drivers reqiured.  To use ActiveObjects with a specific database, you
+must download the specific JDBC driver and make it available on your CLASSPATH.
+There is no need to load the driver manually or make any sort of call to
+``Class.forName(...)``, ActiveObjects will handle this automatically.  For
+example, when using ActiveObjects with a MySQL database, the CLASSPATH might
+look something like this::
+	
+	lib/activeobjects-1.0.jar:lib/mysql-connector-java-5.1.5-bin.jar
+	
+(substitute the appropriate JAR file if you are using a different database)
+
+.. _`core classes`: /api/overview.html
+.. _`numerous databases`: /supported-databases.html
+
+
+Connection Pooling
+------------------
+
+Connection pooling is considered to be one of the easiest ways to improve
+performance on a data-intensive application, especially in a high-volume
+scenario.  ActiveObjects supports retrieving connections from a pool
+automatically, however it does not build this functionality into the core.
+That is to say, ActiveObjects is capable of *using* `various connection pools`_,
+it does not actually implement connection pooling itself.
+
+Using ActiveObjects with a connection pool is as easy as configuring it to work
+with a specific database.  Just add the JAR for a supported connection pool to
+the CLASSPATH and ActiveObjects will automatically make use of it.  After 
+configuring your CLASSPATH to use ActiveObjects with MySQL and DBPool_, the 
+result might look like this::
+	
+	lib/activeobjects-1.0.jar:lib/mysql-connector-java-5.1.5-bin.jar:lib/DBPool_v4.8.3.jar
+	
+More information regarding supported connection pools and selection priority is 
+available here_.
+
+.. _`various connection pools`: /supported-connection-pools.html
+.. _DBPool: http://homepages.nildram.co.uk/~slink/java/DBPool
+.. _here: /supported-connection-pools.html
+
+
+3. Create an EntityManager
+==========================
+
+From this point on, all of the steps involve pure-Java source code.  There's no
+more fiddling with the CLASSPATH or any sort of external configuration files.
+
+The EntityManager_ class is basically the global access point to the database.
+One instance of this class corresponds uniquely to a given database.  As such,
+this instance must be available to the entire application from some central
+controller.  Often, the easiest way to do this is to use some dependency
+injection like Guice_ or Spring_, but many applications also elect to place
+the ``EntityManager`` instance within a singleton or static controller.
+
+Creating an instance of ``EntityManager`` is as easy as calling a constructor.
+ActiveObjects avoids (as much as possible) the Java "enterprisey" pattern of
+making everything an interface and relying on factories for instantiation.  This
+drastically simplifies the instantiation and configuration process::
+	
+	EntityManager manager = 
+			new EntityManager("jdbc:mysql://localhost/my_db", "db_user", "password");
+	
+This is all the configuration ActiveObjects *requires* to provide full
+functionality.  ActiveObjects is able to determine the appropriate JDBC driver
+and database type just from the JDBC URI.  Once it has made this inference,
+ActiveObjects will attempt to load the required driver from the CLASSPATH.  If
+ActiveObjects is unable to infer the database or load the driver, a runtime
+exception will be thrown.
+
+.. _EntityManager: /api/net/java/ao/EntityManager.html
+.. _Guice: http://code.google.com/p/google-guice
+.. _Spring: http://www.springframework.org
+
+
+4. Write Some Entities
+======================
+
+Obviously an ORM isn't very useful if you can't manipulate data.  ActiveObjects
+allows access to table data through objects called **entities**.  Entities_ are
+the formal implementations of the `Active Record Pattern`_ within ActiveObjects.
+Each entity definition corresponds uniquely to a table, while each entity instance
+corresponds to a row within that table.  As far as possible, these relations are
+inferred based on structure and convention employed within the entity 
+definitions.  This means no more entity mapping configuration!
+
+To avoid forcing developers to write reams of boiler-plate, ActiveObjects uses
+interfaces to represent entity definitions.  These interfaces are *never*
+implemented by you (the developer).  Instead, the framework dynamically
+generates a proxy instance for the entity which handles all method calls and
+performs operations upon the database.  What all this means is that startelingly
+little code is required to interact with a database.  Here we show two basic
+entities with a few fields and a one-to-many relationship between them::
+	
+	public interface Person extends Entity {
+	    public String getFirstName();
+		public void setFirstName(String firstName);
+		
+	    public String getLastName();
+		public void setLastName(String lastName);
+		
+		public int getAge();
+		public void setAge(int age);
+		
+		public Company getCompany();
+		public void setCompany(Company company);
+	}
+	
+	public interface Company extends Entity {
+		public String getName();
+		public void setName(String name);
+		
+		public URL getWebsite();
+		public void setWebsite(URL website);
+		
+		@OneToMany
+		public Person[] getEmployees();
+	}
+	
+At no point in this code do we actually specify any tables or fields.
+ActiveObjects inspects the structure of the ``Person`` and ``Company`` entities
+at runtime and is able to infer the corresponding tables.  More than that, the
+framework looks at the accessor/mutator pairs and dynamically associates them
+with a corresponding field in the database.  For example, these two entities
+would correspond with the following schema (assuming the default 
+`name conventions`_):
+
+ * **person**
+ 	* ``id`` : ``INTEGER``
+ 	* ``firstName`` : ``VARCHAR(255)``
+	* ``lastName`` : ``VARCHAR(255)``
+	* ``age`` : ``INTEGER``
+	* ``companyID`` : ``INTEGER`` *(foreign key on company(id))*
+ * **company**
+ 	* ``id`` : ``INTEGER``
+ 	* ``name`` : ``VARCHAR(255)``
+	* ``website`` : ``VARCHAR(255)``
+	
+All of these field and type mappings are inferred for you by the framework.  So
+when you call ``Person#getFirstName()``, it will perform a ``SELECT`` on the
+database and retrieve the value of the ``firstName`` field as a Java ``String``.
+
+.. _Entities: /concepts/entities.html
+.. _`Active Record Pattern`: http://en.wikipedia.org/wiki/Active_record_pattern
+.. _`name conventions`: /notyet.html
+
+
+5. Migrate the Schema
+=====================
+
+The easiest way to create a database schema with ActiveObjects is to start with
+the entities (as above) and then make use of the migrations_ feature to
+auto-generate the appropriate elements in the database.  ActiveObjects can
+generate DDL statements for every `supported database`_ by inspecting the
+entity interfaces and inferring the appropriate tables, fields and types.  To
+make use of this feature, simply call the ``migrate(...)`` method on the
+``EntityManager`` instance::
+	
+	EntityManager manager = ...
+	manager.migrate(Person.class, Company.class);
+	
+When working with the MySQL database, ActiveObjects will generate DDL something
+like the following for the given migration::
+	
+	CREATE TABLE `company` (
+		`id` INTEGER AUTO_INCREMENT NOT NULL,
+		`name` VARCHAR(255),
+		`website` VARCHAR(255),
+		PRIMARY KEY(`id`)
+	);
+	
+	CREATE TABLE `person` (
+		`id` INTEGER AUTO_INCREMENT NOT NULL,
+		`firstName` VARCHAR(255),
+		`lastName` VARCHAR(255),
+		`age` INTEGER,
+		`companyID` INTEGER,
+		CONSTRAINT `fk_person_companyID` FOREIGN KEY (`companyID`) REFERENCS `company` (`id`),
+		PRIMARY KEY(`id`)
+	);
+	
+Notice how the DDL has been reordered to ensure table creation according to
+dependencies.  The migrations mechanism performs a topological sort on the DDL
+prior to execution, ensuring that no errors are introduced through subtle
+mistakes in migration order.  (e.g. ``(Person.class, Company.class)`` vs
+``(Company.class, Person.class)``)
+
+Now that the schema has been created, successive migrations will no longer
+recreate the entire thing from scratch.  Rather, ActiveObjects will interrogate
+the existing schema and attempt to determine what has changed between the schema
+and the entity interfaces.  These changes are then *incrementally* applied to
+the existing schema, preserving data and allowing powerful schema refactoring
+just by changing the interfaces definitions.
+
+.. _migrations: /concepts/migrations.html
+.. _`supported database`: /supported-databases.html
+
+
+6. Useful Stuff
+===============
+
+Now that the entity model is in place and the schema has been migrated, we can
+go ahead and start using the framework for something useful.  
+
+
+Creating Data
+-------------
+
+This example shows how we can create a new row in the ``person`` table (where 
+``manager`` is an instance of ``EntityManager`` as created above)::
+	
+	Person me = manager.create(Person.class);
+	me.setFirstName("Daniel");
+	me.setLastName("Spiewak");
+	me.setAge(20);
+	me.save();
+	
+We have to ask ``EntityManager`` to create our new instance of ``Person``.  This
+just allows the framework to perform the appropriate ``INSERT`` as well as
+create the dynamic interface proxy.  Once that step is done, we can use the
+instance of ``Person`` just like any other Java instance.  Because this is a JDK
+interface proxy (rather than created via bytecode instrumentation), there are no
+"gotchas" to worry about when dealing with the instance.  It's just a Java object,
+you are free to treat it as such.
+
+Here's a slightly more complicated example involving both entity types and a
+relationship::
+	
+	Company google = manager.create(Company.class);
+	google.setName("Google");
+	google.setWebsite(new URL("http://www.google.com"));
+	google.save();
+	
+	Person me = manager.create(Person.class);
+	me.setFirstName("Daniel");
+	me.setLastName("Spiewak");
+	me.setCompany(google);
+	me.save();
+	
+	Person me = manager.create(Person.class);
+	me.setFirstName("Christopher");
+	me.setLastName("Spiewak");
+	me.setCompany(google);
+	me.save();
+
+ActiveObjects automatically converts the ``google`` entity into the corresponding
+``id`` value when saving the data into the database.  There's no tricks to worry
+about, no mappings to define; everything "just works".
+
+.. _above: `3. Create an EntityManager`_
+
+
+Querying Data
+-------------
+
+Of course, once the data is in the database, we may want to get it *out* again.
+This is accomplished just as easily as the entity creations demonstrated above.
+Here's a simple example which retrieves all ``Person`` entities with the last
+name "Spiewak" and prints their full names::
+	
+	Person[] people = manager.find(Person.class, "lastName = ?", "Spiewak");
+	for (Person p : people) {
+		System.out.println(p.getFirstName() + " " + p.getLastName());
+	}
+	
+Note the use of `prepared statements`_ in the query.  ActiveObjects relies on
+prepared statements for all of its queries, allowing vastly improved performance
+(especially in conjunction with connection pooling).  The added advantage of
+a parameterized prepared statement is there's no need to worry about escaping
+the input string.  SQL injection attacks are simply impossible because no data
+is concatenated directly into any query.
+
+The ``Person`` entity has a one-to-many relationship on the ``Company`` entity.
+Often times it is necessary to actually query the value of this relationship,
+retrieving the related entities.  For example, we may start with a ``Company`` 
+instance and print out a list of all of the employees by name.  We can accomplish
+this easily using the ``getEmployees()`` method (declared in the ``Company``
+entity)::
+	
+	Company google = ...
+	Person[] employees = google.getEmployees();
+	for (Person p : employees) {
+		System.out.println(p.getFirstName() + " " + p.getLastName());
+	}
+
+Notice that we actually get an array of related entities, not a ``Set`` or a
+``List``.  This makes dealing with relationships far easier, as well as allowing
+more natural APIs involving relationship values.  Of course, there's always the
+concern of what happens when there are thousands of related entities.  In a 
+traditional ORM, the data for all of these entities must be fully loaded prior
+to the creation of an in-memory structure like an array.  However, because every
+entity in ActiveObjects is backed by a dynamic proxy, the field values need not
+be loaded on the initial query.  ActiveObjects by default lazy-loads every field
+value, meaning that the entities themselves are mere delegate peers which
+encapsulate access to the database.  More information on the advantages and
+disadvantages of field lazy loading can be found here_.
+
+.. _`prepared statements`: http://java.sun.com/javase/6/docs/api/java/sql/PreparedStatement.html
+.. _here: /performance-considerations.html
+
+
+7. Relax
+========
+
+That's all there is to it!  ActiveObjects is designed to be an *extremely*
+simple framework.  There are no hidden tricks, no extra configuration required
+to do anything non-trivial.  Everything is designed to be as simple and as
+intuitive as possible.

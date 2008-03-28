@@ -175,6 +175,8 @@
 			<arg value="${docutils.path}${file.separator}tools${file.separator}buildhtml.py"/>
 			<arg value="--link-stylesheet"/>
 			<arg value="--stylesheet=/style.css"/>
+			
+			<arg value="--initial-header-level=2"/>
 		</exec>
 		<replaceregexp byline="yes">
 			<regexp pattern="&lt;body&gt;"/>
@@ -210,6 +212,13 @@
 		
 	<target name="pdf" depends="install-docutils" if="docutils-check-ok">
 		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
+		<copy todir="${activeobjects.dir}/doc/pdftmp" flatten="no">
+			<fileset dir="${activeobjects.dir}/doc">
+				<include name="**/*.png"/>
+				<include name="**/*.jpg"/>
+				<include name="**/*.gif"/>
+			</fileset>
+		</copy>
 		
 		<copy file="${activeobjects.dir}/doc/toc.rst" todir="${activeobjects.dir}/doc/pdftmp"/>
 		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
@@ -252,6 +261,7 @@ ActiveObjects
 				output="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<arg value="${docutils.path}${file.separator}tools${file.separator}rst2latex.py"/>
 			<arg value="--use-verbatim-when-possible"/>
+			<arg value="--graphicx-option=pdftex"/>
 		</exec>
 		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" output="${activeobjects.dir}/doc/pdftmp/pdflatex.log">
 			<arg value="ActiveObjects.tex"/>
@@ -301,6 +311,7 @@ ActiveObjects
 		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc">
 			<fileset dir="${activeobjects.dir}/doc">
 				<include name="**/*.txt"/>
+				<exclude name="meta/**/*"/>
 			</fileset>
 		</copy>
 		

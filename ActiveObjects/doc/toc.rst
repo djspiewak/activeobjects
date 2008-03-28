@@ -5,7 +5,7 @@
  
 ---
 
- * Quick Start
+ * `Quick Start <quick-start.txt>`_
  * Concepts
  	* Entities
 		* Fields
@@ -19,13 +19,24 @@
  * Cookbook
  	* Different Databases
 	* Connection Pooling
+	* Alternative Connection Sources
 	* Domain-Logic in Entities
 	* Advanced Schemata
 		* Explicit Types
 		* Auto-Generated and Synthesized Values
 		* Constraints
 	* Complex Relationships
+		* Conditionals
+		* Polymorphism
+		* Multiple Paths
 	* Custom Naming Conventions
+		* Tables
+		* Fields
 	* Legacy Databases
 	* Custom Primary Keys
 	* Schema Refactoring
+ * Extending ActiveObjects
+ 	* Adding a Database
+	* Adding a Connection Pool
+	* Adding a Type
+	* Redefining Entities
