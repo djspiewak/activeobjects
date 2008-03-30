@@ -117,7 +117,7 @@ public abstract class DatabaseProvider {
 		if (metadata == null) {
 			Connection conn = null;
 			try {
-				conn = getConnection();
+				conn = getConnectionImpl();
 				metadata = conn.getMetaData();
 				quote = metadata.getIdentifierQuoteString();
 			} catch (SQLException e) {
