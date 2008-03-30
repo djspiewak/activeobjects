@@ -98,16 +98,16 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	@Override
 	@SuppressWarnings("unused")
 	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
-		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
+		StringBuilder sql = new StringBuilder("INSERT INTO " + processID(table) + " (");
 		
 		for (DBParam param : params) {
-			sql.append(param.getField());
+			sql.append(processID(param.getField()));
 			sql.append(',');
 		}
 		if (params.length > 0) {
 			sql.setLength(sql.length() - 1);
 		} else {
-			sql.append(pkField);
+			sql.append(processID(pkField));
 		}
 		
 		sql.append(") VALUES (");
@@ -257,7 +257,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 				} else {
 					StringBuilder fields = new StringBuilder();
 					for (String field : query.getFields()) {
-						fields.append(field).append(',');
+						fields.append(processID(field)).append(',');
 					}
 					if (query.getFields().length > 0) {
 						fields.setLength(fields.length() - 1);
@@ -267,7 +267,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 				}
 				sql.append(" FROM ");
 				
-				sql.append(tableName);
+				sql.append(processID(tableName));
 			break;
 		}
 		
@@ -291,7 +291,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	protected String renderOnUpdate(DDLField field) {
-		System.err.println("WARNING: @OnUpdate is a currently unsupported feature in HSQLDB");
+		System.err.println("WARNING: @OnUpdate is currently unsupported in HSQLDB");
 		
 		return "";
 	}
@@ -307,7 +307,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		
 		for (DDLField field : table.getFields()) {
 			if (field.isUnique()) {
-				back.append("    UNIQUE(").append(field.getName()).append("),\n");
+				back.append("    UNIQUE(").append(processID(field.getName())).append("),\n");
 			}
 		}
 		
@@ -354,7 +354,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
 		StringBuilder current = new StringBuilder();
 		
-		current.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+		current.append("ALTER TABLE ").append(processID(table.getName())).append(" ALTER COLUMN ");
 		current.append(renderField(field));
 		
 		return current.toString();
@@ -364,7 +364,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder("ALTER TABLE ");
 		
-		back.append(key.getDomesticTable()).append(" DROP CONSTRAINT ").append(key.getFKName());
+		back.append(processID(key.getDomesticTable())).append(" DROP CONSTRAINT ").append(processID(key.getFKName()));
 		
 		return back.toString();
 	}
@@ -373,7 +373,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderDropIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder("DROP INDEX ");
 		
-		back.append(index.getName());
+		back.append(processID(index.getName()));
 		
 		return back.toString();
 	}

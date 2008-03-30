@@ -218,10 +218,10 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 			StringBuilder back = new StringBuilder();
 			String value = renderValue(field.getOnUpdate());
 
-			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
-			back.append("BEFORE UPDATE\n").append("    ON ").append(table.getName()).append("\n    FOR EACH ROW\n");
+			back.append("CREATE TRIGGER ").append(processID(table.getName() + '_' + field.getName() + "_onupdate") + '\n');
+			back.append("BEFORE UPDATE\n").append("    ON ").append(processID(table.getName())).append("\n    FOR EACH ROW\n");
 			back.append("BEGIN\n");
-			back.append("    :new.").append(field.getName()).append(" := ").append(value).append(";\nEND");
+			back.append("    :new.").append(processID(field.getName())).append(" := ").append(value).append(";\nEND");
 
 			return back.toString();
 		}
@@ -232,7 +232,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	@Override
 	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
 		StringBuilder current = new StringBuilder();
-		current.append("ALTER TABLE ").append(table.getName()).append(" MODIFY (");
+		current.append("ALTER TABLE ").append(processID(table.getName())).append(" MODIFY (");
 		current.append(renderField(field)).append(')');
 		return current.toString();
 	}
@@ -241,14 +241,14 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder("ALTER TABLE ");
 
-		back.append(key.getDomesticTable()).append(" DROP CONSTRAINT ").append(key.getFKName());
+		back.append(processID(key.getDomesticTable())).append(" DROP CONSTRAINT ").append(processID(key.getFKName()));
 
 		return back.toString();
 	}
 
     @Override
     protected String renderDropTable(DDLTable table) {
-        return "DROP TABLE " + table.getName() + " PURGE";
+        return "DROP TABLE " + processID(table.getName()) + " PURGE";
     }
     
 	@Override
@@ -304,11 +304,11 @@ public class OracleDatabaseProvider extends DatabaseProvider {
         // Create trigger for Primary key
         StringBuilder trg = new StringBuilder();
 
-        trg.append("CREATE TRIGGER ").append(table.getName()).append("_TRG \n");
-        trg.append("BEFORE INSERT\n").append("    ON ").append(table.getName()).append("   FOR EACH ROW\n");
+        trg.append("CREATE TRIGGER ").append(processID(table.getName() + "_TRG") +  '\n');
+        trg.append("BEFORE INSERT\n").append("    ON ").append(processID(table.getName())).append("   FOR EACH ROW\n");
         trg.append("BEGIN\n");
-        trg.append(" SELECT ").append(table.getName()).append("_SEQ.NEXTVAL ");
-        trg.append("INTO :NEW.ID FROM DUAL; \nEND;");
+        trg.append(" SELECT ").append(processID(table.getName() + "_SEQ.NEXTVAL"));
+        trg.append(" INTO :NEW.ID FROM DUAL; \nEND;");
     
         back.add(trg.toString());
            
@@ -325,7 +325,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 
         // TODO	only need trigger if PK is auto-incrementing
         // add sequence
-        seq.append("DROP TRIGGER ").append(table.getName()).append("_TRG ");
+        seq.append("DROP TRIGGER ").append(processID(table.getName() + "_TRG "));
         
         back.add(seq.toString());
         
@@ -340,7 +340,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 
         // TODO	only need sequence if PK is auto-incrementing
         // add sequence
-        seq.append("DROP SEQUENCE ").append(table.getName()).append("_SEQ ");
+        seq.append("DROP SEQUENCE ").append(processID(table.getName() + "_SEQ "));
         
         back.add(seq.toString());
         
@@ -355,7 +355,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
         
         // TODO	only need sequence if PK is auto-incrementing
         // add sequence
-        seq.append("CREATE SEQUENCE ").append(table.getName()).append("_SEQ ").append("INCREMENT BY 1 START WITH 1 ");
+        seq.append("CREATE SEQUENCE ").append(processID(table.getName() + "_SEQ ")).append("INCREMENT BY 1 START WITH 1 ");
         seq.append("MAXVALUE ").append(Integer.MAX_VALUE).append(" MINVALUE 1 "); 
         
         back.add(seq.toString());

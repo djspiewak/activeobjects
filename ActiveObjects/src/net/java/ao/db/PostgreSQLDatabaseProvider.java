@@ -236,9 +236,9 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		if (onUpdate != null) {
 			StringBuilder back = new StringBuilder();
 			
-			back.append("CREATE FUNCTION ").append(table.getName()).append('_').append(field.getName()).append("_onupdate()");
+			back.append("CREATE FUNCTION ").append(processID(table.getName() + '_' + field.getName() + "_onupdate") + "()");
 			back.append(" RETURNS trigger AS $$\nBEGIN\n");
-			back.append("    NEW.").append(field.getName()).append(" := ").append(renderValue(onUpdate));
+			back.append("    NEW.").append(processID(field.getName())).append(" := ").append(renderValue(onUpdate));
 			back.append(";\n    RETURN NEW;\nEND;\n$$ LANGUAGE plpgsql");
 			
 			return back.toString();
@@ -253,10 +253,10 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		if (onUpdate != null) {
 			StringBuilder back = new StringBuilder();
 			
-			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
-			back.append(" BEFORE UPDATE OR INSERT ON ").append(field.getName()).append('\n');
+			back.append("CREATE TRIGGER ").append(processID(table.getName() + '_' + field.getName() + "_onupdate") + '\n');
+			back.append(" BEFORE UPDATE OR INSERT ON ").append(processID(field.getName())).append('\n');
 			back.append("    FOR EACH ROW EXECUTE PROCEDURE ");
-			back.append(table.getName()).append('_').append(field.getName()).append("_onupdate()");
+			back.append(processID(table.getName() + '_' + field.getName() + "_onupdate") + "()");
 		}
 		
 		return super.renderTriggerForField(table, field);
@@ -274,14 +274,14 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		String trigger = getTriggerNameForField(table, oldField);
 		if (trigger != null) {
 			StringBuilder str = new StringBuilder();
-			str.append("DROP TRIGGER ").append(trigger);
+			str.append("DROP TRIGGER ").append(processID(trigger));
 			back.add(str.toString());
 		}
 		
 		String function = getFunctionNameForField(table, oldField);
 		if (function != null) {
 			StringBuilder str = new StringBuilder();
-			str.append("DROP FUNCTION ").append(function);
+			str.append("DROP FUNCTION ").append(processID(function));
 			back.add(str.toString());
 		}
 		
@@ -290,8 +290,8 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			foundChange = true;
 			
 			StringBuilder str = new StringBuilder();
-			str.append("ALTER TABLE ").append(table.getName()).append(" RENAME COLUMN ");
-			str.append(oldField.getName()).append(" TO ").append(field.getName());
+			str.append("ALTER TABLE ").append(processID(table.getName())).append(" RENAME COLUMN ");
+			str.append(processID(oldField.getName())).append(" TO ").append(processID(field.getName()));
 			back.add(str.toString());
 		}
 		
@@ -299,8 +299,8 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			foundChange = true;
 			
 			StringBuilder str = new StringBuilder();
-			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
-			str.append(field.getName()).append(" TYPE ");
+			str.append("ALTER TABLE ").append(processID(table.getName())).append(" ALTER COLUMN ");
+			str.append(processID(field.getName())).append(" TYPE ");
 			str.append(renderFieldType(field)).append(renderFieldPrecision(field));
 			back.add(str.toString());
 		}
@@ -311,15 +311,15 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			foundChange = true;
 			
 			StringBuilder str = new StringBuilder();
-			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
-			str.append(field.getName()).append(" DROP DEFAULT");
+			str.append("ALTER TABLE ").append(processID(table.getName())).append(" ALTER COLUMN ");
+			str.append(processID(field.getName())).append(" DROP DEFAULT");
 			back.add(str.toString());
 		} else if (!field.getDefaultValue().equals(oldField.getDefaultValue())) {
 			foundChange = true;
 			
 			StringBuilder str = new StringBuilder();
-			str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
-			str.append(field.getName()).append(" SET DEFAULT ").append(renderValue(field.getDefaultValue()));
+			str.append("ALTER TABLE ").append(processID(table.getName())).append(" ALTER COLUMN ");
+			str.append(processID(field.getName())).append(" SET DEFAULT ").append(renderValue(field.getDefaultValue()));
 			back.add(str.toString());
 		}
 		
@@ -328,13 +328,13 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			
 			if (field.isNotNull()) {
 				StringBuilder str = new StringBuilder();
-				str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
-				str.append(field.getName()).append(" SET NOT NULL");
+				str.append("ALTER TABLE ").append(processID(table.getName())).append(" ALTER COLUMN ");
+				str.append(processID(field.getName())).append(" SET NOT NULL");
 				back.add(str.toString());
 			} else {
 				StringBuilder str = new StringBuilder();
-				str.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
-				str.append(field.getName()).append(" DROP NOT NULL");
+				str.append("ALTER TABLE ").append(processID(table.getName())).append(" ALTER COLUMN ");
+				str.append(processID(field.getName())).append(" DROP NOT NULL");
 				back.add(str.toString());
 			}
 		}
@@ -364,7 +364,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder("ALTER TABLE ");
 		
-		back.append(key.getDomesticTable()).append(" DROP CONSTRAINT ").append(key.getFKName());
+		back.append(processID(key.getDomesticTable())).append(" DROP CONSTRAINT ").append(processID(key.getFKName()));
 		
 		return back.toString();
 	}
@@ -373,7 +373,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	protected String renderDropIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder("DROP INDEX ");
 		
-		back.append(index.getName());
+		back.append(processID(index.getName()));
 		
 		return back.toString();
 	}

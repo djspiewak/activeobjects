@@ -189,12 +189,14 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 				throw new IllegalArgumentException("No primary key field found in table '" + table.getName() + '\'');
 			}
 			
-			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
-			back.append("    AFTER UPDATE ON ").append(table.getName());
+			back.append("CREATE TRIGGER ").append(processID(table.getName() + '_' + field.getName()+ "_onupdate") + '\n');
+			back.append("    AFTER UPDATE ON ").append(processID(table.getName()));
 			back.append("\n    REFERENCING NEW AS inserted\n    FOR EACH ROW MODE DB2SQL\n        ");
-			back.append("UPDATE ").append(table.getName()).append(" SET ").append(field.getName()).append(" = ").append(renderValue(onUpdate));
-			back.append("\n            WHERE " + pkField.getName() + " = inserted." + pkField.getName() + " AND inserted.");
-			back.append(field.getName()).append(" <> ").append(renderValue(onUpdate));
+			back.append("UPDATE ").append(processID(table.getName())).append(" SET ").append(
+					processID(field.getName())).append(" = ").append(renderValue(onUpdate));
+			back.append("\n            WHERE " + processID(pkField.getName()) + " = inserted." 
+					+ processID(pkField.getName()) + " AND inserted.");
+			back.append(processID(field.getName())).append(" <> ").append(renderValue(onUpdate));
 			
 			return back.toString();
 		}
@@ -205,7 +207,7 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	@Override
 	protected String getTriggerNameForField(DDLTable table, DDLField field) {
 		if (field.getOnUpdate() != null) {
-			return table.getName() + '_' + field.getName() + "_onupdate";
+			return processID(table.getName() + '_' + field.getName() + "_onupdate");
 		}
 		
 		return super.getTriggerNameForField(table, field);
@@ -278,7 +280,7 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	protected String renderDropIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder("DROP INDEX ");
 		
-		back.append(index.getName());
+		back.append(processID(index.getName()));
 		
 		return back.toString();
 	}

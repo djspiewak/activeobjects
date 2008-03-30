@@ -220,7 +220,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 				} else {
 					StringBuilder fields = new StringBuilder();
 					for (String field : query.getFields()) {
-						fields.append(field).append(',');
+						fields.append(processID(field)).append(',');
 					}
 					if (query.getFields().length > 0) {
 						fields.setLength(fields.length() - 1);
@@ -230,7 +230,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 				}
 				sql.append(" FROM ");
 				
-				sql.append(tableName);
+				sql.append(processID(tableName));
 			break;
 		}
 		
@@ -318,12 +318,12 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 				throw new IllegalArgumentException("No primary key field found in table '" + table.getName() + '\'');
 			}
 			
-			back.append("CREATE TRIGGER ").append(table.getName()).append('_').append(field.getName()).append("_onupdate\n");
-			back.append("ON ").append(table.getName()).append("\n");
+			back.append("CREATE TRIGGER ").append(processID(table.getName() + '_' + field.getName() + "_onupdate") + "\n");
+			back.append("ON ").append(processID(table.getName())).append("\n");
 			back.append("FOR UPDATE\nAS\n");
-			back.append("    UPDATE ").append(table.getName()).append(" SET ").append(field.getName());
+			back.append("    UPDATE ").append(processID(table.getName())).append(" SET ").append(processID(field.getName()));
 			back.append(" = ").append(renderValue(onUpdate));
-			back.append(" WHERE " + pkField.getName() + " = (SELECT " + pkField.getName() + " FROM inserted)");
+			back.append(" WHERE " + processID(pkField.getName()) + " = (SELECT " + processID(pkField.getName()) + " FROM inserted)");
 			
 			return back.toString();
 		}
@@ -335,7 +335,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
 		StringBuilder current = new StringBuilder();
 		
-		current.append("ALTER TABLE ").append(table.getName()).append(" ALTER COLUMN ");
+		current.append("ALTER TABLE ").append(processID(table.getName())).append(" ALTER COLUMN ");
 		current.append(renderField(field));
 		
 		return current.toString();
@@ -345,7 +345,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	protected String[] renderAlterTableAddColumn(DDLTable table, DDLField field) {
 		List<String> back = new ArrayList<String>();
 		
-		back.add("ALTER TABLE " + table.getName() + " ADD " + renderField(field));
+		back.add("ALTER TABLE " + processID(table.getName()) + " ADD " + renderField(field));
 		
 		String function = renderFunctionForField(table, field);
 		if (function != null) {
@@ -364,7 +364,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder("ALTER TABLE ");
 		
-		back.append(key.getDomesticTable()).append(" DROP CONSTRAINT ").append(key.getFKName());
+		back.append(processID(key.getDomesticTable())).append(" DROP CONSTRAINT ").append(processID(key.getFKName()));
 		
 		return back.toString();
 	}
@@ -380,18 +380,18 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			for (DBParam param : params) {
 				if (param.getField().trim().equalsIgnoreCase(pkField)) {
 					identityInsert = true;
-					sql.append("SET IDENTITY_INSERT ").append(table).append(" ON\n");
+					sql.append("SET IDENTITY_INSERT ").append(processID(table)).append(" ON\n");
 					break;
 				}
 			}
 		}
 		
-		sql.append("INSERT INTO ").append(table);
+		sql.append("INSERT INTO ").append(processID(table));
 		
 		if (params.length > 0) {
 			sql.append(" (");
 			for (DBParam param : params) {
-				sql.append(param.getField());
+				sql.append(processID(param.getField()));
 				sql.append(',');
 			}
 			sql.setLength(sql.length() - 1);
@@ -409,7 +409,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 		}
 		
 		if (identityInsert) {
-			sql.append("\nSET IDENTITY_INSERT ").append(table).append(" OFF");
+			sql.append("\nSET IDENTITY_INSERT ").append(processID(table)).append(" OFF");
 		}
 		
 		T back = executeInsertReturningKey(conn, pkType, pkField, sql.toString(), params);
