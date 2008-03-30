@@ -1,6 +1,7 @@
  ==Name Conversion==
  
  * Run tests with different name converter combinations
+ 	* Different inheritence of DataTest
  
  ==Entities==
  
