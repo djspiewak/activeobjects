@@ -1899,7 +1899,7 @@ public abstract class DatabaseProvider {
 	 * TODO
 	 */
 	public String processID(String id) {
-		if (shouldEscape(id)) {
+		if (shouldQuoteID(id)) {
 			return quote + id + quote;
 		}
 		
@@ -1909,7 +1909,7 @@ public abstract class DatabaseProvider {
 	/**
 	 * TODO
 	 */
-	protected boolean shouldEscape(String id) {
+	protected boolean shouldQuoteID(String id) {
 		return getReservedWords().contains(id.toUpperCase());
 	}
 	

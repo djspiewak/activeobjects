@@ -364,8 +364,8 @@ public class OracleDatabaseProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	protected boolean shouldEscape(String id) {
-		return id.toUpperCase().startsWith("SYS_") || super.shouldEscape(id);
+	protected boolean shouldQuoteID(String id) {
+		return id.toUpperCase().startsWith("SYS_") || super.shouldQuoteID(id);
 	}
 	
 	@Override
