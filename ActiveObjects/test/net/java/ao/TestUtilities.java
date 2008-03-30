@@ -28,6 +28,7 @@ import test.schema.Post;
 import test.schema.PostalAddress;
 import test.schema.PrintDistribution;
 import test.schema.PublicationToDistribution;
+import test.schema.Select;
 
 /*
  * Copyright 2007 Daniel Spiewak
@@ -80,7 +81,7 @@ public class TestUtilities {
 			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, Nose.class,
 					Authorship.class, Book.class, Magazine.class, 
 					PublicationToDistribution.class, PrintDistribution.class, OnlineDistribution.class,
-					Message.class, EmailAddress.class, PostalAddress.class);
+					Message.class, EmailAddress.class, PostalAddress.class, Select.class);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}

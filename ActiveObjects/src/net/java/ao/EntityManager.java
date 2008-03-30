@@ -489,7 +489,8 @@ public class EntityManager {
 		
 		entityCacheLock.writeLock().lock();
 		try {
-			Connection conn = getProvider().getConnection();
+			DatabaseProvider provider = getProvider();
+			Connection conn = provider.getConnection();
 			try {
 				for (Class<? extends RawEntity<?>> type : organizedEntities.keySet()) {
 					List<RawEntity<?>> entityList = organizedEntities.get(type);
@@ -498,12 +499,13 @@ public class EntityManager {
 					
 					tableNameConverterLock.readLock().lock();
 					try {
-						sql.append(tableNameConverter.getName(type));
+						sql.append(provider.processID(tableNameConverter.getName(type)));
 					} finally {
 						tableNameConverterLock.readLock().unlock();
 					}
 					
-					sql.append(" WHERE ").append(Common.getPrimaryKeyField(type, getFieldNameConverter())).append(" IN (?");
+					sql.append(" WHERE ").append(provider.processID(
+							Common.getPrimaryKeyField(type, getFieldNameConverter()))).append(" IN (?");
 					
 					for (int i = 1; i < entityList.size(); i++) {
 						sql.append(",?");

@@ -51,6 +51,7 @@ import test.schema.Post;
 import test.schema.PrintDistribution;
 import test.schema.Profession;
 import test.schema.PublicationToDistribution;
+import test.schema.Select;
 
 /**
  * @author Daniel Spiewak
@@ -412,6 +413,21 @@ public class EntityTest extends DataTest {
 		}
 		
 		manager.delete(person);
+	}
+	
+	@Test
+	public void testReservedOperations() throws SQLException {
+		Select select = manager.create(Select.class);
+		select.setWhere("Some test criteria");
+		select.setAnd(false);
+		select.save();
+		
+		manager.flush(select);
+		
+		assertEquals("Some test criteria", select.getWhere());
+		assertFalse(select.isAnd());
+		
+		manager.delete(select);
 	}
 	
 	@Test
