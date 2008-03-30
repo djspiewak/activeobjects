@@ -111,19 +111,24 @@ public abstract class DatabaseProvider {
 		this.password = password;
 		
 		connections = new HashMap<Thread, Connection>();
-		
-		Connection conn = null;
-		try {
-			conn = getConnection();
-			metadata = conn.getMetaData();
-			quote = metadata.getIdentifierQuoteString();
-		} catch (SQLException e) {
-		} finally {
+	}
+	
+	private synchronized void loadMetaData() {
+		if (metadata == null) {
+			Connection conn = null;
 			try {
-				if (conn != null) {
-					conn.close();
-				}
+				conn = getConnection();
+				metadata = conn.getMetaData();
+				quote = metadata.getIdentifierQuoteString();
 			} catch (SQLException e) {
+				throw new RuntimeException("Unable to query the database", e);
+			} finally {
+				try {
+					if (conn != null) {
+						conn.close();
+					}
+				} catch (SQLException e) {
+				}
 			}
 		}
 	}
@@ -472,6 +477,7 @@ public abstract class DatabaseProvider {
 	 * @see java.sql.DatabaseMetaData#getTables(String, String, String, String[])
 	 */
 	public ResultSet getTables(Connection conn) throws SQLException {
+		loadMetaData();
 		return metadata.getTables(null, null, "", null);
 	}
 	
@@ -1900,6 +1906,7 @@ public abstract class DatabaseProvider {
 	 */
 	public String processID(String id) {
 		if (shouldQuoteID(id)) {
+			loadMetaData();
 			return quote + id + quote;
 		}
 		
