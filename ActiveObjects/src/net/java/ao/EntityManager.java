@@ -636,7 +636,13 @@ public class EntityManager {
 				for (String newField : preloadAnnotation.value()) {
 					newField = newField.trim();
 					
-					int fieldLoc = Arrays.binarySearch(oldFields, newField);
+					int fieldLoc = -1;
+					for (int i = 0; i < oldFields.length; i++) {
+						if (oldFields[i].equals(newField)) {
+							fieldLoc = i;
+							break;
+						}
+					}
 					
 					if (fieldLoc < 0) {
 						newFields.add(newField);
