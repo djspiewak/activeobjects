@@ -212,12 +212,13 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		String table = getTableName();
 		TypeManager manager = TypeManager.getInstance();
 		Connection conn = getConnectionImpl();
-
+		DatabaseProvider provider = getManager().getProvider();
+		
 		try {
-			StringBuilder sql = new StringBuilder("UPDATE " + table + " SET ");
+			StringBuilder sql = new StringBuilder("UPDATE " + provider.processID(table) + " SET ");
 
 			for (String field : dirtyFields) {
-				sql.append(field);
+				sql.append(provider.processID(field));
 
 				if (cacheLayer.contains(field)) {
 					sql.append(" = ?,");
@@ -230,7 +231,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				sql.setLength(sql.length() - 1);
 			}
 
-			sql.append(" WHERE ").append(pkFieldName).append(" = ?");
+			sql.append(" WHERE ").append(provider.processID(pkFieldName)).append(" = ?");
 
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
@@ -422,17 +423,17 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			}
 			
 			Connection conn = getConnectionImpl();
-	
+			DatabaseProvider provider = getManager().getProvider();
 			try {
 				StringBuilder sql = new StringBuilder("SELECT ");
-	
-				sql.append(name);
+				
+				sql.append(provider.processID(name));
 				if (polyName != null) {
-					sql.append(',').append(polyName);
+					sql.append(',').append(provider.processID(polyName));
 				}
 	
-				sql.append(" FROM ").append(table).append(" WHERE ");
-				sql.append(pkFieldName).append(" = ?");
+				sql.append(" FROM ").append(provider.processID(table)).append(" WHERE ");
+				sql.append(provider.processID(pkFieldName)).append(" = ?");
 	
 				Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 				PreparedStatement stmt = conn.prepareStatement(sql.toString());
@@ -523,6 +524,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		Preload preloadAnnotation = finalType.getAnnotation(Preload.class);
 		
 		Connection conn = getConnectionImpl();
+		DatabaseProvider provider = getManager().getProvider();
 
 		try {
 			StringBuilder sql = new StringBuilder();
@@ -542,22 +544,22 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					sql.append('*');
 				} else {
 					for (String field : selectFields) {
-						sql.append(field).append(',');
+						sql.append(provider.processID(field)).append(',');
 					}
 					sql.setLength(sql.length() - 1);
 				}
 				
-				sql.append(" FROM ").append(table);
+				sql.append(" FROM ").append(provider.processID(table));
 				
-				sql.append(" WHERE ").append(inMapFields[0]).append(" = ?");
+				sql.append(" WHERE ").append(provider.processID(inMapFields[0])).append(" = ?");
 				
 				if (!where.trim().equals("")) {
-					sql.append(" AND (").append(where).append(")");
+					sql.append(" AND (").append(provider.processID(where)).append(")");
 				}
 				
 				if (thisPolyNames != null) {
 					for (String name : thisPolyNames) {
-						sql.append(" AND ").append(name).append(" = ?");
+						sql.append(" AND ").append(provider.processID(name)).append(" = ?");
 					}
 				}
 				
@@ -581,17 +583,18 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				if (selectFields.contains("*")) {
 					returnField = finalPKField;
 				} else {
-					sql.append(finalTable).append('.').append(finalPKField);
-					sql.append(" AS ").append(returnField).append(',');
+					sql.append(provider.processID(finalTable)).append('.').append(provider.processID(finalPKField));
+					sql.append(" AS ").append(provider.processID(returnField)).append(',');
 					
 					selectFields.remove(finalPKField);
 				}
 				
-				sql.append(table).append('.').append(Common.getPrimaryKeyField(type, getManager().getFieldNameConverter()));
-				sql.append(" AS ").append(throughField).append(',');
+				sql.append(provider.processID(table)).append('.').append(
+						provider.processID(Common.getPrimaryKeyField(type, getManager().getFieldNameConverter())));
+				sql.append(" AS ").append(provider.processID(throughField)).append(',');
 				
 				for (String field : selectFields) {
-					sql.append(finalTable).append('.').append(field).append(',');
+					sql.append(provider.processID(finalTable)).append('.').append(provider.processID(field)).append(',');
 				}
 				sql.setLength(sql.length() - 1);
 				
@@ -600,16 +603,17 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 						String toAppend = table + '.' + name;
 						
 						resPolyNames.add(toAppend);
-						sql.append(',').append(toAppend);
+						sql.append(',').append(provider.processID(toAppend));
 					}
 				}
 				
-				sql.append(" FROM ").append(table).append(" INNER JOIN ");
-				sql.append(finalTable).append(" ON ");
-				sql.append(table).append('.').append(outMapFields[0]);
-				sql.append(" = ").append(finalTable).append('.').append(finalPKField);
+				sql.append(" FROM ").append(provider.processID(table)).append(" INNER JOIN ");
+				sql.append(provider.processID(finalTable)).append(" ON ");
+				sql.append(provider.processID(table)).append('.').append(provider.processID(outMapFields[0]));
+				sql.append(" = ").append(provider.processID(finalTable)).append('.').append(provider.processID(finalPKField));
 				
-				sql.append(" WHERE ").append(table).append('.').append(inMapFields[0]).append(" = ?");
+				sql.append(" WHERE ").append(provider.processID(table)).append('.').append(
+						provider.processID(inMapFields[0])).append(" = ?");
 				
 				if (!where.trim().equals("")) {
 					sql.append(" AND (").append(where).append(")");
@@ -617,29 +621,29 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				
 				if (thisPolyNames != null) {
 					for (String name : thisPolyNames) {
-						sql.append(" AND ").append(name).append(" = ?");
+						sql.append(" AND ").append(provider.processID(name)).append(" = ?");
 					}
 				}
 
 				numParams++;
 			} else if (inMapFields.length == 1 && outMapFields.length == 1) {	// 99% case (1-* & *-*)
-				sql.append("SELECT ").append(outMapFields[0]);
+				sql.append("SELECT ").append(provider.processID(outMapFields[0]));
 				
 				if (!oneToMany) {
 					throughField = Common.getPrimaryKeyField(type, getManager().getFieldNameConverter());
 					
-					sql.append(',').append(throughField);
+					sql.append(',').append(provider.processID(throughField));
 				}
 				
 				if (thatPolyNames != null) {
 					for (String name : thatPolyNames) {
 						resPolyNames.add(name);
-						sql.append(',').append(name);
+						sql.append(',').append(provider.processID(name));
 					}
 				}
 				
-				sql.append(" FROM ").append(table);
-				sql.append(" WHERE ").append(inMapFields[0]).append(" = ?");
+				sql.append(" FROM ").append(provider.processID(table));
+				sql.append(" WHERE ").append(provider.processID(inMapFields[0])).append(" = ?");
 				
 				if (!where.trim().equals("")) {
 					sql.append(" AND (").append(where).append(")");
@@ -647,7 +651,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				
 				if (thisPolyNames != null) {
 					for (String name : thisPolyNames) {
-						sql.append(" AND ").append(name).append(" = ?");
+						sql.append(" AND ").append(provider.processID(name)).append(" = ?");
 					}
 				}
 				
@@ -659,7 +663,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				if (thatPolyNames != null) {
 					for (String name : thatPolyNames) {
 						resPolyNames.add(name);
-						sql.append(',').append("a.").append(name).append(" AS ").append(name);
+						sql.append(',').append("a.").append(provider.processID(name)).append(" AS ").append(
+								provider.processID(name));
 					}
 				}
 				
@@ -669,26 +674,26 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				for (String outMap : outMapFields) {
 					for (String inMap : inMapFields) {
 						sql.append("SELECT ");
-						sql.append(outMap);
+						sql.append(provider.processID(outMap));
 						sql.append(" AS outMap,");
-						sql.append(inMap);
+						sql.append(provider.processID(inMap));
 						sql.append(" AS inMap");
 						
 						if (thatPolyNames != null) {
 							for (String name : thatPolyNames) {
-								sql.append(',').append(name);
+								sql.append(',').append(provider.processID(name));
 							}
 						}
 						
 						if (thisPolyNames != null) {
 							for (String name : thisPolyNames) {
-								sql.append(',').append(name);
+								sql.append(',').append(provider.processID(name));
 							}
 						}
 						
-						sql.append(" FROM ").append(table);
+						sql.append(" FROM ").append(provider.processID(table));
 						sql.append(" WHERE ");
-						sql.append(inMap).append(" = ?");
+						sql.append(provider.processID(inMap)).append(" = ?");
 						
 						if (!where.trim().equals("")) {
 							sql.append(" AND (").append(where).append(")");
@@ -709,7 +714,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					}
 					
 					for (String name : thatPolyNames) {
-						sql.append("a.").append(name).append(" = ?").append(" OR ");
+						sql.append("a.").append(provider.processID(name)).append(" = ?").append(" OR ");
 					}
 					
 					if (thatPolyNames.length > 0) {
@@ -728,7 +733,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					}
 					
 					for (String name : thisPolyNames) {
-						sql.append("a.").append(name).append(" = ?").append(" OR ");
+						sql.append("a.").append(provider.processID(name)).append(" = ?").append(" OR ");
 					}
 					
 					if (thisPolyNames.length > 0) {

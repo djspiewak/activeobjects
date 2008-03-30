@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Set;
 
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.schema.ddl.DDLAction;
@@ -135,8 +136,8 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	protected String renderAutoIncrement() {
-		return "";
+	protected Set<String> getReservedWords() {
+		return delegate.getReservedWords();
 	}
 	
 	/**

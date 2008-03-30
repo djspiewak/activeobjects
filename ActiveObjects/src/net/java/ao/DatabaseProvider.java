@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -87,6 +88,8 @@ public abstract class DatabaseProvider {
 	private final ReadWriteLock connectionsLock = new ReentrantReadWriteLock();
 	
 	private DatabaseMetaData metadata;
+
+	private String quote;
 	
 	/**
 	 * <p>The base constructor for <code>DatabaseProvider</code>.
@@ -113,6 +116,7 @@ public abstract class DatabaseProvider {
 		try {
 			conn = getConnection();
 			metadata = conn.getMetaData();
+			quote = metadata.getIdentifierQuoteString();
 		} catch (SQLException e) {
 		} finally {
 			try {
@@ -156,14 +160,10 @@ public abstract class DatabaseProvider {
 	 * is just about every database exception MySQL), <code>""</code> is an
 	 * acceptable return value.  This method should <i>never</i> return <code>null</code>
 	 * as it would cause the field rendering method to throw a {@link NullPointerException}.</p>
-	 * 
-	 * <p>This method is abstract (as opposed to the other methods which are
-	 * either defined against MySQL or simply empty) because of the vast 
-	 * differences in rendering auto-incremented fields across different
-	 * databases.  Also, it seemed like a terribly good idea at the time and I haven't
-	 * found a compelling reason to change it.</p>
 	 */
-	protected abstract String renderAutoIncrement();
+	protected String renderAutoIncrement() {
+		return "AUTO_INCREMENT";
+	}
 	
 	/**
 	 * Top level delegating method for the process of rendering a database-agnostic
@@ -514,7 +514,7 @@ public abstract class DatabaseProvider {
 				} else {
 					StringBuilder fields = new StringBuilder();
 					for (String field : query.getFields()) {
-						fields.append(field).append(',');
+						fields.append(processID(field)).append(',');
 					}
 					if (query.getFields().length > 0) {
 						fields.setLength(fields.length() - 1);
@@ -524,7 +524,7 @@ public abstract class DatabaseProvider {
 				}
 				sql.append(" FROM ");
 				
-				sql.append(tableName);
+				sql.append(processID(tableName));
 			break;
 		}
 		
@@ -552,12 +552,12 @@ public abstract class DatabaseProvider {
 		if (query.getJoins().size() > 0) {
 			for (Class<? extends RawEntity<?>> join : query.getJoins().keySet()) {
 				sql.append(" JOIN ");
-				sql.append(converter.getName(join));
+				sql.append(processID(converter.getName(join)));
 				
 				String on = query.getJoins().get(join);
 				if (on != null) {
 					sql.append(" ON ");
-					sql.append(on);
+					sql.append(processID(on));
 				}
 			}
 		}
@@ -860,9 +860,9 @@ public abstract class DatabaseProvider {
 	protected String renderForeignKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder();
 		
-		back.append("CONSTRAINT ").append(key.getFKName());
-		back.append(" FOREIGN KEY (").append(key.getField()).append(") REFERENCES ");
-		back.append(key.getTable()).append('(').append(key.getForeignField()).append(")");
+		back.append("CONSTRAINT ").append(processID(key.getFKName()));
+		back.append(" FOREIGN KEY (").append(processID(key.getField())).append(") REFERENCES ");
+		back.append(processID(key.getTable())).append('(').append(processID(key.getForeignField())).append(")");
 		
 		return back.toString();
 	}
@@ -897,7 +897,7 @@ public abstract class DatabaseProvider {
 	 */
 	protected String renderTable(DDLTable table) {
 		StringBuilder back = new StringBuilder("CREATE TABLE ");
-		back.append(table.getName());
+		back.append(processID(table.getName()));
 		back.append(" (\n");
 		
 		List<String> primaryKeys = new LinkedList<String>();
@@ -920,12 +920,7 @@ public abstract class DatabaseProvider {
 		
 		if (primaryKeys.size() > 0) {
 			back.append("    PRIMARY KEY(");
-			back.append(primaryKeys.get(0));
-			
-			for (int i = 1; i < primaryKeys.size(); i++) {
-				back.append(",");
-				back.append(primaryKeys.get(i));
-			}
+			back.append(processID(primaryKeys.get(0)));
 			back.append(")\n");
 		}
 		
@@ -953,7 +948,7 @@ public abstract class DatabaseProvider {
 	 * 		table.
 	 */
 	protected String renderDropTable(DDLTable table) {
-		return "DROP TABLE " + table.getName();
+		return "DROP TABLE " + processID(table.getName());
 	}
 	
 	/**
@@ -1103,7 +1098,7 @@ public abstract class DatabaseProvider {
 	protected String[] renderAlterTableAddColumn(DDLTable table, DDLField field) {
 		List<String> back = new ArrayList<String>();
 		
-		back.add("ALTER TABLE " + table.getName() + " ADD COLUMN " + renderField(field));
+		back.add("ALTER TABLE " + processID(table.getName()) + " ADD COLUMN " + renderField(field));
 		
 		String function = renderFunctionForField(table, field);
 		if (function != null) {
@@ -1158,7 +1153,7 @@ public abstract class DatabaseProvider {
 		String trigger = getTriggerNameForField(table, oldField);
 		if (trigger != null) {
 			current.setLength(0);
-			current.append("DROP TRIGGER ").append(trigger);
+			current.append("DROP TRIGGER ").append(processID(trigger));
 			
 			back.add(current.toString());
 		}
@@ -1166,7 +1161,7 @@ public abstract class DatabaseProvider {
 		String function = getFunctionNameForField(table, oldField);
 		if (function != null) {
 			current.setLength(0);
-			current.append("DROP FUNCTION ").append(function);
+			current.append("DROP FUNCTION ").append(processID(function));
 			
 			back.add(current.toString());
 		}
@@ -1203,8 +1198,8 @@ public abstract class DatabaseProvider {
 	 */
 	protected String renderAlterTableChangeColumnStatement(DDLTable table, DDLField oldField, DDLField field) {
 		StringBuilder current = new StringBuilder();
-		current.append("ALTER TABLE ").append(table.getName()).append(" CHANGE COLUMN ");
-		current.append(oldField.getName()).append(' ');
+		current.append("ALTER TABLE ").append(processID(table.getName())).append(" CHANGE COLUMN ");
+		current.append(processID(oldField.getName())).append(' ');
 		current.append(renderField(field));
 		return current.toString();
 	}
@@ -1231,7 +1226,7 @@ public abstract class DatabaseProvider {
 		String trigger = getTriggerNameForField(table, field);
 		if (trigger != null) {
 			current.setLength(0);
-			current.append("DROP TRIGGER ").append(trigger);
+			current.append("DROP TRIGGER ").append(processID(trigger));
 			
 			back.add(current.toString());
 		}
@@ -1239,13 +1234,14 @@ public abstract class DatabaseProvider {
 		String function = getFunctionNameForField(table, field);
 		if (function != null) {
 			current.setLength(0);
-			current.append("DROP FUNCTION ").append(function);
+			current.append("DROP FUNCTION ").append(processID(function));
 			
 			back.add(current.toString());
 		}
 		
 		current.setLength(0);
-		current.append("ALTER TABLE ").append(table.getName()).append(" DROP COLUMN ").append(field.getName());
+		current.append("ALTER TABLE ").append(processID(table.getName())).append(
+				" DROP COLUMN ").append(processID(field.getName()));
 		back.add(current.toString());
 		
 		return back.toArray(new String[back.size()]);
@@ -1266,7 +1262,7 @@ public abstract class DatabaseProvider {
 	protected String renderAlterTableAddKey(DDLForeignKey key) {
 		StringBuilder back = new StringBuilder();
 		
-		back.append("ALTER TABLE ").append(key.getDomesticTable()).append(" ADD ");
+		back.append("ALTER TABLE ").append(processID(key.getDomesticTable())).append(" ADD ");
 		back.append(renderForeignKey(key));
 		
 		return back.toString();
@@ -1287,7 +1283,7 @@ public abstract class DatabaseProvider {
 	 * @return	A DDL statement to be executed, or <code>null</code>.
 	 */
 	protected String renderAlterTableDropKey(DDLForeignKey key) {
-		return "ALTER TABLE " + key.getDomesticTable() + " DROP FOREIGN KEY " + key.getFKName();
+		return "ALTER TABLE " + processID(key.getDomesticTable()) + " DROP FOREIGN KEY " + processID(key.getFKName());
 	}
 	
 	/**
@@ -1305,8 +1301,8 @@ public abstract class DatabaseProvider {
 	protected String renderCreateIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder();
 		
-		back.append("CREATE INDEX ").append(index.getName());
-		back.append(" ON ").append(index.getTable()).append('(').append(index.getField()).append(')');
+		back.append("CREATE INDEX ").append(processID(index.getName()));
+		back.append(" ON ").append(processID(index.getTable())).append('(').append(processID(index.getField())).append(')');
 		
 		return back.toString();
 	}
@@ -1326,8 +1322,8 @@ public abstract class DatabaseProvider {
 	protected String renderDropIndex(DDLIndex index) {
 		StringBuilder back = new StringBuilder();
 		
-		back.append("DROP INDEX ").append(index.getName());
-		back.append(" ON ").append(index.getTable());
+		back.append("DROP INDEX ").append(processID(index.getName()));
+		back.append(" ON ").append(processID(index.getTable()));
 		
 		return back.toString();
 	}
@@ -1379,7 +1375,7 @@ public abstract class DatabaseProvider {
 	protected String renderField(DDLField field) {
 		StringBuilder back = new StringBuilder();
 		
-		back.append(field.getName());
+		back.append(processID(field.getName()));
 		back.append(" ");
 		back.append(renderFieldType(field));
 		back.append(renderFieldPrecision(field));
@@ -1739,16 +1735,16 @@ public abstract class DatabaseProvider {
 	@SuppressWarnings("unused")
 	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, 
 			boolean pkIdentity, String table, DBParam... params) throws SQLException {
-		StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
+		StringBuilder sql = new StringBuilder("INSERT INTO " + processID(table) + " (");
 		
 		for (DBParam param : params) {
-			sql.append(param.getField());
+			sql.append(processID(param.getField()));
 			sql.append(',');
 		}
 		if (params.length > 0) {
 			sql.setLength(sql.length() - 1);
 		} else {
-			sql.append(pkField);
+			sql.append(processID(pkField));
 		}
 		
 		sql.append(") VALUES (");
@@ -1901,12 +1897,29 @@ public abstract class DatabaseProvider {
 	
 	/**
 	 * TODO
-	 * @throws SQLException 
 	 */
-	public String processID(String id) throws SQLException {
-		String quote = metadata.getIdentifierQuoteString();
-		return quote + id + quote;
+	public String processID(String id) {
+		if (shouldEscape(id)) {
+			return quote + id + quote;
+		}
+		
+		return id;
 	}
+	
+	/**
+	 * TODO
+	 */
+	protected boolean shouldEscape(String id) {
+		return getReservedWords().contains(id.toUpperCase());
+	}
+	
+	/**
+	 * TODO
+	 * 
+	 * @return	A set of <i>upper case</i> reserved words specific 
+	 * 		to the database.
+	 */
+	protected abstract Set<String> getReservedWords();
 	
 	/**
 	 * Auto-magically retrieves the appropriate provider instance for the
