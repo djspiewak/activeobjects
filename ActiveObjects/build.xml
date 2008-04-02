@@ -74,7 +74,7 @@
 	
 	<target name="init-doc" unless="supress-doc-deletion">
 		<delete>
-			<fileset dir="${activeobjects.dir}/${javadoc.path}">
+			<fileset dir="${javadoc.path}">
 				<include name="**/*"/>
 			</fileset>
 		</delete>
@@ -98,7 +98,7 @@
 	</target>
 	
 	<target name="assign-doc-dir" unless="javadoc.intern.path">
-		<property name="javadoc.intern.path" value="${activeobjects.dir}/${javadoc.path}"/>
+		<property name="javadoc.intern.path" value="${javadoc.path}"/>
 	</target>
 	
 	<target name="doc" depends="upgrade-ant,init-doc,assign-doc-dir" if="test-ant-ok">
