@@ -1,5 +1,5 @@
  * `Why Another ORM? <why-another-orm.txt>`_
- * Performance Considerations
+ * `Performance Considerations <performance-considerations.txt>`_
  * `Supported Databases <supported-databases.txt>`_
  * `Supported Connection Pools <supported-connection-pools.txt>`_
  
@@ -20,6 +20,7 @@
  	* Different Databases
 	* Connection Pooling
 	* Alternative Connection Sources
+	* Forcing Eager-Loading
 	* Domain-Logic in Entities
 	* Advanced Schemata
 		* Explicit Types

@@ -69,11 +69,11 @@ result might look like this::
 	lib/activeobjects-1.0.jar:lib/mysql-connector-java-5.1.5-bin.jar:lib/DBPool_v4.8.3.jar
 	
 More information regarding supported connection pools and selection priority is 
-available here_.
+available in the list of `supported connection pools`_.
 
 .. _`various connection pools`: /supported-connection-pools.html
 .. _DBPool: http://homepages.nildram.co.uk/~slink/java/DBPool
-.. _here: /supported-connection-pools.html
+.. _`supported connection pools`: /supported-connection-pools.html
 
 
 3. Create an EntityManager
@@ -198,21 +198,21 @@ make use of this feature, simply call the ``migrate(...)`` method on the
 When working with the MySQL database, ActiveObjects will generate DDL something
 like the following for the given migration::
 	
-	CREATE TABLE `company` (
-		`id` INTEGER AUTO_INCREMENT NOT NULL,
-		`name` VARCHAR(255),
-		`website` VARCHAR(255),
-		PRIMARY KEY(`id`)
+	CREATE TABLE company (
+		id INTEGER AUTO_INCREMENT NOT NULL,
+		name VARCHAR(255),
+		website VARCHAR(255),
+		PRIMARY KEY(id)
 	);
 	
-	CREATE TABLE `person` (
-		`id` INTEGER AUTO_INCREMENT NOT NULL,
-		`firstName` VARCHAR(255),
-		`lastName` VARCHAR(255),
-		`age` INTEGER,
-		`companyID` INTEGER,
-		CONSTRAINT `fk_person_companyID` FOREIGN KEY (`companyID`) REFERENCS `company` (`id`),
-		PRIMARY KEY(`id`)
+	CREATE TABLE person (
+		id INTEGER AUTO_INCREMENT NOT NULL,
+		firstName VARCHAR(255),
+		lastName VARCHAR(255),
+		age INTEGER,
+		companyID INTEGER,
+		CONSTRAINT fk_person_companyID FOREIGN KEY (companyID) REFERENCS company (id),
+		PRIMARY KEY(id)
 	);
 	
 Notice how the DDL has been reordered to ensure table creation according to

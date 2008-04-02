@@ -1,0 +1,242 @@
+.. :mode=rest:
+
+==========================
+Performance Considerations
+==========================
+
+Database access is very much a low-level detail in any application.  Any
+framework which attempts to abstract around the database must put a heavy
+emphasis upon performance, otherwise the entire application will be grossly
+affected.  This issue becomes more complex when dealing with deeper
+abstractions, such as those mandated by the `active record pattern`_.  ActiveObjects
+attempts to achieve optimal performance given its design constraints.  However,
+this is not the primary focus of the framework.  There are certain scenarios
+in which ActiveObjects will perform poorly compared with frameworks like
+Hibernate or even direct JDBC access.
+
+In general, the overhead imposed by ActiveObjects is marginal.  When running the
+NetBeans profiler against a reasonably complex application using ActiveObjects,
+the JDBC time for a single operation [1]_ is on the order of **40ms**.  By
+contrast, time spent by ActiveObjects ranges from **5ms** down to below **1ms**.
+Most importantly, ActiveObjects does not unduly increase the load on the database
+by generating obfuscated or `overly-complex SQL`_.  Thus, database access through
+ActiveObjects is very nearly as fast as working with JDBC directly; and in some
+cases, ActiveObjects can even *exceed* the performance of hand-coded access
+because of its advanced caching mechanisms.
+
+.. _active record pattern: http://en.wikipedia.org/wiki/Active_record_pattern
+.. _overly-complex SQL: query-gen_
+
+.. [1] Where "operation" is a search, a display of a page, things of that order.
+	Not necessarily a single SQL query.
+
+
+Lazy Loading
+============
+
+ActiveObjects performs very well for standard field/record database access.  The
+architecutre is based entirely upon the concept of `lazy loading`_.  Field values
+are not retrieved from the database until first access, after which they are cached
+and quickly retrieved from the cache store.  This allows queries which return
+massive numbers of entities without incurring a severe performance overhead.  For
+example::
+	
+	public interface Person extends Entity {
+		public String getName();
+		public void setName(String name);
+	}
+	
+	// ...
+	Person[] people = manager.find(Person.class);
+	
+One can easily see how this seemingly-innocuous code would cause huge problems
+in an ORM with exclusively eager loading.  Perhaps the ``person`` table contains
+hundreds of thousands of entries.  If field values were eagerly loaded, then a
+``name`` for *every* one of the ``Person`` entities retrieved would have to be
+loaded, converted and then cached within the entity.  This not only imposes
+severe overhead on queries, but it also blows up the memory usage far out of
+proportion.
+
+The active record pattern lends itself very nicely to the lazy loading of fields.
+By ensuring that every field is *only* accessible through the accessor/mutator
+pairs (which are dynamically implemented by the framework), ActiveObjects is
+able to implement this lazy loading without semantic modification such as is
+required in bean-based frameworks like Hibernate.  When it is created, an entity
+is basically a "dumb shell".  It has a primary key value and an empty cache.  As
+the entity is queried, this cache is populated and thus operations on the entity
+become progressively more efficient.
+
+This is what allows entity creation to be so incredibly efficient in
+ActiveObjects.  Other ORMs must utilize ``List``(s) or ``Set``(s) as the return
+type of methods like ``EntityManager#find(...)`` because the query must be paged
+to avoid forcing the load of potentially thousands of entities and their
+associated data.  Conversely, ActiveObjects can make use of the more natural
+data structure: arrays.  Whenever a query is run, *only the primary keys* are 
+retrieved, the remaining data is not even included in the SQL statement.  These 
+primary key values are loaded, converted and then used to create a new entity
+(if a correspondant does not already exist).  As previously mentioned, this
+entity is just a shell, so there is virtually no cost associated with creating
+them in large batches.
+
+.. _lazy loading: http://en.wikipedia.org/wiki/Lazy_loading
+
+
+Eager Loading
+=============
+
+Of course, there are many cases when lazy loading is far *less* efficient than
+eager loading.  For instance, if we extend the previous example just slightly::
+	
+	// ...
+	Person[] people = manager.find(Person.class);
+	
+	for (Person person : people) {
+		System.out.println(person.getName());
+	}
+	
+Suddenly this code has become hiddeously inefficient.  This is because
+ActiveObjects will not load the ``name`` value from each row in the ``person``
+table until the ``getName()`` method is called.  Of course, the ``getName()``
+method is being called once for every entity returned.  So rather than running
+just one query which populates all entities, ActiveObjects will run *n + 1*
+queries (where *n* is the number of rows in the query result set).  Obviously,
+even with prepared statements, hitting the database that many times will cause
+massive overhead.
+
+The solution is to allow the developer to override the lazy loading mechanism
+when it is deemed necessary.  In the above example, ActiveObjects has no way of
+knowing that the next three lines of code will repeatedly query ``name`` values.
+Only the developer actually writing the code can make that deduction.  Thus, the
+developer must be empowered to specify when specific fields should be eagerly
+loaded, rather than simply relying on the default.  More details on the syntax
+of this operation can be found in the second on `forcing eager loading`_.
+
+.. _forcing eager loading: cookbook/forcing-eager-loading.html
+
+
+.. _query-gen:
+
+Query Generation
+================
+
+When designing an ORM, one must consider how to generate SQL statements and what
+form they will take.  It turns out to be very difficult to generate natural SQL
+in an automated system.  Take the following query as an example::
+	
+	SELECT id,name FROM person GROUP BY name
+	
+This is a fairly natural query for someone to write.  It will produce a result
+set of two columns - ``id`` and ``name`` - with the rows grouped by the values
+of their ``name`` fields.  Notice how all of the objects are referred to by their
+actual names in terse, human-readable fashion.  The problem is that generating
+this query dynamically and then retrieving the resulting data requires a bit
+more work than it otherwise might.
+
+When a human looks at a query like the above, it is easy to see which fields
+will be available in the result set.  More importantly, when we visually
+traverse the result set, we are able to extract the useful data simply by
+comprehending the english meaning of the column names.  An ORM does not have
+this luxury.  Often times it is easiest for an ORM to simply mark the fields it
+wants from a query and then alias *everything* to something auto-generated and
+guarenteed unique per-query.  This is how such an ORM might generate the above
+SQL::
+	
+	select tb0.id as pk0,tb0.name as fl0 from person as tb0 group by tb0.fl0
+	
+Now when the ORM goes to traverse the result set, it is able to easily determine
+which fields are relevant just based on the auto-generated names.
+
+This is, of course, a trivial example.  Things get much more complex when dealing
+with joining and attempting to efficiently handle name-clashes in fields.  This
+is why most mainstream ORMs which support query generation produce SQL which is
+extremely obfuscated and difficult to understand.  The problem is that this sort
+of statement is also less efficient for most databases to execute.  SQL engines
+are optimized targetting *human natural* queries.  Most often, the query which
+reads most naturally will also execute most efficiently.  Unfortunately, this
+means that ORMs which generate obfuscated queries incur an unnecessary
+performance hit when compared to a semantically identical query constructed by
+a "real person".
+
+It is of course *possible* to automatically generate human-natural queries.  The
+process requires "registering" the relevant query fields temporarily so that the
+result set traversal can know which fields to look at.  It also requires that
+great care is taken when generating queries which join on multiple tables.
+
+ActiveObjects is one of the few ORMs (that I am aware of) which generates such
+human natural queries.  There are only two instances of query generation in the
+entire library which actually synthesize field labels and aliases, both of which
+are edge cases and only invoked when name clashes cannot be resolved through other
+means.  Consider the following code (assuming the ``Person`` entity had a few
+more fields)::
+	
+	// ...
+	Person p = manager.get(Person.class, 1);
+	String name = p.getName();
+	
+	p.setName(name + " Jr.");
+	p.setAge(p.getAge() + 1);
+	p.save();
+	
+This code will generate the following SQL::
+	
+	SELECT name FROM person
+	UPDATE person SET name = ?, age = ?
+	
+These queries are both extremely performant and easy to debug.  It is easy to
+see when ActiveObjects has queried the wrong thing because the queries it
+generates are precisely the same as if you were writing the SQL by hand.
+
+
+Caching
+=======
+
+Gavin King has been quoted as saying that the most interesting part of any ORM
+is how it handles caching.  This is because most ORMs are quite similar in
+design, the only differentiating factors being slightly modified syntax and
+how advanced the caching may be.  ActiveObjects is designed to partition its
+caching into several different segments.  This allows piece-wise optimization,
+as well as more control over potential memory leaks.
+
+
+Instance Cache
+--------------
+
+There are places in code where this layer is also referred to as the "entity
+cache".  This is the top-level of the caching system, containing mappings from
+*table* ``:`` *primary-key* values to proper entity instances.  This is what
+guarentees that only one entity instance corresponds with a given row in the
+database.
+
+.. TODO
+
+
+Compared to Other Frameworks
+============================
+
+When deciding between competing frameworks, it is natural to look at several
+different factors, including performance.  This is something of a losing battle
+since micro-benchmarks are virtually useless with ORMs and more accurate,
+theoretical comparisons are often too difficult to follow.  In fact, there is
+almost a tradition among Hibernate proponents of discounting any and all
+benchmarks which consider their product, simply because any such benchmark will
+be provably innaccurate.  This is why very few ORM website include any sort of
+performance results.
+
+Theoretically speaking, ActiveObjects stacks up very nicely in terms of
+performance when compared to other ORMs.  This is primarily due to the extreme
+simplicity of the design.  ActiveObjects does not allow many things that other
+ORMs support (such as list/join inheritence).  The avoidance of such features
+has led to an implementation which is naturally simpler (and thus faster) than
+many competing products.  However, ActiveObjects is still an implementation of
+the active record pattern.  This means that regardless of how well it is
+implemented, its performance can always be exceeded by a well-designed
+implementation of the data mapper pattern.  This is why Hibernate is *faster*
+than ActiveObjects for most database operations.
+
+With that in mind, performance comparisons become a matter of relativity.  The
+question is: "How much faster is Hibernate than ActiveObjects?"  In truth, it's
+hard to give a definitive answer to this question.  For most operations, the
+difference should be negligable.  Common operations are extremely well optimized
+in both Hibernate and ActiveObjects, so a theoretical comparison is difficult.
+Annecdotally, the difference in performance between the two frameworks is
+unnoticable when considered over the lifetime of the application.
