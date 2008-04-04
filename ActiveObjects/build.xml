@@ -173,10 +173,12 @@
 		<!-- build the rest -->
 		<exec dir="${activeobjects.dir}/doc" executable="python">
 			<arg value="${docutils.path}${file.separator}tools${file.separator}buildhtml.py"/>
+			<arg value="--date"/>
 			<arg value="--link-stylesheet"/>
 			<arg value="--stylesheet=/style.css"/>
 			
 			<arg value="--initial-header-level=2"/>
+			<arg value="--footnote-references=superscript"/>
 		</exec>
 		<replaceregexp byline="yes">
 			<regexp pattern="&lt;body&gt;"/>
