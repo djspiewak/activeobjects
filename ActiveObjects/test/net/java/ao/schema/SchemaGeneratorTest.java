@@ -78,10 +78,22 @@ public class SchemaGeneratorTest extends DataTest {
 		}
 		
 		DDLField urlField = null;
+		DDLField ageField = null;
+		DDLField lastNameField = null;
+		DDLField idField = null;
+		DDLField cidField = null;
+		
 		for (DDLField field : personDDL.getFields()) {
 			if (field.getName().equals("url")) {
 				urlField = field;
-				break;
+			} else if (field.getName().equals("age")) {
+				ageField = field;
+			} else if (field.getName().equals("lastName")) {
+				lastNameField = field;
+			} else if (field.getName().equals("id")) {
+				idField = field;
+			} else if (field.getName().equals("companyID")) {
+				cidField = field;
 			}
 		}
 		
@@ -95,13 +107,21 @@ public class SchemaGeneratorTest extends DataTest {
 		assertNull(urlField.getOnUpdate());
 		assertNotNull(urlField.getDefaultValue());
 		
-		DDLField idField = null;
-		for (DDLField field : personDDL.getFields()) {
-			if (field.getName().equals("id")) {
-				idField = field;
-				break;
-			}
-		}
+		assertEquals(Types.INTEGER, ageField.getType().getType());
+		assertEquals(20, ageField.getPrecision());
+		
+		assertFalse(ageField.isAutoIncrement());
+		assertFalse(ageField.isNotNull());
+		assertFalse(ageField.isPrimaryKey());
+		assertFalse(ageField.isUnique());
+		
+		assertEquals(Types.VARCHAR, lastNameField.getType().getType());
+		assertEquals(127, lastNameField.getPrecision());
+		
+		assertFalse(lastNameField.isAutoIncrement());
+		assertFalse(lastNameField.isNotNull());
+		assertFalse(lastNameField.isPrimaryKey());
+		assertFalse(lastNameField.isUnique());
 		
 		assertEquals(Types.INTEGER, idField.getType().getType());
 		
@@ -112,14 +132,6 @@ public class SchemaGeneratorTest extends DataTest {
 		
 		assertNull(idField.getOnUpdate());
 		assertNull(idField.getDefaultValue());
-		
-		DDLField cidField = null;
-		for (DDLField field : personDDL.getFields()) {
-			if (field.getName().equals("companyID")) {
-				cidField = field;
-				break;
-			}
-		}
 		
 		assertEquals(Types.BIGINT, cidField.getType().getType());
 		

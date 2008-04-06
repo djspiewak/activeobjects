@@ -28,6 +28,7 @@ import net.java.ao.Searchable;
 import net.java.ao.Transient;
 import net.java.ao.schema.Default;
 import net.java.ao.schema.Indexed;
+import net.java.ao.schema.SQLType;
 import net.java.ao.schema.Unique;
 
 /**
@@ -40,20 +41,18 @@ public interface Person extends Entity {
 	public String getFirstName();
 	public void setFirstName(String firstName);
 	
-	@Searchable
-	public String getLastName();
+	@SQLType(precision=127)
 	@Searchable
 	public void setLastName(String lastName);
+	public String getLastName();
 	
 	public Profession getProfession();
 	public void setProfession(Profession profession);
 	
 	@Transient
 	@Indexed
+	@SQLType(precision=20)
 	public int getAge();
-	
-	@Transient
-	@Indexed
 	public void setAge(int age);
 
 	@Unique

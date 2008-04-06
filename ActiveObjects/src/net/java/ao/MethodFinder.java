@@ -78,7 +78,7 @@ final class MethodFinder {
 		counterpartCacheLock.writeLock().lock();
 		try {
 			if (counterpartCache.containsKey(key)) {
-				return counterpartCache.get(method);
+				return counterpartCache.get(key);
 			}
 			
 			Class<?> clazz = method.getDeclaringClass();
