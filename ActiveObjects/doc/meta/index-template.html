@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 	<head>
-		<title>Pure-Java Object Relational Mapping</title>
+		<title>Intuitive Java Object Relational Mapping</title>
 	</head>
 
 	<body>
@@ -12,15 +12,7 @@
 		with either an existing database schema, or it can auto-generate the database schema 
 		from the user-specified entity interfaces.  ActiveObjects also supports Rails-style
 		database migrations, allowing incremental changes and refactoring of the database
-		schema without data loss.</p>
-		
-		<p>ActiveObjects can be more performant than traditional, data mapper ORMs
-		due to its natural use of lazy-loading coupled with sophisticated caching
-		mechanisms.  However, performance is not the primary design goal of the project.  Rather,
-		the intention is to create an ORM which is powerful and yet extremely natural to use
-		and integrate into your project.  This design has lead to certain performance benefits
-		(such as lazy-loading), but on the whole, data mapper ORMs are inherantly slightly more
-		performant than ActiveObjects can be just from a theoretical standpoint.</p>
+		schema without unnecessary data loss.</p>
 		
 		<h3>Download</h3>
 		
@@ -61,13 +53,6 @@
 		<a href="http://www.codecommit.com/blog/tag/activeobjects">ActiveObjects tag</a>.  In this vein, an
 		article has been <a href="http://www.javalobby.org/articles/activeobjects">published at Javalobby</a> 
 		covering some of the basic design principles of the API.</p>
-		
-		<p>If you're looking for a more "realistic" example, try checking out the DogfoodBlog module in the 
-		SVN (<code>svn co https://activeobjects.dev.java.net/svn/activeobjects/trunk/DogfoodBlog</code>).
-		This example is used for both testing, and development of new features as it allows the developers to
-		"eat their own dogfood" so to speak, getting a clearer picture of how the API should be used.  A second
-		"dogfood test" has been created in the <code>DogfoodContacts</code> module, enabling similar tests
-		from a different perspective.</p>
 		
 		<!-- magic insert tag for the precompiler -->
 		<activeobjects:toc/>

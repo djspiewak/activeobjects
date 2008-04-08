@@ -67,7 +67,7 @@ the entity is queried, this cache is populated and thus operations on the entity
 become progressively more efficient.
 
 This is what allows entity creation to be so incredibly efficient in
-ActiveObjects.  Other ORMs must utilize ``List``(s) or ``Set``(s) as the return
+ActiveObjects.  Other ORMs must utilize ``List`` or ``Set`` as the return
 type of methods like ``EntityManager#find(...)`` because the query must be paged
 to avoid forcing the load of potentially thousands of entities and their
 associated data.  Conversely, ActiveObjects can make use of the more natural

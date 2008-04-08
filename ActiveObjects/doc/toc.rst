@@ -2,6 +2,7 @@
  * `Performance Considerations <performance-considerations.txt>`_
  * `Supported Databases <supported-databases.txt>`_
  * `Supported Connection Pools <supported-connection-pools.txt>`_
+ * `Getting Help <getting-help.txt>`_
  
 ---
 

@@ -1,0 +1,17 @@
+.. :mode=rest:
+
+========
+Concepts
+========
+
+From the very beginning, one of the major considerations in the design of
+ActiveObjects was conceptual consistency.  There are a number of API metaphors
+which are established and strictly followed throughout the framework.  Once
+these metaphors and their related design principles are understood, most of the
+framework is intuitive to understand.
+
+
+Overview
+========
+
+

@@ -1,0 +1,36 @@
+.. :mode=rest:
+
+============
+Getting Help
+============
+
+Regardless of how well designed a framework, sooner or later we all run into
+trouble.  ActiveObjects has a number of venues through which assistance may be
+obtained.
+
+ * **Users List** - users@activeobjects.dev.java.net
+   
+   This may very well be the best place to ask questions.  Often times, your
+   question will be answered within a few hours either by a core developer or
+   by another community member.  Additionally, it's usually worth checking the
+   list archives; your question may have already been answered.
+   
+   This is also a very good place to discuss potential bugs and feature 
+   requests.  The developers often use this list to get community feedback on
+   new ideas and project planning.
+   
+ * **Daniel Spiewak** - djspiewak@gmail.com
+   
+   As the originator of the project, Daniel loves getting email from people
+   using ActiveObjects or considering it for any purpose.  Feel free to email
+   him directly, but try the users list first if at all possible (that way your
+   questions and the associated answers will be able to help someone else).
+   
+ * **IssueTracker** - https://activeobjects.dev.java.net/servlets/ProjectIssues
+   
+   ActiveObjects uses the CollabNet IssueTracker software to track known bugs
+   and feature requests.  If you believe you have found a bug in the framework,
+   this is the place to report it.  Usually a developer will respond on the 
+   issue within a few hours, either confirming or closing the issue (depending
+   on the validity of the report).  Reporting a bug this way gives your issue
+   the best chance of being addressed in a timely manner.
