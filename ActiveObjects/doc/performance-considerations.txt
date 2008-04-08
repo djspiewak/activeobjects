@@ -187,29 +187,6 @@ see when ActiveObjects has queried the wrong thing because the queries it
 generates are precisely the same as if you were writing the SQL by hand.
 
 
-Caching
-=======
-
-Gavin King has been quoted as saying that the most interesting part of any ORM
-is how it handles caching.  This is because most ORMs are quite similar in
-design, the only differentiating factors being slightly modified syntax and
-how advanced the caching may be.  ActiveObjects is designed to partition its
-caching into several different segments.  This allows piece-wise optimization,
-as well as more control over potential memory leaks.
-
-
-Instance Cache
---------------
-
-There are places in code where this layer is also referred to as the "entity
-cache".  This is the top-level of the caching system, containing mappings from
-*table* ``:`` *primary-key* values to proper entity instances.  This is what
-guarentees that only one entity instance corresponds with a given row in the
-database.
-
-.. TODO
-
-
 Compared to Other Frameworks
 ============================
 
