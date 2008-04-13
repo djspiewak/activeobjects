@@ -1,0 +1,52 @@
+.. :mode=rest:
+
+Entities
+========
+
+The concept of the entity is at the core of the ActiveObjects framework.  Most
+meaningful interaction with the database takes place within the confines of an
+entity instance.  Understanding the design principles behind entities is
+critical to being able to use ActiveObjects effectively.  This section attempts
+to outline some of these concepts as well as provide useful examples to get you
+started.
+
+Every entity type corresponds directly with a single table in the database.
+Each instance of an entity corresponds uniquely with a single row in that
+table.  From throughout this documentation, the term "entity" is used to refer
+specifically to an entity *instance* (and often its corresponding row).
+Whenever it is necessary to refer to the interface which defines an entity, the
+term "entity type" is employed.
+
+Entity types are always defined as Java interfaces which extend (usually
+indirectly) the ``RawEntity`` interface in the ``net.java.ao`` package.  These
+entity type interfaces declare the methods necessary to access data,
+relationships and even custom logic on the entity.  These methods are defined in
+natural style, following Java conventions.  ActiveObjects is able to infer the
+necessary mappings between methods and fields automatically in most cases.  When
+the inference cannot be made (or is incorrect for the specific case), minimal
+Java annotations are used to clarify things for the framework.
+
+The entity interfaces themselves are **not implemented** by the end developer [*]_.
+JDK interface proxies are used to reflectively implement entities within the
+framework itself.  This saves the end developer a significant amount of effort
+as well as making entity type definitions far more readable than otherwise.
+
+.. [*] The term "end developer" refers to the developer *using* ActiveObjects
+
+
+.. _fields:
+
+Fields
+------
+
+
+.. _relationships:
+
+Relationships
+-------------
+
+
+.. _convention-over-configration:
+
+Convention Over Configuration
+-----------------------------

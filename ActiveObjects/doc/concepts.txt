@@ -14,4 +14,32 @@ framework is intuitive to understand.
 Overview
 ========
 
+ActiveObjects is an *entity based* ORM.  That is to say, most of the useful work
+is done by the actual entities and the underlying design of the framework is
+oriented around facilitating entity manipulation.  Every entity type (as defined
+by the interface itself extending ``Entity``) corresponds directly with a table
+while every instance of that entity corresponds with a row in the table.  The
+actual mapping between the entities and the database is done within the entities
+themselves.  This is one of the defining properties of an active record ORM.
 
+``EntityManager`` is the central controller for the entire framework.  Entities
+are created, queried and destroyed by this class (field-level SELECTs and all
+UPDATEs are performed within the entities themselves).  ``EntityManager``
+delegates anything database-specific to the relevant implementation of
+``DatabaseProvider``.  Most common use-cases for queries and high-level entity
+manipulation can be satisfied by this class.
+
+ * Entities_
+    * Fields_
+    * Relationships_
+    * `Convention Over Configuration`_
+ * Queries
+ * Migrations
+ * Types
+ * Caching
+ * Lucene Integration
+ 
+.. _Entities: concepts/entities.html
+.. _Fields: concepts/entities.html#fields
+.. _Relationships: concepts/entities.html#relationships
+.. _Convention Over Configuration: concepts/entities.html#convention-over-configuration

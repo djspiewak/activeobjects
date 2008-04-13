@@ -7,11 +7,11 @@
 ---
 
  * `Quick Start <quick-start.txt>`_
- * Concepts
- 	* Entities
-		* Fields
-		* Relationships
-		* Convention Over Configuration
+ * `Concepts <concepts.txt>`_
+ 	* `Entities <concepts/entities.txt>`_
+		* `Fields <concepts/entities.html#fields>`_
+		* `Relationships <concepts/entities.html#relationships>`_
+		* `Convention Over Configuration <concepts/entities.html#convention-over-configuration>`_
 	* Queries
 	* Migrations
 	* Types
@@ -42,3 +42,4 @@
 	* Adding a Connection Pool
 	* Adding a Type
 	* Redefining Entities
+
