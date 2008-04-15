@@ -36,6 +36,10 @@ import net.java.ao.types.TypeManager;
  * @author Daniel Spiewak
  */
 public final class Common {
+	public static <T extends RawEntity<K>, K> T createPeer(EntityManager manager, Class<T> type, K key) {
+		return manager.peer(type, key);
+	}
+	
 	public static String convertSimpleClassName(String name) {
 		String[] array = name.split("\\.");
 		return array[array.length - 1];

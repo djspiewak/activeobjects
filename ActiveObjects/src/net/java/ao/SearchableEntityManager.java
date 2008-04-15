@@ -165,7 +165,7 @@ public class SearchableEntityManager extends EntityManager {
 		}
 		searcher.close();
 
-		return get(type, keys);
+		return peer(type, keys);
 	}
 
 	@Override

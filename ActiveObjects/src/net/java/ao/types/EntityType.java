@@ -53,7 +53,7 @@ class EntityType<T> extends DatabaseType<RawEntity<T>> {
 		DatabaseType<T> dbType = Common.getPrimaryKeyType(type);
 		Class<T> pkType = Common.getPrimaryKeyClassType(type);
 		
-		return manager.get(type, dbType.pullFromDatabase(manager, res, pkType, field));
+		return Common.createPeer(manager, type, dbType.pullFromDatabase(manager, res, pkType, field));
 	}
 
 	@Override

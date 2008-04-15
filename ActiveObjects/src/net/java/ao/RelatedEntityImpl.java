@@ -83,7 +83,7 @@ class RelatedEntityImpl {
 					continue;
 				}
 				
-				back.add((RelatedEntity<?>) entity.getEntityManager().get(type, Common.getPrimaryKeyType(type).defaultParseValue(entityKey)));
+				back.add((RelatedEntity<?>) entity.getEntityManager().peer(type, Common.getPrimaryKeyType(type).defaultParseValue(entityKey)));
 			}
 
 			return back.toArray((RelatedEntity<?>[]) Array.newInstance(type, back.size()));

@@ -335,7 +335,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	CacheLayer getCacheLayer() {
-		return getManager().getCache().getCacheLayer(getManager().get(type, key));
+		return getManager().getCache().getCacheLayer(getManager().peer(type, key));
 	}
 
 	Class<T> getType() {
@@ -413,7 +413,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					return (V) value;
 				} else if (Common.interfaceInheritsFrom(type, RawEntity.class) 
 						&& instanceOf(value, Common.getPrimaryKeyClassType((Class<? extends RawEntity<K>>) type))) {
-					value = getManager().get((Class<? extends RawEntity<Object>>) type, value);
+					value = getManager().peer((Class<? extends RawEntity<Object>>) type, value);
 	
 					cacheLayer.put(name, value);
 					return (V) value;
@@ -778,11 +778,11 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 				
 				if (throughField != null) {
-					throughValues.add(getManager().get((Class<? extends RawEntity<Object>>) type, 
+					throughValues.add(getManager().peer((Class<? extends RawEntity<Object>>) type, 
 							throughDBType.pullFromDatabase(getManager(), res, type, throughField)));
 				}
 
-				V returnValueEntity = getManager().get(backType, returnValue);
+				V returnValueEntity = getManager().peer(backType, returnValue);
 				ResultSetMetaData md = res.getMetaData();
 				for (int i = 0; i < md.getColumnCount(); i++) {
 					if (!resPolyNames.contains(md.getColumnLabel(i + 1))) {

@@ -51,6 +51,7 @@ import net.java.ao.schema.CamelCaseTableNameConverter;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.SchemaGenerator;
 import net.java.ao.schema.TableNameConverter;
+import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
 
 /**
@@ -254,6 +255,8 @@ public class EntityManager {
 	 * course is that one could conceivably maintain entities which reference
 	 * non-existant database rows.</p>
 	 * 
+	 * TODO
+	 * 
 	 * @param type		The type of the entities to retrieve.
 	 * @param keys	The primary keys corresponding to the entities to retrieve.  All
 	 * 	keys must be typed according to the generic type parameter of the entity's
@@ -262,7 +265,60 @@ public class EntityManager {
 	 * 	time.
 	 * @return An array of entities of the given type corresponding with the specified primary keys.
 	 */
-	public <T extends RawEntity<K>, K> T[] get(Class<T> type, K... keys) {
+	public <T extends RawEntity<K>, K> T[] get(final Class<T> type, K... keys) {
+		final String primaryKeyField = Common.getPrimaryKeyField(type, getFieldNameConverter());
+		final String tableName = getTableNameConverter().getName(type);
+		
+		return getFromCache(type, new Function<T, K>() {
+			public T invoke(K key) {
+				T back = null;
+				Connection conn = null;
+				
+				try {
+					conn = getProvider().getConnection();
+					
+					StringBuilder sql = new StringBuilder("SELECT ");
+					sql.append(primaryKeyField);
+					sql.append(" FROM ").append(tableName);
+					sql.append(" WHERE ").append(primaryKeyField);
+					sql.append(" = ?");
+					
+					PreparedStatement stmt = conn.prepareStatement(sql.toString());
+					
+					DatabaseType<K> dbType = (DatabaseType<K>) TypeManager.getInstance().getType(key.getClass());
+					dbType.putToDatabase(1, stmt, key);
+					
+					ResultSet res = stmt.executeQuery();
+					if (res.next()) {
+						back = getAndInstantiate(type, key);
+					}
+					
+					res.close();
+					stmt.close();
+				} catch (SQLException e) {
+				} finally {
+					if (conn != null) {
+						try {
+							conn.close();
+						} catch (SQLException e) {
+						}
+					}
+				}
+				
+				return back;
+			}
+		}, keys);
+	}
+	
+	protected <T extends RawEntity<K>, K> T[] peer(final Class<T> type, K... keys) {
+		return getFromCache(type, new Function<T, K>() {
+			public T invoke(K key) {
+				return getAndInstantiate(type, key);
+			}
+		}, keys);
+	}
+	
+	private <T extends RawEntity<K>, K> T[] getFromCache(Class<T> type, Function<T, K> create, K... keys) {
 		T[] back = (T[]) Array.newInstance(type, keys.length);
 		int index = 0;
 		
@@ -276,7 +332,7 @@ public class EntityManager {
 				if (entity != null) {
 					back[index++] = entity;
 				} else {
-					back[index++] = getAndInstantiate(type, key);
+					back[index++] = create.invoke(key);
 				}
 			} finally {
 				entityCacheLock.writeLock().unlock();
@@ -326,6 +382,10 @@ public class EntityManager {
 	 */
 	public <T extends RawEntity<K>, K> T get(Class<T> type, K key) {
 		return get(type, (K[]) new Object[] {key})[0];
+	}
+	
+	protected <T extends RawEntity<K>, K> T peer(Class<T> type, K key) {
+		return peer(type, (K[]) new Object[] {key})[0];
 	}
 	
 	/**
@@ -410,7 +470,7 @@ public class EntityManager {
 			relationsCache.remove(type);
 			
 			Method pkMethod = Common.getPrimaryKeyMethod(type);
-			back = get(type, provider.insertReturningKey(conn, Common.getPrimaryKeyClassType(type), 
+			back = peer(type, provider.insertReturningKey(conn, Common.getPrimaryKeyClassType(type), 
 					Common.getPrimaryKeyField(type, getFieldNameConverter()), 
 					pkMethod.getAnnotation(AutoIncrement.class) != null, 
 					table, listParams.toArray(new DBParam[listParams.size()])));
@@ -687,7 +747,7 @@ public class EntityManager {
 			provider.setQueryResultSetProperties(res, query);
 			
 			while (res.next()) {
-				T entity = get(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, Common.getPrimaryKeyClassType(type), field));
+				T entity = peer(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, Common.getPrimaryKeyClassType(type), field));
 				CacheLayer cacheLayer = getCache().getCacheLayer(entity);
 
 				for (int i = 0; i < md.getColumnCount(); i++) {
@@ -752,7 +812,7 @@ public class EntityManager {
 
 			ResultSet res = stmt.executeQuery();
 			while (res.next()) {
-				back.add(get(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, (Class<? extends K>) type, keyField)));
+				back.add(peer(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, (Class<? extends K>) type, keyField)));
 			}
 			res.close();
 			stmt.close();
@@ -998,6 +1058,10 @@ public class EntityManager {
 		}
 		
 		return new SoftReference<RawEntity<?>>(entity);
+	}
+	
+	private static interface Function<R, F> {
+		public R invoke(F formals);
 	}
 	
 	private static class CacheKey<T> {
