@@ -29,6 +29,10 @@ public class DBParam {
 	private Object value;
 	
 	public DBParam(String field, Object value) {
+		if (field == null) {
+			throw new NullPointerException("Field cannot be null");
+		}
+		
 		this.field = field;
 		this.value = value;
 	}
@@ -38,6 +42,10 @@ public class DBParam {
 	}
 
 	public void setField(String field) {
+		if (field == null) {
+			throw new NullPointerException("Field cannot be null");
+		}
+		
 		this.field = field;
 	}
 
@@ -58,7 +66,9 @@ public class DBParam {
 		if (obj instanceof DBParam) {
 			DBParam param = (DBParam) obj;
 			
-			if (param.field.equals(field) && param.value.equals(value)) {
+			boolean valueEquals = (param.value == null ? param.value == value : param.value.equals(value));
+			
+			if (param.field.equals(field) && valueEquals) {
 				return true;
 			}
 		}
@@ -68,6 +78,6 @@ public class DBParam {
 	
 	@Override
 	public int hashCode() {
-		return field.hashCode() + value.hashCode();
+		return field.hashCode() + (value == null ? 0 : value.hashCode());
 	}
 }
