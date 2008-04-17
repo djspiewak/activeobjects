@@ -31,6 +31,8 @@ import net.spy.memcached.MemcachedClient;
  * @author Daniel Spiewak
  */
 public class MemcachedCache implements Cache {
+	private static final String PREFIX = "activeobjects.";
+	
 	private Map<RawEntity<?>, CacheLayer> cache;
 	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
@@ -61,24 +63,24 @@ public class MemcachedCache implements Cache {
 		try {
 			if (cache.containsKey(entity)) {
 				return cache.get(entity);
-			} else {
-				String prefix = "activeobjects.";
-				prefix += entity.getEntityManager().getTableNameConverter().getName(entity.getEntityType()) + '.';
-				prefix += Common.getPrimaryKeyType(entity.getEntityType()).valueToString(
-						Common.getPrimaryKeyValue(entity)) + '.';
-				
-				CacheLayer layer = new MemcachedCacheLayer(client, expiry, prefix);
-				cache.put(entity, layer);
-				
-				return layer;
 			}
+			
+			String localPrefix = PREFIX;
+			localPrefix += entity.getEntityManager().getTableNameConverter().getName(entity.getEntityType()) + '.';
+			localPrefix += Common.getPrimaryKeyType(entity.getEntityType()).valueToString(
+					Common.getPrimaryKeyValue(entity)) + '.';
+			
+			CacheLayer layer = new MemcachedCacheLayer(client, expiry, localPrefix);
+			cache.put(entity, layer);
+			
+			return layer;
 		} finally {
 			cacheLock.writeLock().unlock();
 		}
 	}
 
 	public RelationsCache getRelationsCache() {
-		return new MemcachedRelationsCache();
+		return new MemcachedRelationsCache(client, expiry, PREFIX);
 	}
 	
 	public void dispose() {

@@ -89,7 +89,7 @@ public class RAMRelationsCache implements RelationsCache {
 		}
 	}
 
-	public <T extends RawEntity<?>> T[] get(RawEntity<?> from, Class<T> toType, 
+	public <T extends RawEntity<K>, K> T[] get(RawEntity<?> from, Class<T> toType, 
 			Class<? extends RawEntity<?>> throughType, String[] fields) {
 		lock.readLock().lock();
 		try {
