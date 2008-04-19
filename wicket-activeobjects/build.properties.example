@@ -1,6 +1,0 @@
-activeobjects.dir=../ActiveObjects
-
-wicket.path=C:/Users/Daniel Spiewak/Libraries/apache-wicket-1.3.0-beta4/lib/wicket-1.3.0-beta4.jar
-
-wicket-activeobjects.build.classpath=${wicket.path}${path.separator}${activeobjects.dir}/bin
-build.debug=yes
