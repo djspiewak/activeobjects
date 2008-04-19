@@ -1,0 +1,58 @@
+.. :mode=rest:
+
+============
+Contributing
+============
+
+One of the wonderful things about Open Source is the ability for anyone to simply
+open up the code, make some changes and then see other people benefit from their
+efforts.  The ActiveObjects project is no different in this respect.  We
+welcome thoughts and ideas from developers, as well as code contributions.
+However, sometimes the hardest part of contributing is knowing where to start.
+This section is not meant to be a comprehensive guide on how ActiveObjects works,
+but rather a "quick compass" if you will, hopefully pointing prospective
+contributors in the right direction.
+
+If you're looking for ways to contribute code and expertise, the best place to
+look is in the support for the `various databases`_.  The differences between
+databases are often subtle and difficult to test, leading to hard-to-find bugs
+that creep into so-called "stable" releases.  If you have knowledge of a
+particular database, or even if you're just willing to track down issues, this
+is probably a good place to start.  This is also an area where we would *love*
+to accept contributions in the way of support for alternative databases.  The
+more databases ActiveObjects supports, the more interesting it becomes as a
+full-fledged ORM.  All of the database-specific support code in ActiveObjects is
+contained within the ``net.java.ao.db`` package.  There is also some
+documentation concerning `adding support for a database`_.
+
+Testing is also a great way to help out.  ActiveObjects has a large (and growing)
+unit test suite which attempts to cover all aspects of the framework.  More test
+cases checked automatically means fewer bugs making it into production
+environments.  This is probably the most critical aspect of the entire
+framework.  The test suite is not distributed with the main download and is
+kept within the SVN in the ``ActiveObjects/test/`` directory.  This is also an
+excellent way to gain familiarity with some of the inner workings of the
+framework.  Any and all test cases are appreciated, *especially* if they issolate
+previously undiscovered bugs.
+
+Reported bugs are filed in the ActiveObjects `issue tracker`_.  These are usually
+organized and scheduled within a few hours of submission, but not all of the
+issues can be addressed and closed immediately.  Rooting through an issue already
+filed in the tracker can be a great way to help out.  This is closely related to
+contributions to the test suite, since the best way to reproduce a bug is to
+write a test which does so systematically.  By turning as many issues as possible
+into proper tests, we can ensure not only that the issue is fixed, but that the
+issue does not return at some later date due to unforeseen changes.
+
+But perhaps the best way to contribute to the project is just to apply the library
+to some useful purpose.  Test suites and bug reports are all well and good, but
+you never know how a piece of code really holds up until you place it under
+real-world stress.  Some of the most valuable contributions to the project have
+come from community members who have used ActiveObjects in their applications.
+Suggestions, patches, bug reports and general feedback are all much appreciated
+in this arena.
+
+.. _various databases: supported-databases.html
+.. _adding support for a database: extending-activeobjects/adding-a-database.html
+
+.. _issue tracker: https://activeobjects.dev.java.net/servlets/ProjectIssues

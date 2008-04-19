@@ -265,6 +265,32 @@ ActiveObjects
 			<arg value="--use-verbatim-when-possible"/>
 			<arg value="--graphicx-option=pdftex"/>
 		</exec>
+		
+		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="\\href\{([^}]|\\\})+\}"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		
+		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="\{\\color\{red\}\\bfseries\{\}(.+)\{\\_\}\}"/>
+			<substitution expression="\1"/>
+		</replaceregexp>
+		
+		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="Duplicate explicit target name: ``.+''\."/>
+			<substitution expression=""/>
+		</replaceregexp>
+		
+		<replaceregexp flags="gm" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="&lt;stdin&gt;:.*$"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		
+		<replaceregexp flags="s" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="(\\)section\{Docutils System Messages\}.+"/>
+			<substitution expression="\1end{document}"/>
+		</replaceregexp>
+		
 		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" output="${activeobjects.dir}/doc/pdftmp/pdflatex.log">
 			<arg value="ActiveObjects.tex"/>
 		</exec>
