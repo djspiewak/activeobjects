@@ -213,6 +213,8 @@
 	</target>
 		
 	<target name="pdf" depends="install-docutils" if="docutils-check-ok">
+		<echo level="info" message="Preprocessing ReStructuredText..."/>
+		
 		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
 		<copy todir="${activeobjects.dir}/doc/pdftmp" flatten="no">
 			<fileset dir="${activeobjects.dir}/doc">
@@ -258,9 +260,11 @@ ActiveObjects
 		</concat>
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" token=".. :mode=rest:" value=""/>
 		
+		<echo level="info" message="Building LaTeX..."/>
 		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="python" 
 				input="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" 
-				output="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+				output="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex"
+				logError="yes">
 			<arg value="${docutils.path}${file.separator}tools${file.separator}rst2latex.py"/>
 			<arg value="--use-verbatim-when-possible"/>
 			<arg value="--graphicx-option=pdftex"/>
@@ -297,7 +301,10 @@ ActiveObjects
 			<replacevalue>,bookmarks=true]{hyperref}</replacevalue>
 		</replace>
 		
-		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" output="${activeobjects.dir}/doc/pdftmp/pdflatex.log">
+		<echo level="info" message="Building PDF..."/>
+		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" 
+			output="${activeobjects.dir}/doc/pdftmp/pdflatex.log"
+			logError="yes">
 			<arg value="ActiveObjects.tex"/>
 		</exec>
 		<move todir="${www.path}">
@@ -305,7 +312,7 @@ ActiveObjects
 				<include name="ActiveObjects.pdf"/>
 			</fileset>
 		</move>
-		<!-- <delete dir="${activeobjects.dir}/doc/pdftmp"/> -->
+		<delete dir="${activeobjects.dir}/doc/pdftmp"/>
 	</target>
 	
 	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
