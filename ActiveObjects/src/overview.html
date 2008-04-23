@@ -1,0 +1,68 @@
+<html>
+	<body>
+		<p><a href="https://activeobjects.dev.java.net">ActiveObjects</a> is a powerful Java
+		ORM (Object Relational Mapper) designed with the expressed goal of being the simplest
+		and easiest-to-use DB persistence layer possible in Java.  Unlike JPA/Hibernate and
+		other popular Java ORMs which are based upon 
+		<a href="http://en.wikipedia.org/wiki/Object-relational_mapping">mapping pattern</a>, 
+		ActiveObjects is based upon the 
+		<a href="http://en.wikipedia.org/wiki/Active_record_pattern">active record pattern</a>
+		(not to be confused with the <a href="http://ar.rubyonrails.com">ActiveRecord ORM</a>
+		popularized by Ruby on Rails).  ActiveObjects has taken extensive inspiration from
+		ActiveRecord, Hibernate and other ORMs in its attempt to be powerful and yet
+		extremely simple to use.</p>
+		
+		<h2>Getting Started</h2>
+		
+		<p>Try looking in the <a href="net/java/ao/package-summary.html">net.java.ao</a>
+		package.  Most other classes are either internal to AO or part of the extended
+		API, allowing additional functionality.  All that is needed to use ActiveObjects
+		for most use-cases is contained within this package.  The
+		<a href="net/java/ao/Entity.html">Entity</a> interface and 
+		<a href="net/java/ao/EntityManager.html">EntityManager</a> class are excelent
+		places to start in gaining a more complete understanding of the API and how
+		it should be used.</p>
+		
+		<p>Unlike most Java ORMs, ActiveObjects uses dynamic interface proxies as entities,
+		avoiding the need for the API user to write verbose bean definitions to allow
+		persistence.  The superinterface for the interfaces which are being proxied is ultimately
+		<a href="net/java/ao/RawEntity.html">RawEntity</a>, though <b>Entity</b> is more
+		often used as the direct superinterface.  Deriving from this superclass and defining
+		conventional accessor/mutator methods using standard Java names and types is all
+		that is required to define a basic entity.  This entity can then be retrieved,
+		persisted, etc all using the <b>EntityManager</b> class.  Database connections
+		are created by <a href="net/java/ao/DatabaseProvider.html">DatabaseProvider</a>,
+		which is managed entirely by <b>EntityManager</b> in most situations.</p>
+		
+		<p>The bare minimum prerequisites to use ActiveObjects are as follows:</p>
+		
+		<ul>
+			<li>One or more entity interfaces</li>
+			<li>An <b>EntityManager</b> instance, created using its constructor passing
+			a JDBC URI and the database authentication credentials</li>
+			<li>The appropriate JDBC driver on the classpath</li>
+			<li>A database (bet you weren't expecting that one)</li>
+		</ul>
+		
+		<p>A list of supported databases can be found 
+		<a href="https://activeobjects.dev.java.net/supported.html">here</a>.</p>
+		
+		<h2>Connection Pooling</h2>
+		
+		<p>Connection pooling is <i>supported</i> by ActiveObjects, but only through the
+		use of third party libraries.  All this means is that ActiveObjects doesn't
+		implement its own, clean-room pool library, but rather makes use of industry
+		standard implementations if available.  To enable connection pooling in ActiveObjects,
+		all you have to do is provide one of the supported connection pooling libraries
+		on the classpath.  ActiveObjects will automatically use this library as an
+		indirect to obtain database connections, providing much higher performance than
+		would otherwise be obtainable.</p>
+		
+		<p>Due to the high number of connections which are created and briefly used by
+		ActiveObjects (a function of its design), it is <i>highly recommended</i> that
+		a connection pool library be utilized to increase performance.  The use of
+		connection pooling mitigates the performance impact of this design decision to
+		a negligable level (in practice, it isn't a problem due to advanced caching
+		which takes place automatically within ActiveObjects).</p>
+	</body>
+</html>

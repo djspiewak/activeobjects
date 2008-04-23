@@ -1,0 +1,1 @@
+ALTER TABLE company DROP COLUMN name

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry including="**/*" kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="ant"/>
+	<classpathentry kind="var" path="commons-dbcp"/>
+	<classpathentry kind="var" path="commons-pool"/>
+	<classpathentry kind="var" path="c3p0"/>
+	<classpathentry kind="var" path="lucene" sourcepath="/lucene-src"/>
+	<classpathentry kind="var" path="lucene-queries" sourcepath="/lucene-queries-src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="var" path="proxool"/>
+	<classpathentry kind="var" path="dbpool" sourcepath="/dbpool-src"/>
+	<classpathentry kind="var" path="hsqldb"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ActiveObjects" default="build" basedir=".">
+	<dirname property="activeobjects.dir" file="${ant.file.ActiveObjects}"/>
+	
+	<property file="${activeobjects.dir}/build.properties"/>
+	
+	<target name="check-test">
+		<condition property="test-check-ok">
+			<and>
+				<isset property="junit4.path"/>
+				<isset property="hsqldb.path"/>
+				
+				<not>
+					<or>
+						<equals arg1="${junit4.path}" arg2="" trim="yes"/>
+						<equals arg1="${hsqldb.path}" arg2="" trim="yes"/>
+					</or>
+				</not>
+			</and>
+		</condition>
+	</target>
+	
+	<target name="check-jdocs">
+		<condition property="jdocs-check-ok">
+			<and>
+				<isset property="jdocs.path"/>
+				
+				<not>
+					<equals arg1="${jdocs.path}" arg2="" trim="yes"/>
+				</not>
+			</and>
+		</condition>
+	</target>
+
+	<target name="check-ant">
+		<condition property="test-ant-ok">
+			<and>
+				<isset property="ant.version"/>
+				<contains string="${ant.version}" substring=" 1.7."/>
+			</and>
+		</condition>
+	</target>
+	
+	<target name="upgrade-ant" depends="check-ant" unless="test-ant-ok">
+		<fail message="Upgrade ant to version >= 1.7 to build doc and dist targets"/>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${activeobjects.dir}/bin"/>
+	</target>
+	
+	<target name="init-dist">
+		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src"/>
+		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
+	</target>
+	
+	<target name="init-doc" unless="supress-doc-deletion">
+		<delete>
+			<fileset dir="${activeobjects.dir}/${javadoc.path}">
+				<include name="**/*"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<target name="build" depends="init">
+		<javac srcdir="${activeobjects.dir}/src" destdir="${activeobjects.dir}/bin" classpath="${build.classpath}" 
+				source="1.5" target="1.5" debug="${build.debug}"/>
+		
+		<copy todir="${activeobjects.dir}/bin">
+			<fileset dir="${activeobjects.dir}/src">
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="build-test" depends="check-test,init,build" if="test-check-ok">
+		<javac srcdir="${activeobjects.dir}/test" destdir="${activeobjects.dir}/bin" 
+				classpath="bin${path.separator}${build.classpath}${path.separator}${junit4.path}${path.separator}${hsqldb.path}" 
+				source="1.5" target="1.5" debug="yes"/>
+	</target>
+	
+	<target name="assign-doc-dir" unless="javadoc.intern.path">
+		<property name="javadoc.intern.path" value="${activeobjects.dir}/${javadoc.path}"/>
+	</target>
+	
+	<target name="doc" depends="upgrade-ant,init-doc,assign-doc-dir" if="test-ant-ok">
+		<javadoc sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
+		 		windowtitle="ActiveObjects: Javadoc" access="protected" overview="src/overview.html">
+			<packageset dir="${activeobjects.dir}/src">
+				<include name="net/java/ao/**/*.java"/>
+			</packageset>
+			
+			<link href="${lucene.javadoc}"/>
+			<link href="http://java.sun.com/javase/6/docs/api"/>
+		</javadoc>
+	</target>
+	
+	<target name="build-jdocs" depends="check-jdocs" if="jdocs-check-ok">
+		<taskdef name="jdocs" classpath="${jdocs.path}" classname="com.dzone.jdocs.ant.jdk15.task.Jdocs"/>
+		<echo level="error" message="JDocs task doesn't work yet"/>
+
+		<jdocs sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}"
+		 		overview="src/overview.html" sourcefiles="src/net/java/ao/**/*.java" package="net.java.ao"/>
+	</target>
+	
+	<target name="jar" depends="init-dist">
+		<!-- done as a antcall(s) rather than dependencies to ensure ordering -->
+		<antcall target="clean"/>
+		<antcall target="build"/>
+		
+		<jar basedir="${activeobjects.dir}/bin" compress="${jar.compress}" 
+				destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar"/>
+	</target>
+	
+	<target name="dist" depends="upgrade-ant,init-dist,jar" if="test-ant-ok">
+		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc"/>
+		<property name="supress-doc-deletion" value="yes"/>
+		<antcall target="doc"/>
+		
+		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src">
+			<fileset dir="${activeobjects.dir}/src">
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}">
+			<fileset dir="${activeobjects.dir}">
+				<include name="BUGS"/>
+				<include name="CONTRIBUTORS"/>
+				<include name="LICENSE"/>
+			</fileset>
+		</copy>
+		
+		<zip destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.zip">
+			<fileset id="productDir" dir="${activeobjects.dir}/dist">
+				<include name="activeobjects-${activeobjects.version}/**/*"/>
+			</fileset>
+		</zip>
+		
+		<tar destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar">
+			<fileset refid="productDir"/>
+		</tar>
+		<gzip src="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar" 
+				zipfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar.gz"/>
+		<delete file="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar"/>
+		
+		<delete includeemptydirs="yes">
+			<fileset dir="${activeobjects.dir}/dist">
+				<include name="activeobjects-${activeobjects.version}/**/*"/>
+			</fileset>
+		</delete>
+		<delete includeemptydirs="yes">
+			<fileset dir="${activeobjects.dir}/dist">
+				<include name="activeobjects-${activeobjects.version}"/>
+			</fileset>
+		</delete>
+	</target>
+	
+	<target name="test" depends="check-test,build-test" if="test-check-ok">
+		<echo level="warning" message="Currently not working"/>
+		
+        <junit printsummary="on" haltonerror="yes" haltonfailure="no">
+        	<classpath>
+        		<pathelement location="bin/"/>
+        		<pathelement location="${junit4.path}"/>
+        		<pathelement location="${hsqldb.path}"/>
+        		<pathelement path="${build.classpath}"/>
+        	</classpath>
+        	
+        	<assertions>
+        		<enable package="net.java.ao"/>
+        	</assertions>
+        	
+        	<formatter type="plain" usefile="no"/>
+        	
+        	<test name="AllTests"/>
+		</junit>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${activeobjects.dir}/bin"/>
+	</target>
+	
+	<target name="clean-dist">
+		<delete dir="${activeobjects.dir}/dist"/>
+	</target>
+</project>

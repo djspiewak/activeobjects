@@ -1,0 +1,16 @@
+Known Bugs
+==========
+
+Oracle
+------
+ * Migrations do not work properly (they overwrite the schema rather than merging with it)
+ * @AutoIncrement fields are assumed to be primary keys.  If not, then they will not be incremented
+ 
+HSQLDB
+------
+ * @OnUpdate fields do not work at all
+ 
+SQLServer
+---------
+ * One-to-many and find() preload do not work properly (they fail to preload)
+

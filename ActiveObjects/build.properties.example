@@ -1,0 +1,25 @@
+lucene.path=C:/Users/Daniel Spiewak/Libraries/lucene-2.2.0/lucene-core-2.2.0.jar
+lucene.queries.path=C:/Users/Daniel Spiewak/Libraries/lucene-2.2.0/contrib/queries/lucene-queries-2.2.0.jar
+lucene.javadoc=http://lucene.apache.org/java/2_2_0/api
+
+commons-dbcp.path=C:/Users/Daniel Spiewak/Libraries/commons-dbcp-1.2.2/commons-dbcp-1.2.2.jar
+ant.path=C:/Users/Daniel Spiewak/Applications/eclipse/plugins/org.apache.ant_1.7.0.v200704241635/lib/ant.jar
+c3p0.path=C:/Users/Daniel Spiewak/Libraries/c3p0-0.9.1.2/lib/c3p0-0.9.1.2.jar
+proxool.path=C:/Users/Daniel Spiewak/Libraries/proxool-0.9.0RC3/lib/proxool-0.9.0RC3.jar
+dbpool.path=C:/Users/Daniel Spiewak/Libraries/DBPool-4.8.3/DBPool_v4.8.3.jar
+
+# provide values for these properties to enable unit testing 
+junit4.path=				# e.g. =junit.jar
+hsqldb.path=				# e.g. =hsqldb.jar
+
+# provide value to enable building of JDocs file
+jdocs.path=			# e.g. =jdocs.jar
+
+javadoc.path=../www/api
+
+build.classpath=${lucene.path}${path.separator}${lucene.queries.path}${path.separator}${commons-dbcp.path}\
+	${path.separator}${ant.path}${path.separator}${c3p0.path}${path.separator}${proxool.path}\
+	${path.separator}${dbpool.path}
+build.debug=yes
+
+activeobjects.version=0.8.2

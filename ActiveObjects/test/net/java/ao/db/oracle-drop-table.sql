@@ -1,0 +1,5 @@
+DROP SEQUENCE person_SEQ
+
+DROP TRIGGER person_TRG
+
+DROP TABLE person PURGE
