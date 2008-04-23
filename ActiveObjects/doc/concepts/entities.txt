@@ -26,7 +26,7 @@ necessary mappings between methods and fields automatically in most cases.  When
 the inference cannot be made (or is incorrect for the specific case), minimal
 Java annotations are used to disambiguate.
 
-The entity interfaces themselves are **not implemented** by the end developer [*]_.
+The entity interfaces themselves are **not implemented** by the end developer [#]_.
 JDK interface proxies are used to reflectively implement entities within the
 framework itself.  This saves the end developer a significant amount of effort
 as well as making entity type definitions far more readable than otherwise.  The
@@ -34,7 +34,7 @@ only serious disadvantage to this approach is that it requires some admitedly
 unintuitive steps to allow the insertion of custom logic into an entity (a
 critical aspect of the active record pattern).
 
-.. [*] The term "end developer" refers to the developer *using* ActiveObjects
+.. [#] The term "end developer" refers to the developer *using* ActiveObjects
 
 
 .. _fields:
@@ -212,8 +212,179 @@ a need to exploit this behavior.
 Relationships
 -------------
 
+Entities and fields are all well and good, but they are far less interesting in
+the absence of relations.  The concept of a relational database specifies three
+core relation types:
+
+ * **One-to-One**
+ * **One-to-Many**
+ * **Many-to-Many**
+
+Technically, these can all be described in terms of *one-to-many*, but that is
+neither here nor there.  ActiveObjects provides full support for querying these
+relations and has a very advanced mechanism for infering the relational
+constraints based on known entity structure.  Consider the following simple
+example::
+    
+    public interface Person extends Entity {
+        ...
+        
+        public Company getEmployer();
+        public void setEmployer(Company e);
+    }
+    
+    public interface Company extends Entity {
+        ...
+        
+        @OneToMany
+        public Person[] getEmployees();
+    }
+
+In this example, ActiveObjects is able to infer several things.  First, there
+are two tables (``companies`` and ``people``) which contain various fields
+(most omitted for the sake of brevity).  The ``people`` table contains a field
+``employerID`` of type ``INTEGER`` [#]_.  In Java, the corresponding methods
+(``getEmployer()`` and ``setEmployer(Company``) define a field of special entity
+type ``Company``.  Thus, ``Company`` has a one-to-many relationship on the
+``Person`` entity.
+
+The ``@OneToMany`` annotation is used to flag a specific method as pertaining to
+a relationship, rather than a field in the database.  All of the relationship
+annotations (``@OneToOne``, ``@OneToMany`` and ``@ManyToMany``) have priority
+over all other annotations.  Methods annotated as pertaining to a relationship
+are not introspected by the normal inferences.  Rather, the return type of the
+method is examined.  The component type of the array (in the case of ``getEmployees()``,
+it would be ``Person``) is examined to determine the entity on which the
+relationship should be queried.  ActiveObjects then introspects all fields
+(based on the methods declared in the entity type) within ``Person`` and
+aggregates the fields of entity type ``Company``.  In this way, the relationship
+is introspected dynamically and the relevant query can be built.  Note that
+multiple fields can be used to define a one-to-many relationship, so long as
+they are all of the same entity type.
+
+This may seem somewhat confusing, but it's actually very intuitive (just
+difficult to explain).  To put it into fewer words, the relationship is defined
+by the relational field in the originating entity (in this case, ``Person``).
+The ``@OneToMany`` annotation on a method within ``Company`` allows querying of
+this relationship via instances of ``Company``.  Asside from this function, the
+annotation does not affect framework behavior in the slightest.
+
+ActiveObjects also has support for one-to-one relationships.  These are almost
+identical to one-to-many relationships, and have a similar syntax (the annotation
+used is ``@OneToOne`` rather than ``@OneToMany``).  This relationship type is
+covered in more detail in the section on `complex relationships`_.
+
+The most complex relational primitive is many-to-many.  In terms of the database,
+these relationships are most often mapped as two one-to-many relationships
+"connected end-to-end".  For a many-to-many relationship between two tables, a
+third table is required to function as a mapping.  The two target tables each
+have a one-to-many relationship on the mapping table, and thus logically have a
+many-to-many relationship with eachother, through the mapping table.
+
+Many ORMs allow the end developer to specify a many-to-many relationship between
+two entities without specifying an intermediary mapping table.  Such ORMs will
+automatically generate this mapping table, keeping its existence transparent to
+the end developer.  There are several problems with this approach, primarily
+having to do with unexpected schemata and such.  More importantly, a significant
+amount of control is lost to the end developer because they have no direct 
+access to this intermediary table.
+
+ActiveObjects resorts to a slightly different approach.  Rather than transparently
+managing the mapping tables, ActiveObjects requires the end developer to declare
+these tables as proper entities, with all the appropriate fields as would be
+required if they were building the schema by hand.  This allows additional
+constraints to be placed upon the relationship, as well as precise control over
+the relational path from one entity to the other.  In practice, this is actually
+easier than it sounds::
+    
+    public interface Person extends Entity {
+        public String getName();
+        public void setName(String name);
+        
+        @ManyToMany(Authorship.class)
+        public Book[] getBooks();
+    }
+    
+    public interface Authorship extends Entity {
+        public Person getAuthor();
+        public void setAuthor(Author author);
+        
+        public Book getBook();
+        public void setBook(Book book);
+    }
+    
+    public interface Book extends Entity {
+        ...
+        
+        @ManyToMany(Authorship.class)
+        public Person[] getAuthors();
+    }
+
+Once this relationship has been established, it is possible to make use of it
+using code like the following::
+    
+    Person me = ...
+    Book[] myBooks = me.getBooks();
+    
+    for (Book book : myBooks) {
+        Person[] authors = book.getAuthors();
+        
+        System.out.println("Book has " + authors.length + " authors:");
+        for (Person author : authors) {
+            System.out.print('\t');
+            System.out.println(author.getName());
+        }
+    }
+
+This code will retrieve all of the ``Book``(s) which have been authored by the
+``Person`` represented by the ``me`` instance.  It will then iterate over these
+books, printing out how many authors it has, as well as all of their names
+(indented by tabs).  Notice how we never actually see the ``Authorship`` entity
+in the using code [#]_.  All of the details of mapping between ``Person`` and
+``Book`` entities are handled by the framework.  The entire relational path is
+infered based on return types and the mapping type (``Authorship``) as specified
+to the ``@ManyToMany`` annotation.  Once again, the relationship annotation has
+no function other than to indicate how the ``getBooks()`` and ``getAuthors``
+methods should be handled.  The many-to-many relationship is fully specified by
+the ``Authorship`` entity.
+
+.. [#] Actually, the type of the related field depends upon the primary key type
+    of the entity in question.  In this case, ``Company`` inherits its primary
+    key field from ``Entity``.  This field is ``id`` and has type ``INTEGER``.
+.. [#] The term "using code" refers to the code written by the end developer
+    which makes use of their entity model
+    
+.. _complex relationships: ../cookbook/complex-relationships.html
+
 
 .. _convention-over-configuration:
 
 Convention Over Configuration
 -----------------------------
+
+It's been hinted at several times in this document, but it's still worth noting
+explicitly.  ActiveObjects strongly favors "convention over configuration" in
+its design.  That is to say, it attempts to make strong inferences based on
+common patterns and use-cases and then provides mechanisms to override these
+inferences.  An example of this is the mechanism through which field mappings
+are determined.  It is possible to build an entire entity model without using a
+single annotation.  This hypothetical entity model could be extremely complex,
+with foreign keys, relationships, fields, complex types, etc.  All of this can
+be infered by the framework.
+
+This design principle is carried on throughout the ActiveObjects API.  In fact,
+there are very few features which actually *require* any sort of boiler-plate
+configuration in order to be functional [#]_.  The main advantage to this
+design is that it is *very* easy to get up and running with ActiveObjects.  For
+most applications, minimal-to-no configuration will be required to achieve
+optimal results.  The disadvantage to this is that sometimes ActiveObjects may
+make an inference which leads to an undesirable result.  This is unfortunate,
+but unavoidable.  We have tried to follow the "principle of least surprise" in
+the design of the various inference mechanisms, but there is no inference rule
+which does the right thing 100% of the time.  In order to get the most out of 
+ActiveObjects, it is best to be aware of how the various inference rules behave
+and when it may be necessary to override them.
+
+.. [#] An example of such a feature would be `polymorphic relationships`_
+
+.. _polymorphic relationships: ../cookbook/complex-relationships.html#polymorphism

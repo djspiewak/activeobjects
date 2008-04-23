@@ -3,7 +3,7 @@
  * `Supported Databases <supported-databases.txt>`_
  * `Supported Connection Pools <supported-connection-pools.txt>`_
  * `Getting Help <getting-help.txt>`_
- * `Contributing <contributing.txt`_
+ * `Contributing <contributing.txt>`_
  
 ---
 
