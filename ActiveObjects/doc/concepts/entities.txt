@@ -10,7 +10,7 @@ critical to being able to use ActiveObjects effectively.  This section attempts
 to outline some of these concepts as well as provide useful examples to get you
 started.
 
-Every entity type corresponds directly with a single table in the database.
+Every entity type corresponds uniquely with a single table in the database.
 Each instance of an entity corresponds uniquely with a single row in that
 table.  From throughout this documentation, the term "entity" is used to refer
 specifically to an entity *instance* (and often its corresponding row).
@@ -24,12 +24,15 @@ relationships and even custom logic on the entity.  These methods are defined in
 natural style, following Java conventions.  ActiveObjects is able to infer the
 necessary mappings between methods and fields automatically in most cases.  When
 the inference cannot be made (or is incorrect for the specific case), minimal
-Java annotations are used to clarify things for the framework.
+Java annotations are used to disambiguate.
 
 The entity interfaces themselves are **not implemented** by the end developer [*]_.
 JDK interface proxies are used to reflectively implement entities within the
 framework itself.  This saves the end developer a significant amount of effort
-as well as making entity type definitions far more readable than otherwise.
+as well as making entity type definitions far more readable than otherwise.  The
+only serious disadvantage to this approach is that it requires some admitedly
+unintuitive steps to allow the insertion of custom logic into an entity (a
+critical aspect of the active record pattern).
 
 .. [*] The term "end developer" refers to the developer *using* ActiveObjects
 
@@ -39,6 +42,170 @@ as well as making entity type definitions far more readable than otherwise.
 Fields
 ------
 
+In ActiveObjects, database fields correspond with methods in the entity 
+interface.  These methods are often an accessor/mutator pair, but this is not
+required.  For example, you may want a database field which is read-only.  This
+could be done very easily by only creating the accessor method.  A typical
+pair of field-peered methods could look like this::
+    
+    public interface Person extends Entity {
+        public String getName();
+        public void setName(String n);
+    }
+
+From this code alone, ActiveObjects is able to infer a series of mappings into
+the database.  These mappings are as follows (exact values will depend upon the
+name converters in use):
+
+ * Interface ``Person`` corresponds to the ``people`` table in the database
+ * Method ``Person#getName():String`` corresponds to a field ``name`` in the
+   ``people`` table of type ``VARCHAR(255)``
+ * Method ``Person#setName(String):void`` corresponds to a field ``name`` in the
+   ``people`` table of type ``VARCHAR(255)``
+
+Notice how the mappings for ``getName()`` and ``setName(String)`` are identical.
+This makes sense as we want ``getName()`` to *retrieve* the value of ``name``,
+while ``setName(String)`` should *update* the value.  ActiveObjects infers the
+read/write function of a method based on method name (assuming no annotations)
+and then verifies this assumption by checking the return type and formal
+parameters.  If everything seems to correspond with a standard Java Bean
+accessor or mutator, then the mapping is finalized and execution procedes.  For
+what it's worth, these mappings are infered at runtime, specifically durring the
+handling of the method call.  Thus, the control flow for an entity method call
+would look like this:
+
+ # Receive proxied method call
+ # Infer mapping for method
+ # Perform relevant operation
+
+Mappings are not cached, but the inference is usually extremely quick, negating
+any advantage gained by the extra overhead.  There are actually a few more
+steps to the general method handling procedure, but this does provide a rough
+overview.
+
+As an aside, ActiveObjects can also parse ``boolean`` bean accessors (most
+commonly prefixed by "``is``")::
+    
+    public interface Book extends Entity {
+        public boolean isClassic();
+        public void setClassic(boolean c);
+    }
+
+These methods map to the ``classic`` field in the ``books`` table.  The type of
+``classic`` is database-specific, since different databases handle booleans in
+different ways.  Both "``is``" and "``get``" prefixes are supported for boolean 
+fields.  The less common prefix "``has``" is not supported, though can still be 
+utilized through the use of annotations (see below).
+
+
+Explicit Field Annotations
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ActiveObjects is very smart about its method-to-field mapping inferences, but
+regardless of how "smart" a system is, there will always be a case in which one
+must override the defaults.  ActiveObjects allows for these cases by providing
+a number of field-related annotations.  Using these explicit annotations, it is
+possible to override the inferred name, type and even database-level constraints
+(such as ``UNIQUE``).
+
+A very common case for explicit overriding is a field name which is actually an
+acronym.  In Java, accessors and mutators for acronyms are (conventionally)
+capitalized, whereas most database designs have them in lower-case.  This poses
+a problem for field name inference.  Consider the following example::
+    
+    public interface Website extends Entity {
+        public URL getURL();
+        public void setURL(URL url);
+    }
+
+At first glance, one might assume that the ``getURL()`` accessor (and its
+corresponding mutator) correspond to a database field named "``url``".
+Unfortunately, this is not the case.  ActiveObjects (by default)performs its 
+field inference by stripping the accessor/mutator prefix and then converting
+the first character of the resulting string to lower-case.  Thus, the infered
+mapping for the ``getURL()`` method is actually a field called "``uRL``".
+Regardless of which convention we choose to represent acronyms in the database,
+it's fairly safe to say that alternating case will rarely (if ever) do the right
+thing.  It is certainly possible for the field name converter (the pluggable
+module responsible for converting method names into database field names) to
+observe the consecutive upper-case characters and perform an appropriate
+transformation, but the principle of least surprise is usually the right path.
+Thus, we need to annotate our method to explicitly specify the field to which
+it corresponds::
+    
+    public interface Website extends Entity {
+        
+        @Accessor("url")
+        public URL getURL();
+        
+        @Mutator("url")
+        public void setURL(URL url);
+    }
+
+Notice that *both* the ``@Accessor`` and ``@Mutator`` annotations must be
+specified here.  Of course, if we didn't care about the ``setURL(URL)`` method,
+we could omit the ``@Mutator`` annotation (and the entire method for that matter),
+but it is more likely that we need both ``getURL()`` and ``setURL(URL)`` to
+correspond to the correct field.  In this respect, ``@Accessor`` and
+``@Mutator`` are unique annotations in the ActiveObjects API.  Most field
+annotations can be specified once on either accessor or mutator and the library
+will perform the appropriate gymnastics to cross-apply the constraints.
+
+The fact that ``@Accessor`` and ``@Mutator`` are separate annotations (rather
+than a single annotation "``@Field``" or similar) allows the added flexibility
+of completely overriding the Java Bean accessor/mutator prefix conventions::
+    
+    public interface Tree extends Entity {
+        @Accessor("branch")
+        public boolean hasBranch();
+        
+        ...
+    }
+
+In this way, arbitrary methods can be retargetted at the appropriate database
+fields.  Note that when it is necessary to override infered field names on a
+more global scale, it is often easier to use a custom `field name converter`_.
+
+Field names are not the only infered property which can be overridden.  It is
+also possible to explicitly specify a database type for a field.  This is
+extremely important as the type system for ANSI SQL has far more primitives
+than Java.  A common case for this is the need to differentiate between a short
+string field and one which can contain much larger blocks of text::
+    
+    public interface Comment extends Entity {
+        public String getSubject();
+        public void setSubject(String subject);
+        
+        @SQLType(Types.CLOB)
+        public String getText();
+        public void setText(String text);
+    }
+
+In the above example, the ``getSubject()`` method (and its associated mutator)
+corresponds with the ``subject`` field in the database with type ``VARCHAR(255)``.
+This is the default inference for fields of Java type ``String``.  However, in
+the case of the ``text`` field, we will likely need more than just 255 characters
+(unless we're building the next Twittr).  We still want to use the same Java
+type (``String``), so our only recourse is to specify explicitly [#]_ using another
+annotation that the correct type is ``CLOB`` (rendered as ``TEXT`` on MySQL).
+
+Notice that the ``@SQLType`` annotation need only be specified on *one* of the
+accessor/mutator pair.  There is no harm in specifying it redundantly on both
+methods, but ActiveObjects does not require it.  Specified annotations are
+merged between methods which correspond to the same field; effectively,
+ActiveObjects queries both methods in an attempt to determine what annotations
+are available.  Thus, both methods can be annotated separately and ActiveObjects
+has no problem cross-applying the annotations to their correspondant target
+methods.  In the case that two methods have conflicting annotations (e.g. one
+which specifies a type of ``CLOB`` while the other explicitly specifies``VARCHAR``)
+the result is indeterminate.  Technically, it is possible to predict which
+annotation will be chosen under which circumstances, but there should *never* be
+a need to exploit this behavior.
+
+.. [#] Note that the ``Types`` class is actually part of JDBC
+
+.. _field name converter: ../cookbook/custom-naming-conventions.html
+
 
 .. _relationships:
 
@@ -46,7 +213,7 @@ Relationships
 -------------
 
 
-.. _convention-over-configration:
+.. _convention-over-configuration:
 
 Convention Over Configuration
 -----------------------------
