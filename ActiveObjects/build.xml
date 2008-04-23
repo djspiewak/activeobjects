@@ -264,6 +264,7 @@ ActiveObjects
 			<arg value="${docutils.path}${file.separator}tools${file.separator}rst2latex.py"/>
 			<arg value="--use-verbatim-when-possible"/>
 			<arg value="--graphicx-option=pdftex"/>
+			<arg value="--use-latex-footnotes"/>
 		</exec>
 		
 		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
@@ -287,9 +288,14 @@ ActiveObjects
 		</replaceregexp>
 		
 		<replaceregexp flags="s" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
-			<regexp pattern="(\\)section\{Docutils System Messages\}.+"/>
+			<regexp pattern="(\\)section\*?\{Docutils System Messages\}.+"/>
 			<substitution expression="\1end{document}"/>
 		</replaceregexp>
+		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>]{hyperref}</replacetoken>
+			<replacevalue>,bookmarks=true]{hyperref}</replacevalue>
+		</replace>
 		
 		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" output="${activeobjects.dir}/doc/pdftmp/pdflatex.log">
 			<arg value="ActiveObjects.tex"/>
@@ -299,7 +305,7 @@ ActiveObjects
 				<include name="ActiveObjects.pdf"/>
 			</fileset>
 		</move>
-		<delete dir="${activeobjects.dir}/doc/pdftmp"/>
+		<!-- <delete dir="${activeobjects.dir}/doc/pdftmp"/> -->
 	</target>
 	
 	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
