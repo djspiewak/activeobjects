@@ -245,9 +245,9 @@
 		<loadfile property="index.toc" srcfile="${activeobjects.dir}/doc/pdftmp/toc.rst"/>
 		
 		<concat destfile="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt">
-			<header>~~~~~~~~~~~~~
-ActiveObjects
-~~~~~~~~~~~~~
+			<header>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ActiveObjects ${activeobjects.version}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 </header>
 			<filelist dir="${activeobjects.dir}/doc" files="${index.toc}"/>
 		</concat>
