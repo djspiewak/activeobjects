@@ -1,0 +1,95 @@
+.. :mode=rest:
+
+Migrations
+==========
+
+Like most ORMs, ActiveObjects has the ability to auto-generate the database
+schema based on the structure of entities.  This feature allows the end developer
+to design the schema in an object-oriented fashion at a very high level.  This
+also avoids redundant information in the project infrustructure since there is
+no need to define the schema multiple times - once for the database and once in
+the entities_.
+
+To see this feature in action, consider the following entities::
+    
+    public interface Person extends Entity {
+        public String getName();
+        public void setName(String name);
+        
+        public int getAge();
+        public void setAge(int age);
+        
+        public URL getBlog();
+        public void setBlog(URL blog);
+        
+        @ManyToMany(Authorship.class)
+        public Book[] getBooks();
+    }
+    
+    public interface Authorship extends Entity {
+        public Person getAuthor();
+        public void setAuthor(Person author);
+        
+        public Book getBook();
+        public void setBook(Book book);
+    }
+    
+    public interface Book extends Entity {
+        public String getTitle();
+        public void setTitle(String title);
+        
+        @SQLType(Types.CLOB)
+        public String getText();
+        public void setText(String text);
+        
+        @ManyToMany
+        public Person[] getAuthors();
+    }
+
+We can generate the schema for *all* of these entities using the following code::
+    
+    EntityManager manager = ...
+    manager.migrate(Authorship.class);
+
+There is no need to explicitly specify all of the entities involved in the
+migration.  ActiveObjects will traverse the dependency tree and automatically
+determine which entities are required to satisfy the foreign keys in the
+entities being introspected.  Thus, it is only necessary to specify the roots of
+the dependency tree (in this case, ``Authorship``).  The ``EntityManager#migrate``
+method takes a varargs parameter, so the syntax for specifying additional root
+entities is quite concise.
+
+On the MySQL database, the DDL generated for the above code will look something
+like this (depending on the `name converters`_ in use)::
+    
+    CREATE TABLE people (
+        id INTEGER NOT NULL AUTO_INCREMENT,
+        name VARCHAR(255),
+        age INTEGER,
+        blog VARCHAR(255),
+        PRIMARY KEY(id)
+    );
+    
+    CREATE TABLE books (
+        id INTEGER NOT NULL AUTO_INCREMENT,
+        title VARCHAR(255),
+        text TEXT,
+        PRIMARY KEY(id)
+    );
+    
+    CREATE TABLE authorships (
+        id INTEGER NOT NULL AUTO_INCREMENT,
+        authorID INTEGER,
+        bookID INTEGER,
+        CONSTRAINT fk_authorships_authorID FOREIGN KEY (authorID) REFERENCES people(id),
+        CONSTRAINT fk_authorships_bookID FOREIGN KEY (bookID) REFERENCES books(id),
+        PRIMARY KEY(id)
+    );
+
+Note that this DDL is quite database-specific.  ActiveObjects will generate the
+appropriate DDL for whichever database you are using (assuming it is among the
+`supported databases`_).
+
+.. _entities: entities.html
+.. _name converters: ../cookbook/custom-naming-conventions.html
+.. _supported databases: ../supported-databases.html

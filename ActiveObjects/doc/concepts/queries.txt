@@ -1,0 +1,67 @@
+.. :mode=rest:
+
+Queries
+=======
+
+Unlike many other ORMs, ActiveObjects does not define its own query language.
+The logic behind this is that parsing queries and attempting to recompile them
+into database-specific SQL is ultimately a flawed goal.  End developers are
+forced to learn an entirely new query language, one which may have subtle
+differences from the ANSI standard.  Additionally, odd errors can appear in
+the generated SQL as a fault of the ORM query compiler.  These errors are often
+hard to track down and even more difficult to fix.  In short, an ORM-specific
+query language is an unnecessary complication.
+
+Unfortunately, it's not possible to simply allow end developers to run arbitrary
+SQL statements and assume that the results will magically be translated into
+the relevant ORM artifacts.  What's more, many developers do not *want* to worry
+about SQL.  So there is a question regarding how the database should be queried
+and how the results are translated back into the ORM.  If the decision is not to
+use a custom query language, then the only middle-ground available is to define
+some sort of internal DSL.
+
+Rails's ActiveRecord defines a fair number of constructs as part of the ``find``
+method (associated with every record).  These constructs form a DSL of sorts,
+where the runtime result is an auto-generated query.  However, Java's syntax is
+more constrained than Ruby's.  This makes it very difficult to design a DSL in
+the conventional sense using solely Java constructs.  One of the few techniques
+which exist for such a task is the "builder pattern".  The syntax ends up
+looking like the following::
+    
+    EntityManager manager = ...
+    
+    Query filter = Query.select().where("name = ?", "Daniel").order("name");
+    Person[] people = manager.find(Person.class, filter);
+
+Of course, this can be collapsed still further::
+    
+    Person[] people = manager.find(Person.class, 
+        Query.select().where("name = ?").order("name"));
+
+Obviously, the Java language leaves much to be desired in the way of syntax
+flexibility.  The good news is that this verbosity is not required in most
+cases.  ``EntityManager`` defines a syntax sugar which allows simple querying
+without resorting to the ``Query`` builder::
+    
+    Person[] people = manager.find(Person.class, "name = ?", "Daniel");
+
+Notice that this syntax does not provide the flexibility of ordering the result
+set, but it also much more concise.  The above will be translated into the
+following SQL (depending on name converters and the primary key of ``Person``)::
+    
+    SELECT id FROM people WHERE name = ?
+
+This is actually a JDBC ``PreparedStatement`` with a single parameter.  The value
+passed to this parameter will be ``"Daniel"`` (as passed to the ``EntityManager#find``
+method).  There are a number of advantages to using prepared statements, most of
+which are beyond the scope of this documentation.  In a nutshell, the database
+is capable of performing a number of optimizations when using parameterized
+prepared statements.  Even more importantly, most `pool providers`_ will cache
+the compiled query, dramatically reducing the overhead involved in subsequent
+invocations of the same query (even with different parameters).  ActiveObjects
+uses prepared statements for *all* interaction with the database [#]_.
+
+.. [#] With the exception of migrations_
+
+.. _pool providers: ../cookbook/connection-pooling.html
+.. _migrations: migrations.html

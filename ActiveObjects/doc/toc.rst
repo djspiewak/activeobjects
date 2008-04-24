@@ -13,7 +13,7 @@
 		* `Fields <concepts/entities.html#fields>`_
 		* `Relationships <concepts/entities.html#relationships>`_
 		* `Convention Over Configuration <concepts/entities.html#convention-over-configuration>`_
-	* Queries
+	* `Queries <queries.txt>`_
 	* Migrations
 	* Types
 	* Caching
