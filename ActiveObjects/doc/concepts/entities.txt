@@ -134,7 +134,6 @@ Thus, we need to annotate our method to explicitly specify the field to which
 it corresponds::
     
     public interface Website extends Entity {
-        
         @Accessor("url")
         public URL getURL();
         

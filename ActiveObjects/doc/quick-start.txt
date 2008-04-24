@@ -19,7 +19,7 @@ CLASSPATH.  The most recent release of ActiveObjects can always be found on
 java.net:
 
     https://activeobjects.dev.java.net/servlets/ProjectDocumentList
-	
+    
 ActiveObjects is available in both tarball and zip archives, so select whichever
 you prefer (tarball is usually more compressed).  Once downloaded, extract the
 archive onto your filesystem.
@@ -41,9 +41,9 @@ There is no need to load the driver manually or make any sort of call to
 ``Class.forName(...)``, ActiveObjects will handle this automatically.  For
 example, when using ActiveObjects with a MySQL database, the CLASSPATH might
 look something like this::
-	
-	lib/activeobjects-1.0.jar:lib/mysql-connector-java-5.1.5-bin.jar
-	
+    
+    lib/activeobjects-1.0.jar:lib/mysql-connector-java-5.1.5-bin.jar
+    
 (substitute the appropriate JAR file if you are using a different database)
 
 .. _`core classes`: /api/overview.html
@@ -65,9 +65,9 @@ with a specific database.  Just add the JAR for a supported connection pool to
 the CLASSPATH and ActiveObjects will automatically make use of it.  After 
 configuring your CLASSPATH to use ActiveObjects with MySQL and DBPool_, the 
 result might look like this::
-	
-	lib/activeobjects-1.0.jar:lib/mysql-connector-java-5.1.5-bin.jar:lib/DBPool_v4.8.3.jar
-	
+    
+    lib/activeobjects-1.0.jar:lib/mysql-connector-java-5.1.5-bin.jar:lib/DBPool_v4.8.3.jar
+    
 More information regarding supported connection pools and selection priority is 
 available in the list of `supported connection pools`_.
 
@@ -93,10 +93,10 @@ Creating an instance of ``EntityManager`` is as easy as calling a constructor.
 ActiveObjects avoids (as much as possible) the Java "enterprisey" pattern of
 making everything an interface and relying on factories for instantiation.  This
 drastically simplifies the instantiation and configuration process::
-	
-	EntityManager manager = 
-			new EntityManager("jdbc:mysql://localhost/my_db", "db_user", "password");
-	
+    
+    EntityManager manager = 
+            new EntityManager("jdbc:mysql://localhost/my_db", "db_user", "password");
+    
 This is all the configuration ActiveObjects *requires* to provide full
 functionality.  ActiveObjects is able to determine the appropriate JDBC driver
 and database type just from the JDBC URI.  Once it has made this inference,
@@ -127,32 +127,32 @@ generates a proxy instance for the entity which handles all method calls and
 performs operations upon the database.  What all this means is that startelingly
 little code is required to interact with a database.  Here we show two basic
 entities with a few fields and a one-to-many relationship between them::
-	
-	public interface Person extends Entity {
-	    public String getFirstName();
-		public void setFirstName(String firstName);
-		
-	    public String getLastName();
-		public void setLastName(String lastName);
-		
-		public int getAge();
-		public void setAge(int age);
-		
-		public Company getCompany();
-		public void setCompany(Company company);
-	}
-	
-	public interface Company extends Entity {
-		public String getName();
-		public void setName(String name);
-		
-		public URL getWebsite();
-		public void setWebsite(URL website);
-		
-		@OneToMany
-		public Person[] getEmployees();
-	}
-	
+    
+    public interface Person extends Entity {
+        public String getFirstName();
+        public void setFirstName(String firstName);
+        
+        public String getLastName();
+        public void setLastName(String lastName);
+        
+        public int getAge();
+        public void setAge(int age);
+        
+        public Company getCompany();
+        public void setCompany(Company company);
+    }
+    
+    public interface Company extends Entity {
+        public String getName();
+        public void setName(String name);
+        
+        public URL getWebsite();
+        public void setWebsite(URL website);
+        
+        @OneToMany
+        public Person[] getEmployees();
+    }
+    
 At no point in this code do we actually specify any tables or fields.
 ActiveObjects inspects the structure of the ``Person`` and ``Company`` entities
 at runtime and is able to infer the corresponding tables.  More than that, the
@@ -162,16 +162,16 @@ would correspond with the following schema (assuming the default
 `name conventions`_):
 
  * **person**
- 	* ``id`` : ``INTEGER``
- 	* ``firstName`` : ``VARCHAR(255)``
-	* ``lastName`` : ``VARCHAR(255)``
-	* ``age`` : ``INTEGER``
-	* ``companyID`` : ``INTEGER`` *(foreign key on company(id))*
+     * ``id`` : ``INTEGER``
+     * ``firstName`` : ``VARCHAR(255)``
+    * ``lastName`` : ``VARCHAR(255)``
+    * ``age`` : ``INTEGER``
+    * ``companyID`` : ``INTEGER`` *(foreign key on company(id))*
  * **company**
- 	* ``id`` : ``INTEGER``
- 	* ``name`` : ``VARCHAR(255)``
-	* ``website`` : ``VARCHAR(255)``
-	
+     * ``id`` : ``INTEGER``
+     * ``name`` : ``VARCHAR(255)``
+    * ``website`` : ``VARCHAR(255)``
+    
 All of these field and type mappings are inferred for you by the framework.  So
 when you call ``Person#getFirstName()``, it will perform a ``SELECT`` on the
 database and retrieve the value of the ``firstName`` field as a Java ``String``.
@@ -191,30 +191,30 @@ generate DDL statements for every `supported database`_ by inspecting the
 entity interfaces and inferring the appropriate tables, fields and types.  To
 make use of this feature, simply call the ``migrate(...)`` method on the
 ``EntityManager`` instance::
-	
-	EntityManager manager = ...
-	manager.migrate(Person.class, Company.class);
-	
+    
+    EntityManager manager = ...
+    manager.migrate(Person.class, Company.class);
+    
 When working with the MySQL database, ActiveObjects will generate DDL something
 like the following for the given migration::
-	
-	CREATE TABLE company (
-		id INTEGER AUTO_INCREMENT NOT NULL,
-		name VARCHAR(255),
-		website VARCHAR(255),
-		PRIMARY KEY(id)
-	);
-	
-	CREATE TABLE person (
-		id INTEGER AUTO_INCREMENT NOT NULL,
-		firstName VARCHAR(255),
-		lastName VARCHAR(255),
-		age INTEGER,
-		companyID INTEGER,
-		CONSTRAINT fk_person_companyID FOREIGN KEY (companyID) REFERENCS company (id),
-		PRIMARY KEY(id)
-	);
-	
+    
+    CREATE TABLE company (
+        id INTEGER AUTO_INCREMENT NOT NULL,
+        name VARCHAR(255),
+        website VARCHAR(255),
+        PRIMARY KEY(id)
+    );
+    
+    CREATE TABLE person (
+        id INTEGER AUTO_INCREMENT NOT NULL,
+        firstName VARCHAR(255),
+        lastName VARCHAR(255),
+        age INTEGER,
+        companyID INTEGER,
+        CONSTRAINT fk_person_companyID FOREIGN KEY (companyID) REFERENCS company (id),
+        PRIMARY KEY(id)
+    );
+    
 Notice how the DDL has been reordered to ensure table creation according to
 dependencies.  The migrations mechanism performs a topological sort on the DDL
 prior to execution, ensuring that no errors are introduced through subtle
@@ -244,13 +244,13 @@ Creating Data
 
 This example shows how we can create a new row in the ``person`` table (where 
 ``manager`` is an instance of ``EntityManager`` as created above)::
-	
-	Person me = manager.create(Person.class);
-	me.setFirstName("Daniel");
-	me.setLastName("Spiewak");
-	me.setAge(20);
-	me.save();
-	
+    
+    Person me = manager.create(Person.class);
+    me.setFirstName("Daniel");
+    me.setLastName("Spiewak");
+    me.setAge(20);
+    me.save();
+    
 We have to ask ``EntityManager`` to create our new instance of ``Person``.  This
 just allows the framework to perform the appropriate ``INSERT`` as well as
 create the dynamic interface proxy.  Once that step is done, we can use the
@@ -261,23 +261,23 @@ you are free to treat it as such.
 
 Here's a slightly more complicated example involving both entity types and a
 relationship::
-	
-	Company google = manager.create(Company.class);
-	google.setName("Google");
-	google.setWebsite(new URL("http://www.google.com"));
-	google.save();
-	
-	Person me = manager.create(Person.class);
-	me.setFirstName("Daniel");
-	me.setLastName("Spiewak");
-	me.setCompany(google);
-	me.save();
-	
-	Person me = manager.create(Person.class);
-	me.setFirstName("Christopher");
-	me.setLastName("Spiewak");
-	me.setCompany(google);
-	me.save();
+    
+    Company google = manager.create(Company.class);
+    google.setName("Google");
+    google.setWebsite(new URL("http://www.google.com"));
+    google.save();
+    
+    Person me = manager.create(Person.class);
+    me.setFirstName("Daniel");
+    me.setLastName("Spiewak");
+    me.setCompany(google);
+    me.save();
+    
+    Person me = manager.create(Person.class);
+    me.setFirstName("Christopher");
+    me.setLastName("Spiewak");
+    me.setCompany(google);
+    me.save();
 
 ActiveObjects automatically converts the ``google`` entity into the corresponding
 ``id`` value when saving the data into the database.  There's no tricks to worry
@@ -293,12 +293,12 @@ Of course, once the data is in the database, we may want to get it *out* again.
 This is accomplished just as easily as the entity creations demonstrated above.
 Here's a simple example which retrieves all ``Person`` entities with the last
 name "Spiewak" and prints their full names::
-	
-	Person[] people = manager.find(Person.class, "lastName = ?", "Spiewak");
-	for (Person p : people) {
-		System.out.println(p.getFirstName() + " " + p.getLastName());
-	}
-	
+    
+    Person[] people = manager.find(Person.class, "lastName = ?", "Spiewak");
+    for (Person p : people) {
+        System.out.println(p.getFirstName() + " " + p.getLastName());
+    }
+    
 Note the use of `prepared statements`_ in the query.  ActiveObjects relies on
 prepared statements for all of its queries, allowing vastly improved performance
 (especially in conjunction with connection pooling).  The added advantage of
@@ -312,12 +312,12 @@ retrieving the related entities.  For example, we may start with a ``Company``
 instance and print out a list of all of the employees by name.  We can accomplish
 this easily using the ``getEmployees()`` method (declared in the ``Company``
 entity)::
-	
-	Company google = ...
-	Person[] employees = google.getEmployees();
-	for (Person p : employees) {
-		System.out.println(p.getFirstName() + " " + p.getLastName());
-	}
+    
+    Company google = ...
+    Person[] employees = google.getEmployees();
+    for (Person p : employees) {
+        System.out.println(p.getFirstName() + " " + p.getLastName());
+    }
 
 Notice that we actually get an array of related entities, not a ``Set`` or a
 ``List``.  This makes dealing with relationships far easier, as well as allowing
