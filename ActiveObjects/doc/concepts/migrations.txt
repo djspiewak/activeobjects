@@ -93,3 +93,72 @@ appropriate DDL for whichever database you are using (assuming it is among the
 .. _entities: entities.html
 .. _name converters: ../cookbook/custom-naming-conventions.html
 .. _supported databases: ../supported-databases.html
+
+
+Schema Refactoring
+------------------
+
+When working with Java classes, most IDEs allow for refactoring and incremental
+changes to the class definitions.  Methods are often added, changed or removed
+long after the class was initially created.  Thanks to the marvels of refactoring,
+this process rarely breaks existing code.  Theoretically, we can do the same
+thing with database schemata.  It should be possible to create an initial schema,
+add some data to the tables and then add a field to an existing table *without*
+losing all of the existing data.
+
+Most databases support this sort of "schema refactoring" through the use of
+highly database-specific DDL statements.  For example, we may want to modify the
+``people`` table to use a ``firstName`` and ``lastName`` field, rather than just
+a ``name``.  On MySQL, this can be accomplished using the following statements
+(assuming that the table already exists as defined above)::
+    
+    ALTER TABLE people DROP COLUMN name;
+    ALTER TABLE people ADD COLUMN firstName VARCHAR(255);
+    ALTER TABLE people ADD COLUMN lastName VARCHAR(255);
+
+These statements preserve almost all of the data which had been in the ``people`` 
+table.  The problem with this approach is two-fold:
+
+ * Database-specific syntax which is hard to remember
+ * Must manually sync entity model and schema after each refactoring
+
+The migrations mechanism in ActiveObjects provides all of the flexibility required
+to auto-generate these statements without any further input from the developer.
+In fact, all that is required is to change the entity model.  ActiveObjects
+introspects the existing database schema and detects what changes are required.
+Let's assume that we're still working with the original schema fully defined
+previously with ``CREATE TABLE`` statements.  We can refactor this schema to
+use ``firstName``/``lastName`` simply by refactoring the ``Person`` entity::
+    
+    public interface Person extends Entity {
+        public String getFirstName();
+        public void setFirstName(String firstName);
+        
+        public String getLastName();
+        public void setLastName(String lastName);
+        
+        ...
+    }
+
+The remainder of the ``Person`` definition is identical to what was given
+previously.  We can run the migration using the same code as before::
+    
+    manager.migrate(Authorship.class);
+
+Before generating the schema, ActiveObjects gets a list of all of the tables in
+the database.  It then checks the field signatures for all of these tables,
+ensuring that they match the infered signatures from the entity model.  In this
+case, the migrations mechanism will detect that the ``people`` table has a
+field - ``name`` - which is not included in the entity model.  Additionally, the
+entity model has two fields - ``firstName`` and ``lastName`` - which are not
+included in the database.  Based on this determination, ActiveObjects is able to
+generate precisely the same statements given above to modify the existing
+``people`` table to use ``firstName``/``lastName`` rather than just ``name``.
+
+Unfortunately, the migrations algorithm is not infallible.  It can only compare
+against the schema it is able to detect.  Furthermore, it can only generate
+DDL statements supported by the underlying database.  This is a particular
+limitation of Apache Derby, which does not allow column changing (e.g. from type
+``INTEGER`` to type ``BIGINTEGER``).  Also, because of the inherantly automated
+nature of the merge, sometimes the changes can produce undesirable results.
+Always use migrations with care, and remember to keep your data backed-up.

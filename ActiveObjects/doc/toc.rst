@@ -14,7 +14,7 @@
 		* `Relationships <concepts/entities.html#relationships>`_
 		* `Convention Over Configuration <concepts/entities.html#convention-over-configuration>`_
 	* `Queries <queries.txt>`_
-	* Migrations
+	* `Migrations <migrations.txt>`_
 	* Types
 	* Caching
 	* Lucene Integration
