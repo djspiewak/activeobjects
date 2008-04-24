@@ -335,7 +335,7 @@ using code like the following::
         }
     }
 
-This code will retrieve all of the ``Book``(s) which have been authored by the
+This code will retrieve all of the ``Book`` entities which have been authored by the
 ``Person`` represented by the ``me`` instance.  It will then iterate over these
 books, printing out how many authors it has, as well as all of their names
 (indented by tabs).  Notice how we never actually see the ``Authorship`` entity
