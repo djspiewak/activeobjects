@@ -310,7 +310,7 @@ ActiveObjects
 				<include name="ActiveObjects.pdf"/>
 			</fileset>
 		</move>
-		<!-- <delete dir="${activeobjects.dir}/doc/pdftmp"/> -->
+		<delete dir="${activeobjects.dir}/doc/pdftmp"/>
 	</target>
 	
 	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
