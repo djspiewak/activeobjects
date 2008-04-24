@@ -216,6 +216,8 @@
 		<echo level="info" message="Preprocessing ReStructuredText..."/>
 		
 		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
+		
+		<delete file="${activeobjects.dir}/doc/pdftmp/toc.rst"/>
 		<copy file="${activeobjects.dir}/doc/toc.rst" todir="${activeobjects.dir}/doc/pdftmp"/>
 		
 		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
@@ -243,7 +245,8 @@
 			<substitution expression=""/>
 		</replaceregexp>
 		<loadfile property="index.toc" srcfile="${activeobjects.dir}/doc/pdftmp/toc.rst"/>
-		
+
+		<delete file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt"/>
 		<concat destfile="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt">
 			<header>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ActiveObjects ${activeobjects.version}
@@ -254,6 +257,7 @@ ActiveObjects ${activeobjects.version}
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" token=".. :mode=rest:" value=""/>
 		
 		<echo level="info" message="Building LaTeX..."/>
+		<delete file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex"/>
 		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="python" 
 				input="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" 
 				output="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex"
@@ -264,9 +268,29 @@ ActiveObjects ${activeobjects.version}
 			<arg value="--use-latex-footnotes"/>
 		</exec>
 		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>%___________________________________________________________________________</replacetoken>
+			<replacevalue></replacevalue>
+		</replace>
+		
 		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<regexp pattern="\\href\{([^}]|\\\})+\}"/>
 			<substitution expression=""/>
+		</replaceregexp>
+		
+		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="(\\pdfbookmark\[\d\]\{.*?\}\{.*?\}[\n\r]{2}){2}"/>
+			<substitution expression="\1"/>
+		</replaceregexp>
+		
+		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="(\\hypertarget\{.*?\}\{\}\s+){2,3}"/>
+			<substitution expression="\1"/>
+		</replaceregexp>
+		
+		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="(\\label\{.*?\}[\n\r]{2}){2}"/>
+			<substitution expression="\1"/>
 		</replaceregexp>
 		
 		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
@@ -296,15 +320,24 @@ ActiveObjects ${activeobjects.version}
 		
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<replacetoken>]{hyperref}</replacetoken>
-			<replacevalue>,bookmarks=true]{hyperref}</replacevalue>
+			<replacevalue>,bookmarks=true,pdftex=true]{hyperref}</replacevalue>
 		</replace>
 		
 		<echo level="info" message="Building PDF..."/>
+		
 		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" 
 			output="${activeobjects.dir}/doc/pdftmp/pdflatex.log"
 			logError="yes">
 			<arg value="ActiveObjects.tex"/>
 		</exec>
+		
+		<!-- second run for cross-references -->
+		<exec dir="${activeobjects.dir}/doc/pdftmp" executable="pdflatex" 
+			output="${activeobjects.dir}/doc/pdftmp/pdflatex.log"
+			logError="yes">
+			<arg value="ActiveObjects.tex"/>
+		</exec>
+		
 		<move todir="${www.path}">
 			<fileset dir="${activeobjects.dir}/doc/pdftmp">
 				<include name="ActiveObjects.pdf"/>
