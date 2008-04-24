@@ -117,7 +117,7 @@
 		<!-- build index.html -->
 		<copy tofile="${activeobjects.dir}/doc/index.html" file="${activeobjects.dir}/doc/meta/index-template.html"/>
 		<exec dir="${activeobjects.dir}/doc" executable="python">
-			<arg value="${docutils.path}${file.separator}tools${file.separator}rst2html.py"/>
+			<arg value="${docutils.path}${file.separator}rst2html.py"/>
 			<arg value="--template=meta${file.separator}toc-template.txt"/>
 			<arg value="toc.rst"/>
 			<arg value="index-toc.html"/>
@@ -172,7 +172,7 @@
 		
 		<!-- build the rest -->
 		<exec dir="${activeobjects.dir}/doc" executable="python">
-			<arg value="${docutils.path}${file.separator}tools${file.separator}buildhtml.py"/>
+			<arg value="${docutils.path}${file.separator}buildhtml.py"/>
 			<arg value="--date"/>
 			<arg value="--link-stylesheet"/>
 			<arg value="--stylesheet=/style.css"/>
@@ -258,7 +258,7 @@ ActiveObjects
 				input="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" 
 				output="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex"
 				logError="yes">
-			<arg value="${docutils.path}${file.separator}tools${file.separator}rst2latex.py"/>
+			<arg value="${docutils.path}${file.separator}rst2latex.py"/>
 			<arg value="--use-verbatim-when-possible"/>
 			<arg value="--graphicx-option=pdftex"/>
 			<arg value="--use-latex-footnotes"/>
