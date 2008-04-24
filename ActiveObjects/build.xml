@@ -216,15 +216,8 @@
 		<echo level="info" message="Preprocessing ReStructuredText..."/>
 		
 		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
-		<copy todir="${activeobjects.dir}/doc/pdftmp" flatten="no">
-			<fileset dir="${activeobjects.dir}/doc">
-				<include name="**/*.png"/>
-				<include name="**/*.jpg"/>
-				<include name="**/*.gif"/>
-			</fileset>
-		</copy>
-		
 		<copy file="${activeobjects.dir}/doc/toc.rst" todir="${activeobjects.dir}/doc/pdftmp"/>
+		
 		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
 			<regexp pattern=".*?&lt;"/>
 			<substitution expression=""/>
@@ -282,6 +275,11 @@ ActiveObjects
 		</replaceregexp>
 		
 		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<regexp pattern="\\includegraphics\{.*?\}"/>
+			<substitution expression=""/>
+		</replaceregexp>
+		
+		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<regexp pattern="Duplicate explicit target name: ``.+''\."/>
 			<substitution expression=""/>
 		</replaceregexp>
@@ -312,7 +310,7 @@ ActiveObjects
 				<include name="ActiveObjects.pdf"/>
 			</fileset>
 		</move>
-		<delete dir="${activeobjects.dir}/doc/pdftmp"/>
+		<!-- <delete dir="${activeobjects.dir}/doc/pdftmp"/> -->
 	</target>
 	
 	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
