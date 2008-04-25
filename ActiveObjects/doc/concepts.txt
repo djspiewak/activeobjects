@@ -29,6 +29,8 @@ delegates anything database-specific to the relevant implementation of
 ``DatabaseProvider``.  Most common use-cases for queries and high-level entity
 manipulation can be satisfied by this class.
 
+.. pdf-remove-begin
+
 * Entities_
     * Fields_
     * Relationships_
@@ -38,7 +40,9 @@ manipulation can be satisfied by this class.
 * Types_
 * Caching
 * Lucene Integration
- 
+
+.. pdf-remove-end
+
 .. _Entities: concepts/entities.html
 .. _Fields: concepts/entities.html#fields
 .. _Relationships: concepts/entities.html#relationships

@@ -224,26 +224,32 @@
 			<regexp pattern=".*?&lt;"/>
 			<substitution expression=""/>
 		</replaceregexp>
+		
 		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
 			<regexp pattern="&gt;.*?"/>
 			<substitution expression=""/>
 		</replaceregexp>
+		
 		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
 			<regexp pattern="`_$"/>
 			<substitution expression=""/>
 		</replaceregexp>
+		
 		<replaceregexp byline="yes" file="${activeobjects.dir}/doc/pdftmp/toc.rst">
 			<regexp pattern=".*?([^x]t|[^t])$"/>
 			<substitution expression=""/>
 		</replaceregexp>
+		
 		<replaceregexp file="${activeobjects.dir}/doc/pdftmp/toc.rst">
 			<regexp pattern="\.txt"/>
 			<substitution expression="\.txt,"/>
 		</replaceregexp>
+		
 		<replaceregexp file="${activeobjects.dir}/doc/pdftmp/toc.rst">
 			<regexp pattern="[\n\s]+"/>
 			<substitution expression=""/>
 		</replaceregexp>
+		
 		<loadfile property="index.toc" srcfile="${activeobjects.dir}/doc/pdftmp/toc.rst"/>
 
 		<delete file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt"/>
@@ -254,7 +260,13 @@ ActiveObjects ${activeobjects.version}
 </header>
 			<filelist dir="${activeobjects.dir}/doc" files="${index.toc}"/>
 		</concat>
+		
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt" token=".. :mode=rest:" value=""/>
+		
+		<replaceregexp flags="s" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.txt">
+			<regexp pattern="\.\. pdf-remove-begin.+\.\. pdf-remove-end."/>
+			<substitution expression=""/>
+		</replaceregexp>
 		
 		<echo level="info" message="Building LaTeX..."/>
 		<delete file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex"/>
