@@ -28,7 +28,7 @@ because of its advanced caching mechanisms.
 .. _overly-complex SQL: query-gen_
 
 .. [1] Where "operation" is a search, a display of a page, things of that order.
-	Not necessarily a single SQL query.
+   Not necessarily a single SQL query.
 
 
 Lazy Loading
@@ -40,15 +40,15 @@ are not retrieved from the database until first access, after which they are cac
 and quickly retrieved from the cache store.  This allows queries which return
 massive numbers of entities without incurring a severe performance overhead.  For
 example::
-	
-	public interface Person extends Entity {
-		public String getName();
-		public void setName(String name);
-	}
-	
-	// ...
-	Person[] people = manager.find(Person.class);
-	
+   
+   public interface Person extends Entity {
+      public String getName();
+      public void setName(String name);
+   }
+   
+   // ...
+   Person[] people = manager.find(Person.class);
+   
 One can easily see how this seemingly-innocuous code would cause huge problems
 in an ORM with exclusively eager loading.  Perhaps the ``person`` table contains
 hundreds of thousands of entries.  If field values were eagerly loaded, then a
@@ -86,14 +86,14 @@ Eager Loading
 
 Of course, there are many cases when lazy loading is far *less* efficient than
 eager loading.  For instance, if we extend the previous example just slightly::
-	
-	// ...
-	Person[] people = manager.find(Person.class);
-	
-	for (Person person : people) {
-		System.out.println(person.getName());
-	}
-	
+   
+   // ...
+   Person[] people = manager.find(Person.class);
+   
+   for (Person person : people) {
+      System.out.println(person.getName());
+   }
+   
 Suddenly this code has become hiddeously inefficient.  This is because
 ActiveObjects will not load the ``name`` value from each row in the ``person``
 table until the ``getName()`` method is called.  Of course, the ``getName()``
@@ -122,9 +122,9 @@ Query Generation
 When designing an ORM, one must consider how to generate SQL statements and what
 form they will take.  It turns out to be very difficult to generate natural SQL
 in an automated system.  Take the following query as an example::
-	
-	SELECT id,name FROM person GROUP BY name
-	
+   
+   SELECT id,name FROM person GROUP BY name
+   
 This is a fairly natural query for someone to write.  It will produce a result
 set of two columns - ``id`` and ``name`` - with the rows grouped by the values
 of their ``name`` fields.  Notice how all of the objects are referred to by their
@@ -140,9 +140,9 @@ this luxury.  Often times it is easiest for an ORM to simply mark the fields it
 wants from a query and then alias *everything* to something auto-generated and
 guarenteed unique per-query.  This is how such an ORM might generate the above
 SQL::
-	
-	select tb0.id as pk0,tb0.name as fl0 from person as tb0 group by tb0.fl0
-	
+   
+   select tb0.id as pk0,tb0.name as fl0 from person as tb0 group by tb0.fl0
+   
 Now when the ORM goes to traverse the result set, it is able to easily determine
 which fields are relevant just based on the auto-generated names.
 
@@ -168,20 +168,20 @@ entire library which actually synthesize field labels and aliases, both of which
 are edge cases and only invoked when name clashes cannot be resolved through other
 means.  Consider the following code (assuming the ``Person`` entity had a few
 more fields)::
-	
-	// ...
-	Person p = manager.get(Person.class, 1);
-	String name = p.getName();
-	
-	p.setName(name + " Jr.");
-	p.setAge(p.getAge() + 1);
-	p.save();
-	
+   
+   // ...
+   Person p = manager.get(Person.class, 1);
+   String name = p.getName();
+   
+   p.setName(name + " Jr.");
+   p.setAge(p.getAge() + 1);
+   p.save();
+   
 This code will generate the following SQL::
-	
-	SELECT name FROM person
-	UPDATE person SET name = ?, age = ?
-	
+   
+   SELECT name FROM person
+   UPDATE person SET name = ?, age = ?
+   
 These queries are both extremely performant and easy to debug.  It is easy to
 see when ActiveObjects has queried the wrong thing because the queries it
 generates are precisely the same as if you were writing the SQL by hand.
