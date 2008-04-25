@@ -15,7 +15,7 @@
 		* `Convention Over Configuration <concepts/entities.html#convention-over-configuration>`_
 	* `Queries <concepts/queries.txt>`_
 	* `Migrations <concepts/migrations.txt>`_
-	* Types
+	* `Types <types.txt>`_
 	* Caching
 	* Lucene Integration
  * Cookbook

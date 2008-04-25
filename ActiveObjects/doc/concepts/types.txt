@@ -1,0 +1,200 @@
+.. :mode=rest:
+
+Types
+=====
+
+It's surprising how *seldom* the subject of types comes up in discussions about
+object-relational mapping.  Most ORMs are content to simply use a hard-coded
+series of conditionals to determine which types to use in different scenarios.
+Of course, it's a bit useless to talk about why the subject is interesting if
+you don't know how types relate to object-relational mapping in the general
+sense.
+
+An ORM has two primary functions.  Everything above and beyond this is syntax.
+
+ # Convert database value into language value
+ # Convert language value into database value
+
+This may seem like an oversimplification, but while there is more *data* required
+than just the value, the underlying conceptual process remains the same for any
+ORM operation.  If we can consider an ORM as just a composite of
+these two primitive operations, it is possible to examine in detail methods for
+improving some of these more complex operations without introducing additional
+complexity in the implementation.  One such area which can be improved is that
+of type conversion.
+
+To convert from one value to another - be it database-to-language or visa versa -
+one must derive the logic necessary to semantically convert the data.  This
+logic is (naturally) defined by the types at both ends.  This is quite reasonable
+as *any* conversion between two data forms must be driven by the underlying
+types.
+
+As an example, let's consider mapping between a ``VARCHAR(255)`` field in the
+database and a corresponding ``String`` field in Java.  This is a fairly natural
+conversion to perform.  In fact, it is so natural that JDBC provides a method
+which performs the operation for us::
+    
+    ResultSet res = ...
+    String field = res.getString("field");
+
+JDBC defines a number of such conversions both to and from the database.  For
+the most part, these operations are only defined for primitive values such as
+``int``, ``boolean`` and ``String``.  There are some conversions for what we
+would normally think of as "complex types" such as ``Date``, but for the most
+part, the interesting mapping is going to need to be handled explicitly by the
+ORM.
+
+An extremely common approach in ORMs nowadays is to have some code which looks
+like this (simplification)::
+    
+    private void putToDatabase(PreparedStatement stmt, int index, Object value) {
+        Class<?> type = value.getClass();
+        
+        if (type.equals(String.class)) {
+            stmt.setString(index, (String) value);
+        } else if (type.equals(Integer.class) || type.equals(int.class)) {
+            stmt.setInt(index, (Integer) value);
+        }
+        ...
+    }
+    
+    private Object pullFromDatabase(ResultSet res, String field, int type) {
+        switch (type) {
+            case Types.INTEGER:
+                return res.getInt(field);
+            
+            case Types.VARCHAR:
+                return res.getString(field);
+            
+            ...
+        }
+    }
+
+This is of course a gross simplification, but the underlying design principle is
+not far off.  A lot of ORMs (including early versions of ActiveObjects) have a
+lot of code which looks something like this.
+
+There are a lot of problems with this design.  First and foremost, it's extremely
+rigid.  If we want to add support for a  type even to our own ORM (not even 
+considering extensibility here) it would require picking appart our own code to
+find the magic conditionals to insert, praying that we don't break something in
+the process.  Of course, anyone *outside* the framework adding a type is
+completely out of the question.  The second problem is that there's a lot of
+wasted effort and duplicated code.  To qualify as a full-featured ORM, most
+designs would require four or five such methods as the ones shown above, most of
+them very much alike.  This reduces maintainability, introduces the potential
+for bugs, and makes the code very difficult to follow.  On the upside, it looks
+good on Ohloh!
+
+A better solution is to adopt an object-oriented type hierarchy, where each type
+is implemented by a different class and all of the details of bi-directional
+value conversion are handled within these classes, rather than inline in the
+selection routines.  In ActiveObjects, this design is implemented by two primary
+classes: ``TypeManager`` and ``DatabaseType``.
+
+Consider our new-and-improved conversion methods::
+
+    public void putToDatabase(PreparedStatement stmt, int index, Object value) {
+        TypeManager man = TypeManager.getInstance();
+        DatabaseType<?> type = man.getType(value.getClass());
+        
+        type.putToDatabase(index, stmt, value);
+    }
+    
+    public Object pullFromDatabase(ResultSet res, String field, Class<?> javaType) {
+        TypeManager man = TypeManager.getInstance();
+        DatabaseType<?> type = man.getType(javaType);
+        
+        return type.pullFromDatabase(null, res, javaType, field);
+    }
+
+The precise signatures for the methods in class ``DatabaseType`` are rather
+confused, but the example does carry the point across.  Instead of directly
+checking for type support and handling the conversion, we are delegating
+polymorphically to an instance of a *subclass* of ``DatabaseType``.
+
+For this simple example, it doesn't seem like we have saved a lot.  After all,
+the only steps we have taken just move the work of finding the appropriate type
+into ``TypeManager`` and the conversion logic into ``DatabaseType``.  But as it
+turns out, this simplifies the logic everywhere, *including* within
+``TypeManager``.  The implementation of ``getType(Class)`` is actually simple
+enough to reproduce with only minimal truncation::
+    
+    public <T> DatabaseType<T> getType(Class<T> javaType) {
+        DatabaseType<T> back = null;
+        
+        if (Common.typeInstanceOf(javaType, RawEntity.class)) {
+            return ...;      // return an instance of EntityType
+        }
+        
+        if (classIndex.containsKey(javaType)) {
+            return (DatabaseType<T>) classIndex.get(javaType);
+        }
+        
+        for (DatabaseType<?> type : types) {
+            if (type.isHandlerFor(javaType)) {
+                back = (DatabaseType<T>) type;
+                break;
+            }
+        }
+        
+        if (back != null) {
+            classIndex.put(javaType, back);
+        } else {
+            throw new RuntimeException("Unrecognized type: " + javaType.getName());
+        }
+        
+        return back;
+    }
+
+In truth, this could actually be much simpler.  It would work just as well to
+perform a linear search through the ``types`` list, returning the value if
+found, otherwise ``null``.  The logic behind all of the extra gobbly-gook is to
+improve performance through caching.  ActiveObjects calls ``getType(...)`` from
+just about all corners of the framework, so it is *extremely* important that its
+implementation be as fast as possible.
+
+Notice what is *not* included in this implementation: There's no Godzilla-sized
+``switch``-``case`` statement.  This is one of the advantages of an object-oriented
+solution.  Instead of a static list of supported types and their associated
+checks, we have a loop which dynamically checks against whatever types are
+available to the manager.  This means that we can easily add support for a new
+type that may not even be known to ActiveObjects at compile time.  For example,
+if we want to store ``Class`` values in the database using ActiveObjects::
+    
+    TypeManager.getInstance().addType(new ClassType());
+
+This is assuming of course that we have already implemented ``ClassType`` with
+the appropriate logic to map between instances of ``Class`` and whatever SQL
+type happens to correspond.  Now that this type is in place, we can use it in
+our entities::
+    
+    public interface Person extends Entity {
+        ...
+        
+        public Class<?> getFavoriteType();
+        public void setFavoriteType(Class<?> type);
+    }
+
+Even though ActiveObjects doesn't really bundle support for persisting values of
+type ``Class``, it will still be able to handle the ``Person`` entity (both for
+normal operations as well as migrations) thanks to the type we added earlier.
+
+This sort of type system is remarkably flexible.  This architecture has greatly
+reduced the amount of effort required even to maintain ActiveObjects itself.
+But its true power is most evident when it is applied to systems which require
+custom or even database-specific types.  As can be seen above, there system is
+extensible enough to accomodate virtually any use-case.
+
+
+Acknowledgement
+---------------
+
+In truth, the concept of an object-oriented type backend for use in an ORM is
+not original to the ActiveObjects project.  Most of the credit goes to
+`Charlie Savage`_ who `proposed the idea`_ as a way to improve upon the
+architecture of Rails's ActiveRecord ORM.  The ActiveObjects implementation does
+improve upon his original concept somewhat, but the core idea remains the same.
+
+.. _Charlie Savage: http://cfis.savagexi.com
+.. _proposed the idea: http://cfis.savagexi.com/articles/2007/08/11/making-rails-better-fixing-architecture-flaws-in-active-record
