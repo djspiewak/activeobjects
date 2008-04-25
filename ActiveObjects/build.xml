@@ -5,6 +5,8 @@
 	
 	<property file="${activeobjects.dir}/build.properties"/>
 	<property file="${activeobjects.dir}/build-internal.properties"/>
+
+	<property name="dist.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}"/>
 	
 	<target name="check-test">
 		<condition property="test-check-ok">
@@ -47,7 +49,7 @@
 	</target>
 	
 	<target name="install-docutils" depends="check-docutils" unless="docutils-check-ok">
-		<fail message="Docutils must be installed to build the website"/>
+		<fail message="Docutils must be installed to build the documentation"/>
 	</target>
 
 	<target name="check-ant">
@@ -68,8 +70,8 @@
 	</target>
 	
 	<target name="init-dist">
-		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src"/>
-		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/api"/>
+		<mkdir dir="${dist.path}/src"/>
+		<mkdir dir="${dist.path}/api"/>
 	</target>
 	
 	<target name="init-javadoc" unless="supress-javadoc-deletion">
@@ -386,20 +388,21 @@ ActiveObjects ${activeobjects.version}
 		<antcall target="build"/>
 		
 		<jar basedir="${activeobjects.dir}/bin" compress="${jar.compress}" 
-				destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/activeobjects-${activeobjects.version}.jar"/>
+				destfile="${dist.path}/activeobjects-${activeobjects.version}.jar"/>
 	</target>
 	
 	<target name="dist" depends="upgrade-ant,init-dist,jar" if="test-ant-ok">
-		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/api"/>
+		<property name="javadoc.intern.path" value="${dist.path}/api"/>
 		<property name="supress-javadoc-deletion" value="yes"/>
+		
 		<antcall target="javadoc"/>
 		
-		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src">
+		<copy todir="${dist.path}/src">
 			<fileset dir="${activeobjects.dir}/src">
 				<include name="**/*.java"/>
 			</fileset>
 		</copy>
-		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}">
+		<copy todir="${dist.path}">
 			<fileset dir="${activeobjects.dir}">
 				<include name="BUGS"/>
 				<include name="CONTRIBUTORS"/>
@@ -407,21 +410,21 @@ ActiveObjects ${activeobjects.version}
 			</fileset>
 		</copy>
 		
-		<property name="pdf-dest" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/documentation.pdf"/>
+		<property name="pdf-dest" value="${dist.path}/documentation.pdf"/>
 		<antcall target="pdf"/>
 		
-		<zip destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.zip">
+		<zip destfile="${dist.path}.zip">
 			<fileset id="productDir" dir="${activeobjects.dir}/dist">
 				<include name="activeobjects-${activeobjects.version}/**/*"/>
 			</fileset>
 		</zip>
 		
-		<tar destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar">
+		<tar destfile="${dist.path}.tar">
 			<fileset refid="productDir"/>
 		</tar>
-		<gzip src="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar" 
-				zipfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar.gz"/>
-		<delete file="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.tar"/>
+		<gzip src="${dist.path}.tar" 
+				zipfile="${dist.path}.tar.gz"/>
+		<delete file="${dist.path}.tar"/>
 		
 		<delete includeemptydirs="yes">
 			<fileset dir="${activeobjects.dir}/dist">
