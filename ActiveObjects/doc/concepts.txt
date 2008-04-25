@@ -29,17 +29,20 @@ delegates anything database-specific to the relevant implementation of
 ``DatabaseProvider``.  Most common use-cases for queries and high-level entity
 manipulation can be satisfied by this class.
 
- * Entities_
+* Entities_
     * Fields_
     * Relationships_
     * `Convention Over Configuration`_
- * Queries
- * Migrations
- * Types
- * Caching
- * Lucene Integration
+* Queries_
+* Migrations_
+* Types_
+* Caching
+* Lucene Integration
  
 .. _Entities: concepts/entities.html
 .. _Fields: concepts/entities.html#fields
 .. _Relationships: concepts/entities.html#relationships
 .. _Convention Over Configuration: concepts/entities.html#convention-over-configuration
+.. _Queries: concepts/queries.html
+.. _Migrations: concepts/migrations.html
+.. _Types: concepts/types.html

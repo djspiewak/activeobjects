@@ -1,14 +1,14 @@
- * `Why Another ORM? <why-another-orm.txt>`_
- * `Performance Considerations <performance-considerations.txt>`_
- * `Supported Databases <supported-databases.txt>`_
- * `Supported Connection Pools <supported-connection-pools.txt>`_
- * `Getting Help <getting-help.txt>`_
- * `Contributing <contributing.txt>`_
+* `Why Another ORM? <why-another-orm.txt>`_
+* `Performance Considerations <performance-considerations.txt>`_
+* `Supported Databases <supported-databases.txt>`_
+* `Supported Connection Pools <supported-connection-pools.txt>`_
+* `Getting Help <getting-help.txt>`_
+* `Contributing <contributing.txt>`_
  
 ---
 
- * `Quick Start <quick-start.txt>`_
- * `Concepts <concepts.txt>`_
+* `Quick Start <quick-start.txt>`_
+* `Concepts <concepts.txt>`_
  	* `Entities <concepts/entities.txt>`_
 		* `Fields <concepts/entities.html#fields>`_
 		* `Relationships <concepts/entities.html#relationships>`_
@@ -18,7 +18,7 @@
 	* `Types <concepts/types.txt>`_
 	* Caching
 	* Lucene Integration
- * Cookbook
+* Cookbook
  	* Different Databases
 	* Connection Pooling
 	* Alternative Connection Sources
@@ -38,7 +38,7 @@
 	* Legacy Databases
 	* Custom Primary Keys
 	* Schema Refactoring
- * Extending ActiveObjects
+* Extending ActiveObjects
  	* Adding a Database
 	* Adding a Connection Pool
 	* Adding a Type

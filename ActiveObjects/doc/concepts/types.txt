@@ -12,8 +12,8 @@ sense.
 
 An ORM has two primary functions.  Everything above and beyond this is syntax.
 
- # Convert database value into language value
- # Convert language value into database value
+#. Convert database value into language value
+#. Convert language value into database value
 
 This may seem like an oversimplification, but while there is more *data* required
 than just the value, the underlying conceptual process remains the same for any

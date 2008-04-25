@@ -119,8 +119,8 @@ a ``name``.  On MySQL, this can be accomplished using the following statements
 These statements preserve almost all of the data which had been in the ``people`` 
 table.  The problem with this approach is two-fold:
 
- * Database-specific syntax which is hard to remember
- * Must manually sync entity model and schema after each refactoring
+* Database-specific syntax which is hard to remember
+* Must manually sync entity model and schema after each refactoring
 
 The migrations mechanism in ActiveObjects provides all of the flexibility required
 to auto-generate these statements without any further input from the developer.

@@ -57,11 +57,11 @@ From this code alone, ActiveObjects is able to infer a series of mappings into
 the database.  These mappings are as follows (exact values will depend upon the
 name converters in use):
 
- * Interface ``Person`` corresponds to the ``people`` table in the database
- * Method ``Person#getName():String`` corresponds to a field ``name`` in the
-   ``people`` table of type ``VARCHAR(255)``
- * Method ``Person#setName(String):void`` corresponds to a field ``name`` in the
-   ``people`` table of type ``VARCHAR(255)``
+* Interface ``Person`` corresponds to the ``people`` table in the database
+* Method ``Person#getName():String`` corresponds to a field ``name`` in the
+  ``people`` table of type ``VARCHAR(255)``
+* Method ``Person#setName(String):void`` corresponds to a field ``name`` in the
+  ``people`` table of type ``VARCHAR(255)``
 
 Notice how the mappings for ``getName()`` and ``setName(String)`` are identical.
 This makes sense as we want ``getName()`` to *retrieve* the value of ``name``,
@@ -74,9 +74,9 @@ what it's worth, these mappings are infered at runtime, specifically durring the
 handling of the method call.  Thus, the control flow for an entity method call
 would look like this:
 
- # Receive proxied method call
- # Infer mapping for method
- # Perform relevant operation
+#. Receive proxied method call
+#. Infer mapping for method
+#. Perform relevant operation
 
 Mappings are not cached, but the inference is usually extremely quick, negating
 any advantage gained by the extra overhead.  There are actually a few more
@@ -215,9 +215,9 @@ Entities and fields are all well and good, but they are far less interesting in
 the absence of relations.  The concept of a relational database specifies three
 core relation types:
 
- * **One-to-One**
- * **One-to-Many**
- * **Many-to-Many**
+* **One-to-One**
+* **One-to-Many**
+* **Many-to-Many**
 
 Technically, these can all be described in terms of *one-to-many*, but that is
 neither here nor there.  ActiveObjects provides full support for querying these

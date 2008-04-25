@@ -161,15 +161,15 @@ with a corresponding field in the database.  For example, these two entities
 would correspond with the following schema (assuming the default 
 `name conventions`_):
 
- * **person**
-     * ``id`` : ``INTEGER``
-     * ``firstName`` : ``VARCHAR(255)``
+* **person**
+    * ``id`` : ``INTEGER``
+    * ``firstName`` : ``VARCHAR(255)``
     * ``lastName`` : ``VARCHAR(255)``
     * ``age`` : ``INTEGER``
     * ``companyID`` : ``INTEGER`` *(foreign key on company(id))*
- * **company**
-     * ``id`` : ``INTEGER``
-     * ``name`` : ``VARCHAR(255)``
+* **company**
+    * ``id`` : ``INTEGER``
+    * ``name`` : ``VARCHAR(255)``
     * ``website`` : ``VARCHAR(255)``
     
 All of these field and type mappings are inferred for you by the framework.  So
