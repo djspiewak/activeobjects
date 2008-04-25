@@ -69,10 +69,10 @@
 	
 	<target name="init-dist">
 		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src"/>
-		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc/api"/>
+		<mkdir dir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/api"/>
 	</target>
 	
-	<target name="init-doc" unless="supress-doc-deletion">
+	<target name="init-javadoc" unless="supress-javadoc-deletion">
 		<delete>
 			<fileset dir="${javadoc.path}">
 				<include name="**/*"/>
@@ -97,11 +97,11 @@
 				source="1.5" target="1.5" debug="yes"/>
 	</target>
 	
-	<target name="assign-doc-dir" unless="javadoc.intern.path">
+	<target name="assign-javadoc-dir" unless="javadoc.intern.path">
 		<property name="javadoc.intern.path" value="${javadoc.path}"/>
 	</target>
 	
-	<target name="doc" depends="upgrade-ant,init-doc,assign-doc-dir" if="test-ant-ok">
+	<target name="javadoc" depends="upgrade-ant,init-javadoc,assign-javadoc-dir" if="test-ant-ok">
 		<javadoc sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
 		 		windowtitle="ActiveObjects: Javadoc" access="protected" overview="src/overview.html">
 			<packageset dir="${activeobjects.dir}/src">
@@ -210,8 +210,12 @@
 			</fileset>
 		</copy>
 	</target>
+	
+	<target name="assign-pdf-dest" unless="pdf-dest">
+		<property name="pdf-dest" value="${www.path}/ActiveObjects.pdf"/>
+	</target>
 		
-	<target name="pdf" depends="install-docutils" if="docutils-check-ok">
+	<target name="pdf" depends="install-docutils,assign-pdf-dest" if="docutils-check-ok">
 		<echo level="info" message="Preprocessing ReStructuredText..."/>
 		
 		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
@@ -364,11 +368,7 @@ ActiveObjects ${activeobjects.version}
 			<arg value="ActiveObjects.tex"/>
 		</exec>
 		
-		<move todir="${www.path}">
-			<fileset dir="${activeobjects.dir}/doc/pdftmp">
-				<include name="ActiveObjects.pdf"/>
-			</fileset>
-		</move>
+		<move file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.pdf" tofile="${pdf-dest}"/>
 		<delete dir="${activeobjects.dir}/doc/pdftmp"/>
 	</target>
 	
@@ -390,9 +390,9 @@ ActiveObjects ${activeobjects.version}
 	</target>
 	
 	<target name="dist" depends="upgrade-ant,init-dist,jar" if="test-ant-ok">
-		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc/api"/>
-		<property name="supress-doc-deletion" value="yes"/>
-		<antcall target="doc"/>
+		<property name="javadoc.intern.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/api"/>
+		<property name="supress-javadoc-deletion" value="yes"/>
+		<antcall target="javadoc"/>
 		
 		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/src">
 			<fileset dir="${activeobjects.dir}/src">
@@ -406,12 +406,9 @@ ActiveObjects ${activeobjects.version}
 				<include name="LICENSE"/>
 			</fileset>
 		</copy>
-		<copy todir="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/doc">
-			<fileset dir="${activeobjects.dir}/doc">
-				<include name="**/*.txt"/>
-				<exclude name="meta/**/*"/>
-			</fileset>
-		</copy>
+		
+		<property name="pdf-dest" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}/documentation.pdf"/>
+		<antcall target="pdf"/>
 		
 		<zip destfile="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}.zip">
 			<fileset id="productDir" dir="${activeobjects.dir}/dist">
