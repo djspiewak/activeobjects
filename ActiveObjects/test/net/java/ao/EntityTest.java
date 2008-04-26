@@ -482,14 +482,14 @@ public class EntityTest extends DataTest {
 			thread.join();
 		}
 		
+		manager.delete(person);
+		manager.delete(company);
+		
 		for (Throwable e : exceptions) {
 			if (e != null) {
 				throw e;
 			}
 		}
-		
-		manager.delete(person);
-		manager.delete(company);
 	}
 
 	@Test
