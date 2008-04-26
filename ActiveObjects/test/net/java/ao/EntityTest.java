@@ -23,6 +23,8 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -91,19 +93,6 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
-	public void testTransientCacheAccessor() {
-		Person person = manager.get(Person.class, personID);
-		person.setAge(25);
-		person.save();
-		
-		person.getAge();
-		
-		SQLLogMonitor.getInstance().markWatchSQL();
-		assertEquals(25, person.getAge());
-		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
-	}
-	
-	@Test
 	public void testUncachableCacheAccessor() throws IOException {
 		Company company = manager.get(Company.class, companyID);
 		company.getImage().close();
@@ -113,6 +102,48 @@ public class EntityTest extends DataTest {
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
 	
+	@Test
+	public void testBlobAccessor() throws IOException, SQLException {
+		Person person = manager.get(Person.class, personID);
+		byte[] image = person.getImage();
+		
+		assertEquals(13510, image.length);
+		
+		Company company = manager.get(Company.class, companyID);
+		InputStream is = company.getImage();
+	
+		int count = 0;
+		try {
+			while (is.read() >= 0) {
+				count++;
+			}
+			is.close();
+		} catch (IOException e) {
+			throw new SQLException(e.getMessage());
+		}
+	
+		assertEquals(13510, count);
+	}
+
+	@Test
+	public void testPolymorphicAccessor() throws SQLException {
+		Comment comment = manager.get(Comment.class, postCommentIDs[0]);
+		Commentable commentable = comment.getCommentable();
+		
+		assertTrue(commentable instanceof Post);
+		assertEquals(postID, commentable.getID());
+		
+		comment = manager.get(Comment.class, photoCommentIDs[0]);
+		commentable = comment.getCommentable();
+		
+		assertTrue(commentable instanceof Photo);
+		assertEquals(photoID, commentable.getID());
+		
+		comment = manager.create(Comment.class);
+		assertNull(comment.getCommentable());
+		manager.delete(comment);
+	}
+
 	@Test
 	public void testCacheMutator() throws SQLException {
 		Company company = manager.create(Company.class);
@@ -220,28 +251,18 @@ public class EntityTest extends DataTest {
 	}
 	
 	@Test
-	public void testBlobAccessor() throws IOException, SQLException {
+	public void testTransientCacheAccessor() {
 		Person person = manager.get(Person.class, personID);
-		byte[] image = person.getImage();
+		person.setAge(25);
+		person.save();
 		
-		assertEquals(13510, image.length);
+		person.getAge();
 		
-		Company company = manager.get(Company.class, companyID);
-		InputStream is = company.getImage();
-
-		int count = 0;
-		try {
-			while (is.read() >= 0) {
-				count++;
-			}
-			is.close();
-		} catch (IOException e) {
-			throw new SQLException(e.getMessage());
-		}
-
-		assertEquals(13510, count);
+		SQLLogMonitor.getInstance().markWatchSQL();
+		assertEquals(25, person.getAge());
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
-	
+
 	@Test
 	public void testBlobMutator() throws IOException {
 		Person person = manager.get(Person.class, personID);
@@ -265,25 +286,6 @@ public class EntityTest extends DataTest {
 		company.save();
 		
 		is.close();
-	}
-	
-	@Test
-	public void testPolymorphicAccessor() throws SQLException {
-		Comment comment = manager.get(Comment.class, postCommentIDs[0]);
-		Commentable commentable = comment.getCommentable();
-		
-		assertTrue(commentable instanceof Post);
-		assertEquals(postID, commentable.getID());
-		
-		comment = manager.get(Comment.class, photoCommentIDs[0]);
-		commentable = comment.getCommentable();
-		
-		assertTrue(commentable instanceof Photo);
-		assertEquals(photoID, commentable.getID());
-		
-		comment = manager.create(Comment.class);
-		assertNull(comment.getCommentable());
-		manager.delete(comment);
 	}
 	
 	@Test
@@ -393,6 +395,10 @@ public class EntityTest extends DataTest {
 		
 		manager.delete(company);
 		
+		company = manager.create(Company.class, new DBParam("name", null));
+		assertNull(company.getName());
+		manager.delete(company);
+		
 		SQLLogMonitor.getInstance().markWatchSQL();
 		Person person = manager.create(Person.class, new DBParam("url", "http://www.codecommit.com"));
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
@@ -415,6 +421,77 @@ public class EntityTest extends DataTest {
 		manager.delete(person);
 	}
 	
+	@Test
+	public void testAccessNullPrimitive() throws MalformedURLException, SQLException {
+		Company company = manager.create(Company.class);
+		assertFalse(company.isCool());		// if we get NPE, we're in trouble
+		
+		manager.delete(company);
+	}
+	
+	@Test
+	public void testConcurrency() throws Throwable {
+		Thread[] threads = new Thread[50];
+		final Throwable[] exceptions = new Throwable[threads.length];
+		
+		final Person person = manager.create(Person.class, new DBParam("url", new URL("http://www.howtogeek.com")));
+		final Company company = manager.create(Company.class);
+		
+		for (int i = 0; i < threads.length; i++) {
+			final int threadNum = i;
+			threads[i] = new Thread("Concurrency Test " + i) {
+				@Override
+				public void run() {		// a fair-few interleved instructions
+					try {
+						person.setAge(threadNum);
+						person.save();
+						
+						company.setName(getName());
+						company.save();
+						
+						company.getName();
+						assertFalse(company.isCool());
+						
+						person.setFirstName(getName());
+						person.setLastName("Spiewak");
+						person.setCompany(company);
+						person.save();
+						
+						person.getNose();
+						person.getFirstName();
+						person.getAge();
+						
+						person.setFirstName("Daniel");
+						person.save();
+						
+						company.getImage();
+						
+						person.getFavoriteClass();
+					} catch (Throwable t) {
+						exceptions[threadNum] = t;
+					}
+				}
+			};
+		}
+		
+		for (Thread thread : threads) {
+			thread.start();
+		}
+		
+		for (Thread thread : threads) {
+			thread.join();
+		}
+		
+		for (Throwable e : exceptions) {
+			if (e != null) {
+				throw e;
+			}
+		}
+		
+		manager.delete(person);
+		manager.delete(company);
+	}
+
 	@Test
 	public void testReservedOperations() throws SQLException {
 		Select select = manager.create(Select.class);
