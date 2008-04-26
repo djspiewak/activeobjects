@@ -324,6 +324,18 @@ ActiveObjects ${activeobjects.version}
 			<replacevalue></replacevalue>
 		</replace>
 		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>\begin{verbatim}</replacetoken>
+			<replacevalue><![CDATA[\begin{samepage}
+\begin{verbatim}]]></replacevalue>
+		</replace>
+		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>\end{verbatim}</replacetoken>
+			<replacevalue><![CDATA[\end{verbatim}
+\end{samepage}]]></replacevalue>
+		</replace>
+		
 		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<regexp pattern="\\href\{([^}]|\\\})+\}"/>
 			<substitution expression=""/>
