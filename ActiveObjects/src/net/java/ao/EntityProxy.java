@@ -385,27 +385,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		getLock(name).writeLock().lock();
 		try {
 			if (!shouldCache && cacheLayer.dirtyContains(name)) {
-				if (type.isPrimitive()) {
-					if (type.equals(boolean.class)) {
-						return (V) new Boolean(false);
-					} else if (type.equals(char.class)) {
-						return (V) new Character(' ');
-					} else if (type.equals(int.class)) {
-						return (V) new Integer(0);
-					} else if (type.equals(short.class)) {
-						return (V) new Short("0");
-					} else if (type.equals(long.class)) {
-						return (V) new Long("0");
-					} else if (type.equals(float.class)) {
-						return (V) new Float("0");
-					} else if (type.equals(double.class)) {
-						return (V) new Double("0");
-					} else if (type.equals(byte.class)) {
-						return (V) new Byte("0");
-					}
-				}
-	
-				return null;
+				return handleNullReturn(type);
 			} else if (shouldCache && cacheLayer.contains(name)) {
 				Object value = cacheLayer.get(name);
 	
@@ -453,10 +433,34 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				cacheLayer.put(name, back);
 			}
 	
-			return back;
+			return (back == null ? handleNullReturn(type) : back);
 		} finally {
 			getLock(name).writeLock().unlock();
 		}
+	}
+
+	private <V> V handleNullReturn(Class<V> type) {
+		if (type.isPrimitive()) {
+			if (type.equals(boolean.class)) {
+				return (V) new Boolean(false);
+			} else if (type.equals(char.class)) {
+				return (V) new Character(' ');
+			} else if (type.equals(int.class)) {
+				return (V) new Integer(0);
+			} else if (type.equals(short.class)) {
+				return (V) new Short("0");
+			} else if (type.equals(long.class)) {
+				return (V) new Long("0");
+			} else if (type.equals(float.class)) {
+				return (V) new Float("0");
+			} else if (type.equals(double.class)) {
+				return (V) new Double("0");
+			} else if (type.equals(byte.class)) {
+				return (V) new Byte("0");
+			}
+		}
+
+		return null;
 	}
 
 	private void invokeSetter(T entity, String name, Object value, boolean shouldCache, String polyName) throws Throwable {
