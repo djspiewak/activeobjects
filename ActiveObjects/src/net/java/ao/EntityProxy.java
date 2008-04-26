@@ -385,18 +385,18 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		getLock(name).writeLock().lock();
 		try {
 			if (!shouldCache && cacheLayer.dirtyContains(name)) {
-				return handleNullReturn(type);
+				return handleNullReturn(null, type);
 			} else if (shouldCache && cacheLayer.contains(name)) {
 				Object value = cacheLayer.get(name);
 	
 				if (instanceOf(value, type)) {
-					return (V) value;
+					return handleNullReturn((V) value, type);
 				} else if (Common.interfaceInheritsFrom(type, RawEntity.class) 
 						&& instanceOf(value, Common.getPrimaryKeyClassType((Class<? extends RawEntity<K>>) type))) {
 					value = getManager().peer((Class<? extends RawEntity<Object>>) type, value);
 	
 					cacheLayer.put(name, value);
-					return (V) value;
+					return handleNullReturn((V) value, type);
 				} else {
 					cacheLayer.remove(name); // invalid cached value
 				}
@@ -433,13 +433,17 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				cacheLayer.put(name, back);
 			}
 	
-			return (back == null ? handleNullReturn(type) : back);
+			return handleNullReturn(back, type);
 		} finally {
 			getLock(name).writeLock().unlock();
 		}
 	}
 
-	private <V> V handleNullReturn(Class<V> type) {
+	private <V> V handleNullReturn(V back, Class<V> type) {
+		if (back != null) {
+			return back;
+		}
+		
 		if (type.isPrimitive()) {
 			if (type.equals(boolean.class)) {
 				return (V) new Boolean(false);
