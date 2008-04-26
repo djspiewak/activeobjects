@@ -296,6 +296,30 @@ ActiveObjects ${activeobjects.version}
 		</replace>
 		
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>]{hyperref}</replacetoken>
+			<replacevalue>,bookmarks=true,pdftex=true]{hyperref}</replacevalue>
+		</replace>
+		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>linkcolor=blue,urlcolor=blue</replacetoken>
+			<replacevalue>linkcolor=black,urlcolor=black</replacevalue>
+		</replace>
+
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>colorlinks=true,linkcolor=blue,urlcolor=blue</replacetoken>
+			<replacevalue>colorlinks=false</replacevalue>
+		</replace>
+		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>\maketitle</replacetoken>
+			<replacevalue><![CDATA[
+\maketitle
+\tableofcontents
+\pagebreak
+]]></replacevalue>
+		</replace>
+		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<replacetoken>%___________________________________________________________________________</replacetoken>
 			<replacevalue></replacevalue>
 		</replace>
@@ -349,11 +373,6 @@ ActiveObjects ${activeobjects.version}
 			<regexp pattern="(\\)section\*?\{Docutils System Messages\}.+"/>
 			<substitution expression="\1end{document}"/>
 		</replaceregexp>
-		
-		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
-			<replacetoken>]{hyperref}</replacetoken>
-			<replacevalue>,bookmarks=true,pdftex=true]{hyperref}</replacevalue>
-		</replace>
 		
 		<echo level="info" message="Building PDF..."/>
 		
