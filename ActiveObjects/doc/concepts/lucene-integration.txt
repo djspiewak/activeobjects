@@ -1,0 +1,146 @@
+.. :mode=rest:
+
+Lucene Integration
+==================
+
+While the primary purpose of the ActiveObjects framework may be to map between
+Java objects and relational database systems, it is also capable of performing
+other, related mappings.  For example, most systems which depend upon RDBMS
+also require some sort of full-text search engine.  Normally, the index for this
+full-text search would have to be updated *in addition* to the updates to the
+database itself.  However, by making use of ActiveObject's support for Lucene,
+it is possible to keep the full-text index perfectly in sync with the database
+without requiring extra operations.
+
+To perform this integration, it is necessary to make use of a special
+``EntityManager`` sublcass: ``SearchableEntityManager``.  All entities controlled
+through this manager will transparently update the relevant values in a
+fully-managed Lucene index.  Consider the following example of a simple entity
+for unversioned wiki pages::
+    
+    public interface WikiPage extends Entity {
+        @Searchable
+        public String getTitle();
+        public void setTitle(String title);
+        
+        @Searchable
+        @SQLType(Types.CLOB)
+        public String getText();
+        public void setText(String text);
+        
+        public User getAuthor();
+        public void setAuthor(User author);
+        
+        @Default("CURRENT_TIMESTAMP")
+        public Calendar getCreated();
+    }
+    
+    SearchableEntityManager manager = ...
+    WikiPage page = manager.get(WikiPage.class, 321);
+    
+    page.setText("This is a sample ''wiki'' page.");
+    page.save();
+
+In this example, the ``WikiPage`` entity has two fields which will be synced
+with the Lucene index: ``title`` and ``text``.  Since it doesn't make sense to
+search based on author ID or the date of creation, these fields should not be
+contained within the index.
+
+The last two lines of the example change the ``text`` field in the entity to a
+new value and then save that value into the database.  However, because we are
+using ``SearchableEntityManager``, the corresponding ``wikiPage.text`` field in 
+the Lucene index will also be updated.  This update occurs transparently,
+without any additional syntax required.  This feature not only makes working with
+Lucene *much* easier, but also makes it incredibly simple to just add Lucene
+indexing to an existing ActiveObjects application.  In fact, the only steps which
+are necessary are to add the Lucene library to the CLASSPATH and to replace
+``EntityManager`` with ``SearchableEntityManager``.  The index will automatically
+be created (or updated if it exists already) and any interaction with Lucene
+will be handled by ActiveObjects.
+
+One important detail of this integration is that it is completely asynchronous.
+``SearchableEntityManager`` uses a series of bean property listeners on all
+controlled entities.  Whenever a property is changed, a new, low-priority thread
+is spawned to update the index.  In this way, the index update does not block
+execution flow.  There is nothing preventing this process from occurring in a
+single actor thread for efficiency (to avoid unnecessary thread initialization),
+but this optimization has not yet been implemented.  As a result of this
+asynchronous behavior, there is no way to say for certain whether or not the
+index has been updated immediately following a call to an entity mutator.  (this
+causes a bit of a problem for the JUnit test suite)
+
+
+Searching
+---------
+
+Of course, adding entity values to an index isn't much use if you can't search
+this index at some point.  This can be accomplished using the
+``SearchableEntityManager#search(...)`` method::
+    
+    SearchableEntityManager manager = ...
+    
+    WikiPage[] results = manager.search(WikiPage.class, query);
+    System.out.println("Found " + results.length + " pages");
+
+Once again, there is no need to interact with Lucene directly; ActiveObjects
+handles all of the details.  The ``search(...)`` method automatically queries
+Lucene based on what fields are indexed within the entity.  Any search results
+are automatically re-boxed into entities and returned.
+
+To avoid ambiguity, Lucene field names are somewhat different than one would
+intuitively expect.  This can lead to confusion in appropriate search queries.
+The form used to autogenerate the Lucene document keys is as follows::
+    
+    key ::= entityType '.' fieldName
+
+Thus, the two searchable fields in our ``WikiPage`` entity will have the
+following correspondence:
+
+==================  =======================
+ Entity Method       Lucene Key            
+==================  =======================
+``getTitle()``      ``WikiPage.title``     
+------------------  -----------------------
+``getText()``       ``WikiPage.text``      
+==================  =======================
+
+For the most part, this conversion is completely transparent to the end developer
+and user(s).  However, more advanced users may expect to be able to run queries
+of the following form::
+    
+    particle physics title:"String Theory"
+
+This query will parse, but likely produce no results, even if there exists a
+``WikiPage`` instance with text containing the words "particle" and "physics"
+and a title of "String Theory".  This is because the Lucene field is not "``title``"
+but "``WikiPage.title``".  At the moment, there is no way to override this
+auto-generated field name.  However, plans are in the works to implement this
+feature in an upcoming version of ActiveObjects.
+
+The ``fieldName`` component of the key is determined by the `name converter`_
+in use by the controlling ``SearchableEntityManager`` instance.  Thus, if you
+create a Lucene index with ActiveObjects and then decide at some later date to
+change the field name converter, you will have to manually refactor the index
+to update all of the field names (or simply regenerate the index from scratch).
+
+.. _name converter: ../cookbook/custom-naming-conventions.html
+
+
+Creating the Index
+------------------
+
+One common use-case for Lucene integration is to add full text search to an
+existing application, one which already has a sizable amount of data within the
+database.  Since ActiveObjects implements its Lucene integration as property
+change listeners, there is no way for it to just automatically discover the
+existing data and add it to the index.  For this reason, the ``addToIndex``
+method exists within ``SearchableEntityManager``.  It takes a single entity,
+reads the data from its ``@Searchable`` fields and then imports the result into
+Lucene.  The following snippet imports all ``WikiPage`` entities from the database
+into the Lucene index::
+    
+    WikiPage[] pages = manager.find(WikiPage.class);
+    for (WikiPage page : pages) {
+        manager.addToIndex(page);
+    }
+

@@ -34,6 +34,45 @@ only serious disadvantage to this approach is that it requires some admitedly
 unintuitive steps to allow the insertion of custom logic into an entity (a
 critical aspect of the active record pattern).
 
+There are four different ways to obtain entity instances: (roughly) creation,
+retrieval, queries and field access.  Most of these functions are implemented by
+methods within ``EntityManager``.  Assuming we have already defined an entity
+type named ``Post``, the following code illustrates all three operations::
+    
+    EntityManager manager = ...
+    
+    Post newPost = manager.create(Post.class);
+    Post oldPost = manager.get(Post.class, 123);
+    
+    Post[] found = manager.find(Post.class, "name LIKE '%test%');
+    for (Post post : found) {
+        System.out.print(post.getName() + " has ");
+        
+        Comment[] comments = post.getComments();
+        System.out.println(comments.length + " comments");
+    }
+
+Each of the three ``EntityManager`` methods shown has a different purpose and
+function.  The ``create`` method does exactly that, creates an entirely new
+entity and performs an SQL ``INSERT`` to generate the corresponding database row.
+By contrast, the ``get`` method only instantiates an entity to correspond with
+an existing row (denoted by the primary key value given as the second parameter).
+A quick check is performed to ensure that the row does in fact exist in the
+database.  Finally, the ``find`` method is the only direct analogy to the SQL
+``SELECT`` statement.  As such, ``find`` by far the most flexible method in
+``EntityManager``.  Using ``find``, it is possible to perform qualified queries
+against the database and to receive the results in the form of an array of
+entities.  It is similar to ``get`` in that no new rows are created in the
+database, but it is more flexible in that gradient queries may be performed.
+
+The fourth way to obtain entity instances is through field (or in this case,
+relationship) access.  Within the loop, a call is made to the ``getComments()``
+method of the ``Post`` entity.  This method queries the relationship between
+``Post`` and ``Comment``, returning the results as an array of ``Comment``
+entities.  The same functionality can be satisfied by the ``find``, but direct
+relational access is both easier and more idiomatic of the active record
+pattern.
+
 .. [#] The term "end developer" refers to the developer *using* ActiveObjects
 
 
@@ -204,6 +243,47 @@ a need to exploit this behavior.
 .. [#] Note that the ``Types`` class is actually part of JDBC
 
 .. _field name converter: ../cookbook/custom-naming-conventions.html
+
+
+Bean Property Listeners
+-----------------------
+
+Because ActiveObjects entities are based on the Java bean conventions (by default),
+it only makes sense to further implement the bean spec by providing support for
+``PropertyChangeListener``.  Using this mechanism, it is possible to receive
+notification of field change directly through ActiveObjects.  Consider the
+following::
+    
+    Person me = manager.get(Person.class, 123);
+    me.addPropertyChangeListener(new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent e) {
+            System.out.print(e.getPropertyName());
+            System.out.print(" changed to ");
+            System.out.println(e.getNewValue());
+        }
+    });
+    
+    System.out.println("A");
+    me.setName("Daniel");
+    
+    System.out.println("B");
+    me.save();
+
+This code will print::
+    
+    A
+    name changed to Daniel
+    B
+
+It is important to remember this sequence.  The property listeners are invoked
+when the mutator is called, **not** on ``save(...)``.  This falls in line with
+expected bean behavior, but also can lead to some odd contradictions in
+functionality.  For example, when the ``propertyChange`` event is received by
+the listener, it contains the information that the ``name`` field has been changed
+to a value of "Daniel".  However, the value of the ``name`` field within the
+database has not yet been updated.  Fortunately, this behavior is rarely a
+problem in practice and thus there has never been sufficient reason to actually
+modify the semantics.
 
 
 .. _relationships:

@@ -16,13 +16,14 @@
 	* `Queries <concepts/queries.txt>`_
 	* `Migrations <concepts/migrations.txt>`_
 	* `Types <concepts/types.txt>`_
-	* Caching
+    * Caching
 	* Lucene Integration
 * Cookbook
  	* Different Databases
 	* Connection Pooling
 	* Alternative Connection Sources
 	* Forcing Eager-Loading
+    * Field Indexing
 	* Domain-Logic in Entities
 	* Advanced Schemata
 		* Explicit Types
