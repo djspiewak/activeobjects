@@ -48,7 +48,7 @@ public class SchemaReaderTest extends DataTest {
 	@SuppressWarnings("null")
 	@Test
 	public void testReadSchema() throws SQLException {
-		String[] expectedFields = {"id", "firstName", "lastName", "profession", "age", "url", "favoriteClass", "companyID", "image"};
+		String[] expectedFields = {"id", "firstName", "lastName", "profession", "age", "url", "favoriteClass", "companyID", "image", "modified"};
 		
 		DDLTable[] parsedTables = SchemaReader.readSchema(manager.getProvider());
 		

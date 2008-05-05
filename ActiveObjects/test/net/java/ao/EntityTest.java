@@ -424,6 +424,10 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testOnUpdate() {
+		if (manager.getProvider().getURI().startsWith("jdbc:hsqldb")) {
+			return;		// hsqldb doesn't support @OnUpdate
+		}
+		
 		Person person = manager.get(Person.class, personID);
 		
 		Calendar old = person.getModified();
