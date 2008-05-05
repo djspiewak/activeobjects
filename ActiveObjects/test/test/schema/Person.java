@@ -16,6 +16,7 @@
 package test.schema;
 
 import java.net.URL;
+import java.util.Calendar;
 
 import net.java.ao.Accessor;
 import net.java.ao.Entity;
@@ -28,6 +29,7 @@ import net.java.ao.Searchable;
 import net.java.ao.Transient;
 import net.java.ao.schema.Default;
 import net.java.ao.schema.Indexed;
+import net.java.ao.schema.OnUpdate;
 import net.java.ao.schema.SQLType;
 import net.java.ao.schema.Unique;
 
@@ -71,6 +73,9 @@ public interface Person extends Entity {
 	
 	public byte[] getImage();
 	public void setImage(byte[] image);
+	
+	@OnUpdate("CURRENT_TIMESTAMP")
+	public Calendar getModified();
 	
 	@OneToOne
 	public Nose getNose();

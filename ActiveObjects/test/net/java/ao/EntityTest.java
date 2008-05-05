@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
 
 import org.junit.Test;
 
@@ -419,6 +420,35 @@ public class EntityTest extends DataTest {
 		}
 		
 		manager.delete(person);
+	}
+	
+	@Test
+	public void testOnUpdate() {
+		Person person = manager.get(Person.class, personID);
+		
+		Calendar old = person.getModified();
+		int age = person.getAge();
+		
+		person.setAge(2);
+		person.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		
+		Calendar newOld = person.getModified();
+		assertNotEquals(old, newOld);
+		
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		person.setAge(age);
+		person.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		assertNotEquals(newOld, person.getModified());
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		person.getModified();
+		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
 	
 	@Test
@@ -1162,5 +1192,9 @@ public class EntityTest extends DataTest {
 		} finally {
 			EntityProxy.ignorePreload = false;
 		}
+	}
+	
+	public static final void assertNotEquals(Object expected, Object actual) {
+		assertFalse(expected.equals(actual));
 	}
 }
