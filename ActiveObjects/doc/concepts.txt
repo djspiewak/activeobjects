@@ -39,7 +39,7 @@ manipulation can be satisfied by this class.
 * Migrations_
 * Types_
 * Caching
-* Lucene Integration
+* `Lucene Integration`_
 
 .. pdf-remove-end
 
@@ -50,3 +50,4 @@ manipulation can be satisfied by this class.
 .. _Queries: concepts/queries.html
 .. _Migrations: concepts/migrations.html
 .. _Types: concepts/types.html
+.. _Lucene integration: concepts/lucene-integration.html
