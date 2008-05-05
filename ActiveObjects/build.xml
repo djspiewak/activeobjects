@@ -211,13 +211,28 @@
 				<include name="**/*.gif"/>
 			</fileset>
 		</copy>
+		
+		<!-- build pdfs -->
+		<echo level="info" message="Building documentation A4..."/>
+		<ant antfile="build.xml" target="pdf" inheritall="no">
+			<property name="pdf-size" value="a4"/>
+		</ant>
+
+		<echo level="info" message="Building documentation US-Letter..."/>
+		<ant antfile="build.xml" target="pdf" inheritall="no">
+			<property name="pdf-size" value="letter"/>
+		</ant>
 	</target>
 	
-	<target name="assign-pdf-dest" unless="pdf-dest">
-		<property name="pdf-dest" value="${www.path}/ActiveObjects.pdf"/>
+	<target name="assign-pdf-dest" depends="assign-pdf-size" unless="pdf-dest">
+		<property name="pdf-dest" value="${www.path}/activeobjects-${pdf-size}.pdf"/>
+	</target>
+	
+	<target name="assign-pdf-size" unless="pdf-size">
+		<property name="pdf-size" value="a4"/>
 	</target>
 		
-	<target name="pdf" depends="install-docutils,assign-pdf-dest" if="docutils-check-ok">
+	<target name="pdf" depends="install-docutils,assign-pdf-dest,assign-pdf-size" if="docutils-check-ok">
 		<echo level="info" message="Preprocessing ReStructuredText..."/>
 		
 		<mkdir dir="${activeobjects.dir}/doc/pdftmp"/>
@@ -284,7 +299,7 @@ ActiveObjects ${activeobjects.version}
 			<arg value="--graphicx-option=pdftex"/>
 			<arg value="--use-latex-footnotes"/>
 			<arg value="--use-latex-toc"/>
-			<arg value="--documentoptions=10pt,a4paper"/>
+			<arg value="--documentoptions=10pt,${pdf-size}paper"/>
 		</exec>
 		
 		<!-- custom LaTeX styling -->
