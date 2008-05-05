@@ -347,9 +347,14 @@ ActiveObjects ${activeobjects.version}
 		</replace>
 		
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
-			<replacetoken>\end{verbatim}</replacetoken>
+			<replacetoken><![CDATA[\end{verbatim}
+\end{quote}
+]]></replacetoken>
 			<replacevalue><![CDATA[\end{verbatim}
-\end{samepage}]]></replacevalue>
+\end{samepage}
+\end{quote}
+
+\noindent]]></replacevalue>
 		</replace>
 		
 		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
