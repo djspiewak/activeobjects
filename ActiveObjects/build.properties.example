@@ -16,6 +16,7 @@ hsqldb.path=				# e.g. =hsqldb.jar
 jdocs.path=			# e.g. =jdocs.jar
 
 build.debug=yes
+build.parallel=3	# number of cores +1 is a good bet
 
 activeobjects.version=0.9-SNAPSHOT
 
