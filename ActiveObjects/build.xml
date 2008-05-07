@@ -447,48 +447,52 @@ ActiveObjects ${activeobjects.version}
 		<property name="javadoc.intern.path" value="${dist.path}/api"/>
 		<property name="supress-javadoc-deletion" value="yes"/>
 		
-		<antcall target="javadoc"/>
-		
-		<copy todir="${dist.path}/src">
-			<fileset dir="${activeobjects.dir}/src">
-				<include name="**/*.java"/>
-			</fileset>
-		</copy>
-		<copy todir="${dist.path}">
-			<fileset dir="${activeobjects.dir}">
-				<include name="BUGS"/>
-				<include name="CONTRIBUTORS"/>
-				<include name="LICENSE"/>
-			</fileset>
-		</copy>
-		
-		<property name="pdf-dest" value="${dist.path}/documentation.pdf"/>
-		<antcall target="pdf"/>
+		<parallel threadcount="${build.parallel}">
+			<antcall target="javadoc"/>
+			
+			<copy todir="${dist.path}/src">
+				<fileset dir="${activeobjects.dir}/src">
+					<include name="**/*.java"/>
+				</fileset>
+			</copy>
+			<copy todir="${dist.path}">
+				<fileset dir="${activeobjects.dir}">
+					<include name="BUGS"/>
+					<include name="CONTRIBUTORS"/>
+					<include name="LICENSE"/>
+				</fileset>
+			</copy>
+			
+			<property name="pdf-dest" value="${dist.path}/documentation.pdf"/>
+			<antcall target="pdf"/>
+		</parallel>
 		
 		<parallel threadcount="${build.parallel}">
 			<sequential>
 				<zip destfile="${dist.path}.zip">
-					<fileset id="productDir" dir="${activeobjects.dir}/dist">
+					<fileset dir="${activeobjects.dir}/dist">
 						<include name="activeobjects-${activeobjects.version}/**/*"/>
 					</fileset>
 				</zip>
-
-				<checksum file="${dist.path}.zip" algorithm="sha" fileext=".sha1"/>
-				<checksum file="${dist.path}.zip" algorithm="md5" fileext=".md5"/>
 			</sequential>
 			
 			<sequential>
 				<tar destfile="${dist.path}.tar">
-					<fileset refid="productDir"/>
+					<fileset dir="${activeobjects.dir}/dist">
+						<include name="activeobjects-${activeobjects.version}/**/*"/>
+					</fileset>
 				</tar>
-				<gzip src="${dist.path}.tar" 
-						zipfile="${dist.path}.tar.gz"/>
-
-				<checksum file="${dist.path}.tar.gz" algorithm="sha" fileext=".sha1"/>
-				<checksum file="${dist.path}.tar.gz" algorithm="md5" fileext=".md5"/>
+				<gzip src="${dist.path}.tar" zipfile="${dist.path}.tar.gz"/>
 			</sequential>
-			
+		</parallel>
+		
+		<parallel threadcount="${build.parallel}">
 			<delete file="${dist.path}.tar"/>
+			
+			<checksum file="${dist.path}.zip" algorithm="sha" fileext=".sha1"/>
+			<checksum file="${dist.path}.zip" algorithm="md5" fileext=".md5"/>
+			<checksum file="${dist.path}.tar.gz" algorithm="sha" fileext=".sha1"/>
+			<checksum file="${dist.path}.tar.gz" algorithm="md5" fileext=".md5"/>
 		</parallel>
 		
 		<delete includeemptydirs="yes">
