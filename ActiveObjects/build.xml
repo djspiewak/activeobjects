@@ -97,6 +97,14 @@
 		<javac srcdir="${activeobjects.dir}/test" destdir="${activeobjects.dir}/bin" 
 				classpath="bin${path.separator}${build.classpath}${path.separator}${junit4.path}${path.separator}${hsqldb.path}" 
 				source="1.5" target="1.5" debug="yes"/>
+		
+		<copy todir="${activeobjects.dir}/bin">
+			<fileset dir="${activeobjects.dir}/test">
+				<include name="**/*.properties"/>
+				<include name="**/*.sql"/>
+				<include name="**/*.png"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="assign-javadoc-dir" unless="javadoc.intern.path">
@@ -508,8 +516,6 @@ ActiveObjects ${activeobjects.version}
 	</target>
 	
 	<target name="test" depends="check-test,build-test" if="test-check-ok">
-		<echo level="warning" message="Currently not working"/>
-		
         <junit printsummary="on" haltonerror="yes" haltonfailure="no">
         	<classpath>
         		<pathelement location="bin/"/>
