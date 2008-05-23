@@ -92,7 +92,7 @@ public abstract class DatabaseType<T> {
 		return true;
 	}
 	
-	public void putToDatabase(int index, PreparedStatement stmt, T value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, T value) throws SQLException {
 		stmt.setObject(index, value, getType());
 	}
 	

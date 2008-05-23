@@ -275,18 +275,19 @@ public class EntityManager {
 				Connection conn = null;
 				
 				try {
-					conn = getProvider().getConnection();
+					DatabaseProvider provider = getProvider();
+					conn = provider.getConnection();
 					
 					StringBuilder sql = new StringBuilder("SELECT ");
-					sql.append(primaryKeyField);
-					sql.append(" FROM ").append(tableName);
-					sql.append(" WHERE ").append(primaryKeyField);
+					sql.append(provider.processID(primaryKeyField));
+					sql.append(" FROM ").append(provider.processID(tableName));
+					sql.append(" WHERE ").append(provider.processID(primaryKeyField));
 					sql.append(" = ?");
 					
 					PreparedStatement stmt = conn.prepareStatement(sql.toString());
 					
 					DatabaseType<K> dbType = (DatabaseType<K>) TypeManager.getInstance().getType(key.getClass());
-					dbType.putToDatabase(1, stmt, key);
+					dbType.putToDatabase(EntityManager.this, stmt, 1, key);
 					
 					ResultSet res = stmt.executeQuery();
 					if (res.next()) {
@@ -408,7 +409,7 @@ public class EntityManager {
 	 * be aware of the performance implications.</p>
 	 * 
 	 * <p>This method delegates the action INSERT action to 
-	 * {@link DatabaseProvider#insertReturningKey(Connection, Class, String, boolean, String, DBParam...)}.
+	 * {@link DatabaseProvider#insertReturningKey(EntityManager, Connection, Class, String, boolean, String, DBParam...)}.
 	 * This is necessary because not all databases support the JDBC <code>RETURN_GENERATED_KEYS</code>
 	 * constant (e.g. PostgreSQL and HSQLDB).  Thus, the database provider itself is
 	 * responsible for handling INSERTion and retrieval of the correct primary key
@@ -419,7 +420,7 @@ public class EntityManager {
 	 * 	values will be passed to the database within the INSERT statement.
 	 * @return	The new entity instance corresponding to the INSERTed row.
 	 * @see net.java.ao.DBParam
-	 * @see net.java.ao.DatabaseProvider#insertReturningKey(Connection, Class, String, boolean, String, DBParam...)
+	 * @see net.java.ao.DatabaseProvider#insertReturningKey(EntityManager, Connection, Class, String, boolean, String, DBParam...)
 	 */
 	public <T extends RawEntity<K>, K> T create(Class<T> type, DBParam... params) throws SQLException {
 		T back = null;
@@ -470,10 +471,10 @@ public class EntityManager {
 			relationsCache.remove(type);
 			
 			Method pkMethod = Common.getPrimaryKeyMethod(type);
-			back = peer(type, provider.insertReturningKey(conn, Common.getPrimaryKeyClassType(type), 
+			back = peer(type, provider.insertReturningKey(this, conn, 
+					Common.getPrimaryKeyClassType(type), 
 					Common.getPrimaryKeyField(type, getFieldNameConverter()), 
-					pkMethod.getAnnotation(AutoIncrement.class) != null, 
-					table, listParams.toArray(new DBParam[listParams.size()])));
+					pkMethod.getAnnotation(AutoIncrement.class) != null, table, listParams.toArray(new DBParam[listParams.size()])));
 		} finally {
 			conn.close();
 		}
@@ -577,7 +578,7 @@ public class EntityManager {
 					
 					int index = 1;
 					for (RawEntity<?> entity : entityList) {
-						TypeManager.getInstance().getType((Class) entity.getEntityType()).putToDatabase(index++, stmt, entity);
+						TypeManager.getInstance().getType((Class) entity.getEntityType()).putToDatabase(this, stmt, index++, entity);
 					}
 					
 					relationsCache.remove(type);
@@ -807,7 +808,7 @@ public class EntityManager {
 					javaType = ((RawEntity<?>) parameters[i]).getEntityType();
 				}
 				
-				manager.getType(javaType).putToDatabase(i + 1, stmt, parameters[i]);
+				manager.getType(javaType).putToDatabase(this, stmt, i + 1, parameters[i]);
 			}
 
 			ResultSet res = stmt.executeQuery();

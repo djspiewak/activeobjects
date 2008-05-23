@@ -39,7 +39,7 @@ class URIType extends DatabaseType<URI> {
 	}
 	
 	@Override
-	public void putToDatabase(int index, PreparedStatement stmt, URI value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, URI value) throws SQLException {
 		stmt.setString(index, value.toString());
 	}
 	

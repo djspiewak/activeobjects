@@ -43,5 +43,5 @@
     * Adding a Database
     * Adding a Connection Pool
     * Adding a Type
-    * Redefining Entities
+    * Redefining Entity Semantics
 

@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import net.java.ao.DBParam;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.schema.TableNameConverter;
 import net.java.ao.schema.ddl.DDLField;
@@ -371,8 +372,8 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public synchronized <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, 
-			String table, DBParam... params) throws SQLException {
+	public synchronized <T> T insertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, String pkField, 
+			boolean pkIdentity, String table, DBParam... params) throws SQLException {
 		boolean identityInsert = false;
 		StringBuilder sql = new StringBuilder();
 		
@@ -412,7 +413,7 @@ public class SQLServerDatabaseProvider extends DatabaseProvider {
 			sql.append("\nSET IDENTITY_INSERT ").append(processID(table)).append(" OFF");
 		}
 		
-		T back = executeInsertReturningKey(conn, pkType, pkField, sql.toString(), params);
+		T back = executeInsertReturningKey(manager, conn, pkType, pkField, sql.toString(), params);
 		
 		return back;
 	}

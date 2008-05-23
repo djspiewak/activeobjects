@@ -54,12 +54,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	
 	static boolean ignorePreload = false;	// hack for testing
 	
-	private K key;
-	private Method pkAccessor;
-	private String pkFieldName;
-	private Class<T> type;
+	private final K key;
+	private final Method pkAccessor;
+	private final String pkFieldName;
+	private final Class<T> type;
 
-	private EntityManager manager;
+	private final EntityManager manager;
 	
 	private Map<String, ReadWriteLock> locks;
 	private final ReadWriteLock locksLock = new ReentrantReadWriteLock();
@@ -254,7 +254,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					}
 
 					DatabaseType dbType = manager.getType(javaType);
-					dbType.putToDatabase(index++, stmt, value);
+					dbType.putToDatabase(getManager(), stmt, index++, value);
 					
 					// this check is not comprehensive, will miss @Transient fields
 					if (!dbType.shouldCache(javaType)) {
@@ -262,7 +262,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					}
 				}
 			}
-			((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(index++, stmt, key);
+			((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(getManager(), stmt, index++, key);
 
 			getManager().getRelationsCache().remove(cacheLayer.getToFlush());
 			cacheLayer.clearFlush();
@@ -417,7 +417,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	
 				Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 				PreparedStatement stmt = conn.prepareStatement(sql.toString());
-				Common.getPrimaryKeyType(this.type).putToDatabase(1, stmt, key);
+				Common.getPrimaryKeyType(this.type).putToDatabase(getManager(), stmt, 1, key);
 	
 				ResultSet res = stmt.executeQuery();
 				if (res.next()) {
@@ -757,7 +757,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			DatabaseType<K> dbType = (DatabaseType<K>) TypeManager.getInstance().getType(key.getClass());
 			int index = 0;
 			for (; index < numParams; index++) {
-				dbType.putToDatabase(index + 1, stmt, key);
+				dbType.putToDatabase(getManager(), stmt, index + 1, key);
 			}
 			
 			int newLength = numParams + (thisPolyNames == null ? 0 : thisPolyNames.length);
@@ -835,7 +835,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	private <V> V convertValue(ResultSet res, String field, String polyName, Class<V> type) throws SQLException {
-		if (res.getString(field) == null) {
+		res.getString(field);
+		if (res.wasNull()) {
 			return null;
 		}
 		

@@ -413,7 +413,7 @@ public abstract class DatabaseProvider {
 					return Short.parseShort(value);
 
 				case Types.VARCHAR:
-					return value.substring(1, value.length() - 1);
+					return value.substring(1, value.length() - 2);
 			}
 		} catch (Throwable t) {}
 		
@@ -1690,7 +1690,7 @@ public abstract class DatabaseProvider {
 	/**
 	 * <p>Generates an INSERT statement to be used to create a new row in the
 	 * database, returning the primary key value.  This method also invokes
-	 * the delegate method, {@link #executeInsertReturningKey(Connection, Class, String, String, DBParam...)}
+	 * the delegate method, {@link #executeInsertReturningKey(EntityManager, Connection, Class, String, String, DBParam...)}
 	 * passing the appropriate parameters and query.  This method is required
 	 * because some databases do not support the JDBC parameter
 	 * <code>RETURN_GENERATED_KEYS</code> (such as HSQLDB and PostgreSQL).
@@ -1713,12 +1713,12 @@ public abstract class DatabaseProvider {
 	 * <p>The default implementation of this method should be sufficient for any
 	 * fully compliant ANSI SQL database with a properly implemented JDBC
 	 * driver.  Note that this method should <i>not</i> not actually execute
-	 * the SQL it generates, but pass it on to the {@link #executeInsertReturningKey(Connection, Class, String, String, DBParam...)}
+	 * the SQL it generates, but pass it on to the {@link #executeInsertReturningKey(EntityManager, Connection, Class, String, String, DBParam...)}
 	 * method, allowing for functional delegation and better extensibility. 
 	 * However, this method may execute any additional statements required to
 	 * prepare for the INSERTion (as in the case of MS SQL Server which requires
 	 * some config parameters to be set on the database itself prior to INSERT).</p>
-	 * 
+	 * @param manager TODO
 	 * @param conn	The connection to be used in the eventual execution of the
 	 * 		generated SQL statement.
 	 * @param pkType	The Java type of the primary key value.  Can be used to
@@ -1734,13 +1734,14 @@ public abstract class DatabaseProvider {
 	 * @param params	A varargs array of parameters to be passed to the
 	 * 		INSERT statement.  This may include a specified value for the
 	 * 		primary key.
+	 * 
 	 * @throws	SQLException	If the INSERT fails in the delegate method, or
 	 * 		if any additional statements fail with an exception.
-	 * @see #executeInsertReturningKey(Connection, Class, String, String, DBParam...)
+	 * @see #executeInsertReturningKey(EntityManager, Connection, Class, String, String, DBParam...)
 	 */
 	@SuppressWarnings("unused")
-	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, 
-			boolean pkIdentity, String table, DBParam... params) throws SQLException {
+	public <T> T insertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, 
+			String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + processID(table) + " (");
 		
 		for (DBParam param : params) {
@@ -1766,13 +1767,13 @@ public abstract class DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKey(conn, pkType, pkField, sql.toString(), params);
+		return executeInsertReturningKey(manager, conn, pkType, pkField, sql.toString(), params);
 	}
 	
 	/**
 	 * <p>Delegate method to execute an INSERT statement returning any auto-generated
 	 * primary key values.  This method is primarily designed to be called as a delegate
-	 * from the {@link #insertReturningKey(Connection, Class, String, boolean, String, DBParam...)}
+	 * from the {@link #insertReturningKey(EntityManager, Connection, Class, String, boolean, String, DBParam...)}
 	 * method.  The idea behind this method is to allow custom implementations to
 	 * override this method to potentially execute other statements (such as getting the
 	 * next value in a sequence) rather than the default implementaiton which uses the
@@ -1809,7 +1810,7 @@ public abstract class DatabaseProvider {
 	 * transaction, or possibly another such operation.  It is also important to note
 	 * that this method should not close the connection.  Doing so could cause the
 	 * entity creation algorithm to fail at a higher level up the stack.</p>
-	 * 
+	 * @param manager TODO
 	 * @param conn	The database connection to use in executing the INSERT statement.
 	 * @param pkType	The Java class type of the primary key field (for use both in
 	 * 		searching the <code>params</code> as well as performing value conversion
@@ -1820,12 +1821,13 @@ public abstract class DatabaseProvider {
 	 * @param params	A varargs array of parameters to be passed to the
 	 * 		INSERT statement.  This may include a specified value for the
 	 * 		primary key.
+	 * 
 	 * @throws	SQLException	If the INSERT fails in the delegate method, or
 	 * 		if any additional statements fail with an exception.
-	 * @see #insertReturningKey(Connection, Class, String, boolean, String, DBParam...)
+	 * @see #insertReturningKey(EntityManager, Connection, Class, String, boolean, String, DBParam...)
 	 */
-	protected <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, 
-			String sql, DBParam... params) 
+	protected <T> T executeInsertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, 
+			String pkField, String sql, DBParam... params) 
 				throws SQLException {
 		T back = null;
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
@@ -1846,7 +1848,7 @@ public abstract class DatabaseProvider {
 				putNull(stmt, i + 1);
 			} else {
 				DatabaseType<Object> type = (DatabaseType<Object>) TypeManager.getInstance().getType(value.getClass());
-				type.putToDatabase(i + 1, stmt, value);
+				type.putToDatabase(manager, stmt, i + 1, value);
 			}
 		}
 		
@@ -1870,6 +1872,13 @@ public abstract class DatabaseProvider {
 	 */
 	public void putNull(PreparedStatement stmt, int index) throws SQLException {
 		stmt.setString(index, null);
+	}
+	
+	/**
+	 * TODO
+	 */
+	public void putBoolean(PreparedStatement stmt, int index, boolean value) throws SQLException {
+		stmt.setBoolean(index, value);
 	}
 
 	/**
@@ -1905,6 +1914,16 @@ public abstract class DatabaseProvider {
 	 * TODO
 	 */
 	public String processID(String id) {
+		int maxIDLength = getMaxIDLength();
+		if (id.length() > maxIDLength) {
+			int tailLength = maxIDLength / 3;
+			int hash = (int) (id.hashCode() % Math.round(Math.pow(10, tailLength)));
+			hash = Math.abs(hash);
+			
+			id = id.substring(0, maxIDLength - tailLength - 1);
+			id += hash;
+		}
+		
 		if (shouldQuoteID(id)) {
 			loadMetaData();
 			return quote + id + quote;
@@ -1918,6 +1937,13 @@ public abstract class DatabaseProvider {
 	 */
 	protected boolean shouldQuoteID(String id) {
 		return getReservedWords().contains(id.toUpperCase());
+	}
+	
+	/**
+	 * TODO
+	 */
+	protected int getMaxIDLength() {
+		return Integer.MAX_VALUE;
 	}
 	
 	/**

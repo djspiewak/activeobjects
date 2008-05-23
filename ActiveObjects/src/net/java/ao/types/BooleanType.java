@@ -15,6 +15,7 @@
  */
 package net.java.ao.types;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -33,6 +34,11 @@ class BooleanType extends DatabaseType<Boolean> {
 	@Override
 	public String getDefaultName() {
 		return "BOOLEAN";
+	}
+	
+	@Override
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, Boolean value) throws SQLException {
+		manager.getProvider().putBoolean(stmt, index, value);
 	}
 	
 	@Override

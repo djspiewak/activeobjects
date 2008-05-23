@@ -43,9 +43,9 @@ class EntityType<T> extends DatabaseType<RawEntity<T>> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void putToDatabase(int index, PreparedStatement stmt, RawEntity value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, RawEntity value) throws SQLException {
 		DatabaseType dbType = Common.getPrimaryKeyType(value.getEntityType());
-		dbType.putToDatabase(index, stmt, Common.getPrimaryKeyValue(value));
+		dbType.putToDatabase(manager, stmt, index, Common.getPrimaryKeyValue(value));
 	}
 	
 	@Override

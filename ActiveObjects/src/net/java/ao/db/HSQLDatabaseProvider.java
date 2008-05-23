@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import net.java.ao.Common;
 import net.java.ao.DBParam;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.EntityManager;
 import net.java.ao.Query;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.TableNameConverter;
@@ -97,7 +98,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	@SuppressWarnings("unused")
-	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
+	public <T> T insertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
 		StringBuilder sql = new StringBuilder("INSERT INTO " + processID(table) + " (");
 		
 		for (DBParam param : params) {
@@ -123,12 +124,12 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 		
 		sql.append(")");
 		
-		return executeInsertReturningKey(conn, pkType, pkField, sql.toString(), params);
+		return executeInsertReturningKey(manager, conn, pkType, pkField, sql.toString(), params);
 	}
 	
 	@Override
-	protected synchronized <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, String sql, 
-			DBParam... params) throws SQLException {
+	protected synchronized <T> T executeInsertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, String pkField, 
+			String sql, DBParam... params) throws SQLException {
 		T back = null;
 		
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
@@ -149,7 +150,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 				putNull(stmt, i + 1);
 			} else {
 				DatabaseType<Object> type = (DatabaseType<Object>) TypeManager.getInstance().getType(value.getClass());
-				type.putToDatabase(i + 1, stmt, value);
+				type.putToDatabase(manager, stmt, i + 1, value);
 			}
 		}
 		

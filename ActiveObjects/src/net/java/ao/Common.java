@@ -349,19 +349,19 @@ public final class Common {
 				case Types.TINYINT:
 					return true;
 			}
-		} else if (typeA == Types.BIGINT || typeA == Types.BIT || typeA == Types.INTEGER || typeA == Types.NUMERIC
-				|| typeA == Types.SMALLINT || typeA == Types.TINYINT) {
-			if (typeB == Types.BOOLEAN) {
-				return true;
-			}
-		} else if (typeA == Types.CLOB) {
-			if (typeB == Types.LONGVARCHAR || typeB == Types.VARCHAR) {
-				return true;
-			}
-		} else if (typeA == Types.LONGVARCHAR || typeA == Types.VARCHAR) {
-			if (typeB == Types.CLOB) {
-				return true;
-			}
+		}
+		
+		if ((typeA == Types.BIGINT || typeA == Types.BIT || typeA == Types.INTEGER || typeA == Types.NUMERIC
+				|| typeA == Types.SMALLINT || typeA == Types.TINYINT) && typeB == Types.BOOLEAN) {
+			return true;
+		} else if (typeA == Types.CLOB && (typeB == Types.LONGVARCHAR || typeB == Types.VARCHAR)) {
+			return true;
+		} else if ((typeA == Types.LONGVARCHAR || typeA == Types.VARCHAR) && typeB == Types.CLOB) {
+			return true;
+		} else if ((typeA == Types.BIGINT || typeA == Types.BIT || typeA == Types.DECIMAL || typeA == Types.DOUBLE
+				|| typeA == Types.FLOAT || typeA == Types.INTEGER || typeA == Types.REAL || typeA == Types.SMALLINT
+				|| typeA == Types.TINYINT) && typeB == Types.NUMERIC) {
+			return true;
 		}
 		
 		return typeA == typeB;

@@ -75,7 +75,7 @@ class BlobType extends DatabaseType<Object> {
 	}
 	
 	@Override
-	public void putToDatabase(int index, PreparedStatement stmt, Object value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, Object value) throws SQLException {
 		InputStream is = null;
 		
 		if (value instanceof byte[]) {

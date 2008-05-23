@@ -40,7 +40,7 @@ class DateDateType extends DatabaseType<Date> {
 	}
 	
 	@Override
-	public void putToDatabase(int index, PreparedStatement stmt, Date value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, Date value) throws SQLException {
 		stmt.setDate(index, new java.sql.Date(value.getTime()));
 	}
 	

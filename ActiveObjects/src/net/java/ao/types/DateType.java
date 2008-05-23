@@ -39,7 +39,7 @@ class DateType extends DatabaseType<Calendar> {
 	}
 	
 	@Override
-	public void putToDatabase(int index, PreparedStatement stmt, Calendar value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, Calendar value) throws SQLException {
 		stmt.setDate(index, new java.sql.Date(value.getTimeInMillis()));
 	}
 	

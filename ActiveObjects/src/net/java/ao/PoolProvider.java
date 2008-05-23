@@ -118,16 +118,21 @@ public abstract class PoolProvider extends DatabaseProvider {
 	}
 	
 	/**
-	 * @see net.java.ao.DatabaseProvider#insertReturningKey(Connection, Class, String, boolean, String, DBParam...)
+	 * @see net.java.ao.DatabaseProvider#insertReturningKey(EntityManager, Connection, Class, String, boolean, String, DBParam...)
 	 */
 	@Override
-	public <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
-		return delegate.insertReturningKey(conn, pkType, pkField, pkIdentity, table, params);
+	public <T> T insertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, String table, DBParam... params) throws SQLException {
+		return delegate.insertReturningKey(manager, conn, pkType, pkField, pkIdentity, table, params);
 	}
 	
 	@Override
 	public void putNull(PreparedStatement stmt, int index) throws SQLException {
 		delegate.putNull(stmt, index);
+	}
+	
+	@Override
+	public void putBoolean(PreparedStatement stmt, int index, boolean value) throws SQLException {
+		delegate.putBoolean(stmt, index, value);
 	}
 	
 	@Override

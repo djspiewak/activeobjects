@@ -58,7 +58,7 @@ class EnumType extends DatabaseType<Enum<?>> {
 	}
 	
 	@Override
-	public void putToDatabase(int index, PreparedStatement stmt, Enum<?> value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, Enum<?> value) throws SQLException {
 		stmt.setInt(index, value.ordinal());
 	}
 

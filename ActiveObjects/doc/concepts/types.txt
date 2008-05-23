@@ -98,7 +98,7 @@ Consider our new-and-improved conversion methods::
         TypeManager man = TypeManager.getInstance();
         DatabaseType<?> type = man.getType(value.getClass());
         
-        type.putToDatabase(index, stmt, value);
+        type.putToDatabase(stmt, index, value);
     }
     
     public Object pullFromDatabase(ResultSet res, String field, Class<?> javaType) {
@@ -108,10 +108,8 @@ Consider our new-and-improved conversion methods::
         return type.pullFromDatabase(null, res, javaType, field);
     }
 
-The precise signatures for the methods in class ``DatabaseType`` are rather
-confused, but the example does carry the point across.  Instead of directly
-checking for type support and handling the conversion, we are delegating
-polymorphically to an instance of a *subclass* of ``DatabaseType``.
+Instead of directly checking for type support and handling the conversion, we 
+are delegating polymorphically to an instance of a *subclass* of ``DatabaseType``.
 
 For this simple example, it doesn't seem like we have saved a lot.  After all,
 the only steps we have taken just move the work of finding the appropriate type

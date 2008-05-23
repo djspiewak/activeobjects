@@ -35,6 +35,7 @@ import net.java.ao.Common;
 import net.java.ao.DBParam;
 import net.java.ao.DatabaseFunction;
 import net.java.ao.DatabaseProvider;
+import net.java.ao.EntityManager;
 import net.java.ao.RawEntity;
 import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
@@ -397,8 +398,8 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	}
 
 	@Override
-	public synchronized <T> T insertReturningKey(Connection conn, Class<T> pkType, String pkField, boolean pkIdentity, 
-			String table, DBParam... params) throws SQLException {
+	public synchronized <T> T insertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, String pkField, 
+			boolean pkIdentity, String table, DBParam... params) throws SQLException {
 		T back = null;
 		for (DBParam param : params) {
 			if (param.getField().trim().equalsIgnoreCase(pkField)) {
@@ -427,14 +428,14 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 			params = newParams.toArray(new DBParam[newParams.size()]);
 		}
 		
-		super.insertReturningKey(conn, pkType, pkField, pkIdentity, table, params);
+		super.insertReturningKey(manager, conn, pkType, pkField, pkIdentity, table, params);
 		
 		return back;
 	}
 	
 	@Override
-	protected <T> T executeInsertReturningKey(Connection conn, Class<T> pkType, String pkField, String sql, 
-			DBParam... params) throws SQLException {
+	protected <T> T executeInsertReturningKey(EntityManager manager, Connection conn, Class<T> pkType, String pkField, 
+			String sql, DBParam... params) throws SQLException {
 		Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 		PreparedStatement stmt = conn.prepareStatement(sql);
 		
@@ -449,7 +450,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 				putNull(stmt, i + 1);
 			} else {
 				DatabaseType<Object> type = (DatabaseType<Object>) TypeManager.getInstance().getType(value.getClass());
-				type.putToDatabase(i + 1, stmt, value);
+				type.putToDatabase(manager, stmt, i + 1, value);
 			}
 		}
 		

@@ -87,8 +87,19 @@ public final class SchemaReader {
 				field.setName(rsmd.getColumnName(i));
 				field.setType(manager.getType(rsmd.getColumnType(i)));
 				
-				field.setPrecision(rsmd.getPrecision(i));
-				field.setScale(rsmd.getScale(i));
+				int precision = rsmd.getPrecision(i);
+				if (precision <= 0) {
+					precision = -1;
+				}
+				
+				field.setPrecision(precision);
+				
+				int scale = rsmd.getScale(i);
+				if (scale <= 0) {
+					scale = -1;
+				}
+				
+				field.setScale(scale);
 				
 				field.setAutoIncrement(rsmd.isAutoIncrement(i));
 				field.setNotNull(rsmd.isNullable(i) == ResultSetMetaData.columnNoNulls);
@@ -246,9 +257,9 @@ public final class SchemaReader {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				}*/ else if (!Common.fuzzyTypeCompare(fromField.getType().getType(), ontoField.getType().getType())) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
-				} else if (fromField.isAutoIncrement() != ontoField.isAutoIncrement()) {
+				} /*else if (fromField.isAutoIncrement() != ontoField.isAutoIncrement()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
-				} /*else if (fromField.isNotNull() != ontoField.isNotNull()) {
+				} else if (fromField.isNotNull() != ontoField.isNotNull()) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
 				} else if (fromField.isUnique() != ontoField.isUnique()) {
 					actions.add(createColumnAlterAction(fromTable, fromField));

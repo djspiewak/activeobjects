@@ -278,7 +278,7 @@ public class Query implements Serializable {
 						javaType = ((RawEntity) whereParams[i]).getEntityType();
 					}
 					
-					typeManager.getType(javaType).putToDatabase(i + 1, stmt, whereParams[i]);
+					typeManager.getType(javaType).putToDatabase(manager, stmt, i + 1, whereParams[i]);
 				}
 			}
 		}
