@@ -3,11 +3,15 @@
 <project name="ActiveObjects" default="build" basedir=".">
 	<dirname property="activeobjects.dir" file="${ant.file.ActiveObjects}"/>
 	
+	<tstamp>
+		<format property="build.vstamp" pattern="yyyyMMdd"/>
+	</tstamp>
+	
 	<property file="${activeobjects.dir}/build.properties"/>
 	<property file="${activeobjects.dir}/build-internal.properties"/>
-
-	<property name="dist.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}"/>
 	
+	<property name="dist.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}"/>
+
 	<target name="check-test">
 		<condition property="test-check-ok">
 			<and>
@@ -239,7 +243,7 @@
 	<target name="assign-pdf-size" unless="pdf-size">
 		<property name="pdf-size" value="a4"/>
 	</target>
-		
+	
 	<target name="pdf" depends="install-docutils,assign-pdf-dest,assign-pdf-size" if="docutils-check-ok">
 		<echo level="info" message="Preprocessing ReStructuredText..."/>
 		
