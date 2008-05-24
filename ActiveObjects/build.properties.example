@@ -14,6 +14,7 @@ hsqldb.path=				# e.g. =hsqldb.jar
 
 # provide value to enable building of JDocs file
 jdocs.path=			# e.g. =jdocs.jar
+cobertura.path=		# e.g. =C:/Users/Daniel Spiewak/Applications/cobertura-1.9
 
 build.debug=yes
 build.parallel=3	# number of cores +1 is a good bet
