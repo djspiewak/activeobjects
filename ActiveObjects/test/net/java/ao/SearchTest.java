@@ -67,7 +67,6 @@ public class SearchTest {
 	public static void setUp() throws IOException, SQLException {
 		TypeManager.getInstance().addType(new ClassType());
 
-		SearchableEntityManager.asynchronous = false;
 		manager = new SearchableEntityManager("jdbc:hsqldb:mem:test_database", "sa", "", 
 				FSDirectory.getDirectory(TEST_INDEX));
 //		manager = new SearchableEntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges", 
@@ -300,8 +299,6 @@ public class SearchTest {
 		
 		manager.getProvider().dispose();
 		deleteDir(TEST_INDEX);
-
-		SearchableEntityManager.asynchronous = true;
 	}
 	
 	private static void deleteDir(File dir) {

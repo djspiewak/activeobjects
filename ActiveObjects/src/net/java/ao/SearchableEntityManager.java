@@ -73,8 +73,6 @@ import org.apache.lucene.store.Directory;
  * @see net.java.ao.Searchable
  */
 public class SearchableEntityManager extends EntityManager {
-	static boolean asynchronous = true;		// hack for testing
-	
 	private Directory indexDir;
 
 	private Analyzer analyzer;
@@ -334,43 +332,28 @@ public class SearchableEntityManager extends EntityManager {
 
 		public void propertyChange(final PropertyChangeEvent evt) {
 			if (indexFields.contains(evt.getPropertyName())) {
-				Thread t = new Thread() {
-					{
-						setPriority(3);
-					}
+				T entity = (T) evt.getSource();
 
-					@Override
-					public void run() {
-						T entity = (T) evt.getSource();
+				doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + '.' 
+						+ evt.getPropertyName(), evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
 
-						doc.add(new Field(getTableNameConverter().getName(entity.getEntityType()) + '.' 
-								+ evt.getPropertyName(), evt.getNewValue().toString(), Field.Store.YES, Field.Index.TOKENIZED));
-
-						IndexWriter writer = null;
+				IndexWriter writer = null;
+				try {
+					writer = new IndexWriter(getIndexDir(), getAnalyzer(), false);
+					writer.updateDocument(new Term(getTableNameConverter().getName(entity.getEntityType()) + "." 
+							+ Common.getPrimaryKeyField(entity.getEntityType(), getFieldNameConverter()), 
+							Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity))), doc);
+				} catch (IOException e) {
+				} finally {
+					if (writer != null) {
 						try {
-							writer = new IndexWriter(getIndexDir(), getAnalyzer(), false);
-							writer.updateDocument(new Term(getTableNameConverter().getName(entity.getEntityType()) + "." 
-									+ Common.getPrimaryKeyField(entity.getEntityType(), getFieldNameConverter()), 
-									Common.getPrimaryKeyType(entity.getEntityType()).valueToString(Common.getPrimaryKeyValue(entity))), doc);
+							writer.close();
+						} catch (CorruptIndexException e) {
+							e.printStackTrace();
 						} catch (IOException e) {
-						} finally {
-							if (writer != null) {
-								try {
-									writer.close();
-								} catch (CorruptIndexException e) {
-									e.printStackTrace();
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
+							e.printStackTrace();
 						}
 					}
-				};
-				
-				if (asynchronous) {
-					t.start();
-				} else {
-					t.run();
 				}
 			}
 		}

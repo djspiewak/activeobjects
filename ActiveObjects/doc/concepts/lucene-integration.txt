@@ -58,17 +58,6 @@ are necessary are to add the Lucene library to the CLASSPATH and to replace
 be created (or updated if it exists already) and any interaction with Lucene
 will be handled by ActiveObjects.
 
-One important detail of this integration is that it is completely asynchronous.
-``SearchableEntityManager`` uses a series of bean property listeners on all
-controlled entities.  Whenever a property is changed, a new, low-priority thread
-is spawned to update the index.  In this way, the index update does not block
-execution flow.  There is nothing preventing this process from occurring in a
-single actor thread for efficiency (to avoid unnecessary thread initialization),
-but this optimization has not yet been implemented.  As a result of this
-asynchronous behavior, there is no way to say for certain whether or not the
-index has been updated immediately following a call to an entity mutator.  (this
-causes a bit of a problem for the JUnit test suite)
-
 
 Searching
 ---------
