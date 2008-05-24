@@ -31,6 +31,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
 
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
+
 import org.junit.Test;
 
 import test.schema.Author;
@@ -61,6 +64,10 @@ import test.schema.Select;
  */
 public class EntityTest extends DataTest {
 	
+	public EntityTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(tableConverter, fieldConverter);
+	}
+
 	@Test
 	public void testDatabaseAccessor() {
 		Person person = manager.get(Person.class, personID);
@@ -166,6 +173,12 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testSave() throws SQLException {
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		companyTableName = manager.getProvider().processID(companyTableName);
+
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		personTableName = manager.getProvider().processID(personTableName);
+		
 		Company company = manager.create(Company.class);
 		
 		company.setName("Another company name");
@@ -179,7 +192,8 @@ public class EntityTest extends DataTest {
 		boolean cool = false;
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM company WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM " + companyTableName 
+					+ " WHERE companyID = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -204,7 +218,8 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM company WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM " + companyTableName 
+					+ " WHERE companyID = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -232,7 +247,7 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT profession FROM person WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT profession FROM " + personTableName + " WHERE id = ?");
 			stmt.setInt(1, person.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -291,6 +306,9 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testPolymorphicMutator() throws SQLException {
+		String commentTableName = manager.getTableNameConverter().getName(Comment.class);
+		commentTableName = manager.getProvider().processID(commentTableName);
+		
 		Post post = manager.create(Post.class);
 		post.setTitle("My Temp Test Title");
 		post.save();
@@ -303,7 +321,8 @@ public class EntityTest extends DataTest {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM comment WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM " 
+					+ commentTableName + " WHERE id = ?");
 			stmt.setInt(1, comment.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -329,7 +348,8 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM comment WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM " 
+					+ commentTableName + " WHERE id = ?");
 			stmt.setInt(1, comment.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -353,7 +373,8 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM comment WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM " 
+					+ commentTableName + " WHERE id = ?");
 			stmt.setInt(1, comment.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -494,11 +515,15 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testStringGenerate() throws SQLException {
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		companyTableName = manager.getProvider().processID(companyTableName);
+		
 		Company company = manager.create(Company.class);
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT motivation FROM company WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT motivation FROM " + companyTableName 
+					+ " WHERE companyID = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -518,6 +543,9 @@ public class EntityTest extends DataTest {
 	
 	@Test
 	public void testDelete() throws SQLException {
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		companyTableName = manager.getProvider().processID(companyTableName);
+		
 		Company company = manager.create(Company.class);
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
@@ -526,7 +554,8 @@ public class EntityTest extends DataTest {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT companyID FROM company WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT companyID FROM " + companyTableName 
+					+ " WHERE companyID = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();

@@ -26,6 +26,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
+
 import org.junit.Test;
 
 import test.schema.Company;
@@ -39,6 +42,10 @@ import test.schema.Select;
  */
 public class EntityManagerTest extends DataTest {
 	
+	public EntityManagerTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(tableConverter, fieldConverter);
+	}
+
 	@Test
 	public void testGetCheckID() {
 		assertNull(manager.get(Person.class, personID + 1));
@@ -65,9 +72,16 @@ public class EntityManagerTest extends DataTest {
 		Company company = manager.create(Company.class);
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		companyTableName = manager.getProvider().processID(companyTableName);
+
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		personTableName = manager.getProvider().processID(personTableName);
+		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT companyID FROM company WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT companyID FROM " + companyTableName 
+					+ " WHERE companyID = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -92,7 +106,7 @@ public class EntityManagerTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM person WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + personTableName + " WHERE id = ?");
 			stmt.setInt(1, person.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -194,8 +208,11 @@ public class EntityManagerTest extends DataTest {
 	
 	@Test
 	public void testFindWithSQL() throws SQLException {
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		companyTableName = manager.getProvider().processID(companyTableName);
+		
 		Company[] coolCompanies = manager.findWithSQL(Company.class, 
-				"companyID", "SELECT companyID FROM company WHERE cool = ?", true);
+				"companyID", "SELECT companyID FROM " + companyTableName + " WHERE cool = ?", true);
 		
 		assertEquals(coolCompanyIDs.length, coolCompanies.length);
 		
@@ -213,7 +230,7 @@ public class EntityManagerTest extends DataTest {
 			}
 		}
 		
-		Company[] companies = manager.findWithSQL(Company.class, "companyID", "SELECT companyID FROM company");
+		Company[] companies = manager.findWithSQL(Company.class, "companyID", "SELECT companyID FROM " + companyTableName);
 		
 		assertEquals(coolCompanyIDs.length + 1, companies.length);
 		

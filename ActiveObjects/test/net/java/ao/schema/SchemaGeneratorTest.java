@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.sql.SQLException;
 import java.sql.Types;
 
 import net.java.ao.DataTest;
@@ -33,12 +34,17 @@ import net.java.ao.schema.ddl.DDLTable;
 import org.junit.Test;
 
 import test.schema.Pen;
+import test.schema.Person;
 import test.schema.PersonSuit;
 
 /**
  * @author Daniel Spiewak
  */
 public class SchemaGeneratorTest extends DataTest {
+
+	public SchemaGeneratorTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(tableConverter, fieldConverter);
+	}
 
 	@SuppressWarnings("null")
 	@Test
@@ -153,7 +159,8 @@ public class SchemaGeneratorTest extends DataTest {
 		
 		assertNotNull(cidKey);
 		
-		assertEquals("person", cidKey.getDomesticTable());
+		assertEquals(manager.getProvider().processID(manager.getTableNameConverter().getName(Person.class)),
+				cidKey.getDomesticTable());
 		assertEquals("companyID", cidKey.getField());
 		assertEquals("companyID", cidKey.getForeignField());
 		assertEquals("company", cidKey.getTable());

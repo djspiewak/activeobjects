@@ -30,13 +30,21 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import net.java.ao.DataTest;
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
 
 import org.junit.Test;
+
+import test.schema.Person;
 
 /**
  * @author Daniel Spiewak
  */
 public class DatabaseTypeTest extends DataTest {
+
+	public DatabaseTypeTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(tableConverter, fieldConverter);
+	}
 
 	@Test
 	public void testIsHandlerForInt() {
@@ -65,10 +73,13 @@ public class DatabaseTypeTest extends DataTest {
 
 	@Test
 	public void testPutToDatabase() throws SQLException, MalformedURLException {
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		personTableName = manager.getProvider().processID(personTableName);
+		
 		Connection conn = manager.getProvider().getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement(
-					"UPDATE person SET firstName = ?, age = ?, url = ?, favoriteClass = ? WHERE id = ?");
+					"UPDATE " + personTableName + " SET firstName = ?, age = ?, url = ?, favoriteClass = ? WHERE id = ?");
 			
 			int index = 1;
 			
@@ -82,7 +93,7 @@ public class DatabaseTypeTest extends DataTest {
 			stmt.executeUpdate();
 			stmt.close();
 			
-			stmt = conn.prepareStatement("SELECT firstName,age,url,favoriteClass FROM person WHERE id = ?");
+			stmt = conn.prepareStatement("SELECT firstName,age,url,favoriteClass FROM " + personTableName + " WHERE id = ?");
 			stmt.setInt(1, personID);
 			
 			ResultSet res = stmt.executeQuery();
@@ -102,10 +113,13 @@ public class DatabaseTypeTest extends DataTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testConvert() throws SQLException, MalformedURLException {
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		personTableName = manager.getProvider().processID(personTableName);
+		
 		Connection conn = manager.getProvider().getConnection();
 		try {
 			PreparedStatement stmt = conn.prepareStatement(
-					"UPDATE person SET firstName = ?, age = ?, url = ?, favoriteClass = ? WHERE id = ?");
+					"UPDATE " + personTableName + " SET firstName = ?, age = ?, url = ?, favoriteClass = ? WHERE id = ?");
 	
 			int index = 1;
 			
@@ -119,7 +133,7 @@ public class DatabaseTypeTest extends DataTest {
 			stmt.executeUpdate();
 			stmt.close();
 			
-			stmt = conn.prepareStatement("SELECT firstName,age,url,favoriteClass FROM person WHERE id = ?");
+			stmt = conn.prepareStatement("SELECT firstName,age,url,favoriteClass FROM " + personTableName + " WHERE id = ?");
 			stmt.setInt(1, personID);
 			
 			ResultSet res = stmt.executeQuery();

@@ -4,13 +4,11 @@
 Testing TODO
 ============
 
-
 Name Conversion
 ===============
 
-* Run tests with different name converter combinations
-    * JUnit4 parameterized test
-    
+* Run tests with different field name converters
+
 
 Entities
 ========

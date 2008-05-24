@@ -12,9 +12,14 @@ import java.util.logging.Logger;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import test.schema.Address;
+import test.schema.Author;
 import test.schema.Authorship;
 import test.schema.Book;
 import test.schema.Comment;
+import test.schema.Commentable;
+import test.schema.Company;
+import test.schema.CompanyAddressInfo;
 import test.schema.Distribution;
 import test.schema.EmailAddress;
 import test.schema.Magazine;
@@ -22,11 +27,14 @@ import test.schema.Message;
 import test.schema.Nose;
 import test.schema.OnlineDistribution;
 import test.schema.Pen;
+import test.schema.Person;
+import test.schema.PersonLegalDefence;
 import test.schema.PersonSuit;
 import test.schema.Photo;
 import test.schema.Post;
 import test.schema.PostalAddress;
 import test.schema.PrintDistribution;
+import test.schema.Publication;
 import test.schema.PublicationToDistribution;
 import test.schema.Select;
 
@@ -86,9 +94,86 @@ public class TestUtilities {
 			t.printStackTrace();
 		}
 		
+		String addressTableName = manager.getTableNameConverter().getName(Address.class);
+		addressTableName = manager.getProvider().processID(addressTableName);
+
+		String authorTableName = manager.getTableNameConverter().getName(Author.class);
+		authorTableName = manager.getProvider().processID(authorTableName);
+
+		String authorshipTableName = manager.getTableNameConverter().getName(Authorship.class);
+		authorshipTableName = manager.getProvider().processID(authorshipTableName);
+
+		String bookTableName = manager.getTableNameConverter().getName(Book.class);
+		bookTableName = manager.getProvider().processID(bookTableName);
+
+		String commentTableName = manager.getTableNameConverter().getName(Comment.class);
+		commentTableName = manager.getProvider().processID(commentTableName);
+
+		String commentableTableName = manager.getTableNameConverter().getName(Commentable.class);
+		commentableTableName = manager.getProvider().processID(commentableTableName);
+
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		companyTableName = manager.getProvider().processID(companyTableName);
+
+		String companyAddressInfoTableName = manager.getTableNameConverter().getName(CompanyAddressInfo.class);
+		companyAddressInfoTableName = manager.getProvider().processID(companyAddressInfoTableName);
+
+		String distributionTableName = manager.getTableNameConverter().getName(Distribution.class);
+		distributionTableName = manager.getProvider().processID(distributionTableName);
+
+		String emailAddressTableName = manager.getTableNameConverter().getName(EmailAddress.class);
+		emailAddressTableName = manager.getProvider().processID(emailAddressTableName);
+
+		String magazineTableName = manager.getTableNameConverter().getName(Magazine.class);
+		magazineTableName = manager.getProvider().processID(magazineTableName);
+
+		String messageTableName = manager.getTableNameConverter().getName(Message.class);
+		messageTableName = manager.getProvider().processID(messageTableName);
+
+		String noseTableName = manager.getTableNameConverter().getName(Nose.class);
+		noseTableName = manager.getProvider().processID(noseTableName);
+
+		String onlineDistributionTableName = manager.getTableNameConverter().getName(OnlineDistribution.class);
+		onlineDistributionTableName = manager.getProvider().processID(onlineDistributionTableName);
+
+		String penTableName = manager.getTableNameConverter().getName(Pen.class);
+		penTableName = manager.getProvider().processID(penTableName);
+
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		personTableName = manager.getProvider().processID(personTableName);
+
+		String personLegalDefenceTableName = manager.getTableNameConverter().getName(PersonLegalDefence.class);
+		personLegalDefenceTableName = manager.getProvider().processID(personLegalDefenceTableName);
+
+		String personSuitTableName = manager.getTableNameConverter().getName(PersonSuit.class);
+		personSuitTableName = manager.getProvider().processID(personSuitTableName);
+
+		String photoTableName = manager.getTableNameConverter().getName(Photo.class);
+		photoTableName = manager.getProvider().processID(photoTableName);
+
+		String postTableName = manager.getTableNameConverter().getName(Post.class);
+		postTableName = manager.getProvider().processID(postTableName);
+
+		String postalAddressTableName = manager.getTableNameConverter().getName(PostalAddress.class);
+		postalAddressTableName = manager.getProvider().processID(postalAddressTableName);
+
+		String printDistributionTableName = manager.getTableNameConverter().getName(PrintDistribution.class);
+		printDistributionTableName = manager.getProvider().processID(printDistributionTableName);
+
+		String publicationTableName = manager.getTableNameConverter().getName(Publication.class);
+		publicationTableName = manager.getProvider().processID(publicationTableName);
+
+		String publicationToDistributionTableName = manager.getTableNameConverter().getName(PublicationToDistribution.class);
+		publicationToDistributionTableName = manager.getProvider().processID(publicationToDistributionTableName);
+
+		String selectTableName = manager.getTableNameConverter().getName(Select.class);
+		selectTableName = manager.getProvider().processID(selectTableName);
+
+		//_________________________________________________________________________________________
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = prepareStatement(conn, "INSERT INTO company (companyID, name, cool, image) VALUES (?,?,?,?)");
+			PreparedStatement stmt = prepareStatement(conn, "INSERT INTO " + companyTableName  
+					+ " (companyID, name, cool, image) VALUES (?,?,?,?)");
 			
 			stmt.setLong(1, back.companyID = System.currentTimeMillis());
 			stmt.setString(2, "Company Name");
@@ -106,7 +191,7 @@ public class TestUtilities {
 			int index = 0;
 			back.coolCompanyIDs = new long[3];
 			
-			stmt = prepareStatement(conn, "INSERT INTO company (companyID, name, cool) VALUES (?,?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + companyTableName + " (companyID, name, cool) VALUES (?,?,?)");
 
 			stmt.setLong(1, back.coolCompanyIDs[index++] = System.currentTimeMillis());
 			stmt.setString(2, "Cool Company");
@@ -134,7 +219,8 @@ public class TestUtilities {
 			
 			assignPriorID(manager, conn, "person");
 			
-			stmt = prepareStatement(conn, "INSERT INTO person (firstName, profession, companyID, image) VALUES (?, ?, ?, ?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + personTableName 
+					+ " (firstName, profession, companyID, image) VALUES (?, ?, ?, ?)");
 			
 			stmt.setString(1, "Daniel");
 			stmt.setInt(2, 0);
@@ -152,7 +238,7 @@ public class TestUtilities {
 			
 			assignPriorID(manager, conn, "nose");
 			
-			stmt = prepareStatement(conn, "INSERT INTO nose (length,personID) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + noseTableName + " (length,personID) VALUES (?,?)");
 			
 			stmt.setInt(1, 2);
 			stmt.setInt(2, back.personID);
@@ -165,7 +251,7 @@ public class TestUtilities {
 			assignPriorID(manager, conn, "pen");
 			
 			back.penIDs = new int[3];
-			stmt = prepareStatement(conn, "INSERT INTO pen (width,personID) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + penTableName + " (width,personID) VALUES (?,?)");
 	
 			index = 0;
 			
@@ -196,7 +282,7 @@ public class TestUtilities {
 			assignPriorID(manager, conn, "personDefence");
 			
 			back.defenceIDs = new int[3];
-			stmt = prepareStatement(conn, "INSERT INTO personDefence (severity) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + personLegalDefenceTableName + " (severity) VALUES (?)");
 			
 			index = 0;
 	
@@ -224,7 +310,8 @@ public class TestUtilities {
 			assignPriorID(manager, conn, "personSuit");
 			
 			back.suitIDs = new int[3];
-			stmt = prepareStatement(conn, "INSERT INTO personSuit (personID, personLegalDefenceID) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + personSuitTableName 
+					+ " (personID, personLegalDefenceID) VALUES (?,?)");
 	
 			index = 0;
 			
@@ -254,7 +341,7 @@ public class TestUtilities {
 			
 			assignPriorID(manager, conn, "post");
 			
-			stmt = prepareStatement(conn, "INSERT INTO post (title) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + postTableName + " (title) VALUES (?)");
 			
 			stmt.setString(1, "Test Post");
 			stmt.executeUpdate();
@@ -265,7 +352,7 @@ public class TestUtilities {
 			
 			assignPriorID(manager, conn, "photo");
 			
-			stmt = prepareStatement(conn, "INSERT INTO photo (depth) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + photoTableName + " (depth) VALUES (?)");
 			
 			stmt.setInt(1, 256);
 			
@@ -274,9 +361,6 @@ public class TestUtilities {
 			back.photoID = getPriorID(conn, stmt);
 			
 			stmt.close();
-			
-			String commentTableName = "comment";
-			commentTableName = manager.getProvider().processID(commentTableName);
 			
 			assignPriorID(manager, conn, "comment");
 			
@@ -349,7 +433,7 @@ public class TestUtilities {
 			
 			assignPriorID(manager, conn, "book");
 			
-			stmt = prepareStatement(conn, "INSERT INTO book (title,hardcover) VALUES (?,?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + bookTableName + " (title,hardcover) VALUES (?,?)");
 			
 			stmt.setString(1, "Test Book 1");
 			stmt.setBoolean(2, true);
@@ -372,7 +456,7 @@ public class TestUtilities {
 			
 			assignPriorID(manager, conn, "magazine");
 			
-			stmt = prepareStatement(conn, "INSERT INTO magazine (title) VALUES (?)");
+			stmt = prepareStatement(conn, "INSERT INTO " + magazineTableName + " (title) VALUES (?)");
 			
 			stmt.setString(1, "Test Magazine 1");
 			stmt.executeUpdate();
@@ -404,7 +488,8 @@ public class TestUtilities {
 					
 					stmt.close();
 					
-					stmt = prepareStatement(conn, "INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + authorshipTableName 
+							+ " (publicationID,publicationType,authorID) VALUES (?,?,?)");
 					
 					stmt.setInt(1, back.bookIDs[i]);
 					stmt.setString(2, "book");
@@ -421,7 +506,7 @@ public class TestUtilities {
 				for (int subIndex = 0; subIndex < back.magazineAuthorIDs[0].length; subIndex++) {
 					assignPriorID(manager, conn, "author");
 					
-					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + authorTableName + " (name) VALUES (?)");
 					
 					stmt.setString(1, "Test Magazine Author " + (subIndex + 1));
 					stmt.executeUpdate();
@@ -430,7 +515,8 @@ public class TestUtilities {
 					
 					stmt.close();
 					
-					stmt = prepareStatement(conn, "INSERT INTO authorship (publicationID,publicationType,authorID) VALUES (?,?,?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + authorshipTableName 
+							+ " (publicationID,publicationType,authorID) VALUES (?,?,?)");
 					
 					stmt.setInt(1, back.magazineIDs[i]);
 					stmt.setString(2, "magazine");
@@ -474,8 +560,8 @@ public class TestUtilities {
 					
 					stmt.close();
 					
-					stmt = prepareStatement(conn, "INSERT INTO publicationToDistribution " +
-							"(publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + publicationToDistributionTableName +
+							" (publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
 					
 					stmt.setInt(1, back.bookIDs[i]);
 					stmt.setString(2, "book");
@@ -520,8 +606,8 @@ public class TestUtilities {
 					
 					stmt.close();
 					
-					stmt = prepareStatement(conn, "INSERT INTO publicationToDistribution " +
-							"(publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + publicationToDistributionTableName +
+							" (publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
 					
 					stmt.setInt(1, back.magazineIDs[i]);
 					stmt.setString(2, "magazine");
@@ -533,7 +619,7 @@ public class TestUtilities {
 					
 					back.addressIDs = new int[2];
 					
-					stmt = prepareStatement(conn, "INSERT INTO emailAddress (email) VALUES (?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + emailAddressTableName + " (email) VALUES (?)");
 					
 					assignPriorID(manager, conn, "emailAddress");
 					
@@ -555,8 +641,8 @@ public class TestUtilities {
 					
 					String contentsName = manager.getProvider().processID("contents");
 					
-					stmt = prepareStatement(conn, "INSERT INTO message (" + contentsName + ",fromID,fromType,toID,toType)" +
-							" VALUES (?,?,?,?,?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + messageTableName + " (" + contentsName 
+							+ ",fromID,fromType,toID,toType)" + " VALUES (?,?,?,?,?)");
 					
 					assignPriorID(manager, conn, "message");
 					
@@ -689,35 +775,105 @@ public class TestUtilities {
 			
 			String suffix;
 			
-//			suffix = "";
-			suffix = " PURGE";
+			suffix = "";
+//			suffix = " PURGE";
 			
-			String commentName = "comment";
-			String selectName = "select";
+			String addressTableName = manager.getTableNameConverter().getName(Address.class);
+			addressTableName = manager.getProvider().processID(addressTableName);
+
+			String authorTableName = manager.getTableNameConverter().getName(Author.class);
+			authorTableName = manager.getProvider().processID(authorTableName);
+
+			String authorshipTableName = manager.getTableNameConverter().getName(Authorship.class);
+			authorshipTableName = manager.getProvider().processID(authorshipTableName);
+
+			String bookTableName = manager.getTableNameConverter().getName(Book.class);
+			bookTableName = manager.getProvider().processID(bookTableName);
+
+			String commentTableName = manager.getTableNameConverter().getName(Comment.class);
+			commentTableName = manager.getProvider().processID(commentTableName);
+
+			String commentableTableName = manager.getTableNameConverter().getName(Commentable.class);
+			commentableTableName = manager.getProvider().processID(commentableTableName);
+
+			String companyTableName = manager.getTableNameConverter().getName(Company.class);
+			companyTableName = manager.getProvider().processID(companyTableName);
+
+			String companyAddressInfoTableName = manager.getTableNameConverter().getName(CompanyAddressInfo.class);
+			companyAddressInfoTableName = manager.getProvider().processID(companyAddressInfoTableName);
+
+			String distributionTableName = manager.getTableNameConverter().getName(Distribution.class);
+			distributionTableName = manager.getProvider().processID(distributionTableName);
+
+			String emailAddressTableName = manager.getTableNameConverter().getName(EmailAddress.class);
+			emailAddressTableName = manager.getProvider().processID(emailAddressTableName);
+
+			String magazineTableName = manager.getTableNameConverter().getName(Magazine.class);
+			magazineTableName = manager.getProvider().processID(magazineTableName);
+
+			String messageTableName = manager.getTableNameConverter().getName(Message.class);
+			messageTableName = manager.getProvider().processID(messageTableName);
+
+			String noseTableName = manager.getTableNameConverter().getName(Nose.class);
+			noseTableName = manager.getProvider().processID(noseTableName);
+
+			String onlineDistributionTableName = manager.getTableNameConverter().getName(OnlineDistribution.class);
+			onlineDistributionTableName = manager.getProvider().processID(onlineDistributionTableName);
+
+			String penTableName = manager.getTableNameConverter().getName(Pen.class);
+			penTableName = manager.getProvider().processID(penTableName);
+
+			String personTableName = manager.getTableNameConverter().getName(Person.class);
+			personTableName = manager.getProvider().processID(personTableName);
+
+			String personLegalDefenceTableName = manager.getTableNameConverter().getName(PersonLegalDefence.class);
+			personLegalDefenceTableName = manager.getProvider().processID(personLegalDefenceTableName);
+
+			String personSuitTableName = manager.getTableNameConverter().getName(PersonSuit.class);
+			personSuitTableName = manager.getProvider().processID(personSuitTableName);
+
+			String photoTableName = manager.getTableNameConverter().getName(Photo.class);
+			photoTableName = manager.getProvider().processID(photoTableName);
+
+			String postTableName = manager.getTableNameConverter().getName(Post.class);
+			postTableName = manager.getProvider().processID(postTableName);
+
+			String postalAddressTableName = manager.getTableNameConverter().getName(PostalAddress.class);
+			postalAddressTableName = manager.getProvider().processID(postalAddressTableName);
+
+			String printDistributionTableName = manager.getTableNameConverter().getName(PrintDistribution.class);
+			printDistributionTableName = manager.getProvider().processID(printDistributionTableName);
+
+			String publicationTableName = manager.getTableNameConverter().getName(Publication.class);
+			publicationTableName = manager.getProvider().processID(publicationTableName);
+
+			String publicationToDistributionTableName = manager.getTableNameConverter().getName(PublicationToDistribution.class);
+			publicationToDistributionTableName = manager.getProvider().processID(publicationToDistributionTableName);
+
+			String selectTableName = manager.getTableNameConverter().getName(Select.class);
+			selectTableName = manager.getProvider().processID(selectTableName);
 			
-			commentName = manager.getProvider().processID(commentName);
-			selectName = manager.getProvider().processID(selectName);
-			
-			stmt.executeUpdate("DELETE FROM pen" + suffix);
-			stmt.executeUpdate("DELETE FROM personSuit" + suffix);
-			stmt.executeUpdate("DELETE FROM personDefence" + suffix);
-			stmt.executeUpdate("DELETE FROM nose" + suffix);
-			stmt.executeUpdate("DELETE FROM person" + suffix);
-			stmt.executeUpdate("DELETE FROM company" + suffix);
-			stmt.executeUpdate("DELETE FROM " + commentName + suffix);
-			stmt.executeUpdate("DELETE FROM post" + suffix);
-			stmt.executeUpdate("DELETE FROM photo" + suffix);
-			stmt.executeUpdate("DELETE FROM authorship" + suffix);
-			stmt.executeUpdate("DELETE FROM author" + suffix);
-			stmt.executeUpdate("DELETE FROM book" + suffix);
-			stmt.executeUpdate("DELETE FROM magazine" + suffix);
-			stmt.executeUpdate("DELETE FROM publicationToDistribution" + suffix);
-			stmt.executeUpdate("DELETE FROM printDistribution" + suffix);
-			stmt.executeUpdate("DELETE FROM onlineDistribution" + suffix);
-			stmt.executeUpdate("DELETE FROM message" + suffix);
-			stmt.executeUpdate("DELETE FROM emailAddress" + suffix);
-			stmt.executeUpdate("DELETE FROM postalAddress" + suffix);
-			stmt.executeUpdate("DELETE FROM " + selectName + suffix);
+			//_____________________________________________________________________________________
+			stmt.executeUpdate("DELETE FROM " + penTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + personSuitTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + personLegalDefenceTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + noseTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + personTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + companyTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + commentTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + postTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + photoTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + authorshipTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + authorTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + bookTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + magazineTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + publicationToDistributionTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + printDistributionTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + onlineDistributionTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + messageTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + emailAddressTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + postalAddressTableName + suffix);
+			stmt.executeUpdate("DELETE FROM " + selectTableName + suffix);
 			
 			stmt.close();
 		} finally {

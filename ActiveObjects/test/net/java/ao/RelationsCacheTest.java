@@ -19,6 +19,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
 
+import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.TableNameConverter;
+
 import org.junit.Test;
 
 import test.schema.Pen;
@@ -31,6 +34,10 @@ import test.schema.PersonSuit;
  */
 public class RelationsCacheTest extends DataTest {
 	
+	public RelationsCacheTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(tableConverter, fieldConverter);
+	}
+
 	@Test
 	public void testOneToManyDestinationCreation() throws SQLException {
 		Person person = manager.get(Person.class, personID);

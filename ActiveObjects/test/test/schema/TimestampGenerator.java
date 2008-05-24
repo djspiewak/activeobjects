@@ -24,6 +24,11 @@ import net.java.ao.ValueGenerator;
 public class TimestampGenerator implements ValueGenerator<Long> {
 
 	public Long generateValue(EntityManager manager) {
+		try {
+			Thread.sleep(5);	// just enough to prevent clashes
+		} catch (InterruptedException e) {
+		}
+		
 		return System.currentTimeMillis();
 	}
 }

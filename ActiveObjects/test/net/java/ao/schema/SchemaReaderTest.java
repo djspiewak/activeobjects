@@ -38,12 +38,17 @@ import net.java.ao.schema.ddl.SchemaReader;
 import org.junit.Test;
 
 import test.schema.Pen;
+import test.schema.Person;
 import test.schema.PersonSuit;
 
 /**
  * @author Daniel Spiewak
  */
 public class SchemaReaderTest extends DataTest {
+
+	public SchemaReaderTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(tableConverter, fieldConverter);
+	}
 
 	@SuppressWarnings("null")
 	@Test
@@ -129,7 +134,8 @@ public class SchemaReaderTest extends DataTest {
 		
 		assertNotNull(cidKey);
 		
-		assertTrue("person".equalsIgnoreCase(cidKey.getDomesticTable()));
+		assertTrue(manager.getProvider().processID(
+				manager.getTableNameConverter().getName(Person.class)).equalsIgnoreCase(cidKey.getDomesticTable()));
 		assertTrue("companyID".equalsIgnoreCase(cidKey.getField()));
 		assertTrue("companyID".equalsIgnoreCase(cidKey.getForeignField()));
 		assertTrue("company".equalsIgnoreCase(cidKey.getTable()));
