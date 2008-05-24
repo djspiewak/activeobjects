@@ -13,5 +13,6 @@
 	<classpathentry kind="var" path="proxool"/>
 	<classpathentry kind="var" path="dbpool" sourcepath="/dbpool-src"/>
 	<classpathentry kind="var" path="hsqldb"/>
+	<classpathentry kind="lib" path="C:/Users/Daniel Spiewak/Libraries/ojdbc14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

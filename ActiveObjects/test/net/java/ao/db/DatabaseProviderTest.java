@@ -354,6 +354,19 @@ public class DatabaseProviderTest {
 		table.setName("person");
 		back.setTable(table);
 		
+		DDLField idField = new DDLField();
+		idField.setName("id");
+		idField.setType(TypeManager.getInstance().getType(int.class));
+		idField.setAutoIncrement(true);
+		idField.setNotNull(true);
+		idField.setPrimaryKey(true);
+		
+		DDLField nameField = new DDLField();
+		nameField.setName("name");
+		nameField.setType(TypeManager.getInstance().getType(String.class));
+		
+		table.setFields(new DDLField[] {idField, nameField});
+		
 		return back;
 	}
 	

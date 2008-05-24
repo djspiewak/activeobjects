@@ -64,7 +64,6 @@ public class DatabaseTypeTest extends DataTest {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void testPutToDatabase() throws SQLException, MalformedURLException {
 		Connection conn = manager.getProvider().getConnection();
 		try {
@@ -73,10 +72,10 @@ public class DatabaseTypeTest extends DataTest {
 			
 			int index = 1;
 			
-			new VarcharType().putToDatabase(index++, stmt, "JoeJoe");
-			new IntegerType().putToDatabase(index++, stmt, 123);
-			new URLType().putToDatabase(index++, stmt, new URL("http://www.google.com"));
-			new ClassType().putToDatabase(index++, stmt, getClass());
+			new VarcharType().putToDatabase(manager, stmt, index++, "JoeJoe");
+			new IntegerType().putToDatabase(manager, stmt, index++, 123);
+			new URLType().putToDatabase(manager, stmt, index++, new URL("http://www.google.com"));
+			new ClassType().putToDatabase(manager, stmt, index++, getClass());
 			
 			stmt.setInt(index++, personID);
 			

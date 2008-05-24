@@ -132,7 +132,7 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			assignPriorID(conn, "person");
+			assignPriorID(manager, conn, "person");
 			
 			stmt = prepareStatement(conn, "INSERT INTO person (firstName, profession, companyID, image) VALUES (?, ?, ?, ?)");
 			
@@ -150,7 +150,7 @@ public class TestUtilities {
 			back.personID = getPriorID(conn, stmt);
 			stmt.close();
 			
-			assignPriorID(conn, "nose");
+			assignPriorID(manager, conn, "nose");
 			
 			stmt = prepareStatement(conn, "INSERT INTO nose (length,personID) VALUES (?,?)");
 			
@@ -162,7 +162,7 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			assignPriorID(conn, "pen");
+			assignPriorID(manager, conn, "pen");
 			
 			back.penIDs = new int[3];
 			stmt = prepareStatement(conn, "INSERT INTO pen (width,personID) VALUES (?,?)");
@@ -175,7 +175,7 @@ public class TestUtilities {
 			
 			back.penIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "pen");
+			assignPriorID(manager, conn, "pen");
 			
 			stmt.setDouble(1, 0.7);
 			stmt.setInt(2, back.personID);
@@ -183,7 +183,7 @@ public class TestUtilities {
 			
 			back.penIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "pen");
+			assignPriorID(manager, conn, "pen");
 			
 			stmt.setDouble(1, 1);
 			stmt.setInt(2, back.personID);
@@ -193,7 +193,7 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			assignPriorID(conn, "personDefence");
+			assignPriorID(manager, conn, "personDefence");
 			
 			back.defenceIDs = new int[3];
 			stmt = prepareStatement(conn, "INSERT INTO personDefence (severity) VALUES (?)");
@@ -205,14 +205,14 @@ public class TestUtilities {
 	
 			back.defenceIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "personDefence");
+			assignPriorID(manager, conn, "personDefence");
 			
 			stmt.setInt(1, 7);
 			stmt.executeUpdate();
 	
 			back.defenceIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "personDefence");
+			assignPriorID(manager, conn, "personDefence");
 			
 			stmt.setInt(1, 1);
 			stmt.executeUpdate();
@@ -221,7 +221,7 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			assignPriorID(conn, "personSuit");
+			assignPriorID(manager, conn, "personSuit");
 			
 			back.suitIDs = new int[3];
 			stmt = prepareStatement(conn, "INSERT INTO personSuit (personID, personLegalDefenceID) VALUES (?,?)");
@@ -234,7 +234,7 @@ public class TestUtilities {
 			
 			back.suitIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "personSuit");
+			assignPriorID(manager, conn, "personSuit");
 			
 			stmt.setInt(1, back.personID);
 			stmt.setInt(2, back.defenceIDs[1]);
@@ -242,7 +242,7 @@ public class TestUtilities {
 			
 			back.suitIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "personSuit");
+			assignPriorID(manager, conn, "personSuit");
 			
 			stmt.setInt(1, back.personID);
 			stmt.setInt(2, back.defenceIDs[2]);
@@ -252,7 +252,7 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			assignPriorID(conn, "post");
+			assignPriorID(manager, conn, "post");
 			
 			stmt = prepareStatement(conn, "INSERT INTO post (title) VALUES (?)");
 			
@@ -263,7 +263,7 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			assignPriorID(conn, "photo");
+			assignPriorID(manager, conn, "photo");
 			
 			stmt = prepareStatement(conn, "INSERT INTO photo (depth) VALUES (?)");
 			
@@ -275,9 +275,13 @@ public class TestUtilities {
 			
 			stmt.close();
 			
-			assignPriorID(conn, "comment");
+			String commentTableName = "comment";
+			commentTableName = manager.getProvider().processID(commentTableName);
 			
-			stmt = prepareStatement(conn, "INSERT INTO comment (title,text,commentableID,commentableType) VALUES (?,?,?,?)");
+			assignPriorID(manager, conn, "comment");
+			
+			stmt = prepareStatement(conn, "INSERT INTO " + commentTableName 
+					+ " (title,text,commentableID,commentableType) VALUES (?,?,?,?)");
 			
 			back.postCommentIDs = new int[3];
 			back.photoCommentIDs = new int[2];
@@ -294,7 +298,7 @@ public class TestUtilities {
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "comment");
+			assignPriorID(manager, conn, "comment");
 			
 			index = 1;
 			stmt.setString(index++, "Test Post Comment 2");
@@ -305,7 +309,7 @@ public class TestUtilities {
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "comment");
+			assignPriorID(manager, conn, "comment");
 			
 			index = 1;
 			stmt.setString(index++, "Test Photo Comment 1");
@@ -316,7 +320,7 @@ public class TestUtilities {
 			
 			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "comment");
+			assignPriorID(manager, conn, "comment");
 			
 			index = 1;
 			stmt.setString(index++, "Test Post Comment 3");
@@ -327,7 +331,7 @@ public class TestUtilities {
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "comment");
+			assignPriorID(manager, conn, "comment");
 			
 			index = 1;
 			stmt.setString(index++, "Test Photo Comment 2");
@@ -343,7 +347,7 @@ public class TestUtilities {
 			back.bookIDs = new int[2];
 			index = 0;
 			
-			assignPriorID(conn, "book");
+			assignPriorID(manager, conn, "book");
 			
 			stmt = prepareStatement(conn, "INSERT INTO book (title,hardcover) VALUES (?,?)");
 			
@@ -353,7 +357,7 @@ public class TestUtilities {
 			
 			back.bookIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "book");
+			assignPriorID(manager, conn, "book");
 			
 			stmt.setString(1, "Test Book 2");
 			stmt.setBoolean(2, true);
@@ -366,7 +370,7 @@ public class TestUtilities {
 			back.magazineIDs = new int[2];
 			index = 0;
 			
-			assignPriorID(conn, "magazine");
+			assignPriorID(manager, conn, "magazine");
 			
 			stmt = prepareStatement(conn, "INSERT INTO magazine (title) VALUES (?)");
 			
@@ -375,7 +379,7 @@ public class TestUtilities {
 			
 			back.magazineIDs[index++] = getPriorID(conn, stmt);
 			
-			assignPriorID(conn, "magazine");
+			assignPriorID(manager, conn, "magazine");
 			
 			stmt.setString(1, "Test Magazine 2");
 			stmt.executeUpdate();
@@ -389,7 +393,7 @@ public class TestUtilities {
 			
 			for (int i = 0; i < back.bookIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.bookAuthorIDs[0].length; subIndex++) {
-					assignPriorID(conn, "author");
+					assignPriorID(manager, conn, "author");
 					
 					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
 					
@@ -415,7 +419,7 @@ public class TestUtilities {
 			
 			for (int i = 0; i < back.magazineIDs.length; i++) {
 				for (int subIndex = 0; subIndex < back.magazineAuthorIDs[0].length; subIndex++) {
-					assignPriorID(conn, "author");
+					assignPriorID(manager, conn, "author");
 					
 					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
 					
@@ -455,7 +459,7 @@ public class TestUtilities {
 					
 					back.bookDistributionTypes[i][subIndex] = distType;
 					
-					assignPriorID(conn, distTableName);
+					assignPriorID(manager, conn, distTableName);
 					
 					stmt = prepareStatement(conn, "INSERT INTO " + distTableName + ' ' + params);
 					
@@ -501,7 +505,7 @@ public class TestUtilities {
 					
 					back.magazineDistributionTypes[i][subIndex] = distType;
 					
-					assignPriorID(conn, distTableName);
+					assignPriorID(manager, conn, distTableName);
 					
 					stmt = prepareStatement(conn, "INSERT INTO " + distTableName + ' ' + params);
 					
@@ -531,14 +535,14 @@ public class TestUtilities {
 					
 					stmt = prepareStatement(conn, "INSERT INTO emailAddress (email) VALUES (?)");
 					
-					assignPriorID(conn, "emailAddress");
+					assignPriorID(manager, conn, "emailAddress");
 					
 					stmt.setString(1, "djspiewak@gmail.com");
 					stmt.executeUpdate();
 					
 					back.addressIDs[0] = getPriorID(conn, stmt);
 					
-					assignPriorID(conn, "emailAddress");
+					assignPriorID(manager, conn, "emailAddress");
 					
 					stmt.setString(1, "daniel@danielspiewak.org");
 					stmt.executeUpdate();
@@ -549,10 +553,12 @@ public class TestUtilities {
 					
 					back.messageIDs = new int[3];
 					
-					stmt = prepareStatement(conn, "INSERT INTO message (contents,fromID,fromType,toID,toType)" +
+					String contentsName = manager.getProvider().processID("contents");
+					
+					stmt = prepareStatement(conn, "INSERT INTO message (" + contentsName + ",fromID,fromType,toID,toType)" +
 							" VALUES (?,?,?,?,?)");
 					
-					assignPriorID(conn, "message");
+					assignPriorID(manager, conn, "message");
 					
 					stmt.setString(1, "Hi there");
 					stmt.setInt(2, back.addressIDs[0]);
@@ -564,7 +570,7 @@ public class TestUtilities {
 					
 					back.messageIDs[0] = getPriorID(conn, stmt);
 					
-					assignPriorID(conn, "message");
+					assignPriorID(manager, conn, "message");
 					
 					stmt.setString(1, "Yo dude");
 					stmt.setInt(2, back.addressIDs[1]);
@@ -576,7 +582,7 @@ public class TestUtilities {
 					
 					back.messageIDs[1] = getPriorID(conn, stmt);
 					
-					assignPriorID(conn, "message");
+					assignPriorID(manager, conn, "message");
 					
 					stmt.setString(1, "Email is fun");
 					stmt.setInt(2, back.addressIDs[0]);
@@ -631,10 +637,16 @@ public class TestUtilities {
 		return conn.prepareStatement(sql/*, Statement.RETURN_GENERATED_KEYS*/);
 	}
 	
-	private static final void assignPriorID(Connection conn, String table) throws SQLException {
-//		priorID = -1;
-//		
+	private static final void assignPriorID(EntityManager manager, Connection conn, String table) throws SQLException {
+		priorID = -1;
+		
 //		PreparedStatement stmt = conn.prepareStatement("SELECT NEXTVAL('" + table + "_id_seq')");
+		
+//		String sequence = manager.getProvider().processID(table + "_id_seq");
+//		String sql = "SELECT " + sequence + ".NEXTVAL FROM dual";
+//		
+//		PreparedStatement stmt = conn.prepareStatement(sql);
+		
 //		ResultSet res = stmt.executeQuery();
 //		
 //		if (res.next()) {
@@ -675,25 +687,37 @@ public class TestUtilities {
 		try {
 			Statement stmt = conn.createStatement();
 			
-			stmt.executeUpdate("DELETE FROM pen");
-			stmt.executeUpdate("DELETE FROM personSuit");
-			stmt.executeUpdate("DELETE FROM personDefence");
-			stmt.executeUpdate("DELETE FROM nose");
-			stmt.executeUpdate("DELETE FROM person");
-			stmt.executeUpdate("DELETE FROM company");
-			stmt.executeUpdate("DELETE FROM comment");
-			stmt.executeUpdate("DELETE FROM post");
-			stmt.executeUpdate("DELETE FROM photo");
-			stmt.executeUpdate("DELETE FROM authorship");
-			stmt.executeUpdate("DELETE FROM author");
-			stmt.executeUpdate("DELETE FROM book");
-			stmt.executeUpdate("DELETE FROM magazine");
-			stmt.executeUpdate("DELETE FROM publicationToDistribution");
-			stmt.executeUpdate("DELETE FROM printDistribution");
-			stmt.executeUpdate("DELETE FROM onlineDistribution");
-			stmt.executeUpdate("DELETE FROM message");
-			stmt.executeUpdate("DELETE FROM emailAddress");
-			stmt.executeUpdate("DELETE FROM postalAddress");
+			String suffix;
+			
+//			suffix = "";
+			suffix = " PURGE";
+			
+			String commentName = "comment";
+			String selectName = "select";
+			
+			commentName = manager.getProvider().processID(commentName);
+			selectName = manager.getProvider().processID(selectName);
+			
+			stmt.executeUpdate("DELETE FROM pen" + suffix);
+			stmt.executeUpdate("DELETE FROM personSuit" + suffix);
+			stmt.executeUpdate("DELETE FROM personDefence" + suffix);
+			stmt.executeUpdate("DELETE FROM nose" + suffix);
+			stmt.executeUpdate("DELETE FROM person" + suffix);
+			stmt.executeUpdate("DELETE FROM company" + suffix);
+			stmt.executeUpdate("DELETE FROM " + commentName + suffix);
+			stmt.executeUpdate("DELETE FROM post" + suffix);
+			stmt.executeUpdate("DELETE FROM photo" + suffix);
+			stmt.executeUpdate("DELETE FROM authorship" + suffix);
+			stmt.executeUpdate("DELETE FROM author" + suffix);
+			stmt.executeUpdate("DELETE FROM book" + suffix);
+			stmt.executeUpdate("DELETE FROM magazine" + suffix);
+			stmt.executeUpdate("DELETE FROM publicationToDistribution" + suffix);
+			stmt.executeUpdate("DELETE FROM printDistribution" + suffix);
+			stmt.executeUpdate("DELETE FROM onlineDistribution" + suffix);
+			stmt.executeUpdate("DELETE FROM message" + suffix);
+			stmt.executeUpdate("DELETE FROM emailAddress" + suffix);
+			stmt.executeUpdate("DELETE FROM postalAddress" + suffix);
+			stmt.executeUpdate("DELETE FROM " + selectName + suffix);
 			
 			stmt.close();
 		} finally {

@@ -72,6 +72,8 @@ public class SearchTest {
 				FSDirectory.getDirectory(TEST_INDEX));
 //		manager = new SearchableEntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges", 
 //				FSDirectory.getDirectory(TEST_INDEX));
+//		manager = new SearchableEntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password", 
+//				FSDirectory.getDirectory(TEST_INDEX));
 
 		DataStruct data = TestUtilities.setUpEntityManager(manager);
 

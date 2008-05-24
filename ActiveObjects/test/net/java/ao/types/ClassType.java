@@ -43,7 +43,7 @@ public class ClassType extends DatabaseType<Class<?>> {
 	}
 	
 	@Override
-	public void putToDatabase(int index, PreparedStatement stmt, Class<?> value) throws SQLException {
+	public void putToDatabase(EntityManager manager, PreparedStatement stmt, int index, Class<?> value) throws SQLException {
 		stmt.setString(index, value.getName());
 	}
 

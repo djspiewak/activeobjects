@@ -9,8 +9,8 @@ Name Conversion
 ===============
 
 * Run tests with different name converter combinations
-    * Different inheritence of DataTest
-
+    * JUnit4 parameterized test
+    
 
 Entities
 ========

@@ -68,6 +68,7 @@ public abstract class DataTest {
 		
 		manager = new EntityManager("jdbc:hsqldb:mem:test_database", "sa", "");
 //		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
+//		manager = new EntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password");
 		
 		DataStruct data = TestUtilities.setUpEntityManager(manager);
 		

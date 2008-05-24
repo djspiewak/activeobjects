@@ -1,5 +1,5 @@
-DROP SEQUENCE person_SEQ
+DROP TRIGGER person_id_autoinc
 
-DROP TRIGGER person_TRG
+DROP SEQUENCE person_id_seq
 
 DROP TABLE person PURGE
