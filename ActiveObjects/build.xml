@@ -592,6 +592,10 @@ ActiveObjects ${activeobjects.version}
 				<exclude name="**/*Test*.class"/>
 		    	<exclude name="test/schema/*.class"/>
 		    	<exclude name="net/java/ao/schema/task/*.class"/>
+
+		    	<!-- we'll just trust the Harmony tests -->
+				<exclude name="net/java/ao/SoftHashMap.class"/>
+		    	<exclude name="net/java/ao/SoftHashMap*.class"/>
 		    	
 				<exclude name="net/java/ao/SQLLogMonitor.class"/>
 		    	<exclude name="net/java/ao/TestUtilities.class"/>
