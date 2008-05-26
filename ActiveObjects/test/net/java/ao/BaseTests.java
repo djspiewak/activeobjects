@@ -27,6 +27,7 @@ public class BaseTests extends TestUtilities {
 		//$JUnit-BEGIN$
 		suite.addTest(asTest(DefaultPolymorphicTypeMapperTest.class));
 		
+		suite.addTest(asTest(DBParamTest.class));
 		suite.addTest(asTest(EntityTest.class));
 		suite.addTest(asTest(RelationsCacheTest.class));
 		suite.addTest(asTest(EntityManagerTest.class));

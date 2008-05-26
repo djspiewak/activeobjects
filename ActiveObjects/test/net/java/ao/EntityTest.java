@@ -67,6 +67,29 @@ public class EntityTest extends DataTest {
 	public EntityTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
 		super(tableConverter, fieldConverter);
 	}
+	
+	@Test
+	public void testGetEntityManager() {
+		assertEquals(manager, manager.get(Company.class, companyID).getEntityManager());
+		assertEquals(manager, manager.get(Person.class, personID).getEntityManager());
+	}
+	
+	@Test
+	public void testToString() throws SQLException {
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		String selectTableName = manager.getTableNameConverter().getName(Select.class);
+		
+		assertEquals(personTableName + " {id = " + personID + "}", 
+				manager.get(Person.class, personID).toString());
+		
+		assertEquals(companyTableName + " {companyID = " + companyID + "}", 
+				manager.get(Company.class, companyID).toString());
+		
+		Select select = manager.create(Select.class);
+		assertEquals(selectTableName + " {id = " + select.getID() + "}", select.toString());
+		manager.delete(select);
+	}
 
 	@Test
 	public void testDatabaseAccessor() {

@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.TableNameConverter;
@@ -97,7 +98,27 @@ public class EntityManagerTest extends DataTest {
 		manager.delete(company);
 		
 		company = manager.create(Company.class, new DBParam("name", null));
-		assertNull(company.getName());
+		
+		conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT name FROM " + companyTableName 
+					+ " WHERE companyID = ?");
+			stmt.setLong(1, company.getCompanyID());
+			
+			ResultSet res = stmt.executeQuery();
+			
+			if (res.next()) {
+				assertEquals(null, res.getString("name"));
+			} else {
+				fail("Unable to find INSERTed company row");
+			}
+			
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
 		manager.delete(company);
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
@@ -106,13 +127,17 @@ public class EntityManagerTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + personTableName + " WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT url FROM " + personTableName + " WHERE id = ?");
 			stmt.setInt(1, person.getID());
 			
 			ResultSet res = stmt.executeQuery();
-			if (!res.next()) {
+			
+			if (res.next()) {
+				assertEquals("http://www.codecommit.com", res.getString("url"));
+			} else {
 				fail("Unable to find INSERTed person row");
 			}
+			
 			res.close();
 			stmt.close();
 		} finally {
@@ -120,6 +145,77 @@ public class EntityManagerTest extends DataTest {
 		}
 		
 		manager.delete(person);
+	}
+	
+	@Test
+	public void testCreateWithMap() throws SQLException {
+		String companyTableName = manager.getTableNameConverter().getName(Company.class);
+		companyTableName = manager.getProvider().processID(companyTableName);
+
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		personTableName = manager.getProvider().processID(personTableName);
+
+		SQLLogMonitor.getInstance().markWatchSQL();
+		Company company = manager.create(Company.class, new HashMap<String, Object>() {{
+			put("name", null);
+		}});
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		Connection conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT name FROM " + companyTableName 
+					+ " WHERE companyID = ?");
+			stmt.setLong(1, company.getCompanyID());
+			
+			ResultSet res = stmt.executeQuery();
+			
+			if (res.next()) {
+				assertEquals(null, res.getString("name"));
+			} else {
+				fail("Unable to find INSERTed company row");
+			}
+			
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		manager.delete(company);
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		Person person = manager.create(Person.class, new HashMap<String, Object>() {{
+			put("url", "http://www.codecommit.com");
+		}});
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+		
+		conn = manager.getProvider().getConnection();
+		try {
+			PreparedStatement stmt = conn.prepareStatement("SELECT url FROM " + personTableName + " WHERE id = ?");
+			stmt.setInt(1, person.getID());
+			
+			ResultSet res = stmt.executeQuery();
+			
+			if (res.next()) {
+				assertEquals("http://www.codecommit.com", res.getString("url"));
+			} else {
+				fail("Unable to find INSERTed person row");
+			}
+			
+			res.close();
+			stmt.close();
+		} finally {
+			conn.close();
+		}
+		
+		manager.delete(person);
+	}
+	
+	@Test
+	public void testDelete() throws SQLException {
+		SQLLogMonitor.getInstance().markWatchSQL();
+		manager.delete();
+		assertFalse(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
 	
 	@Test
@@ -210,6 +306,9 @@ public class EntityManagerTest extends DataTest {
 	public void testFindWithSQL() throws SQLException {
 		String companyTableName = manager.getTableNameConverter().getName(Company.class);
 		companyTableName = manager.getProvider().processID(companyTableName);
+
+		String personTableName = manager.getTableNameConverter().getName(Person.class);
+		personTableName = manager.getProvider().processID(personTableName);
 		
 		Company[] coolCompanies = manager.findWithSQL(Company.class, 
 				"companyID", "SELECT companyID FROM " + companyTableName + " WHERE cool = ?", true);
@@ -251,6 +350,27 @@ public class EntityManagerTest extends DataTest {
 				fail("Unable to find key=" + c.getCompanyID());
 			}
 		}
+		
+		Company company = manager.get(Company.class, companyID);
+		Person[] people = manager.findWithSQL(Person.class, "id", "SELECT id FROM " + personTableName 
+				+ " WHERE companyID = ?", company);
+		Person[] companyPeople = company.getPeople();
+		
+		assertEquals(companyPeople.length, people.length);
+		
+		for (Person p : people) {
+			boolean found = false;
+			for (Person expectedPerson : companyPeople) {
+				if (p.equals(expectedPerson)) {
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) {
+				fail("Unable to find key=" + p.getID());
+			}
+		}
 	}
 	
 	@Test
@@ -258,5 +378,18 @@ public class EntityManagerTest extends DataTest {
 		assertEquals(coolCompanyIDs.length, manager.count(Company.class, "cool = ?", true));
 		assertEquals(penIDs.length, manager.count(Pen.class));
 		assertEquals(1, manager.count(Person.class));
+		assertEquals(0, manager.count(Select.class));
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testNullTypeMapper() {
+		EntityManager manager = new EntityManager("jdbc:hsqldb:mem:other_testdb", null, null);
+		
+		try {
+			manager.setPolymorphicTypeMapper(null);
+			manager.getPolymorphicTypeMapper();
+		} finally {
+			manager.getProvider().dispose();
+		}
 	}
 }

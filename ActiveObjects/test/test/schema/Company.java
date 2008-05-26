@@ -21,6 +21,7 @@ import net.java.ao.Generator;
 import net.java.ao.OneToMany;
 import net.java.ao.RawEntity;
 import net.java.ao.Searchable;
+import net.java.ao.schema.Default;
 import net.java.ao.schema.NotNull;
 import net.java.ao.schema.PrimaryKey;
 
@@ -35,8 +36,8 @@ public interface Company extends RawEntity<Long> {
 	public long getCompanyID();
 	
 	@Searchable
+	@Default("Widgets Incorporated")
 	public String getName();
-	@Searchable
 	public void setName(String name);
 	
 	public boolean isCool();
