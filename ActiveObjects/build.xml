@@ -102,13 +102,13 @@
 	
 	<target name="init-reports">
 		<delete>
-			<fileset dir="reports">
+			<fileset dir="${activeobjects.dir}/reports">
 				<include name="**/*"/>
 			</fileset>
 		</delete>
 		
-		<mkdir dir="reports/junit"/>
-		<mkdir dir="reports/coverage"/>
+		<mkdir dir="${activeobjects.dir}/reports/junit"/>
+		<mkdir dir="${activeobjects.dir}/reports/coverage"/>
 	</target>
 	
 	<target name="build" depends="init">
@@ -582,10 +582,10 @@ ActiveObjects ${activeobjects.version}
 			</classpath>
 		</taskdef>
 		
-		<mkdir dir="instrument-bin"/>
+		<mkdir dir="${activeobjects.dir}/instrument-bin"/>
 		
-		<cobertura-instrument todir="instrument-bin">
-		    <fileset dir="bin">
+		<cobertura-instrument datafile="${activeobjects.dir}/cobertura.ser" todir="${activeobjects.dir}/instrument-bin">
+		    <fileset dir="${activeobjects.dir}/bin">
 				<include name="**/*.class"/>
 
     			<exclude name="**/*Test.class"/>
@@ -601,8 +601,8 @@ ActiveObjects ${activeobjects.version}
 		
         <junit printsummary="on" haltonerror="no" haltonfailure="no">
         	<classpath>
-        		<pathelement location="instrument-bin/"/>
-        		<pathelement location="bin/"/>
+        		<pathelement location="${activeobjects.dir}/instrument-bin/"/>
+        		<pathelement location="${activeobjects.dir}/bin/"/>
         		<pathelement location="${junit4.path}"/>
         		<pathelement location="${hsqldb.path}"/>
         		<pathelement path="${build.classpath}"/>
@@ -617,22 +617,23 @@ ActiveObjects ${activeobjects.version}
         	<formatter type="plain" usefile="no"/>
         	<formatter type="xml"/>
         	
-        	<test name="AllTests" todir="reports/junit"/>
+        	<test name="AllTests" todir="${activeobjects.dir}/reports/junit"/>
 		</junit>
 
-		<junitreport todir="reports/junit">
-			<fileset dir="reports/junit">
+		<junitreport todir="${activeobjects.dir}/reports/junit">
+			<fileset dir="${activeobjects.dir}/reports/junit">
 				<include name="TEST-*.xml" />
 			</fileset>
 			<report format="frames" todir="reports/junit" />
 		</junitreport>
 		
-		<cobertura-report srcdir="src" destdir="reports/coverage"/>
+		<cobertura-report srcdir="${activeobjects.dir}/src" destdir="${activeobjects.dir}/reports/coverage"/>
+		<cobertura-report srcdir="${activeobjects.dir}/src" destdir="${activeobjects.dir}/reports/coverage"/>
 		
-		<delete file="cobertura.ser"/>
-		<delete file="cobertura.log"/>
+		<delete file="${activeobjects.dir}/cobertura.ser"/>
+		<delete file="${activeobjects.dir}/cobertura.log"/>
 		
-		<delete dir="instrument-bin"/>
+		<delete dir="${activeobjects.dir}/instrument-bin"/>
 		<antcall target="clean"/>
 	</target>
 	
