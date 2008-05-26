@@ -105,8 +105,6 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			save((RawEntity<K>) proxy);
 
 			return Void.TYPE;
-		} else if (method.getName().equals("getTableName")) {
-			return getTableName();
 		} else if (method.getName().equals("getEntityManager")) {
 			return getManager();
 		} else if (method.getName().equals("addPropertyChangeListener")) {
@@ -196,10 +194,6 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return key;
 	}
 
-	public String getTableName() {
-		return getManager().getTableNameConverter().getName(type);
-	}
-
 	@SuppressWarnings("unchecked")
 	public void save(RawEntity entity) throws SQLException {
 		CacheLayer cacheLayer = getCacheLayer();
@@ -209,7 +203,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			return;
 		}
 
-		String table = getTableName();
+		String table = getManager().getTableNameConverter().getName(type);
 		TypeManager manager = TypeManager.getInstance();
 		Connection conn = getConnectionImpl();
 		DatabaseProvider provider = getManager().getProvider();
