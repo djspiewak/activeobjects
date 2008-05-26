@@ -465,10 +465,16 @@ ActiveObjects ${activeobjects.version}
 	
 	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
 		<taskdef name="jdocs" classpath="${jdocs.path}" classname="com.dzone.jdocs.ant.jdk15.task.Jdocs"/>
-		<echo level="error" message="JDocs task doesn't work yet"/>
 
 		<jdocs sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}"
-		 		overview="src/overview.html" sourcefiles="src/net/java/ao/**/*.java" package="net.java.ao"/>
+		 		overview="src/overview.html" sourcefiles="src/net/java/ao/**/*.java"
+				source="1.5" access="protected" author="yes" version="yes" use="yes"
+				defaultexcludes="yes" forkJVM="yes">
+				
+			<packageset dir="${activeobjects.dir}/src">
+				<include name="net/java/ao/**/*.java"/>
+			</packageset>
+		</jdocs>
 	</target>
 	
 	<target name="jar" depends="init-dist">
