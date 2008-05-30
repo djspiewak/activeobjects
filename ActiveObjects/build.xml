@@ -466,14 +466,14 @@ ActiveObjects ${activeobjects.version}
 	<target name="jdocs" depends="check-jdocs" if="jdocs-check-ok">
 		<taskdef name="jdocs" classpath="${jdocs.path}" classname="com.dzone.jdocs.ant.jdk15.task.Jdocs"/>
 
-		<jdocs sourcepath="${activeobjects.dir}/src" classpath="${build.classpath}"
-		 		overview="src/overview.html" sourcefiles="src/net/java/ao/**/*.java"
-				source="1.5" access="protected" author="yes" version="yes" use="yes"
-				defaultexcludes="yes" forkJVM="yes">
-				
-			<packageset dir="${activeobjects.dir}/src">
-				<include name="net/java/ao/**/*.java"/>
+		<jdocs sourcepath="${activeobjects.dir}/src/net/java/" classpath="${build.classpath}" destdir="${javadoc.intern.path}"
+		 		windowtitle="ActiveObjects: Javadoc" access="protected" overview="src/overview.html" forkJVM="true">
+			<packageset dir="${activeobjects.dir}/src/net/java/">
+				<include name="ao/**"/>
 			</packageset>
+			
+			<link href="${lucene.javadoc}"/>
+			<link href="http://java.sun.com/javase/6/docs/api"/>
 		</jdocs>
 	</target>
 	
