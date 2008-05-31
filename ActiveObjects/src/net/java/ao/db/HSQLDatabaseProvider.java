@@ -292,7 +292,7 @@ public class HSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	protected String renderOnUpdate(DDLField field) {
-		System.err.println("WARNING: @OnUpdate is currently unsupported in HSQLDB");
+//		System.err.println("WARNING: @OnUpdate is currently unsupported in HSQLDB");
 		
 		return "";
 	}
