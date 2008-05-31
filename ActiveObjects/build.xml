@@ -101,7 +101,7 @@
 	</target>
 	
 	<target name="init-reports">
-		<delete>
+		<delete failonerror="no">
 			<fileset dir="${activeobjects.dir}/reports">
 				<include name="**/*"/>
 			</fileset>
@@ -551,7 +551,11 @@ ActiveObjects ${activeobjects.version}
 	</target>
 	
 	<target name="test" depends="check-test,build-test" if="test-check-ok">
-        <junit printsummary="on" haltonerror="yes" haltonfailure="no">
+        <junit printsummary="on" haltonerror="yes" haltonfailure="no" fork="yes">
+        	<jvmarg value="-Xms256m"/>
+        	<jvmarg value="-Xmx512m"/>
+        	<jvmarg value="-XX:MaxPermSize=256m"/>
+        	
         	<classpath>
         		<pathelement location="bin/"/>
         		<pathelement location="${junit4.path}"/>
@@ -603,7 +607,11 @@ ActiveObjects ${activeobjects.version}
 		    </fileset>
 		</cobertura-instrument>
 		
-        <junit printsummary="on" haltonerror="no" haltonfailure="no">
+        <junit printsummary="on" haltonerror="no" haltonfailure="no" fork="yes">
+        	<jvmarg value="-Xms256m"/>
+        	<jvmarg value="-Xmx512m"/>
+        	<jvmarg value="-XX:MaxPermSize=256m"/>
+        	
         	<classpath>
         		<pathelement location="${activeobjects.dir}/instrument-bin/"/>
         		<pathelement location="${activeobjects.dir}/bin/"/>
