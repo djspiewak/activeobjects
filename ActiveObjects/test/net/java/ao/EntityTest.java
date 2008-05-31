@@ -351,7 +351,7 @@ public class EntityTest extends DataTest {
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
 				assertEquals(post.getID(), res.getInt(1));
-				assertEquals("post", res.getString(2));
+				assertEquals("post", res.getString(2).toLowerCase());
 			} else {
 				fail("No results found");
 			}
@@ -378,7 +378,7 @@ public class EntityTest extends DataTest {
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
 				assertEquals(photo.getID(), res.getInt(1));
-				assertEquals("photo", res.getString(2));
+				assertEquals("photo", res.getString(2).toLowerCase());
 			} else {
 				fail("No results found");
 			}
@@ -925,7 +925,7 @@ public class EntityTest extends DataTest {
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
 		comment = manager.create(Comment.class, new DBParam("commentableID", post), 
-				new DBParam("commentableType", "post"));
+				new DBParam("commentableType", manager.getPolymorphicTypeMapper().convert(Post.class)));
 
 		SQLLogMonitor.getInstance().markWatchSQL();
 		post.getComments();
@@ -1087,7 +1087,7 @@ public class EntityTest extends DataTest {
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 		
 		authorship = manager.create(Authorship.class, new DBParam("publicationID", magazine), 
-				new DBParam("publicationType", "magazine"),
+				new DBParam("publicationType", manager.getPolymorphicTypeMapper().convert(Magazine.class)),
 				new DBParam("authorID", bookAuthorIDs[0][1]));
 
 		SQLLogMonitor.getInstance().markWatchSQL();

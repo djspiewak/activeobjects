@@ -377,7 +377,7 @@ public class TestUtilities {
 			stmt.setString(index++, "Test Post Comment 1");
 			stmt.setString(index++, "Here's some test text");
 			stmt.setInt(index++, back.postID);
-			stmt.setString(index++, "post");
+			stmt.setString(index++, manager.getPolymorphicTypeMapper().convert(Post.class));
 			stmt.executeUpdate();
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
@@ -388,7 +388,7 @@ public class TestUtilities {
 			stmt.setString(index++, "Test Post Comment 2");
 			stmt.setString(index++, "Here's some test text");
 			stmt.setInt(index++, back.postID);
-			stmt.setString(index++, "post");
+			stmt.setString(index++, manager.getPolymorphicTypeMapper().convert(Post.class));
 			stmt.executeUpdate();
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
@@ -399,7 +399,7 @@ public class TestUtilities {
 			stmt.setString(index++, "Test Photo Comment 1");
 			stmt.setString(index++, "Here's some test text");
 			stmt.setInt(index++, back.photoID);
-			stmt.setString(index++, "photo");
+			stmt.setString(index++, manager.getPolymorphicTypeMapper().convert(Photo.class));
 			stmt.executeUpdate();
 			
 			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn, stmt);
@@ -410,7 +410,7 @@ public class TestUtilities {
 			stmt.setString(index++, "Test Post Comment 3");
 			stmt.setString(index++, "Here's some test text");
 			stmt.setInt(index++, back.postID);
-			stmt.setString(index++, "post");
+			stmt.setString(index++, manager.getPolymorphicTypeMapper().convert(Post.class));
 			stmt.executeUpdate();
 			
 			back.postCommentIDs[postCommentIndex++] = getPriorID(conn, stmt);
@@ -421,7 +421,7 @@ public class TestUtilities {
 			stmt.setString(index++, "Test Photo Comment 2");
 			stmt.setString(index++, "Here's some test text");
 			stmt.setInt(index++, back.photoID);
-			stmt.setString(index++, "photo");
+			stmt.setString(index++, manager.getPolymorphicTypeMapper().convert(Photo.class));
 			stmt.executeUpdate();
 			
 			back.photoCommentIDs[photoCommentIndex++] = getPriorID(conn, stmt);
@@ -479,7 +479,7 @@ public class TestUtilities {
 				for (int subIndex = 0; subIndex < back.bookAuthorIDs[0].length; subIndex++) {
 					assignPriorID(manager, conn, "author");
 					
-					stmt = prepareStatement(conn, "INSERT INTO author (name) VALUES (?)");
+					stmt = prepareStatement(conn, "INSERT INTO " + authorTableName + " (name) VALUES (?)");
 					
 					stmt.setString(1, "Test Book Author " + (subIndex + 1));
 					stmt.executeUpdate();
@@ -492,7 +492,7 @@ public class TestUtilities {
 							+ " (publicationID,publicationType,authorID) VALUES (?,?,?)");
 					
 					stmt.setInt(1, back.bookIDs[i]);
-					stmt.setString(2, "book");
+					stmt.setString(2, manager.getPolymorphicTypeMapper().convert(Book.class));
 					stmt.setInt(3, back.bookAuthorIDs[i][subIndex]);
 					stmt.executeUpdate();
 					
@@ -519,7 +519,7 @@ public class TestUtilities {
 							+ " (publicationID,publicationType,authorID) VALUES (?,?,?)");
 					
 					stmt.setInt(1, back.magazineIDs[i]);
-					stmt.setString(2, "magazine");
+					stmt.setString(2, manager.getPolymorphicTypeMapper().convert(Magazine.class));
 					stmt.setInt(3, back.magazineAuthorIDs[i][subIndex]);
 					stmt.executeUpdate();
 					
@@ -564,7 +564,7 @@ public class TestUtilities {
 							" (publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
 					
 					stmt.setInt(1, back.bookIDs[i]);
-					stmt.setString(2, "book");
+					stmt.setString(2, manager.getPolymorphicTypeMapper().convert(Book.class));
 					stmt.setInt(3, back.bookDistributionIDs[i][subIndex]);
 					stmt.setString(4, manager.getPolymorphicTypeMapper().convert(distType));
 					stmt.executeUpdate();
@@ -610,7 +610,7 @@ public class TestUtilities {
 							" (publicationID,publicationType,distributionID,distributionType) VALUES (?,?,?,?)");
 					
 					stmt.setInt(1, back.magazineIDs[i]);
-					stmt.setString(2, "magazine");
+					stmt.setString(2, manager.getPolymorphicTypeMapper().convert(Magazine.class));
 					stmt.setInt(3, back.magazineDistributionIDs[i][subIndex]);
 					stmt.setString(4, manager.getPolymorphicTypeMapper().convert(distType));
 					stmt.executeUpdate();
@@ -648,9 +648,9 @@ public class TestUtilities {
 					
 					stmt.setString(1, "Hi there");
 					stmt.setInt(2, back.addressIDs[0]);
-					stmt.setString(3, "emailAddress");
+					stmt.setString(3, manager.getPolymorphicTypeMapper().convert(EmailAddress.class));
 					stmt.setInt(4, back.addressIDs[1]);
-					stmt.setString(5, "emailAddress");
+					stmt.setString(5, manager.getPolymorphicTypeMapper().convert(EmailAddress.class));
 					
 					stmt.executeUpdate();
 					
@@ -660,9 +660,9 @@ public class TestUtilities {
 					
 					stmt.setString(1, "Yo dude");
 					stmt.setInt(2, back.addressIDs[1]);
-					stmt.setString(3, "emailAddress");
+					stmt.setString(3, manager.getPolymorphicTypeMapper().convert(EmailAddress.class));
 					stmt.setInt(4, back.addressIDs[0]);
-					stmt.setString(5, "emailAddress");
+					stmt.setString(5, manager.getPolymorphicTypeMapper().convert(EmailAddress.class));
 					
 					stmt.executeUpdate();
 					
@@ -672,9 +672,9 @@ public class TestUtilities {
 					
 					stmt.setString(1, "Email is fun");
 					stmt.setInt(2, back.addressIDs[0]);
-					stmt.setString(3, "emailAddress");
+					stmt.setString(3, manager.getPolymorphicTypeMapper().convert(EmailAddress.class));
 					stmt.setInt(4, back.addressIDs[1]);
-					stmt.setString(5, "emailAddress");
+					stmt.setString(5, manager.getPolymorphicTypeMapper().convert(EmailAddress.class));
 					
 					stmt.executeUpdate();
 					

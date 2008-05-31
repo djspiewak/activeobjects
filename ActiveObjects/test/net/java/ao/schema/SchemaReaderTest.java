@@ -37,6 +37,7 @@ import net.java.ao.schema.ddl.SchemaReader;
 
 import org.junit.Test;
 
+import test.schema.Company;
 import test.schema.Pen;
 import test.schema.Person;
 import test.schema.PersonSuit;
@@ -61,7 +62,7 @@ public class SchemaReaderTest extends DataTest {
 		
 		DDLTable personDDL = null;
 		for (DDLTable table : parsedTables) {
-			if (table.getName().equalsIgnoreCase("person")) {
+			if (table.getName().equalsIgnoreCase(manager.getTableNameConverter().getName(Person.class))) {
 				personDDL = table;
 				break;
 			}
@@ -138,7 +139,7 @@ public class SchemaReaderTest extends DataTest {
 				manager.getTableNameConverter().getName(Person.class)).equalsIgnoreCase(cidKey.getDomesticTable()));
 		assertTrue("companyID".equalsIgnoreCase(cidKey.getField()));
 		assertTrue("companyID".equalsIgnoreCase(cidKey.getForeignField()));
-		assertTrue("company".equalsIgnoreCase(cidKey.getTable()));
+		assertTrue(manager.getTableNameConverter().getName(Company.class).equalsIgnoreCase(cidKey.getTable()));
 	}
 
 	@Test

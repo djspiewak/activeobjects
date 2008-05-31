@@ -33,6 +33,7 @@ import net.java.ao.schema.ddl.DDLTable;
 
 import org.junit.Test;
 
+import test.schema.Company;
 import test.schema.Pen;
 import test.schema.Person;
 import test.schema.PersonSuit;
@@ -52,14 +53,15 @@ public class SchemaGeneratorTest extends DataTest {
 		String[] expectedFields = {"id", "firstName", "lastName", "profession", "age", "url", "favoriteClass", "companyID", "image", "modified"};
 		String[] expectedIndexes = {"age", "companyID"};
 		
-		DDLTable[] parsedTables = SchemaGenerator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
+		TableNameConverter tableNameConverter = manager.getTableNameConverter();
+		DDLTable[] parsedTables = SchemaGenerator.parseDDL(manager.getProvider(), tableNameConverter, 
 				manager.getFieldNameConverter(), SchemaGeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
 		
 		assertEquals(6, parsedTables.length);
 		
 		DDLTable personDDL = null;
 		for (DDLTable table : parsedTables) {
-			if (table.getName().equals("person")) {
+			if (table.getName().equals(tableNameConverter.getName(Person.class))) {
 				personDDL = table;
 				break;
 			}
@@ -159,18 +161,18 @@ public class SchemaGeneratorTest extends DataTest {
 		
 		assertNotNull(cidKey);
 		
-		assertEquals(manager.getProvider().processID(manager.getTableNameConverter().getName(Person.class)),
+		assertEquals(manager.getProvider().processID(tableNameConverter.getName(Person.class)),
 				cidKey.getDomesticTable());
 		assertEquals("companyID", cidKey.getField());
 		assertEquals("companyID", cidKey.getForeignField());
-		assertEquals("company", cidKey.getTable());
+		assertEquals(tableNameConverter.getName(Company.class), cidKey.getTable());
 		
 		assertEquals(expectedIndexes.length, personDDL.getIndexes().length);
 		for (DDLIndex index : personDDL.getIndexes()) {
 			boolean found = false;
 			for (String expectedIndex : expectedIndexes) {
 				if (expectedIndex.equals(index.getField())) {
-					assertEquals("person", index.getTable());
+					assertEquals(tableNameConverter.getName(Person.class), index.getTable());
 					
 					found = true;
 					break;

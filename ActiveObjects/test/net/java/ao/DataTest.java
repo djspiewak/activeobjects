@@ -77,7 +77,7 @@ public abstract class DataTest {
 	protected int[] messageIDs;
 
 	public DataTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		manager = new EntityManager("jdbc:hsqldb:mem:test_database", "sa", "");
+		manager = new EntityManager("jdbc:hsqldb:mem:test_database" + System.currentTimeMillis(), "sa", "");
 //		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
 //		manager = new EntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password");
 		
@@ -125,7 +125,6 @@ public abstract class DataTest {
 		UnderscoreTableNameConverter underscoreTableNameConverter2 = new UnderscoreTableNameConverter(true);
 		
 		PluralizedNameConverter pluralizedCamelNameConverter = new PluralizedNameConverter(camelCaseTableNameConverter);
-		PluralizedNameConverter pluralizedUnderscoreNameConverter = new PluralizedNameConverter(underscoreTableNameConverter);
 		PluralizedNameConverter pluralizedUnderscore2NameConverter = new PluralizedNameConverter(underscoreTableNameConverter2);
 		
 		CamelCaseFieldNameConverter camelCaseFieldNameConverter = new CamelCaseFieldNameConverter();
@@ -138,23 +137,15 @@ public abstract class DataTest {
 //			{camelCaseTableNameConverter, underscoreFieldNameConverter},
 //			{camelCaseTableNameConverter, underscoreFieldNameConverter2},
 			
-//			{underscoreTableNameConverter, camelCaseFieldNameConverter},
+			{underscoreTableNameConverter, camelCaseFieldNameConverter},
 //			{underscoreTableNameConverter, underscoreFieldNameConverter},
 //			{underscoreTableNameConverter, underscoreFieldNameConverter2},
-			
-//			{underscoreTableNameConverter2, camelCaseFieldNameConverter},
-//			{underscoreTableNameConverter2, underscoreFieldNameConverter},
-//			{underscoreTableNameConverter2, underscoreFieldNameConverter2},
 
-//			{pluralizedCamelNameConverter, camelCaseFieldNameConverter},
+			{pluralizedCamelNameConverter, camelCaseFieldNameConverter},
 //			{pluralizedCamelNameConverter, underscoreFieldNameConverter},
 //			{pluralizedCamelNameConverter, underscoreFieldNameConverter2},
 			
-//			{pluralizedUnderscoreNameConverter, camelCaseFieldNameConverter},
-//			{pluralizedUnderscoreNameConverter, underscoreFieldNameConverter},
-//			{pluralizedUnderscoreNameConverter, underscoreFieldNameConverter2},
-			
-//			{pluralizedUnderscore2NameConverter, camelCaseFieldNameConverter}
+			{pluralizedUnderscore2NameConverter, camelCaseFieldNameConverter}
 //			{pluralizedUnderscore2NameConverter, underscoreFieldNameConverter},
 //			{pluralizedUnderscore2NameConverter, underscoreFieldNameConverter2}
 		});

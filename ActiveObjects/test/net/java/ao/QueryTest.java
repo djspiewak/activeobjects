@@ -26,7 +26,6 @@ import net.java.ao.db.MySQLDatabaseProvider;
 import net.java.ao.db.OracleDatabaseProvider;
 import net.java.ao.db.PostgreSQLDatabaseProvider;
 import net.java.ao.schema.CamelCaseFieldNameConverter;
-import net.java.ao.schema.CamelCaseTableNameConverter;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.TableNameConverter;
 
@@ -70,7 +69,7 @@ public class QueryTest extends DataTest {
 		Query query7 = Query.select().where("name IS NULL AND age = 3").limit(4).group("age");
 		Query query8 = Query.select().join(Company.class).where("name IS NULL AND age = 3").group("url");
 		
-		TableNameConverter converter = new CamelCaseTableNameConverter();
+		TableNameConverter converter = manager.getTableNameConverter();
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
 		
 		assertEquals("SELECT id FROM " + personTableName, query1.toSQL(Person.class, provider, converter, getFieldNameConverter(), false));
@@ -107,7 +106,7 @@ public class QueryTest extends DataTest {
 				query6.toSQL(Person.class, provider, converter, getFieldNameConverter(), false));
 		assertEquals("SELECT LIMIT 0 4 id FROM " + personTableName + " WHERE name IS NULL AND age = 3 GROUP BY age", 
 				query7.toSQL(Person.class, provider, converter, getFieldNameConverter(), false));
-		assertEquals("SELECT id FROM person JOIN " + companyTableName + " WHERE name IS NULL AND age = 3 GROUP BY url", 
+		assertEquals("SELECT id FROM " + personTableName + " JOIN " + companyTableName + " WHERE name IS NULL AND age = 3 GROUP BY url", 
 				query8.toSQL(Person.class, provider, converter, getFieldNameConverter(), false));
 		
 		assertEquals("SELECT COUNT(*) FROM " + personTableName, query1.toSQL(Person.class, provider, converter, getFieldNameConverter(), true));
