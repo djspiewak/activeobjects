@@ -118,7 +118,7 @@ public class RAMRelationsCache implements RelationsCache {
 	}
 
 	public void remove(RawEntity<?> entity, String[] fields) {
-		lock.writeLock().tryLock();
+		lock.writeLock().lock();
 		try {
 			for (String field : fields) {
 				Set<CacheKey> keys = fieldMap.get(new MetaCacheKey(entity, field));
