@@ -44,7 +44,7 @@ type named ``Post``, the following code illustrates all three operations::
     Post newPost = manager.create(Post.class);
     Post oldPost = manager.get(Post.class, 123);
     
-    Post[] found = manager.find(Post.class, "name LIKE '%test%');
+    Post[] found = manager.find(Post.class, "name LIKE '%test%'");
     for (Post post : found) {
         System.out.print(post.getName() + " has ");
         
