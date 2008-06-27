@@ -58,8 +58,6 @@ public class RAMRelationsCache implements RelationsCache {
 			return;
 		}
 		
-		assert through.length != to.length;
-		
 		CacheKey key = new CacheKey(from, toType, throughType, fields);
 		lock.writeLock().lock();
 		try {
