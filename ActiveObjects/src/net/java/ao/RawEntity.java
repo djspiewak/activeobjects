@@ -83,7 +83,7 @@ public interface RawEntity<T> {
 	 * 
 	 * @return The {@link Class} which defines the entity in question.
 	 */
-	@Ignore public Class<? extends RawEntity<T>> getEntityType();
+	@Ignore public <X extends RawEntity<T>> Class<X> getEntityType();
 	
 	/**
 	 * <p>Adds a property change listener to the entity.  This method is included
