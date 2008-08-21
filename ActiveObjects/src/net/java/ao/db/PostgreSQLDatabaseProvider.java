@@ -469,4 +469,9 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	protected Set<String> getReservedWords() {
 		return RESERVED_WORDS;
 	}
+	
+	@Override
+	protected boolean shouldQuoteID(String id) {
+		return true;		// to make identifiers case-sensetive
+	}
 }
