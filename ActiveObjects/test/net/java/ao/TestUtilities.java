@@ -6,9 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
@@ -68,22 +65,6 @@ public class TestUtilities {
 	
 	public static final DataStruct setUpEntityManager(EntityManager manager) throws SQLException {
 		DataStruct back = new DataStruct();
-		
-		Logger logger = Logger.getLogger("net.java.ao");
-		Logger l = logger;	
-		
-		while ((l = l.getParent()) != null) {
-			for (Handler h : l.getHandlers()) {
-				l.removeHandler(h);
-			}
-		}
-		
-		logger.setLevel(Level.FINE);
-		logger.addHandler(SQLLogMonitor.getInstance());
-		
-		manager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(Photo.class, 
-				Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class,
-				EmailAddress.class, PostalAddress.class));
 		
 		try {
 			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, Nose.class,

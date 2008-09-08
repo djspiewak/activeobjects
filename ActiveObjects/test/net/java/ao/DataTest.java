@@ -18,6 +18,11 @@ package net.java.ao;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.java.ao.schema.CamelCaseFieldNameConverter;
 import net.java.ao.schema.CamelCaseTableNameConverter;
@@ -29,20 +34,29 @@ import net.java.ao.schema.UnderscoreTableNameConverter;
 import net.java.ao.types.ClassType;
 import net.java.ao.types.TypeManager;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import test.schema.Book;
 import test.schema.Distribution;
+import test.schema.EmailAddress;
+import test.schema.Magazine;
+import test.schema.OnlineDistribution;
+import test.schema.Photo;
+import test.schema.Post;
+import test.schema.PostalAddress;
+import test.schema.PrintDistribution;
 
 /**
  * @author Daniel Spiewak
  */
 @RunWith(Parameterized.class)
 public abstract class DataTest {
+	private static final Map<String, DataStruct> prepared = new HashMap<String, DataStruct>();
+	
 	protected final EntityManager manager;
 	
 	protected int personID;
@@ -77,45 +91,76 @@ public abstract class DataTest {
 	protected int[] messageIDs;
 
 	public DataTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		manager = new EntityManager("jdbc:hsqldb:mem:test_database" + System.currentTimeMillis(), "sa", "");
+		manager = new EntityManager("jdbc:hsqldb:mem:test_database" 
+				+ tableConverter.getClass().getName() 
+				+ fieldConverter.getClass().getName(), "sa", "");
 //		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
 //		manager = new EntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password");
 		
 		manager.setTableNameConverter(tableConverter);
 		manager.setFieldNameConverter(fieldConverter);
+
+		Logger logger = Logger.getLogger("net.java.ao");
+		Logger l = logger;	
+		
+		while ((l = l.getParent()) != null) {
+			for (Handler h : l.getHandlers()) {
+				l.removeHandler(h);
+			}
+		}
+		
+		logger.setLevel(Level.FINE);
+		logger.addHandler(SQLLogMonitor.getInstance());
+		
+		manager.setPolymorphicTypeMapper(new DefaultPolymorphicTypeMapper(Photo.class, 
+				Post.class, Book.class, Magazine.class, PrintDistribution.class, OnlineDistribution.class,
+				EmailAddress.class, PostalAddress.class));
 	}
 	
 	@Before
 	public void setup() throws SQLException {
-		DataStruct data = TestUtilities.setUpEntityManager(manager);
-		
-		personID = data.personID;
-		noseID = data.noseID;
-		companyID = data.companyID;
-		penIDs = data.penIDs;
-		defenceIDs = data.defenceIDs;
-		suitIDs = data.suitIDs;
-		coolCompanyIDs = data.coolCompanyIDs;
-		postID = data.postID;
-		photoID = data.photoID;
-		postCommentIDs = data.postCommentIDs;
-		photoCommentIDs = data.photoCommentIDs;
-		bookIDs = data.bookIDs;
-		magazineIDs = data.magazineIDs;
-		bookAuthorIDs = data.bookAuthorIDs;
-		magazineAuthorIDs = data.magazineAuthorIDs;
-		bookDistributionIDs = data.bookDistributionIDs;
-		bookDistributionTypes = data.bookDistributionTypes;
-		magazineDistributionIDs = data.magazineDistributionIDs;
-		magazineDistributionTypes = data.magazineDistributionTypes;
-		addressIDs = data.addressIDs;
-		messageIDs = data.messageIDs;
+		prepareData(this);
 	}
-
-	@After
-	public void tearDown() throws SQLException {
-		TestUtilities.tearDownEntityManager(manager);
-		manager.getProvider().dispose();
+	
+	private static void prepareData(DataTest test) throws SQLException {
+		EntityManager manager = test.manager;
+		
+		if (prepared.containsKey(manager.getProvider().getURI())) {
+			applyStruct(test, prepared.get(manager.getProvider().getURI()));
+			return;
+		}
+		
+		try {
+			TestUtilities.tearDownEntityManager(manager);
+		} catch (Throwable t) {}
+		
+		DataStruct data = TestUtilities.setUpEntityManager(manager);
+		applyStruct(test, data);
+		prepared.put(manager.getProvider().getURI(), data);
+	}
+	
+	private static void applyStruct(DataTest test, DataStruct data) {
+		test.personID = data.personID;
+		test.noseID = data.noseID;
+		test.companyID = data.companyID;
+		test.penIDs = data.penIDs;
+		test.defenceIDs = data.defenceIDs;
+		test.suitIDs = data.suitIDs;
+		test.coolCompanyIDs = data.coolCompanyIDs;
+		test.postID = data.postID;
+		test.photoID = data.photoID;
+		test.postCommentIDs = data.postCommentIDs;
+		test.photoCommentIDs = data.photoCommentIDs;
+		test.bookIDs = data.bookIDs;
+		test.magazineIDs = data.magazineIDs;
+		test.bookAuthorIDs = data.bookAuthorIDs;
+		test.magazineAuthorIDs = data.magazineAuthorIDs;
+		test.bookDistributionIDs = data.bookDistributionIDs;
+		test.bookDistributionTypes = data.bookDistributionTypes;
+		test.magazineDistributionIDs = data.magazineDistributionIDs;
+		test.magazineDistributionTypes = data.magazineDistributionTypes;
+		test.addressIDs = data.addressIDs;
+		test.messageIDs = data.messageIDs;
 	}
 	
 	@Parameters
