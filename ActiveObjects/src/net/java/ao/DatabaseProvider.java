@@ -123,7 +123,7 @@ public abstract class DatabaseProvider {
 					quote = "";
 				} else {
 					metadata = conn.getMetaData();
-					quote = metadata.getIdentifierQuoteString();
+					quote = conn.getMetaData().getIdentifierQuoteString();
 				}
 			} catch (SQLException e) {
 				throw new RuntimeException("Unable to query the database", e);
@@ -475,8 +475,7 @@ public abstract class DatabaseProvider {
 	 * @see java.sql.DatabaseMetaData#getTables(String, String, String, String[])
 	 */
 	public ResultSet getTables(Connection conn) throws SQLException {
-		loadMetaData();
-		return metadata.getTables(null, null, "", null);
+		return conn.getMetaData().getTables(null, null, "", null);
 	}
 	
 	/**
