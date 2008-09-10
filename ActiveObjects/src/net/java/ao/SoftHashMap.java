@@ -50,7 +50,6 @@ class SoftHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 	volatile int modCount;
 
 	// Simple utility method to isolate unchecked cast for array creation
-	@SuppressWarnings("unchecked")
 	private static <K, V> Entry<K, V>[] newEntryArray(int size) {
 		return new Entry[size];
 	}
@@ -454,7 +453,6 @@ class SoftHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 		return size() == 0;
 	}
 
-	@SuppressWarnings("unchecked")
 	void poll() {
 		Entry<K, V> toRemove;
 		while ((toRemove = (Entry<K, V>) referenceQueue.poll()) != null) {
