@@ -45,7 +45,6 @@ import test.schema.Company;
 /**
  * @author Daniel Spiewak
  */
-@SuppressWarnings("deprecation")
 public class DatabaseProviderTest {
 	private static final PrintStream STDERR = System.err;
 	
