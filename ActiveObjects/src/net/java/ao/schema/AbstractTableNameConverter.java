@@ -277,4 +277,9 @@ public abstract class AbstractTableNameConverter implements TableNameConverter {
 	protected String postProcessName(String back) {
 		return back;
 	}
+	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName();
+	}
 }

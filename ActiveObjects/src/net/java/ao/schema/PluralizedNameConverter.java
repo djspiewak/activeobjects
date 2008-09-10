@@ -120,4 +120,9 @@ public class PluralizedNameConverter extends AbstractTableNameConverter {
 		
 		return back;
 	}
+	
+	@Override
+	public String toString() {
+		return "PluralizedNameConverter {" + delegate.toString() + "}";
+	}
 }

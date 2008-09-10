@@ -118,8 +118,13 @@ public abstract class DatabaseProvider {
 			Connection conn = null;
 			try {
 				conn = getConnectionImpl();
-				metadata = conn.getMetaData();
-				quote = metadata.getIdentifierQuoteString();
+				
+				if (conn == null) {		// probably a unit test
+					quote = "";
+				} else {
+					metadata = conn.getMetaData();
+					quote = metadata.getIdentifierQuoteString();
+				}
 			} catch (SQLException e) {
 				throw new RuntimeException("Unable to query the database", e);
 			} finally {

@@ -29,7 +29,6 @@ import net.java.ao.schema.CamelCaseTableNameConverter;
 import net.java.ao.schema.FieldNameConverter;
 import net.java.ao.schema.PluralizedNameConverter;
 import net.java.ao.schema.TableNameConverter;
-import net.java.ao.schema.UnderscoreFieldNameConverter;
 import net.java.ao.schema.UnderscoreTableNameConverter;
 import net.java.ao.types.ClassType;
 import net.java.ao.types.TypeManager;
@@ -92,7 +91,7 @@ public abstract class DataTest {
 
 	public DataTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
 		manager = new EntityManager("jdbc:hsqldb:mem:test_database" 
-				+ tableConverter.getClass().getName() 
+				+ tableConverter.toString() 
 				+ fieldConverter.getClass().getName(), "sa", "");
 //		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
 //		manager = new EntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password");
@@ -173,8 +172,8 @@ public abstract class DataTest {
 		PluralizedNameConverter pluralizedUnderscore2NameConverter = new PluralizedNameConverter(underscoreTableNameConverter2);
 		
 		CamelCaseFieldNameConverter camelCaseFieldNameConverter = new CamelCaseFieldNameConverter();
-		UnderscoreFieldNameConverter underscoreFieldNameConverter = new UnderscoreFieldNameConverter(false);
-		UnderscoreFieldNameConverter underscoreFieldNameConverter2 = new UnderscoreFieldNameConverter(true);
+//		UnderscoreFieldNameConverter underscoreFieldNameConverter = new UnderscoreFieldNameConverter(false);
+//		UnderscoreFieldNameConverter underscoreFieldNameConverter2 = new UnderscoreFieldNameConverter(true);
 		
 		// try all combinations, just for fun
 		return Arrays.asList(new Object[][] {
