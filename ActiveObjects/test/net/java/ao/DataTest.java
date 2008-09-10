@@ -90,10 +90,13 @@ public abstract class DataTest {
 	protected int[] messageIDs;
 
 	public DataTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		manager = new EntityManager("jdbc:hsqldb:mem:test_database" 
-				+ tableConverter.toString() 
-				+ fieldConverter.getClass().getName(), "sa", "");
-//		manager = new EntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges");
+		String uri = System.getProperty("db.uri.prefix");
+		String suffix = System.getProperty("db.uri.suffix", "");
+		String user = System.getProperty("db.user");
+		String pass = System.getProperty("db.pass");
+		
+		manager = new EntityManager(uri + tableConverter.toString() + fieldConverter.getClass().getName() + suffix, user, pass);
+
 //		manager = new EntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password");
 		
 		manager.setTableNameConverter(tableConverter);

@@ -55,9 +55,9 @@ import test.schema.Select;
  * @author Daniel Spiewak
  */
 public class TestUtilities {
+	private static int priorID = -1;	// ugly hack for postgresql and oracle
 	
-	@SuppressWarnings("unused")
-	private static int priorID = -1;	// ugly hack for postgresql
+	private static String uri = System.getProperty("db.uri.prefix");
 	
 	public static final Test asTest(Class<?> clazz) {
 		return new JUnit4TestAdapter(clazz);
@@ -701,52 +701,67 @@ public class TestUtilities {
 	}
 	
 	private static final PreparedStatement prepareStatement(Connection conn, String sql) throws SQLException {
-		return conn.prepareStatement(sql/*, Statement.RETURN_GENERATED_KEYS*/);
+		if (uri.startsWith("jdbc:hsqldb")) {
+			return conn.prepareStatement(sql);
+		}
+		
+		return conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 	}
 	
 	private static final void assignPriorID(EntityManager manager, Connection conn, String table) throws SQLException {
 		priorID = -1;
 		
-//		PreparedStatement stmt = conn.prepareStatement("SELECT NEXTVAL('" + table + "_id_seq')");
-		
-//		String sequence = manager.getProvider().processID(table + "_id_seq");
-//		String sql = "SELECT " + sequence + ".NEXTVAL FROM dual";
-//		
-//		PreparedStatement stmt = conn.prepareStatement(sql);
-		
-//		ResultSet res = stmt.executeQuery();
-//		
-//		if (res.next()) {
-//			priorID = res.getInt(1) + 1;
-//		}
-//		
-//		res.close();
-//		stmt.close();
+		if (uri.startsWith("jdbc:postgres")) {
+			PreparedStatement stmt = conn.prepareStatement("SELECT NEXTVAL('" + table + "_id_seq')");
+			
+			ResultSet res = stmt.executeQuery();
+			
+			if (res.next()) {
+				priorID = res.getInt(1) + 1;
+			}
+			
+			res.close();
+			stmt.close();
+		} else if (uri.startsWith("jdbc:oracle")) {
+			String sequence = manager.getProvider().processID(table + "_id_seq");
+			String sql = "SELECT " + sequence + ".NEXTVAL FROM dual";
+			
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			
+			ResultSet res = stmt.executeQuery();
+			
+			if (res.next()) {
+				priorID = res.getInt(1) + 1;
+			}
+			
+			res.close();
+			stmt.close();
+		}
 	}
 	
 	private static final int getPriorID(Connection conn, PreparedStatement stmt) throws SQLException {
 		int back = -1;
-		PreparedStatement ident = conn.prepareStatement("CALL IDENTITY()");
-		ResultSet res = ident.executeQuery();
 		
-		if (res.next()) {
-			back = res.getInt(1);
+		if (uri.startsWith("jdbc:hsqldb")) {
+			PreparedStatement ident = conn.prepareStatement("CALL IDENTITY()");
+			ResultSet res = ident.executeQuery();
+			
+			if (res.next()) {
+				back = res.getInt(1);
+			}
+			
+			res.close();
+			ident.close();
+		} else if (uri.startsWith("jdbc:postgres") || uri.startsWith("jdbc:oracle")) {
+			back = priorID;
+		} else {
+			ResultSet res = stmt.getGeneratedKeys();
+			if (res.next()) {
+				back = res.getInt(1);
+			}
 		}
 		
-		res.close();
-		ident.close();
-		
 		return back;
-		
-//		int back = -1;
-//		ResultSet res = stmt.getGeneratedKeys();
-//		if (res.next()) {
-//			back = res.getInt(1);
-//		}
-//		
-//		return back;
-		
-//		return priorID;
 	}
 	
 	public static final void tearDownEntityManager(EntityManager manager) throws SQLException {
@@ -754,10 +769,11 @@ public class TestUtilities {
 		try {
 			Statement stmt = conn.createStatement();
 			
-			String suffix;
+			String suffix = "";
 			
-			suffix = "";
-//			suffix = " PURGE";
+			if (uri.startsWith("jdbc:oracle")) {
+				suffix = " PURGE";
+			}
 			
 			String addressTableName = manager.getTableNameConverter().getName(Address.class);
 			addressTableName = manager.getProvider().processID(addressTableName);

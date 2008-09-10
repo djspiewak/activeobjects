@@ -555,6 +555,10 @@ ActiveObjects ${activeobjects.version}
         	<jvmarg value="-Xms256m"/>
         	<jvmarg value="-Xmx512m"/>
         	<jvmarg value="-XX:MaxPermSize=256m"/>
+
+        	<jvmarg value="-Ddb.uri.prefix=jdbc:hsqldb:mem:ao_test"/>
+        	<jvmarg value="-Ddb.user=sa"/>
+        	<jvmarg value="-Ddb.pass="/>
         	
         	<classpath>
         		<pathelement location="bin/"/>
@@ -611,6 +615,10 @@ ActiveObjects ${activeobjects.version}
         	<jvmarg value="-Xms256m"/>
         	<jvmarg value="-Xmx512m"/>
         	<jvmarg value="-XX:MaxPermSize=256m"/>
+
+        	<jvmarg value="-Ddb.uri.prefix=jdbc:hsqldb:mem:ao_test"/>
+        	<jvmarg value="-Ddb.user=sa"/>
+        	<jvmarg value="-Ddb.pass="/>
         	
         	<classpath>
         		<pathelement location="${activeobjects.dir}/instrument-bin/"/>
