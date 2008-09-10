@@ -95,7 +95,8 @@ public abstract class DataTest {
 		String user = System.getProperty("db.user");
 		String pass = System.getProperty("db.pass");
 		
-		manager = new EntityManager(uri + tableConverter.toString() + fieldConverter.getClass().getName() + suffix, user, pass);
+		manager = new EntityManager(uri + '_' + tableConverter.toString() + '_' + fieldConverter.getClass().getSimpleName() + suffix,
+				user, pass);
 
 //		manager = new EntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password");
 		
