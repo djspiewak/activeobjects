@@ -469,13 +469,6 @@ public abstract class DatabaseProvider {
 	 * written, as long as the result set corresponds in fields to
 	 * the JDBC spec.</p>
 	 * 
-	 * <p>Databases which do not support this function (such as Oracle)
-	 * should <i>not</i> throw an exception.  Instead, they should
-	 * print a warning to stderr and return <code>null</code>.
-	 * ActiveObjects will interpret a <code>null</code> result set
-	 * as signifying no tables in the database, usually leading to a
-	 * complete recreation of the schema (raw migration).</p>
-	 * 
 	 * @param conn	The connection to use in retrieving the database tables.
 	 * @return	A result set of tables (and meta) corresponding in fields
 	 * 		to the JDBC specification.
