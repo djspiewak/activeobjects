@@ -590,8 +590,7 @@ public class EntityManager {
 			}
 			
 			for (RawEntity<?> entity : entities) {
-				entityCache.remove(new CacheKey<Object>(Common.getPrimaryKeyValue(entity), 
-						(Class<? extends RawEntity<Object>>) entity.getEntityType()));
+				entityCache.remove(new CacheKey(Common.getPrimaryKeyValue(entity), entity.getEntityType()));
 			}
 			
 			proxyLock.writeLock().lock();
