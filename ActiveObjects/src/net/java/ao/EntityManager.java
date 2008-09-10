@@ -248,14 +248,11 @@ public class EntityManager {
 	 * entity (of the specified type and key), it is returned rather than creating
 	 * a new instance.</p>
 	 * 
-	 * <p>No checks are performed to ensure that the key actually exists in the
-	 * database for the specified object.  Thus, this method is solely a Java
-	 * memory state modifying method.  There is no database access involved.
-	 * The upshot of this is that the method is very very fast.  The flip side of
-	 * course is that one could conceivably maintain entities which reference
-	 * non-existant database rows.</p>
-	 * 
-	 * TODO
+	 * <p>If the entity is known to exist in the database, then no checks are performed
+	 * and the method returns extremely quickly.  However, for any key which has not
+	 * already been verified, a query to the database is performed to determine whether
+	 * or not the entity exists.  If the entity does not exist, then <code>null</code>
+	 * is returned.</p>
 	 * 
 	 * @param type		The type of the entities to retrieve.
 	 * @param keys	The primary keys corresponding to the entities to retrieve.  All
@@ -263,7 +260,9 @@ public class EntityManager {
 	 * 	{@link RawEntity} inheritence (if inheriting from {@link Entity}, this is <code>Integer</code>
 	 * 	or <code>int</code>).  Thus, the <code>keys</code> array is type-checked at compile
 	 * 	time.
-	 * @return An array of entities of the given type corresponding with the specified primary keys.
+	 * @return An array of entities of the given type corresponding with the specified 
+	 * 		primary keys.  Any entities which are non-existent will correspond to a <code>null</code>
+	 * 		value in the resulting array. 
 	 */
 	public <T extends RawEntity<K>, K> T[] get(final Class<T> type, K... keys) {
 		final String primaryKeyField = Common.getPrimaryKeyField(type, getFieldNameConverter());
@@ -378,7 +377,8 @@ public class EntityManager {
 	 * 
 	 * @param type		The type of the entity instance to retrieve.
 	 * @param key		The primary key corresponding to the entity to be retrieved.
-	 * @return An entity instance of the given type corresponding to the specified primary key.
+	 * @return An entity instance of the given type corresponding to the specified 
+	 * 		primary key, or <code>null</code> if the entity does not exist in the database.
 	 * @see #get(Class, Object...)
 	 */
 	public <T extends RawEntity<K>, K> T get(Class<T> type, K key) {
