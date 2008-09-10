@@ -89,13 +89,13 @@ public abstract class DataTest {
 	protected int[] addressIDs;
 	protected int[] messageIDs;
 
-	public DataTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+	public DataTest(int ordinal, TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
 		String uri = System.getProperty("db.uri.prefix");
 		String suffix = System.getProperty("db.uri.suffix", "");
 		String user = System.getProperty("db.user");
 		String pass = System.getProperty("db.pass");
 		
-		manager = new EntityManager(uri + '_' + tableConverter.toString() + '_' + fieldConverter.getClass().getSimpleName() + suffix,
+		manager = new EntityManager(uri + '_' + ordinal + suffix,
 				user, pass);
 
 //		manager = new EntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password");
@@ -181,19 +181,19 @@ public abstract class DataTest {
 		
 		// try all combinations, just for fun
 		return Arrays.asList(new Object[][] {
-			{camelCaseTableNameConverter, camelCaseFieldNameConverter},
+			{0, camelCaseTableNameConverter, camelCaseFieldNameConverter},
 //			{camelCaseTableNameConverter, underscoreFieldNameConverter},
 //			{camelCaseTableNameConverter, underscoreFieldNameConverter2},
 			
-			{underscoreTableNameConverter, camelCaseFieldNameConverter},
+			{1, underscoreTableNameConverter, camelCaseFieldNameConverter},
 //			{underscoreTableNameConverter, underscoreFieldNameConverter},
 //			{underscoreTableNameConverter, underscoreFieldNameConverter2},
 
-			{pluralizedCamelNameConverter, camelCaseFieldNameConverter},
+			{2, pluralizedCamelNameConverter, camelCaseFieldNameConverter},
 //			{pluralizedCamelNameConverter, underscoreFieldNameConverter},
 //			{pluralizedCamelNameConverter, underscoreFieldNameConverter2},
 			
-			{pluralizedUnderscore2NameConverter, camelCaseFieldNameConverter}
+			{3, pluralizedUnderscore2NameConverter, camelCaseFieldNameConverter}
 //			{pluralizedUnderscore2NameConverter, underscoreFieldNameConverter},
 //			{pluralizedUnderscore2NameConverter, underscoreFieldNameConverter2}
 		});

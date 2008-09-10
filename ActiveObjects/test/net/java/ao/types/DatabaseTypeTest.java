@@ -42,8 +42,8 @@ import test.schema.Person;
  */
 public class DatabaseTypeTest extends DataTest {
 
-	public DatabaseTypeTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		super(tableConverter, fieldConverter);
+	public DatabaseTypeTest(int ordinal, TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(ordinal, tableConverter, fieldConverter);
 	}
 
 	@Test

@@ -43,8 +43,8 @@ import test.schema.Select;
  */
 public class EntityManagerTest extends DataTest {
 	
-	public EntityManagerTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		super(tableConverter, fieldConverter);
+	public EntityManagerTest(int ordinal, TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(ordinal, tableConverter, fieldConverter);
 	}
 
 	@Test

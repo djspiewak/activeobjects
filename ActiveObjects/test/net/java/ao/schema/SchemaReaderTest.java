@@ -47,8 +47,8 @@ import test.schema.PersonSuit;
  */
 public class SchemaReaderTest extends DataTest {
 
-	public SchemaReaderTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		super(tableConverter, fieldConverter);
+	public SchemaReaderTest(int ordinal, TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(ordinal, tableConverter, fieldConverter);
 	}
 
 	@SuppressWarnings("null")

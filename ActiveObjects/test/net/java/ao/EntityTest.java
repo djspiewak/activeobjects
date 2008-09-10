@@ -64,8 +64,8 @@ import test.schema.Select;
  */
 public class EntityTest extends DataTest {
 	
-	public EntityTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		super(tableConverter, fieldConverter);
+	public EntityTest(int ordinal, TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(ordinal, tableConverter, fieldConverter);
 	}
 	
 	@Test

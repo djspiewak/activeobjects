@@ -34,8 +34,8 @@ import test.schema.PersonSuit;
  */
 public class RelationsCacheTest extends DataTest {
 	
-	public RelationsCacheTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		super(tableConverter, fieldConverter);
+	public RelationsCacheTest(int ordinal, TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(ordinal, tableConverter, fieldConverter);
 	}
 
 	@Test

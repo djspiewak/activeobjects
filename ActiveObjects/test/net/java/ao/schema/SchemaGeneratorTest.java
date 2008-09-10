@@ -43,8 +43,8 @@ import test.schema.PersonSuit;
  */
 public class SchemaGeneratorTest extends DataTest {
 
-	public SchemaGeneratorTest(TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
-		super(tableConverter, fieldConverter);
+	public SchemaGeneratorTest(int ordinal, TableNameConverter tableConverter, FieldNameConverter fieldConverter) throws SQLException {
+		super(ordinal, tableConverter, fieldConverter);
 	}
 
 	@SuppressWarnings("null")
