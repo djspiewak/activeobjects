@@ -109,7 +109,7 @@ knowing that the next three lines of code will repeatedly query ``name`` values.
 Only the developer actually writing the code can make that deduction.  Thus, the
 developer must be empowered to specify when specific fields should be eagerly
 loaded, rather than simply relying on the default.  More details on the syntax
-of this operation can be found in the second on `forcing eager loading`_.
+of this operation can be found in the section on `forcing eager loading`_.
 
 .. _forcing eager loading: cookbook/forcing-eager-loading.html
 
