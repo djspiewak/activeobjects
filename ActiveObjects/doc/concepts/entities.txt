@@ -159,7 +159,7 @@ a problem for field name inference.  Consider the following example::
 
 At first glance, one might assume that the ``getURL()`` accessor (and its
 corresponding mutator) correspond to a database field named "``url``".
-Unfortunately, this is not the case.  ActiveObjects (by default)performs its 
+Unfortunately, this is not the case.  ActiveObjects (by default) performs its 
 field inference by stripping the accessor/mutator prefix and then converting
 the first character of the resulting string to lower-case.  Thus, the infered
 mapping for the ``getURL()`` method is actually a field called "``uRL``".
