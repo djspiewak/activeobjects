@@ -1,0 +1,179 @@
+.. :mode=rest:
+
+Caching
+=======
+
+ActiveObjects has a multi-tiered caching archicture designed to minimize trips to
+the database without introducing undue overhead.  The overall caching architecture
+has three main components: the entity cache, the value cache and the relationship
+cache.  The value cache is further subdivided into "dirty" and "non-dirty" values.
+With the exception of the entity cache, the cache layers are all implemented in
+a pluggable, extensible fashion.  By default, everything is cached using standard
+in-memory data structures, but it is equally possible to cache everything in some
+sort of distributed data store.  The proof-of-concept for this is implemented in
+the **activeobjects-memcached** sub-project.
+
+ActiveObjects does not perform any query caching or any sort of database
+memoization at a low level.  All caching is performed on entities and their
+fields.  This not only avoids added implementation complexity, but it also
+prevents unnecessary use of memory based on design decisions which may or may
+not be relevant to some applications (i.e. overly agressive caching).
+
+
+Entity Cache
+------------
+
+The entity cache is the only cache layer which is restricted to operating on a
+purely-local basis.  Its function is to associate primary key values with their
+correspondant entity instances.  This ensures that there will only exist one
+entity per virtual machine which corresponds with a particular row in the
+database.  This one-to-one correspondance is a key design element in ActiveObjects
+and is described in some greater detail in the `section devoted to entities`_.
+
+This cache is maintained and accessed entirely within the ``EntityManager``
+class.  The most direct way to exploit this cache is to make use of the
+``EntityManager#get(...)`` method, which queries the cache to determine the
+entity which is associated with the given primary key.  If no entity is associated
+with that key *and* the key corresponds with a valid row in the database, then
+a new entity will be created, cached and returned.  The performance of this method
+may be heavily relied upon due to its basis upon an in-memory hash map.
+
+Another important feature of this cache is that it does not maintain hard
+references to the entities it contains.  In this case, the term "hard references"
+refers to a reference which will be seen by the garbage collector as "active"
+and thus not discarded.  If all entities were held as hard references, then the
+memory footprint imposed by the framework would balloon unnecessarily, preventing
+unused (but still valid) entities from being garbage collected.  ``EntityManager``
+allows two different styles of referencing to be specified: "soft" and "weak".
+
+These two referencing styles dictate the use of ``SoftReference`` or
+``WeakReference``, respectively.  These are documented in greater detail in Sun's
+`javadoc for the java.lang.ref package`_.  Generally speaking, soft references
+effectively hold a reference to the underlying object (preventing GC) until the
+heap begins to reach capacity.  At that point, the reference is released and
+garbage collection can take place.  Weak references operate in a similar fashion,
+except that they do not prevent garbage collection under any circumstances.  As
+a general rule, soft references should be used unless the availble heap space is
+exceptionally low.  For this reason, soft referencing is the default in
+``EntityManager``.
+
+Due to this strategy of using soft or weak referencing, the entity cache may be
+thought of as a more sophisticated form of the LRU [#]_ cache strategy employed by
+many ORMs.
+
+.. [#] Least Recently Used
+
+.. _section devoted to entities: entities.html
+.. _javadoc for the java.lang.ref package: http://java.sun.com/javase/6/docs/api/java/lang/ref/package-summary.html
+
+
+Value Cache
+-----------
+
+The value cache is perhaps the most important cache layer as well as the simplest.
+Conceptually, each entity has its own value cache which in turn contains unique
+mappings from field names to current values.  This cache is lazily populated on
+any call to an entity accessor or mutator and forms the basis for ActiveObjects's
+lazy-loading.  The value cache for a given entity literally represents the current
+known state of that entity's corresponding row in the database.
+
+There are scenarios wherein a field may not be stored within the value cache,
+those being as follows:
+
+* Uncachable types_ (e.g. ``BLOB``)
+* Fields annotated with ``@OnUpdate``
+* Fields annotated with ``@Transient``
+
+For a type to be uncachable, it must return ``false`` from its ``shouldCache(Class)``
+method when invoked on the *specific* Java type of the field in question.  This
+is extremely important for Java values such as ``InputStream`` which are not
+"reusable" in the conventional sense.  In other words, if an ``InputStream``
+value is obtained from the database and then all of its data is consumed, that
+particular instance will no longer represent that data when it is queried at
+some future point in the code.  More generically, any type which represents a
+mutable container must take care to ensure that its value is not cached, lest an
+innaccurate value be returned from a future query.
+
+Fields which are annotated with ``@OnUpdate`` are treated specially by
+ActiveObjects in several areas.  Primarily, this is a schema definition feature.
+MySQL has a field modifier built-in which correctly handles the semantics of this
+feature.  For other databases, triggers are used.  The more important point is
+that such fields have values which are generated (and later modified) by the
+database itself, below the ORM layer.  Since ActiveObjects cannot guarentee that
+its cached value will match the now-updated value in the database, it will simply
+avoid caching any ``@OnUpdate`` fields.
+
+Fields annotated with ``@OnUpdate`` are conceptually part of a larger category
+of *transient* fields - fields which are modified outside of ActiveObjects's
+control.  A specific example of this might be a field which is updated by some
+external data-mining script.  Presumably, this script has direct access to the
+database, which allows it to change the value of the field in the underlying row
+without notifying ActiveObjects in any way.  Such a field should be annotated
+with ``@Transient`` so as to prevent ActiveObjects from caching any field values
+queried from (or persisted to) the database.
+
+
+Dirty Fields
+~~~~~~~~~~~~
+
+It is important to remember that the value (and relationship) caches may not be
+handled in local memory.  As mentioned previously, it is possible to create a
+custom "cache provider" which potentially shares the caches between multiple
+VM instances.  For this reason, ActiveObjects must take some extra steps when
+dealing with modified fields.
+
+Naively, field modifications could be implemented as a simple modification of the
+value cache and a flag to ``save()`` at some future point.  In fact, this was
+precisely how the original design for ActiveObjects functioned.  However, a shared
+cache makes such an approach extremely impractical.  One potential scenario
+could be a cache shared between two application servers.  The first server begins
+making a multi-field change to an entity while at the same time the second server
+begins querying the current field values of that same entity.  It is very easy
+to see how the second server might receive an inconsistent state caused by the
+retrieval of a modified field value prior to the modification of the other fields.
+
+The only way to avoid this scenario (without distributed locking) is to make the
+guarentee that all modifications contained within the virtual machine which
+performs them.  Thus, fields which are flagged as dirty must be cached locally
+and not shared across any distributed cache.  In practice, this implementation
+detail does not represent a significant concern.  However, it is still worthy of
+documentation so as to head off potential confusion in debugging.
+
+.. _types: types.html
+
+
+Relationship Cache
+------------------
+
+In addition to its entity and value caches, ActiveObjects employs a sophisticated
+relationship cache which reduces the number of database queries required to
+repeatedly retrieve ``@OneToOne``, ``@OneToMany`` and ``@ManyToMany``
+relationships.  The actual array value returned from the relationship accessor
+method is cached along with several mappings which allow accurate expiry of the
+cached values.  Subsequent calls to that relationship accessor do not require
+the execution of queries but rather an extremely fast cache hit.
+
+The most significant concern with such a compound cache is the avoidance of stale
+cache entries which could potentially lead to innacurate results when querying
+the corresponding relationships.  One way to avoid this problem would be to take
+the pessimistic approach and simply expire every relationship cache entry after
+any modification.  While this would guarentee accuracy, it would also result in
+sub-optimal performance.  A better approach is for the relationship cache to
+"figure out" which fields and entities could possibly affect the value of a
+relationship and then monitor those fields for changes.  It is this approach
+which is taken by ActiveObjects.
+
+The result is a tremendous improvement in performance without fear of stale or
+innacurate data.  This caching should be relied upon by applications, using
+relationships rather than stand-along queries wherever possible.  This also
+means that code which would have previosly suffered from hiddeous inefficiency
+can now be executed without fear::
+    
+    Company c = ...
+    for (int i = 0; i < c.getPeople().length; i++) {
+        System.out.println(c.getPeople().getFirstName());
+    }
+    
+So long as the ``firstName`` field in the ``Person`` entity is configured to
+preload, this block of code will result in a *maximum* of one query to the
+database.  After that, it's all in the cache.
