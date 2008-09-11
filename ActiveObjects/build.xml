@@ -414,6 +414,15 @@ ActiveObjects ${activeobjects.version}
 
 \noindent]]></replacevalue>
 		</replace>
+
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken><![CDATA[\end{verbatim}\end{quote}
+]]></replacetoken>
+			<replacevalue><![CDATA[\end{verbatim}
+\end{samepage}\end{quote}
+
+\noindent]]></replacevalue>
+		</replace>
 		
 		<replaceregexp flags="g" file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<regexp pattern="\\href\{([^}]|\\\})+\}"/>
