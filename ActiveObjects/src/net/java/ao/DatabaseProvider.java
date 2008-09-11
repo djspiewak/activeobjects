@@ -113,8 +113,8 @@ public abstract class DatabaseProvider {
 		connections = new HashMap<Thread, Connection>();
 	}
 	
-	private synchronized void loadMetaData() {
-		if (metadata == null) {
+	private synchronized void loadQuoteString() {
+		if (quote == null) {
 			Connection conn = null;
 			try {
 				conn = getConnectionImpl();
@@ -122,7 +122,6 @@ public abstract class DatabaseProvider {
 				if (conn == null) {		// probably a unit test
 					quote = "";
 				} else {
-					metadata = conn.getMetaData();
 					quote = conn.getMetaData().getIdentifierQuoteString();
 				}
 			} catch (SQLException e) {
@@ -1715,7 +1714,9 @@ public abstract class DatabaseProvider {
 	 * However, this method may execute any additional statements required to
 	 * prepare for the INSERTion (as in the case of MS SQL Server which requires
 	 * some config parameters to be set on the database itself prior to INSERT).</p>
-	 * @param manager TODO
+	 * 
+	 * @param manager	The <code>EntityManager</code> which was used to dispatch
+	 * 		the INSERT in question.
 	 * @param conn	The connection to be used in the eventual execution of the
 	 * 		generated SQL statement.
 	 * @param pkType	The Java type of the primary key value.  Can be used to
@@ -1807,7 +1808,9 @@ public abstract class DatabaseProvider {
 	 * transaction, or possibly another such operation.  It is also important to note
 	 * that this method should not close the connection.  Doing so could cause the
 	 * entity creation algorithm to fail at a higher level up the stack.</p>
-	 * @param manager TODO
+	 * 
+	 * @param manager	The <code>EntityManager</code> which was used to dispatch
+	 * 		the INSERT in question.
 	 * @param conn	The database connection to use in executing the INSERT statement.
 	 * @param pkType	The Java class type of the primary key field (for use both in
 	 * 		searching the <code>params</code> as well as performing value conversion
@@ -1865,14 +1868,30 @@ public abstract class DatabaseProvider {
 	}
 
 	/**
-	 * TODO
+	 * Stores an SQL <code>NULL</code> value in the database.  This method
+	 * is required due to the fact that not all JDBC drivers handle NULLs
+	 * in the same fashion.  The default implementation calls {@link PreparedStatement#setString(int, String)},
+	 * passing <code>null</code> as a value.  Databases which require a
+	 * different implementation (e.g. PostgreSQL) should override this method.
+	 * 
+	 * @param stmt	The statement in which to store the <code>NULL</code> value.
+	 * @param index	The index of the parameter which should be assigned <code>NULL</code>.
 	 */
 	public void putNull(PreparedStatement stmt, int index) throws SQLException {
 		stmt.setString(index, null);
 	}
 	
 	/**
-	 * TODO
+	 * Stors an SQL <code>BOOLEAN</code> value in the database.  Most databases
+	 * handle differences in <code>BOOLEAN</code> semantics within their JDBC
+	 * driver(s).  However, some do not implement the {@link PreparedStatement#setBoolean(int, boolean)}
+	 * method correctly.  To work around this defect, any database providers
+	 * for such databases should override this method to store boolean values in
+	 * the relevant fashion.
+	 * 
+	 * @param stmt	The statement in which to store the <code>BOOLEAN</code> value.
+	 * @param index	The index of the parameter which should be assigned.
+	 * @param value	The value to be stored in the relevant field.
 	 */
 	public void putBoolean(PreparedStatement stmt, int index, boolean value) throws SQLException {
 		stmt.setBoolean(index, value);
@@ -1908,7 +1927,36 @@ public abstract class DatabaseProvider {
 	}
 	
 	/**
-	 * TODO
+	 * <p>Performs any database specific post-processing on the specified
+	 * identifier.  This usually means quoting reserved words, though it
+	 * could potentially encompass other tasks.  This method is called
+	 * with unbelievable frequency and thus must return extremely quickly.</p>
+	 * 
+	 * <p>The default implementation checks two factors: max identifier
+	 * length and whether or not it represents a reserved word in the
+	 * underlying database.  If the identifier excedes the maximum ID
+	 * length for the database in question, the excess text will be
+	 * hashed against the hash code for the whole and concatenated with
+	 * the leading remainder.  The {@link #shouldQuoteID(String)} method
+	 * is utilitized to determine whether or not the identifier in question
+	 * should be quoted.  For most databases, this involves checking a set
+	 * of reserved words, but the method is flexible enough to allow more
+	 * complex "reservations rules" (such as those required by Oracle).
+	 * If the identifier is reserved in any way, the database-specific
+	 * quoting string will be retrieved from {@link DatabaseMetaData} and
+	 * used to enclose the identifier.  This method cannot simply quote all
+	 * identifiers by default due to the way that some databases (such as
+	 * HSQLDB and PostgreSQL) attach extra significance to quoted fields.</p>
+	 * 
+	 * <p>The general assurance of this method is that for any input identfier,
+	 * this method will return a correspondingly-unique identifier which is
+	 * guarenteed to be valid within the underlying database.</p>
+	 * 
+	 * @param id	The identifier to process.
+	 * @return	A unique identifier corresponding with the input which is
+	 * 		guarenteed to function within the underlying database.
+	 * @see #getMaxIDLength()
+	 * @see #shouldQuoteID(String)
 	 */
 	public String processID(String id) {
 		int maxIDLength = getMaxIDLength();
@@ -1922,7 +1970,7 @@ public abstract class DatabaseProvider {
 		}
 		
 		if (shouldQuoteID(id)) {
-			loadMetaData();
+			loadQuoteString();
 			return quote + id + quote;
 		}
 		
@@ -1930,21 +1978,40 @@ public abstract class DatabaseProvider {
 	}
 	
 	/**
-	 * TODO
+	 * Determines whether or not the specified identifier should be quoted
+	 * before transmission to the underlying database.  The default implementation
+	 * transforms the identifier into all-upper-case and checks the result
+	 * against {@link #getReservedWords()}.  Databases with more complicated
+	 * rules regarding quoting should provide a custom implementation of this
+	 * method.
+	 * 
+	 * @param id	The identifier to check against the quoting rules.
+	 * @return	<code>true</code> if the specified identifier is invalid under
+	 * 		the relevant quoting rules, otherwise <code>false</code>.
 	 */
 	protected boolean shouldQuoteID(String id) {
 		return getReservedWords().contains(id.toUpperCase());
 	}
 	
 	/**
-	 * TODO
+	 * Returns the maximum length for any identifier in the underlying database.
+	 * If the database defines different maximum lengths for different identifier
+	 * types, the <i>minimum</i> value should be returned by this method.  By
+	 * default, this just returns {@link Integer#MAX_VALUE}.
+	 * 
+	 * @return	The maximum identifier length for the database.
 	 */
 	protected int getMaxIDLength() {
 		return Integer.MAX_VALUE;
 	}
 	
 	/**
-	 * TODO
+	 * Retrieves the set of all reserved words for the underlying database.  The
+	 * set returns should be speculative, meaning that it should include any
+	 * <i>possible</i> reserved words, not just those for a particular version.
+	 * As an implementation guideline, the {@link Set} instance returned from this
+	 * method should guarentee <i>O(1)</i> lookup times, otherwise ORM performance
+	 * will suffer greatly.
 	 * 
 	 * @return	A set of <i>upper case</i> reserved words specific 
 	 * 		to the database.
