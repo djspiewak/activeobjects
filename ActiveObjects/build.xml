@@ -362,6 +362,14 @@ ActiveObjects ${activeobjects.version}
 		</replace>
 		
 		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
+			<replacetoken>%% generator Docutils: http://docutils.sourceforge.net/</replacetoken>
+			<replacevalue><![CDATA[
+%\setlength{\parskip}{4pt}
+\usepackage{upquote, mathptmx}
+]]></replacevalue>
+		</replace>
+		
+		<replace file="${activeobjects.dir}/doc/pdftmp/ActiveObjects.tex">
 			<replacetoken>]{hyperref}</replacetoken>
 			<replacevalue>,bookmarks=true,pdftex=true]{hyperref}</replacevalue>
 		</replace>
