@@ -21,3 +21,11 @@ BEFORE INSERT
 BEGIN
     SELECT person_id_seq.NEXTVAL INTO :NEW.id FROM DUAL; 
 END;
+
+CREATE TRIGGER person_created_onupdate
+BEFORE UPDATE
+    ON person
+    FOR EACH ROW
+BEGIN
+    :NEW.created := SYSDATE;
+END

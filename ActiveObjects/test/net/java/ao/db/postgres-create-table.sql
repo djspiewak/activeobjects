@@ -12,3 +12,10 @@ CREATE TABLE person (
     CONSTRAINT fk_person_companyid FOREIGN KEY (companyID) REFERENCES company(id),
     PRIMARY KEY(id)
 )
+
+CREATE FUNCTION person_created_onupdate() RETURNS trigger AS $$
+BEGIN
+    NEW.created := now();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql

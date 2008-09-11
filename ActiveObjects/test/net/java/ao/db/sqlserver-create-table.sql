@@ -12,3 +12,9 @@ CREATE TABLE person (
     CONSTRAINT fk_person_companyid FOREIGN KEY (companyID) REFERENCES company(id),
     PRIMARY KEY(id)
 )
+
+CREATE TRIGGER person_created_onupdate
+ON person
+FOR UPDATE
+AS
+    UPDATE person SET created = GetDate() WHERE id = (SELECT id FROM inserted)

@@ -15,6 +15,8 @@
  */
 package net.java.ao.db;
 
+import static org.junit.Assert.assertArrayEquals;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,7 +38,6 @@ import net.java.ao.types.ClassType;
 import net.java.ao.types.TypeManager;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,22 +63,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionCreateTable();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-create-table.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("derby-create-table.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-create-table.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-create-table.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-create-table.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-create-table.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-create-table.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-create-table.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-create-table.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-create-table.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-create-table.sql"), provider.renderAction(action));action = createActionCreateTable();
+		assertArrayEquals(readStatements("postgres-create-table.sql"), provider.renderAction(action));
 	}
 
 	@Test
@@ -86,22 +87,22 @@ public class DatabaseProviderTest {
 		String[] ddl = {"DROP TABLE person"};
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(ddl, provider.renderAction(action));
+		assertArrayEquals(ddl, provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(ddl, provider.renderAction(action));
+		assertArrayEquals(ddl, provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(ddl, provider.renderAction(action));
+		assertArrayEquals(ddl, provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(ddl, provider.renderAction(action));
+		assertArrayEquals(ddl, provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-drop-table.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-drop-table.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(ddl, provider.renderAction(action));action = createActionCreateTable();
+		assertArrayEquals(ddl, provider.renderAction(action));action = createActionCreateTable();
 	}
 	
 	@Test
@@ -109,22 +110,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionAddColumn();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-add-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("derby-add-column.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-add-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-add-column.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-add-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-add-column.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-add-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-add-column.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-add-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-add-column.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-add-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("postgres-add-column.sql"), provider.renderAction(action));
 	}
 	
 	@Test
@@ -132,22 +133,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionAlterColumn();
 		
 		DatabaseProvider provider  = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(new String[0], provider.renderAction(action));
+		assertArrayEquals(new String[0], provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-alter-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-alter-column.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-alter-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-alter-column.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-alter-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-alter-column.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-alter-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-alter-column.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-alter-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("postgres-alter-column.sql"), provider.renderAction(action));
 	}
 	
 	@Test
@@ -155,22 +156,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionDropColumn();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(new String[0], provider.renderAction(action));
+		assertArrayEquals(new String[0], provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-drop-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-drop-column.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-drop-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-drop-column.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-drop-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-drop-column.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-drop-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-drop-column.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-drop-column.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("postgres-drop-column.sql"), provider.renderAction(action));
 	}
 	
 	@Test
@@ -178,22 +179,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionCreateIndex();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-create-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("derby-create-index.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-create-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-create-index.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-create-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-create-index.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-create-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-create-index.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-create-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-create-index.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-create-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("postgres-create-index.sql"), provider.renderAction(action));
 	}
 	
 	@Test
@@ -201,22 +202,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionDropIndex();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-drop-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("derby-drop-index.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-drop-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-drop-index.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-drop-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-drop-index.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-drop-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-drop-index.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-drop-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-drop-index.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-drop-index.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("postgres-drop-index.sql"), provider.renderAction(action));
 	}
 	
 	@Test
@@ -224,22 +225,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionAddKey();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-add-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("derby-add-key.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-add-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-add-key.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-add-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-add-key.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-add-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-add-key.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-add-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-add-key.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-add-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("postgres-add-key.sql"), provider.renderAction(action));
 	}
 	
 	@Test
@@ -247,22 +248,22 @@ public class DatabaseProviderTest {
 		DDLAction action = createActionDropKey();
 		
 		DatabaseProvider provider = new EmbeddedDerbyDatabaseProvider("", "", "");
-		assertEquals(readStatements("derby-drop-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("derby-drop-key.sql"), provider.renderAction(action));
 		
 		provider = new HSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("hsqldb-drop-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("hsqldb-drop-key.sql"), provider.renderAction(action));
 		
 		provider = new JTDSSQLServerDatabaseProvider("", "", "");
-		assertEquals(readStatements("sqlserver-drop-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("sqlserver-drop-key.sql"), provider.renderAction(action));
 		
 		provider = new MySQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("mysql-drop-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("mysql-drop-key.sql"), provider.renderAction(action));
 		
 		provider = new OracleDatabaseProvider("", "", "");
-		assertEquals(readStatements("oracle-drop-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("oracle-drop-key.sql"), provider.renderAction(action));
 		
 		provider = new PostgreSQLDatabaseProvider("", "", "");
-		assertEquals(readStatements("postgres-drop-key.sql"), provider.renderAction(action));
+		assertArrayEquals(readStatements("postgres-drop-key.sql"), provider.renderAction(action));
 	}
 	
 	@After
@@ -330,6 +331,7 @@ public class DatabaseProviderTest {
 		fields[9].setName("created");
 		fields[9].setType(tm.getType(Calendar.class));
 		fields[9].setDefaultValue(DatabaseFunction.CURRENT_TIMESTAMP);
+		fields[9].setOnUpdate(DatabaseFunction.CURRENT_TIMESTAMP);
 		
 		DDLForeignKey[] keys = new DDLForeignKey[1];
 		table.setForeignKeys(keys);
@@ -487,16 +489,11 @@ public class DatabaseProviderTest {
 		
 		back.setLength(back.length() - 1);
 		
-		return back.toString().split("\n\n");
-	}
-	
-	public static final void assertEquals(String[] array1, String[] array2) {
-		if (array1.length != array2.length) {
-			Assert.fail("Array lengths are not equal: expected " + array1.length + " got " + array2.length);
+		String[] arr = back.toString().split("\n\n");
+		for (int i = 0; i < arr.length; i++) {
+			arr[i] = arr[i].trim();
 		}
 		
-		for (int i = 0; i < array1.length; i++) {
-			Assert.assertEquals(array1[i].trim(), array2[i].trim());
-		}
+		return arr;
 	}
 }
