@@ -303,6 +303,17 @@ public class EntityTest extends DataTest {
 		assertEquals(25, person.getAge());
 		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
 	}
+	
+	@Test
+	public void testTransientCacheMutator() {
+		Person person = manager.get(Person.class, personID);
+		person.setAge(25);
+		person.save();
+		
+		SQLLogMonitor.getInstance().markWatchSQL();
+		assertEquals(25, person.getAge());
+		assertTrue(SQLLogMonitor.getInstance().isExecutedSQL());
+	}
 
 	@Test
 	public void testBlobMutator() throws IOException {
