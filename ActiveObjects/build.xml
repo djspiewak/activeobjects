@@ -7,11 +7,24 @@
 		<format property="build.vstamp" pattern="yyyyMMdd"/>
 	</tstamp>
 	
+	<exec dir="${activeobjects.dir}" executable="svn" output="${activeobjects.dir}/svn.out" logError="yes">
+		<arg value="info"/>
+	</exec>
+	
+	<replaceregexp flags="g" file="${activeobjects.dir}/svn.out">
+		<regexp pattern="Path: .+[\n\r]{1,2}URL: .+[\n\r]{1,2}Repository Root: .+[\n\r]{1,2}Repository UUID: .+[\n\r]{1,2}Revision: (\d+)[\n\r]{1,2}.+[\n\r]{1,2}.+[\n\r]{1,2}.+[\n\r]{1,2}.+[\n\r]{1,2}.+[\n\r]{1,2}[\n\r]{1,2}"/>
+		<substitution expression="\1"/>
+	</replaceregexp>
+	
+	<loadfile property="svn.revision" srcfile="${activeobjects.dir}/svn.out"/>
+	
+	<delete file="${activeobjects.dir}/svn.out"/>
+	
 	<property file="${activeobjects.dir}/build.properties"/>
 	<property file="${activeobjects.dir}/build-internal.properties"/>
 	
 	<property name="dist.path" value="${activeobjects.dir}/dist/activeobjects-${activeobjects.version}"/>
-
+	
 	<target name="check-test">
 		<condition property="test-check-ok">
 			<and>

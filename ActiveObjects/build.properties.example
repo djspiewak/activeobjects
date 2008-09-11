@@ -1,26 +1,33 @@
-lucene.path=C:/Users/Daniel Spiewak/Libraries/lucene-2.2.0/lucene-core-2.2.0.jar
-lucene.queries.path=C:/Users/Daniel Spiewak/Libraries/lucene-2.2.0/contrib/queries/lucene-queries-2.2.0.jar
-lucene.javadoc=http://lucene.apache.org/java/2_2_0/api
+libraries.dir=C:/Users/Daniel Spiewak/Libraries
+lucene.path=${libraries.dir}/lucene-2.2.0/lucene-core-2.2.0.jar
+lucene.queries.path=${libraries.dir}/lucene-2.2.0/contrib/queries/lucene-queries-2.2.0.jar
 
-commons-dbcp.path=C:/Users/Daniel Spiewak/Libraries/commons-dbcp-1.2.2/commons-dbcp-1.2.2.jar
-ant.path=C:/Users/Daniel Spiewak/Applications/eclipse/plugins/org.apache.ant_1.7.0.v200704241635/lib/ant.jar
-c3p0.path=C:/Users/Daniel Spiewak/Libraries/c3p0-0.9.1.2/lib/c3p0-0.9.1.2.jar
-proxool.path=C:/Users/Daniel Spiewak/Libraries/proxool-0.9.0RC3/lib/proxool-0.9.0RC3.jar
-dbpool.path=C:/Users/Daniel Spiewak/Libraries/DBPool-4.8.3/DBPool_v4.8.3.jar
+commons-dbcp.path=${libraries.dir}/commons-dbcp-1.2.2/commons-dbcp-1.2.2.jar
+ant.path=${libraries.dir}/apache-ant-1.7.0/lib/ant.jar
+c3p0.path=${libraries.dir}/c3p0-0.9.1.2/lib/c3p0-0.9.1.2.jar
+proxool.path=${libraries.dir}/proxool-0.9.0RC3/lib/proxool-0.9.0RC3.jar
+dbpool.path=${libraries.dir}/DBPool-4.8.3/DBPool_v4.8.3.jar
 
-# provide values for these properties to enable unit testing 
-junit4.path=				# e.g. =junit.jar
-hsqldb.path=				# e.g. =hsqldb.jar
+# provide values for these properties to enable unit testing
+
+# e.g. =junit.jar 
+junit4.path=
+# e.g. =hsqldb.jar
+hsqldb.path=
 
 # provide value to enable building of JDocs file
-jdocs.path=			# e.g. =jdocs.jar
-cobertura.path=		# e.g. =C:/Users/Daniel Spiewak/Applications/cobertura-1.9
+
+# e.g. =jdocs.jar
+jdocs.path=
+# e.g. =C:/Users/Daniel Spiewak/Applications/cobertura-1.9
+cobertura.path=
 
 build.debug=yes
 
-activeobjects.version=0.9-SNAPSHOT
+activeobjects.version=r${svn.revision}
 
 www.path=${activeobjects.dir}/../www
 
-docutils.path=		# e.g. =C:/Program Files/docutils/tools
+# e.g. =C:/Program Files/docutils/tools
+docutils.path=
 
