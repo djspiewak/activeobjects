@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -415,6 +417,42 @@ public class EntityTest extends DataTest {
 		}
 		
 		manager.delete(comment);
+	}
+	
+	@Test
+	public void testPropertyChangeListener() throws SQLException {
+		Person person = manager.create(Person.class, new DBParam("url", "http://stackoverflow.com"));
+		
+		final String[] fired = {""};
+		final String[] value = {""};
+		final String[] oldValue = {""};
+		
+		person.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				fired[0] = evt.getPropertyName();
+				value[0] = (String) evt.getNewValue();
+				oldValue[0] = (String) evt.getOldValue();
+			}
+		});
+		
+		person.setFirstName("Daniel");
+		assertEquals("firstName", fired[0]);
+		assertEquals("Daniel", value[0]);
+		assertEquals(null, oldValue[0]);
+		
+		fired[0] = value[0] = oldValue[0] = "";
+		
+		person.save();
+		assertEquals("", fired[0]);
+		assertEquals("", value[0]);
+		assertEquals("", oldValue[0]);
+		
+		person.setFirstName("Chris");
+		assertEquals("firstName", fired[0]);
+		assertEquals("Chris", value[0]);
+		assertEquals("Daniel", oldValue[0]);
+		
+		manager.delete(person);
 	}
 	
 	@Test

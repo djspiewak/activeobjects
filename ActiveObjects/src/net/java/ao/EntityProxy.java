@@ -250,7 +250,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 					DatabaseType dbType = manager.getType(javaType);
 					dbType.putToDatabase(getManager(), stmt, index++, value);
 					
-					// this check is not comprehensive, will miss @Transient fields
+					// TODO	this check is not comprehensive, will miss @Transient fields
 					if (!dbType.shouldCache(javaType)) {
 						cacheLayer.remove(field);
 					}
