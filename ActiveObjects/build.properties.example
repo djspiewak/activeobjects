@@ -17,7 +17,6 @@ jdocs.path=			# e.g. =jdocs.jar
 cobertura.path=		# e.g. =C:/Users/Daniel Spiewak/Applications/cobertura-1.9
 
 build.debug=yes
-build.parallel=3	# number of cores +1 is a good bet
 
 activeobjects.version=0.9-SNAPSHOT
 

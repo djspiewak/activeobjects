@@ -490,53 +490,43 @@ ActiveObjects ${activeobjects.version}
 		<property name="javadoc.intern.path" value="${dist.path}/api"/>
 		<property name="supress-javadoc-deletion" value="yes"/>
 		
-		<parallel threadcount="${build.parallel}">
-			<antcall target="javadoc"/>
-			
-			<copy todir="${dist.path}/src">
-				<fileset dir="${activeobjects.dir}/src">
-					<include name="**/*.java"/>
-				</fileset>
-			</copy>
-			<copy todir="${dist.path}">
-				<fileset dir="${activeobjects.dir}">
-					<include name="BUGS"/>
-					<include name="CONTRIBUTORS"/>
-					<include name="LICENSE"/>
-				</fileset>
-			</copy>
-			
-			<property name="pdf-dest" value="${dist.path}/documentation.pdf"/>
-			<antcall target="pdf"/>
-		</parallel>
+		<antcall target="javadoc"/>
 		
-		<parallel threadcount="${build.parallel}">
-			<sequential>
-				<zip destfile="${dist.path}.zip">
-					<fileset dir="${activeobjects.dir}/dist">
-						<include name="activeobjects-${activeobjects.version}/**/*"/>
-					</fileset>
-				</zip>
-			</sequential>
-			
-			<sequential>
-				<tar destfile="${dist.path}.tar">
-					<fileset dir="${activeobjects.dir}/dist">
-						<include name="activeobjects-${activeobjects.version}/**/*"/>
-					</fileset>
-				</tar>
-				<gzip src="${dist.path}.tar" zipfile="${dist.path}.tar.gz"/>
-			</sequential>
-		</parallel>
+		<copy todir="${dist.path}/src">
+			<fileset dir="${activeobjects.dir}/src">
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist.path}">
+			<fileset dir="${activeobjects.dir}">
+				<include name="BUGS"/>
+				<include name="CONTRIBUTORS"/>
+				<include name="LICENSE"/>
+			</fileset>
+		</copy>
 		
-		<parallel threadcount="${build.parallel}">
-			<delete file="${dist.path}.tar"/>
-			
-			<checksum file="${dist.path}.zip" algorithm="sha" fileext=".sha1"/>
-			<checksum file="${dist.path}.zip" algorithm="md5" fileext=".md5"/>
-			<checksum file="${dist.path}.tar.gz" algorithm="sha" fileext=".sha1"/>
-			<checksum file="${dist.path}.tar.gz" algorithm="md5" fileext=".md5"/>
-		</parallel>
+		<property name="pdf-dest" value="${dist.path}/documentation.pdf"/>
+		<antcall target="pdf"/>
+		
+		<zip destfile="${dist.path}.zip">
+			<fileset dir="${activeobjects.dir}/dist">
+				<include name="activeobjects-${activeobjects.version}/**/*"/>
+			</fileset>
+		</zip>
+	
+		<tar destfile="${dist.path}.tar">
+			<fileset dir="${activeobjects.dir}/dist">
+				<include name="activeobjects-${activeobjects.version}/**/*"/>
+			</fileset>
+		</tar>
+		<gzip src="${dist.path}.tar" zipfile="${dist.path}.tar.gz"/>
+		
+		<delete file="${dist.path}.tar"/>
+		
+		<checksum file="${dist.path}.zip" algorithm="sha" fileext=".sha1"/>
+		<checksum file="${dist.path}.zip" algorithm="md5" fileext=".md5"/>
+		<checksum file="${dist.path}.tar.gz" algorithm="sha" fileext=".sha1"/>
+		<checksum file="${dist.path}.tar.gz" algorithm="md5" fileext=".md5"/>
 		
 		<delete includeemptydirs="yes">
 			<fileset dir="${activeobjects.dir}/dist">
