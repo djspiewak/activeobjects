@@ -66,14 +66,19 @@ public class SearchTest {
 	@BeforeClass
 	public static void setUp() throws IOException, SQLException {
 		TypeManager.getInstance().addType(new ClassType());
+		
+		String uri = System.getProperty("db.uri.prefix");
+		String suffix = System.getProperty("db.uri.suffix", "");
+		String user = System.getProperty("db.user");
+		String pass = System.getProperty("db.pass");
+		
 
-		manager = new SearchableEntityManager("jdbc:hsqldb:mem:test_database", "sa", "", 
-				FSDirectory.getDirectory(TEST_INDEX));
-//		manager = new SearchableEntityManager("jdbc:derby:test_database;create=true", "sa", "jeffbridges", 
-//				FSDirectory.getDirectory(TEST_INDEX));
-//		manager = new SearchableEntityManager("jdbc:oracle:thin:@192.168.101.17:1521:xe", "activeobjects", "password", 
-//				FSDirectory.getDirectory(TEST_INDEX));
+		manager = new SearchableEntityManager(uri + '_' + 0 + suffix, user, pass, FSDirectory.getDirectory(TEST_INDEX));
 
+		try {
+			TestUtilities.tearDownEntityManager(manager);
+		} catch (Throwable t) {}
+		
 		DataStruct data = TestUtilities.setUpEntityManager(manager);
 
 		personID = data.personID;

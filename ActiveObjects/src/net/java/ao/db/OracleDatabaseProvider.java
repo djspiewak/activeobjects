@@ -350,7 +350,7 @@ public class OracleDatabaseProvider extends DatabaseProvider {
                 StringBuilder seq = new StringBuilder();
                 seq.append("CREATE SEQUENCE ").append(processID(table.getName() + '_' + field.getName() + "_seq"));
                 seq.append(" INCREMENT BY 1 START WITH 1 ");
-                seq.append("NOMAXVALUE").append(" MINVALUE 1 ");
+                seq.append("NOMAXVALUE").append(" MINVALUE 1");
                 back.add(seq.toString());
         	}
         }
