@@ -462,7 +462,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	public void putNull(PreparedStatement stmt, int index) throws SQLException {
-		stmt.setNull(index, Types.INTEGER);
+		stmt.setNull(index, stmt.getParameterMetaData().getParameterType(index));
 	}
 
 	@Override

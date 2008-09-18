@@ -473,6 +473,8 @@ public class EntityTest extends DataTest {
 		}
 		
 		Person person = manager.get(Person.class, personID);
+		person.setFirstName(person.getFirstName());		// no-op to guarentee value
+		person.save();
 		
 		Calendar old = person.getModified();
 		person.getAge();
@@ -497,6 +499,25 @@ public class EntityTest extends DataTest {
 	public void testAccessNullPrimitive() throws MalformedURLException, SQLException {
 		Company company = manager.create(Company.class);
 		assertFalse(company.isCool());		// if we get NPE, we're in trouble
+		
+		manager.delete(company);
+	}
+	
+	@Test
+	public void testMutateNull() throws SQLException {
+		Company company = manager.create(Company.class);
+		
+		company.setName(null);
+		company.save();
+		
+		manager.flush(company);
+		assertEquals(null, company.getName());
+		
+		company.setAddressInfo(null);
+		company.save();
+		
+		manager.flush(company);
+		assertEquals(null, company.getAddressInfo());
 		
 		manager.delete(company);
 	}
