@@ -15,8 +15,6 @@
  */
 package net.java.ao.types;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -26,39 +24,29 @@ import net.java.ao.EntityManager;
 /**
  * @author Daniel Spiewak
  */
-class GenericType extends DatabaseType<Object> {
+class ClobType extends DatabaseType<String> {
 
-	protected GenericType(int type) {
-		super(type, -1);
+	public ClobType() {
+		super(Types.CLOB, -1, String.class);
 	}
 	
 	@Override
-	public Object pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends Object> type, String field) throws SQLException {
-		return res.getObject(field);
-	}
-
-	@Override
 	public String getDefaultName() {
-		String back = "GENERIC";
-		
-		Class<Types> clazz = Types.class;
-		for (Field field : clazz.getFields()) {
-			if (Modifier.isStatic(field.getModifiers())) {
-				try {
-					if (field.get(null).equals(getType())) {
-						back = field.getName();
-					}
-				} catch (IllegalArgumentException e) {
-				} catch (IllegalAccessException e) {
-				}
-			}
-		}
-		
-		return back;
+		return "CLOB";
+	}
+	
+	@Override
+	public String pullFromDatabase(EntityManager manager, ResultSet res, Class<? extends String> type, String field) throws SQLException {
+		return res.getString(field);
 	}
 
 	@Override
-	public Object defaultParseValue(String value) {
-		return null;
+	public String defaultParseValue(String value) {
+		return value;
+	}
+	
+	@Override
+	public boolean valueEquals(Object val1, Object val2) {
+		return val1.toString().equals(val2.toString());
 	}
 }
