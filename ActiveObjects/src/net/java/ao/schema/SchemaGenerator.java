@@ -286,9 +286,7 @@ public final class SchemaGenerator {
 		
 		SQLType sqlTypeAnnotation = annotations.getAnnotation(SQLType.class);
 		if (sqlTypeAnnotation != null) {
-			if (sqlTypeAnnotation.value() > 0) {
-				sqlType = manager.getType(sqlTypeAnnotation.value());
-			}
+			sqlType = manager.getType(sqlTypeAnnotation.value());
 		}
 		
 		return sqlType;
