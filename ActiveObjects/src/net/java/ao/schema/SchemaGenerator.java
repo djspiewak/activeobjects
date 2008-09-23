@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -286,7 +287,11 @@ public final class SchemaGenerator {
 		
 		SQLType sqlTypeAnnotation = annotations.getAnnotation(SQLType.class);
 		if (sqlTypeAnnotation != null) {
-			sqlType = manager.getType(sqlTypeAnnotation.value());
+			final int annoType = sqlTypeAnnotation.value();
+			
+			if (annoType != Types.NULL) {
+				sqlType = manager.getType(annoType);
+			}
 		}
 		
 		return sqlType;

@@ -19,6 +19,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.sql.Types;
 
 /**
  * <p>Explicitly specifies the underlying database field type for the
@@ -55,7 +56,7 @@ public @interface SQLType {
 	 * list.  If unspecified, type will be whatever the default is
 	 * for a method of the return type in question.
 	 */
-	int value() default -1;
+	int value() default Types.NULL;
 	
 	/**
 	 * Specifies the precision of the SQL type in the underlying field.
