@@ -33,6 +33,7 @@ import net.java.ao.schema.UnderscoreTableNameConverter;
 import net.java.ao.types.ClassType;
 import net.java.ao.types.TypeManager;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -123,6 +124,11 @@ public abstract class DataTest {
 	@Before
 	public void setup() throws SQLException {
 		prepareData(this);
+	}
+	
+	@After
+	public void tearDown() {
+		manager.getProvider().dispose();
 	}
 	
 	private static void prepareData(DataTest test) throws SQLException {

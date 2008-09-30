@@ -74,6 +74,9 @@ public interface Person extends Entity {
 	public byte[] getImage();
 	public void setImage(byte[] image);
 	
+	public boolean isActive();
+	public void setActive(boolean active);
+	
 	@OnUpdate("CURRENT_TIMESTAMP")
 	public Calendar getModified();
 	
