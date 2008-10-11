@@ -69,12 +69,6 @@ class MemcachedRelationsCache implements RelationsCache {
 
 	@Override
 	public void put(RawEntity<?> from, RawEntity<?>[] through, Class<? extends RawEntity<?>> throughType, RawEntity<?>[] to, Class<? extends RawEntity<?>> toType, String[] fields) {
-		if (to.length == 0) {
-			return;
-		}
-		
-		assert through.length != to.length;
-		
 		String cacheKey = prefix + from.hashCode() + '.' + throughType.getName() + '.' + toType.getName();
 		
 		for (String field : fields) {
