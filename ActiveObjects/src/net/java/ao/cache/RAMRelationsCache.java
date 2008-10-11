@@ -54,9 +54,9 @@ public class RAMRelationsCache implements RelationsCache {
 	}
 
 	public void put(RawEntity<?> from, RawEntity<?>[] through, Class<? extends RawEntity<?>> throughType, RawEntity<?>[] to, Class<? extends RawEntity<?>> toType, String[] fields) {
-		if (to.length == 0) {
-			return;
-		}
+//		if (to.length == 0) {
+//			return;
+//		}
 		
 		CacheKey key = new CacheKey(from, toType, throughType, fields);
 		lock.writeLock().lock();
