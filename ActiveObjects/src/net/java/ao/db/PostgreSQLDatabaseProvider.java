@@ -409,7 +409,7 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 		}
 		
 		if (back == null) {
-			String sql = "SELECT NEXTVAL('" + table + "_" + pkField + "_seq')";
+			String sql = "SELECT NEXTVAL(" + processID(table + "_" + pkField + "_seq") + ")";
 			
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql);
 			PreparedStatement stmt = conn.prepareStatement(sql);
