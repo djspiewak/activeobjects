@@ -465,11 +465,10 @@ public class EntityManager {
 			fieldNameConverterLock.readLock().unlock();
 		}
 		
-		Connection conn = getProvider().getConnection();
+		relationsCache.remove(type);
 		
+		Connection conn = getProvider().getConnection();
 		try {
-			relationsCache.remove(type);
-			
 			Method pkMethod = Common.getPrimaryKeyMethod(type);
 			back = peer(type, provider.insertReturningKey(this, conn, 
 					Common.getPrimaryKeyClassType(type), 
