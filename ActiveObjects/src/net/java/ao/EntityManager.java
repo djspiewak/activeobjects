@@ -465,8 +465,6 @@ public class EntityManager {
 			fieldNameConverterLock.readLock().unlock();
 		}
 		
-		relationsCache.remove(type);
-		
 		Connection conn = getProvider().getConnection();
 		try {
 			Method pkMethod = Common.getPrimaryKeyMethod(type);
@@ -477,6 +475,8 @@ public class EntityManager {
 		} finally {
 			conn.close();
 		}
+		
+		relationsCache.remove(type);
 		
 		back.init();
 		
