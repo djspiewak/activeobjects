@@ -207,13 +207,19 @@ public class EntityManager {
 	 * method should be used instead.
 	 */
 	public void flushAll() {
+		List<EntityProxy<?, ?>> toFlush = new LinkedList<EntityProxy<?, ?>>();
+		
 		proxyLock.readLock().lock();
 		try {
 			for (EntityProxy<? extends RawEntity<?>, ?> proxy : proxies.values()) {
-				proxy.flushCache();
+				toFlush.add(proxy);
 			}
 		} finally {
 			proxyLock.readLock().unlock();
+		}
+		
+		for (EntityProxy<?, ?> proxy : toFlush) {
+			proxy.flushCache();
 		}
 		
 		relationsCache.flush();
@@ -227,19 +233,24 @@ public class EntityManager {
 	 * of their internally cached values (with the exception of the primary key).
 	 */
 	public void flush(RawEntity<?>... entities) {
+		List<Class<? extends RawEntity<?>>> types = new ArrayList<Class<? extends RawEntity<?>>>(entities.length);
+		List<EntityProxy<?, ?>> toFlush = new LinkedList<EntityProxy<?, ?>>();
+		
 		proxyLock.readLock().lock();
 		try {
-			List<Class<? extends RawEntity<?>>> types = new ArrayList<Class<? extends RawEntity<?>>>(entities.length);
-			
 			for (RawEntity<?> entity : entities) {
 				types.add(entity.getEntityType());
-				proxies.get(entity).flushCache();
+				toFlush.add(proxies.get(entity));
 			}
-			
-			relationsCache.remove(types.toArray(new Class[types.size()]));
 		} finally {
 			proxyLock.readLock().unlock();
 		}
+		
+		for (EntityProxy<?, ?> proxy : toFlush) {
+			proxy.flushCache();
+		}
+		
+		relationsCache.remove(types.toArray(new Class[types.size()]));
 	}
 	
 	/**
