@@ -87,7 +87,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		}
 
 		if (implementation == null) {
-			implementation = new ImplementationWrapper<T>((T) proxy);
+			implementation = new ImplementationWrapper<T>();
+			implementation.init((T) proxy);
 		}
 
 		MethodImplWrapper methodImpl = implementation.getMethod(method.getName(), method.getParameterTypes());

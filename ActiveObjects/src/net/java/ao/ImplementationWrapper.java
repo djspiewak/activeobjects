@@ -25,14 +25,18 @@ import java.util.List;
  */
 class ImplementationWrapper<T extends RawEntity<?>> {
 	private List<Object> implementations;
+	private boolean initialized = false;
 	
-	public ImplementationWrapper(T instance) {
+	public ImplementationWrapper() {
 		implementations = new ArrayList<Object>();
-		
-		instantiateImplementation(instance, instance.getEntityType());
 	}
 	
-	private void instantiateImplementation(T instance, Class<? extends RawEntity<?>> clazz) {
+	public void init(T instance) {
+		init(instance, instance.getEntityType());
+		initialized = true;
+	}
+	
+	private void init(T instance, Class<? extends RawEntity<?>> clazz) {
 		Implementation implAnnotation = clazz.getAnnotation(Implementation.class);
 		
 		if (implAnnotation != null) {
@@ -49,11 +53,15 @@ class ImplementationWrapper<T extends RawEntity<?>> {
 		}
 		
 		for (Class<?> sup : clazz.getInterfaces()) {
-			instantiateImplementation(instance, (Class<? extends RawEntity<?>>) sup);
+			init(instance, (Class<? extends RawEntity<?>>) sup);
 		}
 	}
 	
 	public MethodImplWrapper getMethod(String name, Class<?>... parameterTypes) {
+		if (!initialized) {
+			return null;
+		}
+		
 		for (Object obj : implementations) {
 			try {
 				return new MethodImplWrapper(obj, obj.getClass().getMethod(name, parameterTypes));
