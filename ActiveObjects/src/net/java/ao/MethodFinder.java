@@ -89,11 +89,12 @@ final class MethodFinder {
 					return other;
 				}
 			}
+			
+			counterpartCache.put(key, null);
+			return null;
 		} finally {
 			counterpartCacheLock.writeLock().unlock();
 		}
-		
-		return null;
 	}
 	
 	public static synchronized MethodFinder getInstance() {

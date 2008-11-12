@@ -59,13 +59,7 @@ public final class Common {
 	}
 	
 	public static boolean typeInstanceOf(Class<?> type, Class<?> otherType) {
-		try {
-			type.asSubclass(otherType);
-		} catch (ClassCastException e) {
-			return false;
-		}
-		
-		return true;
+		return otherType.isAssignableFrom(type);
 	}
 	
 	public static String[] getMappingFields(FieldNameConverter converter,
