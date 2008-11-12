@@ -17,8 +17,8 @@ package net.java.ao.cache;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import net.java.ao.RawEntity;
 
@@ -27,7 +27,7 @@ import net.java.ao.RawEntity;
  */
 public class RAMCache implements Cache {
 	private Map<RawEntity<?>, CacheLayer> cacheLayer;
-	private final ReadWriteLock cacheLayerLock = new ReentrantReadWriteLock();
+	private final Lock cacheLayerLock = new ReentrantLock();
 	
 	private final RAMRelationsCache relationsCache;
 	
@@ -37,17 +37,10 @@ public class RAMCache implements Cache {
 	}
 
 	public CacheLayer getCacheLayer(RawEntity<?> entity) {
-		cacheLayerLock.writeLock().lock();
+		cacheLayerLock.lock();
 		try {
 			if (cacheLayer.containsKey(entity)) {
-				cacheLayerLock.readLock().lock();
-				cacheLayerLock.writeLock().unlock();
-				
-				try {
-					return cacheLayer.get(entity);
-				} finally {
-					cacheLayerLock.readLock().unlock();
-				}
+				return cacheLayer.get(entity);
 			}
 			
 			CacheLayer layer = new RAMCacheLayer();
@@ -55,9 +48,7 @@ public class RAMCache implements Cache {
 			
 			return layer;
 		} finally {
-			try {
-				cacheLayerLock.writeLock().unlock();
-			} catch (Throwable t) {}	// may not actually be locked
+			cacheLayerLock.unlock();
 		}
 	}
 	
