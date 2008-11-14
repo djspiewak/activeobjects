@@ -127,7 +127,7 @@ public abstract class Transaction<T> {
 	public T execute() throws SQLException {
 		Connection conn = null;
 		
-		int state = 0; // 0 = start, 1 = running transaction, 2 = committed
+		boolean running = true;
 		T back = null;
 		
 		try {
@@ -137,16 +137,15 @@ public abstract class Transaction<T> {
 			conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			conn.setAutoCommit(false);
 			
-			state = 1;
 			back = Transaction.this.run();
 			conn.commit();
-			state = 2;
+			running = false;
 		} finally {
 			if (conn == null) {
 				return null;
 			}
 			
-			if (state == 1) {
+			if (running) {
 				try {
 					conn.rollback();
 				} catch (SQLException e1) {
