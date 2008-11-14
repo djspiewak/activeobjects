@@ -124,9 +124,9 @@ public abstract class Transaction<T> {
 	 * @throws SQLException	If the transaction failed for any reason and was rolled back.
 	 * @see #run()
 	 */
-	public T execute() throws SQLException {
+	public T execute() throws Exception {
 		Connection conn = null;
-		SQLException toThrow = null;
+		Exception toThrow = null;
 		T back = null;
 		
 		try {
@@ -139,7 +139,7 @@ public abstract class Transaction<T> {
 			back = Transaction.this.run();
 			
 			conn.commit();
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			if (conn != null) {
 				try {
 					conn.rollback();
