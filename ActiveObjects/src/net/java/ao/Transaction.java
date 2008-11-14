@@ -127,10 +127,7 @@ public abstract class Transaction<T> {
 	public T execute() throws SQLException {
 		Connection conn = null;
 		
-		SQLException toThrowSQL = null;
-		RuntimeException toThrowRun = null;
-		Error toThrowErr = null;
-		
+		int state = 0; // 0 = start, 1 = running transaction, 2 = committed
 		T back = null;
 		
 		try {
@@ -140,39 +137,20 @@ public abstract class Transaction<T> {
 			conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			conn.setAutoCommit(false);
 			
+			state = 1;
 			back = Transaction.this.run();
-			
 			conn.commit();
-		} catch (SQLException e) {
-			if (conn != null) {
-				try {
-					conn.rollback();
-				} catch (SQLException e1) {
-				}
-			}
-			
-			toThrowSQL = e;
-		} catch (RuntimeException e) {
-			if (conn != null) {
-				try {
-					conn.rollback();
-				} catch (SQLException e1) {
-				}
-			}
-			
-			toThrowRun = e;
-		} catch (Error e) {
-			if (conn != null) {
-				try {
-					conn.rollback();
-				} catch (SQLException e1) {
-				}
-			}
-			
-			toThrowErr = e;
+			state = 2;
 		} finally {
 			if (conn == null) {
 				return null;
+			}
+			
+			if (state == 1) {
+				try {
+					conn.rollback();
+				} catch (SQLException e1) {
+				}
 			}
 			
 			try {
@@ -182,14 +160,6 @@ public abstract class Transaction<T> {
 				conn.close();
 			} catch (SQLException e) {
 			}
-		}
-		
-		if (toThrowSQL != null) {
-			throw toThrowSQL;
-		} else if (toThrowRun != null) {
-			throw toThrowRun;
-		} else if (toThrowErr != null) {
-			throw toThrowErr;
 		}
 		
 		return back;
