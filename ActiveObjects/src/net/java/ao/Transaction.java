@@ -126,7 +126,11 @@ public abstract class Transaction<T> {
 	 */
 	public T execute() throws SQLException {
 		Connection conn = null;
-		SQLException toThrow = null;
+		
+		SQLException toThrowSQL = null;
+		RuntimeException toThrowRun = null;
+		Error toThrowErr = null;
+		
 		T back = null;
 		
 		try {
@@ -139,7 +143,7 @@ public abstract class Transaction<T> {
 			back = Transaction.this.run();
 			
 			conn.commit();
-		} catch (Throwable e) {
+		} catch (SQLException e) {
 			if (conn != null) {
 				try {
 					conn.rollback();
@@ -147,7 +151,25 @@ public abstract class Transaction<T> {
 				}
 			}
 			
-			toThrow = new SQLException(e);
+			toThrowSQL = e;
+		} catch (RuntimeException e) {
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (SQLException e1) {
+				}
+			}
+			
+			toThrowRun = e;
+		} catch (Error e) {
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (SQLException e1) {
+				}
+			}
+			
+			toThrowErr = e;
 		} finally {
 			if (conn == null) {
 				return null;
@@ -162,8 +184,12 @@ public abstract class Transaction<T> {
 			}
 		}
 		
-		if (toThrow != null) {
-			throw toThrow;
+		if (toThrowSQL != null) {
+			throw toThrowSQL;
+		} else if (toThrowRun != null) {
+			throw toThrowRun;
+		} else if (toThrowErr != null) {
+			throw toThrowErr;
 		}
 		
 		return back;
