@@ -81,6 +81,12 @@ import java.sql.SQLException;
 public abstract class Transaction<T> {
 	private EntityManager manager;
 	
+	private enum TransactionState {
+		START,
+		RUNNING,
+		COMMITTED
+	}
+	
 	/**
 	 * Creates a new <code>Transaction</code> using the specified
 	 * {@link EntityManager} instance.  If the specified instance is <code>null</code>,
@@ -127,7 +133,7 @@ public abstract class Transaction<T> {
 	public T execute() throws SQLException {
 		Connection conn = null;
 		
-		boolean running = true;
+		TransactionState state = TransactionState.START;
 		T back = null;
 		
 		try {
@@ -137,15 +143,16 @@ public abstract class Transaction<T> {
 			conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			conn.setAutoCommit(false);
 			
+			state = TransactionState.RUNNING;
 			back = Transaction.this.run();
 			conn.commit();
-			running = false;
+			state = TransactionState.COMMITTED;
 		} finally {
 			if (conn == null) {
 				return null;
 			}
 			
-			if (running) {
+			if (state == TransactionState.RUNNING) {
 				try {
 					conn.rollback();
 				} catch (SQLException e1) {
