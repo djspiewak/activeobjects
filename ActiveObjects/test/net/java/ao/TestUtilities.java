@@ -9,6 +9,7 @@ import java.sql.Statement;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
+import net.java.ao.schema.UserBase;
 import test.schema.Address;
 import test.schema.Author;
 import test.schema.Authorship;
@@ -70,7 +71,7 @@ public class TestUtilities {
 			manager.migrate(PersonSuit.class, Pen.class, Comment.class, Photo.class, Post.class, Nose.class,
 					Authorship.class, Book.class, Magazine.class, 
 					PublicationToDistribution.class, PrintDistribution.class, OnlineDistribution.class,
-					Message.class, EmailAddress.class, PostalAddress.class, Select.class);
+					Message.class, EmailAddress.class, PostalAddress.class, Select.class, UserBase.class);
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}

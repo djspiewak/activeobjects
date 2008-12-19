@@ -58,7 +58,7 @@ public class SchemaReaderTest extends DataTest {
 		
 		DDLTable[] parsedTables = SchemaReader.readSchema(manager.getProvider());
 		
-		assertEquals(21, parsedTables.length);
+		assertEquals(22, parsedTables.length);
 		
 		DDLTable personDDL = null;
 		for (DDLTable table : parsedTables) {
