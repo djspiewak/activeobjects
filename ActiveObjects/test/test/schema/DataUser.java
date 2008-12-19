@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.java.ao.schema;
+package test.schema;
+
+import net.java.ao.schema.NotNull;
+import net.java.ao.schema.Unique;
 
 /**
  * @author daniel

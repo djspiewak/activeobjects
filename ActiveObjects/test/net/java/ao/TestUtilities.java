@@ -9,7 +9,6 @@ import java.sql.Statement;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
-import net.java.ao.schema.UserBase;
 import test.schema.Address;
 import test.schema.Author;
 import test.schema.Authorship;
@@ -35,6 +34,7 @@ import test.schema.PrintDistribution;
 import test.schema.Publication;
 import test.schema.PublicationToDistribution;
 import test.schema.Select;
+import test.schema.UserBase;
 
 /*
  * Copyright 2007 Daniel Spiewak
