@@ -238,6 +238,8 @@ public class EntityManager {
 		proxyLock.readLock().lock();
 		try {
 			for (RawEntity<?> entity : entities) {
+				verify(entity);
+				
 				types.add(entity.getEntityType());
 				toFlush.add(proxies.get(entity));
 			}
@@ -549,6 +551,7 @@ public class EntityManager {
 			new HashMap<Class<? extends RawEntity<?>>, List<RawEntity<?>>>();
 		
 		for (RawEntity<?> entity : entities) {
+			verify(entity);
 			Class<? extends RawEntity<?>> type = getProxyForEntity(entity).getType(); 
 			
 			if (!organizedEntities.containsKey(type)) {
@@ -1065,6 +1068,12 @@ public class EntityManager {
 		}
 		
 		return new SoftReference<RawEntity<?>>(entity);
+	}
+	
+	private void verify(RawEntity<?> entity) {
+		if (entity.getEntityManager() != this) {
+			throw new RuntimeException("Entities can only be used with a single EntityManager instance");
+		}
 	}
 	
 	private static interface Function<R, F> {
