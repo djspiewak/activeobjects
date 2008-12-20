@@ -168,10 +168,6 @@ public class RAMRelationsCache implements RelationsCache {
 		}
 
 		public void setFields(String[] fields) {
-			for (int i = 0; i < fields.length; i++) {
-				fields[i] = fields[i].toLowerCase();
-			}
-			
 			Arrays.sort(fields);
 			
 			this.fields = fields;
@@ -269,7 +265,7 @@ public class RAMRelationsCache implements RelationsCache {
 		}
 
 		public void setField(String field) {
-			this.field = field.toLowerCase();
+			this.field = field;
 		}
 		
 		@Override

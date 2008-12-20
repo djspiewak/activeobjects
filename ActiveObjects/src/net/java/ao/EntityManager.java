@@ -760,8 +760,8 @@ public class EntityManager {
 				T entity = peer(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, Common.getPrimaryKeyClassType(type), field));
 				CacheLayer cacheLayer = getCache().getCacheLayer(entity);
 
-				for (int i = 0; i < md.getColumnCount(); i++) {
-					cacheLayer.put(md.getColumnLabel(i + 1), res.getObject(i + 1));
+				for (String cacheField : query.getFields()) {
+					cacheLayer.put(cacheField, res.getObject(cacheField));
 				}
 				
 				back.add(entity);

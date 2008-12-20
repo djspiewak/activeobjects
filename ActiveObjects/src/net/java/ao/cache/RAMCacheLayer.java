@@ -85,7 +85,7 @@ class RAMCacheLayer implements CacheLayer {
 	public boolean contains(String field) {
 		valueLock.readLock().lock();
 		try {
-			return values.containsKey(field.toLowerCase());
+			return values.containsKey(field);
 		} finally {
 			valueLock.readLock().unlock();
 		}
@@ -103,7 +103,7 @@ class RAMCacheLayer implements CacheLayer {
 	public Object get(String field) {
 		valueLock.readLock().lock();
 		try {
-			return values.get(field.toLowerCase());
+			return values.get(field);
 		} finally {
 			valueLock.readLock().unlock();
 		}
@@ -130,7 +130,7 @@ class RAMCacheLayer implements CacheLayer {
 	public void markDirty(String field) {
 		dirtyLock.writeLock().lock();
 		try {
-			dirty.add(field.toLowerCase());
+			dirty.add(field);
 		} finally {
 			dirtyLock.writeLock().unlock();
 		}
@@ -148,7 +148,7 @@ class RAMCacheLayer implements CacheLayer {
 	public void put(String field, Object value) {
 		valueLock.writeLock().lock();
 		try {
-			values.put(field.toLowerCase(), value);
+			values.put(field, value);
 		} finally {
 			valueLock.writeLock().unlock();
 		}
@@ -157,7 +157,7 @@ class RAMCacheLayer implements CacheLayer {
 	public void remove(String field) {
 		valueLock.writeLock().lock();
 		try {
-			values.remove(field.toLowerCase());
+			values.remove(field);
 		} finally {
 			valueLock.writeLock().unlock();
 		}

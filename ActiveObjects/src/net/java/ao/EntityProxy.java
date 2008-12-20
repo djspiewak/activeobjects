@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -233,6 +232,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
 
+			List<PropertyChangeEvent> events = new LinkedList<PropertyChangeEvent>();
 			int index = 1;
 			for (String field : dirtyFields) {
 				if (!cacheLayer.contains(field)) {
@@ -240,6 +240,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 				
 				Object value = cacheLayer.get(field);
+				events.add(new PropertyChangeEvent(entity, field, null, value));
 				
 				if (value == null) {
 					getManager().getProvider().putNull(stmt, index++);
@@ -266,6 +267,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			getManager().getRelationsCache().remove(entity, dirtyFields);
 
 			stmt.executeUpdate();
+
+			for (PropertyChangeListener l : listeners) {
+				for (PropertyChangeEvent evt : events) {
+					l.propertyChange(evt);
+				}
+			}
 
 			cacheLayer.clearDirty();
 
@@ -464,15 +471,10 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	private void invokeSetter(T entity, String name, Object value, boolean shouldCache, String polyName) throws Throwable {
-		Object oldValue = null;
 		CacheLayer cacheLayer = getCacheLayer();
 		
 		getLock(name).writeLock().lock();
 		try {
-			if (cacheLayer.contains(name)) {
-				oldValue = cacheLayer.get(name);
-			}
-			
 			if (value instanceof RawEntity) {
 				cacheLayer.markToFlush(((RawEntity<?>) value).getEntityType());
 			}
@@ -492,11 +494,6 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			}
 		} finally {
 			getLock(name).writeLock().unlock();
-		}
-
-		PropertyChangeEvent evt = new PropertyChangeEvent(entity, name, oldValue, value);
-		for (PropertyChangeListener l : listeners) {
-			l.propertyChange(evt);
 		}
 	}
 
@@ -536,11 +533,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			String throughField = null;
 			int numParams = 0;
 			
+			Set<String> selectFields = new LinkedHashSet<String>();
+			
 			if (oneToMany && inMapFields.length == 1 && outMapFields.length == 1 
 					&& preloadAnnotation != null && !ignorePreload) {
 				sql.append("SELECT ");		// one-to-many preload
 				
-				Set<String> selectFields = new LinkedHashSet<String>();
 				selectFields.add(outMapFields[0]);
 				selectFields.addAll(Arrays.asList(preloadAnnotation.value()));
 				
@@ -580,7 +578,6 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				
 				String finalPKField = Common.getPrimaryKeyField(finalType, getManager().getFieldNameConverter());
 				
-				Set<String> selectFields = new LinkedHashSet<String>();
 				selectFields.add(finalPKField);
 				selectFields.addAll(Arrays.asList(preloadAnnotation.value()));
 				
@@ -632,17 +629,20 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				numParams++;
 			} else if (inMapFields.length == 1 && outMapFields.length == 1) {	// 99% case (1-* & *-*)
 				sql.append("SELECT ").append(provider.processID(outMapFields[0]));
+				selectFields.add(outMapFields[0]);
 				
 				if (!oneToMany) {
 					throughField = Common.getPrimaryKeyField(type, getManager().getFieldNameConverter());
 					
 					sql.append(',').append(provider.processID(throughField));
+					selectFields.add(throughField);
 				}
 				
 				if (thatPolyNames != null) {
 					for (String name : thatPolyNames) {
 						resPolyNames.add(name);
 						sql.append(',').append(provider.processID(name));
+						selectFields.add(name);
 					}
 				}
 				
@@ -663,12 +663,14 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				returnField = outMapFields[0];
 			} else {
 				sql.append("SELECT DISTINCT a.outMap AS outMap");
+				selectFields.add("outMap");
 				
 				if (thatPolyNames != null) {
 					for (String name : thatPolyNames) {
 						resPolyNames.add(name);
 						sql.append(',').append("a.").append(provider.processID(name)).append(" AS ").append(
 								provider.processID(name));
+						selectFields.add(name);
 					}
 				}
 				
@@ -787,14 +789,13 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 
 				V returnValueEntity = getManager().peer(backType, returnValue);
-				ResultSetMetaData md = res.getMetaData();
-				for (int i = 0; i < md.getColumnCount(); i++) {
-					if (!resPolyNames.contains(md.getColumnLabel(i + 1))) {
-						getManager().getCache().getCacheLayer(returnValueEntity).put(md.getColumnLabel(i + 1), 
-								res.getObject(i + 1));
+
+				for (String field : selectFields) {
+					if (!resPolyNames.contains(field)) {
+						getManager().getCache().getCacheLayer(returnValueEntity).put(field, res.getObject(field));
 					}
 				}
-
+				
 				back.add(returnValueEntity);
 			}
 			res.close();
