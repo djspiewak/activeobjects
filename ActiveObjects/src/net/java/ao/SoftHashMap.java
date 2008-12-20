@@ -34,6 +34,7 @@ import java.util.Set;
 /**
  * Implementation adapted from Apache Harmony
  */
+@SuppressWarnings("unchecked")
 class SoftHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
 	private static final int DEFAULT_SIZE = 16;
 	

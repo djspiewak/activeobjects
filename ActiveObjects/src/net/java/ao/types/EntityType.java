@@ -74,7 +74,7 @@ class EntityType<T> extends DatabaseType<RawEntity<T>> {
 	@Override
 	public boolean equals(Object obj) {
 		if (super.equals(obj)) {
-			if (obj instanceof EntityType) {
+			if (obj instanceof EntityType<?>) {
 				if (((EntityType<?>) obj).primaryKeyType.equals(primaryKeyType)) {
 					return true;
 				}

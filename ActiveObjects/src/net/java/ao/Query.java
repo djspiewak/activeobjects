@@ -201,7 +201,7 @@ public class Query implements Serializable {
 		
 		if (whereParams != null) {
 			for (int i = 0; i < whereParams.length; i++) {
-				if (whereParams[i] instanceof RawEntity) {
+				if (whereParams[i] instanceof RawEntity<?>) {
 					whereParams[i] = Common.getPrimaryKeyValue((RawEntity<?>) whereParams[i]);
 				}
 			}

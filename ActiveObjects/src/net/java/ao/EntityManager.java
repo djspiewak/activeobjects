@@ -24,7 +24,6 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -752,8 +751,6 @@ public class EntityManager {
 			query.setParameters(this, stmt);
 
 			ResultSet res = stmt.executeQuery();
-			ResultSetMetaData md = res.getMetaData();
-			
 			provider.setQueryResultSetProperties(res, query);
 			
 			while (res.next()) {
@@ -1094,7 +1091,7 @@ public class EntityManager {
 				return true;
 			}
 			
-			if (obj instanceof CacheKey) {
+			if (obj instanceof CacheKey<?>) {
 				CacheKey<T> keyObj = (CacheKey<T>) obj;
 				
 				if (key.equals(keyObj.key) && type.equals(keyObj.type)) {

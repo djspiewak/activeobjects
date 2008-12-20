@@ -299,7 +299,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			return true;
 		}
 
-		if (obj instanceof RawEntity) {
+		if (obj instanceof RawEntity<?>) {
 			RawEntity<?> entity = (RawEntity<?>) obj;
 			
 			String ourTableName = getManager().getTableNameConverter().getName(proxy.getEntityType());
@@ -321,7 +321,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			return true;
 		}
 
-		if (obj instanceof EntityProxy) {
+		if (obj instanceof EntityProxy<?, ?>) {
 			EntityProxy<?, ?> proxy = (EntityProxy<?, ?>) obj;
 
 			if (proxy.type.equals(type) && proxy.key.equals(key)) {
@@ -475,7 +475,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		
 		getLock(name).writeLock().lock();
 		try {
-			if (value instanceof RawEntity) {
+			if (value instanceof RawEntity<?>) {
 				cacheLayer.markToFlush(((RawEntity<?>) value).getEntityType());
 			}
 

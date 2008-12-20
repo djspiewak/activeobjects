@@ -58,7 +58,7 @@ public class ClassType extends DatabaseType<Class<?>> {
 	
 	@Override
 	public String valueToString(Object value) {
-		if (value instanceof Class) {
+		if (value instanceof Class<?>) {
 			return ((Class<?>) value).getCanonicalName();
 		}
 		

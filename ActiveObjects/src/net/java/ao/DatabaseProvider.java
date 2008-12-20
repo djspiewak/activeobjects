@@ -88,8 +88,6 @@ public abstract class DatabaseProvider {
 	private Map<Thread, Connection> connections;
 	private final ReadWriteLock connectionsLock = new ReentrantReadWriteLock();
 	
-	private DatabaseMetaData metadata;
-
 	private String quote;
 	
 	/**
@@ -1837,7 +1835,7 @@ public abstract class DatabaseProvider {
 		for (int i = 0; i < params.length; i++) {
 			Object value = params[i].getValue();
 			
-			if (value instanceof RawEntity) {
+			if (value instanceof RawEntity<?>) {
 				value = Common.getPrimaryKeyValue((RawEntity<?>) value);
 			}
 			

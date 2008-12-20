@@ -116,7 +116,7 @@ public abstract class DatabaseType<T> {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof DatabaseType) {
+		if (obj instanceof DatabaseType<?>) {
 			DatabaseType<?> type = (DatabaseType<?>) obj;
 			
 			if (type.type == this.type && type.defaultPrecision == defaultPrecision && Arrays.equals(type.handledTypes, handledTypes)) {
