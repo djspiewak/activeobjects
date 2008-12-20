@@ -17,6 +17,7 @@ package net.java.ao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -480,6 +481,8 @@ public class EntityTest extends DataTest {
 		
 		person.setAge(2);
 		person.save();
+		
+		assertNotNull(old);
 		
 		SQLLogMonitor.getInstance().markWatchSQL();
 		assertFalse(old.getTimeInMillis() == person.getModified().getTimeInMillis());
