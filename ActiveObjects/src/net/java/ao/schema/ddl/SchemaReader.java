@@ -153,7 +153,7 @@ public final class SchemaReader {
 	 * <code>onto</code>, a <code>CREATE TABLE</code>
 	 * statement will be generated.
 	 */
-	public static DDLAction[] diffSchema(DDLTable[] fromArray, DDLTable[] ontoArray) {
+	public static DDLAction[] diffSchema(DDLTable[] fromArray, DDLTable[] ontoArray, boolean caseSensetive) {
 		Set<DDLAction> actions = new HashSet<DDLAction>();
 		
 		List<DDLTable> createTables = new ArrayList<DDLTable>();
@@ -164,14 +164,29 @@ public final class SchemaReader {
 		Map<String, DDLTable> onto = new HashMap<String, DDLTable>();
 		
 		for (DDLTable table : fromArray) {
-			from.put(table.getName().toLowerCase(), table);
+			String tableName = table.getName();
+			if (!caseSensetive) {
+				tableName = tableName.toLowerCase();
+			}
+			
+			from.put(tableName, table);
 		}
 		for (DDLTable table : ontoArray) {
-			onto.put(table.getName().toLowerCase(), table);
+			String tableName = table.getName();
+			if (!caseSensetive) {
+				tableName = tableName.toLowerCase();
+			}
+			
+			onto.put(tableName, table);
 		}
 		
 		for (DDLTable table : fromArray) {
-			if (onto.containsKey(table.getName().toLowerCase())) {
+			String tableName = table.getName();
+			if (!caseSensetive) {
+				tableName = tableName.toLowerCase();
+			}
+			
+			if (onto.containsKey(tableName)) {
 				alterTables.add(table);
 			} else {
 				createTables.add(table);
@@ -179,7 +194,12 @@ public final class SchemaReader {
 		}
 		
 		for (DDLTable table : ontoArray) {
-			if (!from.containsKey(table.getName().toLowerCase())) {
+			String tableName = table.getName();
+			if (!caseSensetive) {
+				tableName = tableName.toLowerCase();
+			}
+			
+			if (!from.containsKey(tableName)) {
 				dropTables.add(table);
 			}
 		}
@@ -197,7 +217,12 @@ public final class SchemaReader {
 		}
 		
 		for (DDLTable fromTable : alterTables) {
-			DDLTable ontoTable = onto.get(fromTable.getName().toLowerCase());
+			String tableName = fromTable.getName();
+			if (!caseSensetive) {
+				tableName = tableName.toLowerCase();
+			}
+			
+			DDLTable ontoTable = onto.get(tableName);
 			
 			List<DDLField> createFields = new ArrayList<DDLField>();
 			List<DDLField> dropFields = new ArrayList<DDLField>();
@@ -207,14 +232,29 @@ public final class SchemaReader {
 			Map<String, DDLField> ontoFields = new HashMap<String, DDLField>();
 			
 			for (DDLField field : fromTable.getFields()) {
-				fromFields.put(field.getName().toLowerCase(), field);
+				String fieldName = field.getName();
+				if (!caseSensetive) {
+					fieldName = fieldName.toLowerCase();
+				}
+				
+				fromFields.put(fieldName, field);
 			}
 			for (DDLField field : ontoTable.getFields()) {
-				ontoFields.put(field.getName().toLowerCase(), field);
+				String fieldName = field.getName();
+				if (!caseSensetive) {
+					fieldName = fieldName.toLowerCase();
+				}
+				
+				ontoFields.put(fieldName, field);
 			}
 			
 			for (DDLField field : fromTable.getFields()) {
-				if (ontoFields.containsKey(field.getName().toLowerCase())) {
+				String fieldName = field.getName();
+				if (!caseSensetive) {
+					fieldName = fieldName.toLowerCase();
+				}
+				
+				if (ontoFields.containsKey(fieldName)) {
 					alterFields.add(field);
 				} else {
 					createFields.add(field);
@@ -222,7 +262,12 @@ public final class SchemaReader {
 			}
 			
 			for (DDLField field : ontoTable.getFields()) {
-				if (!fromFields.containsKey(field.getName().toLowerCase())) {
+				String fieldName = field.getName();
+				if (!caseSensetive) {
+					fieldName = fieldName.toLowerCase();
+				}
+				
+				if (!fromFields.containsKey(fieldName)) {
 					dropFields.add(field);
 				}
 			}
@@ -242,7 +287,12 @@ public final class SchemaReader {
 			}
 			
 			for (DDLField fromField : alterFields) {
-				DDLField ontoField = ontoFields.get(fromField.getName().toLowerCase());
+				String fieldName = fromField.getName();
+				if (!caseSensetive) {
+					fieldName = fieldName.toLowerCase();
+				}
+				
+				DDLField ontoField = ontoFields.get(fieldName);
 				
 				if (fromField.getDefaultValue() == null && ontoField.getDefaultValue() != null) {
 					if (!ontoField.getDefaultValue().toString().equals("CURRENT_TIMESTAMP")) {		// super-hack for MySQL

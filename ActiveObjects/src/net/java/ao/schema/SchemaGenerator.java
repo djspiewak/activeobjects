@@ -92,7 +92,7 @@ public final class SchemaGenerator {
 		DDLTable[] parsedTables = parseDDL(provider, nameConverter, fieldConverter, classloader, classes);
 		DDLTable[] readTables = SchemaReader.readSchema(provider);
 		
-		DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(parsedTables, readTables));
+		DDLAction[] actions = SchemaReader.sortTopologically(SchemaReader.diffSchema(parsedTables, readTables, provider.isCaseSensetive()));
 		for (DDLAction action : actions) {
 			back.addAll(Arrays.asList(provider.renderAction(action)));
 		}

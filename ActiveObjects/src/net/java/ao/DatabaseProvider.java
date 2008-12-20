@@ -49,6 +49,7 @@ import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.schema.ddl.DDLForeignKey;
 import net.java.ao.schema.ddl.DDLIndex;
 import net.java.ao.schema.ddl.DDLTable;
+import net.java.ao.schema.ddl.SchemaReader;
 import net.java.ao.types.DatabaseType;
 import net.java.ao.types.TypeManager;
 
@@ -2017,6 +2018,20 @@ public abstract class DatabaseProvider {
 	 * 		to the database.
 	 */
 	protected abstract Set<String> getReservedWords();
+	
+	/**
+	 * Flag indicating whether or not the underlying database uses case-sensetive
+	 * identifiers.  This specifically affects comparisons in the {@link SchemaReader}
+	 * utility.  The default value is <code>true</code>.  Note that databases which
+	 * support both case-sensetive and case-insensetive identifiers (like MySQL) should
+	 * return <code>true</code> for better all-around compatibility.
+	 * 
+	 * @returns	Boolean <code>true</code> if identifiers are case-sensetive, 
+	 *     <code>false</code> otherwise.
+	 */
+	public boolean isCaseSensetive() {
+		return true;
+	}
 	
 	/**
 	 * Auto-magically retrieves the appropriate provider instance for the

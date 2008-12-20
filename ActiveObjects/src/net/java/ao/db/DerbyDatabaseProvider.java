@@ -289,4 +289,9 @@ abstract class DerbyDatabaseProvider extends DatabaseProvider {
 	protected Set<String> getReservedWords() {
 		return RESERVED_WORDS;
 	}
+	
+	@Override
+	public boolean isCaseSensetive() {
+		return false;
+	}
 }

@@ -149,7 +149,7 @@ public class SchemaReaderTest extends DataTest {
 		DDLTable[] ddl2 = SchemaGenerator.parseDDL(manager.getProvider(), manager.getTableNameConverter(), 
 				manager.getFieldNameConverter(), SchemaGeneratorTest.class.getClassLoader(), PersonSuit.class, Pen.class);
 		
-		assertEquals(0, SchemaReader.diffSchema(ddl1, ddl2).length);
+		assertEquals(0, SchemaReader.diffSchema(ddl1, ddl2, true).length);
 	}
 
 	@Test
@@ -202,7 +202,7 @@ public class SchemaReaderTest extends DataTest {
 		table3.setFields(table3Fields);
 		
 		// rendering
-		DDLAction[] actions = SchemaReader.diffSchema(new DDLTable[] {table1, table2, table3}, new DDLTable[0]);
+		DDLAction[] actions = SchemaReader.diffSchema(new DDLTable[] {table1, table2, table3}, new DDLTable[0], true);
 		actions = SchemaReader.sortTopologically(actions);
 		
 		assertEquals(3, actions.length);
