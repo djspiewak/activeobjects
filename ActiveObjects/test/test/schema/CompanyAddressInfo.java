@@ -26,4 +26,8 @@ public interface CompanyAddressInfo extends Entity {
 	public String getAddressLine1();
 	@Searchable
 	public void setAddressLine1(String address);
+	
+//	@OneToOne
+//	public Company getCompany();
+//	public void setCompany(Company c);		// dependency loop
 }

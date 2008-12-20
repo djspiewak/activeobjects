@@ -360,12 +360,18 @@ public final class SchemaReader {
 		List<DDLAction> back = new LinkedList<DDLAction>();
 		Map<DDLAction, Set<DDLAction>> deps = new HashMap<DDLAction, Set<DDLAction>>();
 		Set<DDLAction> roots = new HashSet<DDLAction>();
+		Set<DDLAction> covered = new HashSet<DDLAction>();
 		
 		performSort(actions, deps, roots);
 		
 		while (!roots.isEmpty()) {
 			DDLAction[] rootsArray = roots.toArray(new DDLAction[roots.size()]);
 			roots.remove(rootsArray[0]);
+			
+			if (covered.contains(rootsArray[0])) {
+				throw new RuntimeException("Circular dependency detected in or below " + rootsArray[0].getTable().getName());
+			}
+			covered.add(rootsArray[0]);
 			
 			back.add(rootsArray[0]);
 			
