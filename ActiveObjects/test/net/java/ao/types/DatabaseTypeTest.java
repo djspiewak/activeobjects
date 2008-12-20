@@ -139,7 +139,7 @@ public class DatabaseTypeTest extends DataTest {
 			ResultSet res = stmt.executeQuery();
 			if (res.next()) {
 				assertEquals("JoeJoe", new VarcharType().pullFromDatabase(manager, res, String.class, "firstName"));
-				assertEquals(123, new IntegerType().pullFromDatabase(manager, res, int.class, "age"));
+				assertEquals(123, new IntegerType().pullFromDatabase(manager, res, int.class, "age").intValue());
 				assertEquals(new URL("http://www.google.com"), new URLType().pullFromDatabase(manager, res, URL.class, "url"));
 				assertEquals(getClass(), new ClassType().pullFromDatabase(manager, res, (Class) Class.class, "favoriteClass"));
 			}
@@ -150,17 +150,18 @@ public class DatabaseTypeTest extends DataTest {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testDefaultParseValue() throws MalformedURLException {
-		assertEquals(123, new IntegerType().defaultParseValue("123"));
-		assertEquals(123.456d, new DoubleType().defaultParseValue("123.456"));
-		assertEquals(123.456f, new FloatType().defaultParseValue("123.456"));
+		assertEquals(123, new IntegerType().defaultParseValue("123").intValue());
+		assertEquals(123.456d, new DoubleType().defaultParseValue("123.456").doubleValue());
+		assertEquals(123.456f, new FloatType().defaultParseValue("123.456").floatValue());
 		assertEquals("My test value", new VarcharType().defaultParseValue("My test value"));
 		assertEquals(new URL("http://www.google.com"), new URLType().defaultParseValue("http://www.google.com"));
 		assertEquals(false, new BooleanType().defaultParseValue("false"));
 		assertEquals(String.class, new ClassType().defaultParseValue("java.lang.String"));
-		assertEquals((short) 123, new TinyIntType().defaultParseValue("123"));
-		assertEquals('c', new CharType().defaultParseValue("c"));
+		assertEquals((short) 123, new TinyIntType().defaultParseValue("123").shortValue());
+		assertEquals('c', new CharType().defaultParseValue("c").charValue());
 		
 
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
