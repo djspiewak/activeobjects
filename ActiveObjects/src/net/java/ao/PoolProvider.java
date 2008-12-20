@@ -145,6 +145,11 @@ public abstract class PoolProvider extends DatabaseProvider {
 		return delegate.getReservedWords();
 	}
 	
+	@Override
+	public boolean isCaseSensetive() {
+		return delegate.isCaseSensetive();
+	}
+	
 	/**
 	 * <p>Should release all resources held by the pool.  This is especially important
 	 * to implement for pool providers, as conection pools may have connections
