@@ -245,7 +245,9 @@ public final class SchemaReader {
 				DDLField ontoField = ontoFields.get(fromField.getName().toLowerCase());
 				
 				if (fromField.getDefaultValue() == null && ontoField.getDefaultValue() != null) {
-					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
+					if (!ontoField.getDefaultValue().toString().equals("CURRENT_TIMESTAMP")) {		// super-hack for MySQL
+						actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
+					}
 				} else if (fromField.getDefaultValue() != null 
 						&& !Common.fuzzyCompare(fromField.getDefaultValue(), ontoField.getDefaultValue())) {
 					actions.add(createColumnAlterAction(fromTable, ontoField, fromField));
