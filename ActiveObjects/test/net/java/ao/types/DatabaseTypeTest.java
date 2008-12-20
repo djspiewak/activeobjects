@@ -150,12 +150,11 @@ public class DatabaseTypeTest extends DataTest {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testDefaultParseValue() throws MalformedURLException {
 		assertEquals(123, new IntegerType().defaultParseValue("123").intValue());
-		assertEquals(123.456d, new DoubleType().defaultParseValue("123.456").doubleValue());
-		assertEquals(123.456f, new FloatType().defaultParseValue("123.456").floatValue());
+		assertEquals(123.456d, new DoubleType().defaultParseValue("123.456"), Double.MIN_VALUE);
+		assertEquals(123.456f, new FloatType().defaultParseValue("123.456"), Float.MIN_VALUE);
 		assertEquals("My test value", new VarcharType().defaultParseValue("My test value"));
 		assertEquals(new URL("http://www.google.com"), new URLType().defaultParseValue("http://www.google.com"));
 		assertEquals(false, new BooleanType().defaultParseValue("false"));
@@ -163,7 +162,6 @@ public class DatabaseTypeTest extends DataTest {
 		assertEquals((short) 123, new TinyIntType().defaultParseValue("123").shortValue());
 		assertEquals('c', new CharType().defaultParseValue("c").charValue());
 		
-
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		
 		Calendar cal = Calendar.getInstance();
