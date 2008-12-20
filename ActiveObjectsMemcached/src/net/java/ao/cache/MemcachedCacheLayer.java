@@ -46,7 +46,7 @@ class MemcachedCacheLayer extends RAMCacheLayer {
 			return true;
 		}
 		
-		return client.findKeys(prefix + field.toLowerCase()).contains(prefix + field.toLowerCase());
+		return client.findKeys(prefix + field).contains(prefix + field);
 	}
 
 	public Object get(String field) {
@@ -54,7 +54,7 @@ class MemcachedCacheLayer extends RAMCacheLayer {
 			return super.get(field);
 		}
 		
-		return client.get(prefix + field.toLowerCase());
+		return client.get(prefix + field);
 	}
 
 	public void put(String field, Object value) {
@@ -69,7 +69,7 @@ class MemcachedCacheLayer extends RAMCacheLayer {
 				return;
 			}
 			
-			client.add(prefix + field.toLowerCase(), expiry, value);
+			client.add(prefix + field, expiry, value);
 		}
 	}
 
@@ -77,7 +77,7 @@ class MemcachedCacheLayer extends RAMCacheLayer {
 		super.remove(field);
 		
 		if (!super.dirtyContains(field)) {
-			client.delete(prefix + field.toLowerCase());
+			client.delete(prefix + field);
 		}
 	}
 }
