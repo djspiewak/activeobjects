@@ -111,14 +111,18 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			return getManager();
 		} else if (method.getName().equals("addPropertyChangeListener")) {
 			addPropertyChangeListener((PropertyChangeListener) args[0]);
+			return null;
 		} else if (method.getName().equals("removePropertyChangeListener")) {
 			removePropertyChangeListener((PropertyChangeListener) args[0]);
+			return null;
 		} else if (method.getName().equals("hashCode")) {
 			return hashCodeImpl();
 		} else if (method.getName().equals("equals")) {
 			return equalsImpl((RawEntity<K>) proxy, args[0]);
 		} else if (method.getName().equals("toString")) {
 			return toStringImpl();
+		} else if (method.getName().equals("init")) {
+			return null;
 		}
 		
 		checkConstraints(method, args);
@@ -189,7 +193,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			return Void.TYPE;
 		}
 
-		return null;
+		throw new RuntimeException("Cannot handle method with signature: " + method.toString());
 	}
 
 	public K getKey() {

@@ -125,7 +125,7 @@ public final class Common {
 		}
 		
 		if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
-			return method.getReturnType() != Void.TYPE;
+			return method.getReturnType() != Void.TYPE && method.getParameterTypes().length == 0;
 		}
 		
 		return false;
@@ -137,7 +137,7 @@ public final class Common {
 		}
 		
 		if (method.getName().startsWith("set")) {
-			return method.getReturnType() == Void.TYPE;
+			return method.getReturnType() == Void.TYPE && method.getParameterTypes().length == 1;
 		}
 		
 		return false;
