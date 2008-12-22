@@ -15,6 +15,7 @@
  */
 package net.java.ao;
 
+import static net.java.ao.TestUtilities.postgresName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -61,6 +62,7 @@ import test.schema.PrintDistribution;
 import test.schema.Profession;
 import test.schema.PublicationToDistribution;
 import test.schema.Select;
+
 
 /**
  * @author Daniel Spiewak
@@ -218,8 +220,9 @@ public class EntityTest extends DataTest {
 		boolean cool = false;
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM " + companyTableName 
-					+ " WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + postgresName("name") 
+					+ ", " + postgresName("cool") + " FROM " + postgresName(companyTableName) 
+					+ " WHERE " + postgresName("companyID") + " = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -244,7 +247,8 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT name,cool FROM " + companyTableName 
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + postgresName("name") 
+					+ ", " + postgresName("cool") + " FROM " + postgresName(companyTableName) 
 					+ " WHERE companyID = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
@@ -273,7 +277,9 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT profession FROM " + personTableName + " WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT " 
+					+ postgresName("profession") + " FROM " + postgresName(personTableName) 
+					+ " WHERE " + postgresName("id") + " = ?");
 			stmt.setInt(1, person.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -358,8 +364,9 @@ public class EntityTest extends DataTest {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM " 
-					+ commentTableName + " WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + postgresName("commentableID") + ", " 
+					+ postgresName("commentableType") + " FROM " 
+					+ commentTableName + " WHERE " + postgresName("id") + " = ?");
 			stmt.setInt(1, comment.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -385,8 +392,9 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM " 
-					+ commentTableName + " WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + postgresName("commentableID") 
+					+ ", " + postgresName("commentableType") + " FROM " 
+					+ commentTableName + " WHERE " + postgresName("id") + " = ?");
 			stmt.setInt(1, comment.getID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -410,7 +418,8 @@ public class EntityTest extends DataTest {
 		
 		conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT commentableID,commentableType FROM " 
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + postgresName("commentableID") 
+					+ ", " + postgresName("commentableType") + " FROM " 
 					+ commentTableName + " WHERE id = ?");
 			stmt.setInt(1, comment.getID());
 			
@@ -607,8 +616,9 @@ public class EntityTest extends DataTest {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT motivation FROM " + companyTableName 
-					+ " WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + postgresName("motivation") + " FROM " 
+					+ postgresName(companyTableName) 
+					+ " WHERE " + postgresName("companyID") + " = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
@@ -639,8 +649,9 @@ public class EntityTest extends DataTest {
 		
 		Connection conn = manager.getProvider().getConnection();
 		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT companyID FROM " + companyTableName 
-					+ " WHERE companyID = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT " + postgresName("companyID") 
+					+ " FROM " + postgresName(companyTableName) 
+					+ " WHERE " + postgresName("companyID") + " = ?");
 			stmt.setLong(1, company.getCompanyID());
 			
 			ResultSet res = stmt.executeQuery();
