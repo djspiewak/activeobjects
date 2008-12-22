@@ -238,12 +238,14 @@ public class QueryTest extends DataTest {
 	@Test
 	public void testLimitOffset() throws SQLException {
 		Query query = Query.select().limit(3).offset(1);
+		
+		Comment[] unlimited = manager.find(Comment.class);
 		Comment[] comments = manager.find(Comment.class, query);
 		
 		assertEquals(3, comments.length);
-		assertEquals(postCommentIDs[1], comments[0].getID());
-		assertEquals(photoCommentIDs[0], comments[1].getID());
-		assertEquals(postCommentIDs[2], comments[2].getID());
+		assertEquals(unlimited[1].getID(), comments[0].getID());
+		assertEquals(unlimited[2].getID(), comments[1].getID());
+		assertEquals(unlimited[3].getID(), comments[2].getID());
 	}
 	
 	private FieldNameConverter getFieldNameConverter() {
