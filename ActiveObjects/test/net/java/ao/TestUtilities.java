@@ -724,7 +724,7 @@ public class TestUtilities {
 	}
 	
 	private static final PreparedStatement prepareStatement(Connection conn, String sql) throws SQLException {
-		if (uri.startsWith("jdbc:hsqldb")) {
+		if (uri.startsWith("jdbc:hsqldb") || uri.startsWith("jdbc:postgres")) {
 			return conn.prepareStatement(sql);
 		}
 		
