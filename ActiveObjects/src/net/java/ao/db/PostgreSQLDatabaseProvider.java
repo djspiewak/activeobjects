@@ -472,6 +472,9 @@ public class PostgreSQLDatabaseProvider extends DatabaseProvider {
 	
 	@Override
 	protected boolean shouldQuoteID(String id) {
+		if ("*".equals(id)) {
+			return false;
+		}
 		return true;		// to make identifiers case-sensetive
 	}
 }
