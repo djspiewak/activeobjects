@@ -191,7 +191,12 @@ public final class SchemaGenerator {
 		return table;
 	}
 	
-	private static DDLField[] parseFields(Class<? extends RawEntity<?>> clazz, FieldNameConverter fieldConverter) {
+	/**
+	 * Not intended for public usage.  This method is declared <code>public</code>
+	 * only to enable use within other ActiveObjects packages.  Consider this
+	 * function <b>unsupported</b>.
+	 */
+	public static DDLField[] parseFields(Class<? extends RawEntity<?>> clazz, FieldNameConverter fieldConverter) {
 		List<DDLField> fields = new ArrayList<DDLField>();
 		List<String> attributes = new LinkedList<String>();
 		

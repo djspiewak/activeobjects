@@ -18,11 +18,15 @@ package net.java.ao;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.java.ao.schema.FieldNameConverter;
+import net.java.ao.schema.SchemaGenerator;
 import net.java.ao.schema.TableNameConverter;
+import net.java.ao.schema.ddl.DDLField;
 import net.java.ao.types.TypeManager;
 
 /**
@@ -250,6 +254,24 @@ public class Query implements Serializable {
 
 	public QueryType getType() {
 		return type;
+	}
+	
+	public String[] getCanonicalFields(Class<? extends RawEntity<?>> type, FieldNameConverter converter) {
+		List<String> back = Arrays.asList(fields.split(","));
+		
+		for (int i = 0; i < back.size(); i++) {
+			if (back.get(i).trim().equals("*")) {
+				back.remove(i);
+				
+				for (DDLField field : SchemaGenerator.parseFields(type, converter)) {
+					back.add(field.getName());
+				}
+			}
+			
+			back.set(i, back.get(i).trim());
+		}
+		
+		return back.toArray(new String[back.size()]);
 	}
 
 	protected <K> String toSQL(Class<? extends RawEntity<K>> tableType, DatabaseProvider provider, TableNameConverter converter, 
