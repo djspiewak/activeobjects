@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -206,19 +207,19 @@ public class EntityManager {
 	 * method should be used instead.
 	 */
 	public void flushAll() {
-		List<EntityProxy<?, ?>> toFlush = new LinkedList<EntityProxy<?, ?>>();
+		List<Map.Entry<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>> toFlush = new LinkedList<Map.Entry<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>>>();
 		
 		proxyLock.readLock().lock();
 		try {
-			for (EntityProxy<? extends RawEntity<?>, ?> proxy : proxies.values()) {
+			for (Map.Entry<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>> proxy : proxies.entrySet()) {
 				toFlush.add(proxy);
 			}
 		} finally {
 			proxyLock.readLock().unlock();
 		}
 		
-		for (EntityProxy<?, ?> proxy : toFlush) {
-			proxy.flushCache();
+		for (Map.Entry<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>> entry : toFlush) {
+			entry.getValue().flushCache(entry.getKey());
 		}
 		
 		relationsCache.flush();
@@ -233,7 +234,7 @@ public class EntityManager {
 	 */
 	public void flush(RawEntity<?>... entities) {
 		List<Class<? extends RawEntity<?>>> types = new ArrayList<Class<? extends RawEntity<?>>>(entities.length);
-		List<EntityProxy<?, ?>> toFlush = new LinkedList<EntityProxy<?, ?>>();
+		Map<RawEntity<?>, EntityProxy<?, ?>> toFlush = new HashMap<RawEntity<?>, EntityProxy<?, ?>>();
 		
 		proxyLock.readLock().lock();
 		try {
@@ -241,14 +242,14 @@ public class EntityManager {
 				verify(entity);
 				
 				types.add(entity.getEntityType());
-				toFlush.add(proxies.get(entity));
+				toFlush.put(entity, proxies.get(entity));
 			}
 		} finally {
 			proxyLock.readLock().unlock();
 		}
 		
-		for (EntityProxy<?, ?> proxy : toFlush) {
-			proxy.flushCache();
+		for (Entry<RawEntity<?>, EntityProxy<?, ?>> entry : toFlush.entrySet()) {
+			entry.getValue().flushCache(entry.getKey());
 		}
 		
 		relationsCache.remove(types.toArray(new Class[types.size()]));
@@ -758,7 +759,7 @@ public class EntityManager {
 			
 			while (res.next()) {
 				T entity = peer(type, Common.getPrimaryKeyType(type).pullFromDatabase(this, res, Common.getPrimaryKeyClassType(type), field));
-				CacheLayer cacheLayer = getCache().getCacheLayer(entity);
+				CacheLayer cacheLayer = getProxyForEntity(entity).getCacheLayer(entity);
 
 				for (String cacheField : query.getCanonicalFields(type, fieldNameConverter)) {
 					cacheLayer.put(cacheField, res.getObject(cacheField));
@@ -1011,6 +1012,13 @@ public class EntityManager {
 		}
 	}
 	
+	/**
+	 * Sets the cache implementation to be used by all entities
+	 * controlled by this manager.  Note that this only affects
+	 * <i>new</i> entities that have not yet been instantiated
+	 * (may pre-exist as rows in the database).  All old entities
+	 * will continue to use the prior cache.
+	 */
 	public void setCache(Cache cache) {
 		cacheLock.writeLock().lock();
 		try {

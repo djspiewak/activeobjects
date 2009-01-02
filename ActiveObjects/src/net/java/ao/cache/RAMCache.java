@@ -15,41 +15,21 @@
  */
 package net.java.ao.cache;
 
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import net.java.ao.RawEntity;
+
 
 /**
  * @author Daniel Spiewak
  */
 public class RAMCache implements Cache {
-	private Map<RawEntity<?>, CacheLayer> cacheLayer;
-	private final Lock cacheLayerLock = new ReentrantLock();
-	
 	private final RAMRelationsCache relationsCache;
 	
 	public RAMCache() {
-		cacheLayer = new WeakHashMap<RawEntity<?>, CacheLayer>();
 		relationsCache = new RAMRelationsCache();
 	}
 
-	public CacheLayer getCacheLayer(RawEntity<?> entity) {
-		cacheLayerLock.lock();
-		try {
-			if (cacheLayer.containsKey(entity)) {
-				return cacheLayer.get(entity);
-			}
-			
-			CacheLayer layer = new RAMCacheLayer();
-			cacheLayer.put(entity, layer);
-			
-			return layer;
-		} finally {
-			cacheLayerLock.unlock();
-		}
+	public CacheLayer createCacheLayer(RawEntity<?> entity) {
+		return new RAMCacheLayer();
 	}
 	
 	public void dispose() {

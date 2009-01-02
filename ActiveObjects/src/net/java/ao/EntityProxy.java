@@ -60,6 +60,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 	private final EntityManager manager;
 	
+	private CacheLayer layer;
+	
 	private Map<String, ReadWriteLock> locks;
 	private final ReadWriteLock locksLock = new ReentrantReadWriteLock();
 	
@@ -153,7 +155,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			invokeSetter((T) proxy, mutatorAnnotation.value(), args[0], onUpdateAnnotation != null, polyFieldName);
 			return Void.TYPE;
 		} else if (accessorAnnotation != null) {
-			return invokeGetter(getKey(), tableName, accessorAnnotation.value(), polyFieldName, 
+			return invokeGetter((RawEntity<?>) proxy, getKey(), tableName, accessorAnnotation.value(), polyFieldName, 
 					method.getReturnType(), onUpdateAnnotation == null && transientAnnotation == null);
 		} else if (oneToOneAnnotation != null && Common.interfaceInheritsFrom(method.getReturnType(), RawEntity.class)) {
 			Class<? extends RawEntity<?>> type = (Class<? extends RawEntity<?>>) method.getReturnType();
@@ -184,7 +186,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 							Common.getPolymorphicFieldNames(getManager().getFieldNameConverter(), throughType, this.type), 
 							Common.getPolymorphicFieldNames(getManager().getFieldNameConverter(), throughType, type));
 		} else if (Common.isAccessor(method)) {
-			return invokeGetter(getKey(), tableName, getManager().getFieldNameConverter().getName(method), 
+			return invokeGetter((RawEntity<?>) proxy, getKey(), tableName, getManager().getFieldNameConverter().getName(method), 
 					polyFieldName, method.getReturnType(), onUpdateAnnotation == null && transientAnnotation == null);
 		} else if (Common.isMutator(method)) {
 			invokeSetter((T) proxy, getManager().getFieldNameConverter().getName(method), args[0], 
@@ -202,7 +204,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 
 	@SuppressWarnings("unchecked")
 	public void save(RawEntity entity) throws SQLException {
-		CacheLayer cacheLayer = getCacheLayer();
+		CacheLayer cacheLayer = getCacheLayer(entity);
 		String[] dirtyFields = cacheLayer.getDirtyFields();
 		
 		if (dirtyFields.length == 0) {
@@ -341,8 +343,13 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return hashCodeImpl();
 	}
 
-	CacheLayer getCacheLayer() {
-		return getManager().getCache().getCacheLayer(getManager().peer(type, key));
+	CacheLayer getCacheLayer(RawEntity<?> entity) {
+		// not atomic, but throughput is more important in this case
+		if (layer == null) {
+			layer = manager.getCache().createCacheLayer(entity);
+		}
+		
+		return layer;
 	}
 
 	Class<T> getType() {
@@ -350,8 +357,8 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	// any dirty fields are kept in the cache, since they have yet to be saved
-	void flushCache() {
-		getCacheLayer().clear();
+	void flushCache(RawEntity<?> entity) {
+		getCacheLayer(entity).clear();
 	}
 	
 	private EntityManager getManager() {
@@ -382,10 +389,10 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		}
 	}
 
-	private <V> V invokeGetter(K key, String table, String name, String polyName, Class<V> type, 
+	private <V> V invokeGetter(RawEntity<?> entity, K key, String table, String name, String polyName, Class<V> type, 
 			boolean shouldCache) throws Throwable {
 		V back = null;
-		CacheLayer cacheLayer = getCacheLayer();
+		CacheLayer cacheLayer = getCacheLayer(entity);
 		
 		shouldCache = shouldCache && TypeManager.getInstance().getType(type).shouldCache(type);
 		
@@ -475,7 +482,7 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	}
 
 	private void invokeSetter(T entity, String name, Object value, boolean shouldCache, String polyName) throws Throwable {
-		CacheLayer cacheLayer = getCacheLayer();
+		CacheLayer cacheLayer = getCacheLayer(entity);
 		
 		getLock(name).writeLock().lock();
 		try {
@@ -793,10 +800,11 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 
 				V returnValueEntity = getManager().peer(backType, returnValue);
-
+				CacheLayer returnLayer = getManager().getProxyForEntity(returnValueEntity).getCacheLayer(returnValueEntity);
+				
 				for (String field : selectFields) {
 					if (!resPolyNames.contains(field)) {
-						getManager().getCache().getCacheLayer(returnValueEntity).put(field, res.getObject(field));
+						returnLayer.put(field, res.getObject(field));
 					}
 				}
 				

@@ -45,7 +45,7 @@ import net.java.ao.RawEntity;
  * instances.</p>
  * 
  * @author Daniel Spiewak
- * @see #getCacheLayer(RawEntity)
+ * @see #createCacheLayer(RawEntity)
  * @see EntityManager#setCache(Cache)
  * @see EntityManager#getCache()
  */
@@ -69,12 +69,12 @@ public interface Cache {
 	 * this, but there's nothing in the requirements which would prevent it.  Code
 	 * which uses the result of this method should certainly be written to the
 	 * interface, rather than any specific implementation.</p>
+	 * @param entity TODO
 	 * 
-	 * @param entity	The entity to which the cache layer should correspond.
 	 * @return	A layer which will handle caching of values as necessary for the
 	 * 		given entity.
 	 */
-	public CacheLayer getCacheLayer(RawEntity<?> entity);
+	public CacheLayer createCacheLayer(RawEntity<?> entity);
 	
 	public RelationsCache getRelationsCache();
 	

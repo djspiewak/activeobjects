@@ -17,11 +17,7 @@ package net.java.ao.cache;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import net.java.ao.Common;
 import net.java.ao.RawEntity;
@@ -32,9 +28,6 @@ import net.spy.memcached.MemcachedClient;
  */
 public class MemcachedCache implements Cache {
 	private static final String PREFIX = "activeobjects.";
-	
-	private Map<RawEntity<?>, CacheLayer> cache;
-	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
 	
 	private final MemcachedClient client;
 	private final int expiry;
@@ -48,8 +41,6 @@ public class MemcachedCache implements Cache {
 	}
 	
 	public MemcachedCache(MemcachedClient client, int expiry) {
-		cache = new WeakHashMap<RawEntity<?>, CacheLayer>();
-		
 		this.client = client;
 		this.expiry = expiry;
 	}
@@ -58,25 +49,15 @@ public class MemcachedCache implements Cache {
 		return client;
 	}
 
-	public CacheLayer getCacheLayer(RawEntity<?> entity) {
-		cacheLock.writeLock().lock();
-		try {
-			if (cache.containsKey(entity)) {
-				return cache.get(entity);
-			}
-			
-			String localPrefix = PREFIX;
-			localPrefix += entity.getEntityManager().getTableNameConverter().getName(entity.getEntityType()) + '.';
-			localPrefix += Common.getPrimaryKeyType(entity.getEntityType()).valueToString(
-					Common.getPrimaryKeyValue(entity)) + '.';
-			
-			CacheLayer layer = new MemcachedCacheLayer(client, expiry, localPrefix);
-			cache.put(entity, layer);
-			
-			return layer;
-		} finally {
-			cacheLock.writeLock().unlock();
-		}
+	public CacheLayer createCacheLayer(RawEntity<?> entity) {
+		String localPrefix = PREFIX;
+		localPrefix += entity.getEntityManager().getTableNameConverter().getName(entity.getEntityType()) + '.';
+		localPrefix += Common.getPrimaryKeyType(entity.getEntityType()).valueToString(
+				Common.getPrimaryKeyValue(entity)) + '.';
+		
+		CacheLayer layer = new MemcachedCacheLayer(client, expiry, localPrefix);
+		
+		return layer;
 	}
 
 	public RelationsCache getRelationsCache() {
