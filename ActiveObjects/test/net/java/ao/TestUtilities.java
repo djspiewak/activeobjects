@@ -735,7 +735,7 @@ public class TestUtilities {
 		priorID = -1;
 		
 		if (uri.startsWith("jdbc:postgres")) {
-			PreparedStatement stmt = conn.prepareStatement("SELECT NEXTVAL('" + table + "_id_seq')");
+			PreparedStatement stmt = conn.prepareStatement("SELECT NEXTVAL('\"" + table + "_id_seq\"')");
 			
 			ResultSet res = stmt.executeQuery();
 			
