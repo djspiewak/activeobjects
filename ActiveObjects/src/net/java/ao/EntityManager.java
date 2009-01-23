@@ -85,25 +85,25 @@ public class EntityManager {
 	private final boolean weaklyCache;
 	
 	private Map<RawEntity<?>, EntityProxy<? extends RawEntity<?>, ?>> proxies;
-	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock();
+	private final ReadWriteLock proxyLock = new ReentrantReadWriteLock(true);
 	
 	private Map<CacheKey<?>, Reference<RawEntity<?>>> entityCache;
-	private final ReadWriteLock entityCacheLock = new ReentrantReadWriteLock();
+	private final ReadWriteLock entityCacheLock = new ReentrantReadWriteLock(true);
 	
 	private Cache cache;
-	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+	private final ReadWriteLock cacheLock = new ReentrantReadWriteLock(true);
 	
 	private TableNameConverter tableNameConverter;
-	private final ReadWriteLock tableNameConverterLock = new ReentrantReadWriteLock();
+	private final ReadWriteLock tableNameConverterLock = new ReentrantReadWriteLock(true);
 	
 	private FieldNameConverter fieldNameConverter;
-	private final ReadWriteLock fieldNameConverterLock = new ReentrantReadWriteLock();
+	private final ReadWriteLock fieldNameConverterLock = new ReentrantReadWriteLock(true);
 	
 	private PolymorphicTypeMapper typeMapper;
-	private final ReadWriteLock typeMapperLock = new ReentrantReadWriteLock();
+	private final ReadWriteLock typeMapperLock = new ReentrantReadWriteLock(true);
 	
 	private Map<Class<? extends ValueGenerator<?>>, ValueGenerator<?>> valGenCache;
-	private final ReadWriteLock valGenCacheLock = new ReentrantReadWriteLock();
+	private final ReadWriteLock valGenCacheLock = new ReentrantReadWriteLock(true);
 	
 	private final RelationsCache relationsCache = new RAMRelationsCache();
 	
