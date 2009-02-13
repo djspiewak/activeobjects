@@ -1,0 +1,10 @@
+ianmdev@yahoo.co.uk:
+----
+Added support for version based optimistic locking.
+- New annotation net.java.ao.Version is used for enabling this feature per entity.
+- The version is initialized for a newly created entity [EntityManager.create()].
+- The version is incremented with every save [EntityProxy.save()].  A version check is 
+  performed to detect concurrent modifications.
+- Enhanced EntityManager.find() so that it will not return objects whose version is
+  set to the intial value.
+----

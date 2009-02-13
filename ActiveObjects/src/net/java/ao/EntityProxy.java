@@ -19,6 +19,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -58,6 +59,11 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 	private final String pkFieldName;
 	private final Class<T> type;
 
+  // <ian>
+  private final String versionField;
+  private final int versionIncrement;
+  // </ian>
+
 	private final EntityManager manager;
 	
 	private CacheLayer layer;
@@ -76,6 +82,17 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		pkAccessor = Common.getPrimaryKeyAccessor(type);
 		pkFieldName = Common.getPrimaryKeyField(type, getManager().getFieldNameConverter());
 		
+    // <ian>
+    Version version = type.getAnnotation(Version.class);
+    if (version != null) {
+      versionField = version.value();
+      versionIncrement = version.increment();
+    } else {
+      versionField = null;
+      versionIncrement = 0;
+    }
+    // </ian>
+
 		locks = new HashMap<String, ReadWriteLock>();
 
 		listeners = new LinkedList<PropertyChangeListener>();
@@ -202,6 +219,26 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		return key;
 	}
 
+  // <ian>
+  /**
+   * Retrieves the current version from the entity.
+   * @param entity
+   * @param versionField
+   * @return
+   * @throws java.lang.NoSuchMethodException
+   * @throws java.lang.IllegalAccessException
+   * @throws java.lang.IllegalArgumentException
+   * @throws InvocationTargetException
+   * @throws java.lang.Throwable
+   */
+  protected int getVersion(RawEntity entity, String versionField) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, Throwable {
+    String methodName = "get" + Character.toUpperCase(versionField.charAt(0)) + versionField.substring(1);
+    Method method = entity.getEntityType().getMethod(methodName);
+    Integer result = (Integer) invoke(entity, method, new Object[]{});
+    return result == null ? 0 : result.intValue();
+  }
+  // </ian>
+
 	@SuppressWarnings("unchecked")
 	public void save(RawEntity entity) throws SQLException {
 		CacheLayer cacheLayer = getCacheLayer(entity);
@@ -210,6 +247,17 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 		if (dirtyFields.length == 0) {
 			return;
 		}
+
+    // <ian>
+    int version = 0;
+    if (versionField != null) {
+      try {
+        version = getVersion(entity, versionField);
+      } catch (Throwable ex) {
+        throw new SQLException("Unable to get version: " + ex.getMessage());
+      }
+    }
+    // </ian>
 
 		String table = getManager().getTableNameConverter().getName(type);
 		TypeManager manager = TypeManager.getInstance();
@@ -229,11 +277,23 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 				}
 			}
 			
+      // <ian>
+      if (versionField != null) {
+        sql.append(versionField).append(" = ").append(versionField).append(" + ").append(versionIncrement).append(',');
+      }
+      // </ian>
+
 			if (sql.charAt(sql.length() - 1) == ',') {
 				sql.setLength(sql.length() - 1);
 			}
 
 			sql.append(" WHERE ").append(provider.processID(pkFieldName)).append(" = ?");
+
+      // <ian>
+      if (versionField != null) {
+        sql.append(" AND ").append(versionField).append(" = ?");
+      }
+      // </ian>
 
 			Logger.getLogger("net.java.ao").log(Level.INFO, sql.toString());
 			PreparedStatement stmt = conn.prepareStatement(sql.toString());
@@ -267,12 +327,22 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			}
 			((DatabaseType) Common.getPrimaryKeyType(type)).putToDatabase(getManager(), stmt, index++, key);
 
+      // <ian>
+      if (versionField != null) {
+        DatabaseType dbType = manager.getType(Integer.class);
+        dbType.putToDatabase(getManager(), stmt, index++, version);
+      }
+      // </ian>
+
 			getManager().getRelationsCache().remove(cacheLayer.getToFlush());
 			cacheLayer.clearFlush();
 
 			getManager().getRelationsCache().remove(entity, dirtyFields);
 
-			stmt.executeUpdate();
+      // <ian>
+			//stmt.executeUpdate();
+      int result = stmt.executeUpdate();
+      // </ian>
 
 			for (PropertyChangeListener l : listeners) {
 				for (PropertyChangeEvent evt : events) {
@@ -283,6 +353,12 @@ class EntityProxy<T extends RawEntity<K>, K> implements InvocationHandler {
 			cacheLayer.clearDirty();
 
 			stmt.close();
+
+      // <ian>
+      if (versionField != null && result == 0) {
+        throw new SQLException("Stale object [entity=" + entity.getEntityType().getSimpleName() + ",id=" + key + "]");
+      }
+      // </ian>
 		} finally {
 			closeConnectionImpl(conn);
 		}

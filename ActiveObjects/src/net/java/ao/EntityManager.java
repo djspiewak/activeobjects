@@ -474,6 +474,15 @@ public class EntityManager {
 				
 				listParams.add(new DBParam(field, generator.generateValue(this)));
 			}
+      // <ian>
+      Version version = type.getAnnotation(Version.class);
+      if (version != null) {
+        // Initialize version upon creation.
+        String field = version.value();
+        int initial = version.initial();
+        listParams.add(new DBParam(field, initial));
+      }
+      // </ian>
 		} finally {
 			fieldNameConverterLock.readLock().unlock();
 		}
@@ -701,6 +710,27 @@ public class EntityManager {
 		List<T> back = new ArrayList<T>();
 		
 		query.resolveFields(type, getFieldNameConverter());
+		
+    // <ian>
+    Version version = type.getAnnotation(Version.class);
+    if (version != null) {
+      // Add initial version check to exclude
+      // objects that have only been created and not saved yet.
+      if (query.getWhereClause() == null) {
+        query.where(version.value() + " != ?", version.initial());
+      } else {
+        // Preserve existing WHERE clause and parameters
+        String whereClause = new StringBuilder().append(query.getWhereClause())
+                .append(" AND ").append(version.value()).append(" != ?").toString();
+        Object[] paramsOld = query.getWhereParams();
+        Object[] paramsNew = new Object[paramsOld.length + 1];
+        System.arraycopy(paramsOld, 0, paramsNew, 0, paramsOld.length);
+        paramsNew[paramsNew.length - 1] = version.initial();
+        query.setWhereClause(whereClause);
+        query.setWhereParams(paramsNew);
+      }
+    }
+    // </ian>
 		
 		Preload preloadAnnotation = type.getAnnotation(Preload.class);
 		if (preloadAnnotation != null) {
