@@ -20,6 +20,8 @@ public @interface Version {
 	String value() default "version";
   /** Initial value */
   int initial() default -1;
+  /** Find objects with initial version */
+  boolean findInitial() default false;
   /** Increment value */
   int increment() default 1;
 }
