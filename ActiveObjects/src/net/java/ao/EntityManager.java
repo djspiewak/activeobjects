@@ -713,7 +713,7 @@ public class EntityManager {
 		
     // <ian>
     Version version = type.getAnnotation(Version.class);
-    if (version != null && version.findInitial()) {
+    if (version != null && !version.findInitial()) {
       // Add initial version check to exclude
       // objects that have only been created and not saved yet.
       if (query.getWhereClause() == null) {
